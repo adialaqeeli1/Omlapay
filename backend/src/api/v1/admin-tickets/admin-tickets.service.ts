@@ -1,17 +1,21 @@
 import {
   Injectable,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
-import { SupportRequestEntity, SupportRequestStatus } from '@common/database/model';
-import { TicketResponseEntity } from '@common/database/model';
-import { UserEntity } from '@common/database/model';
+import { Repository } from 'typeorm';
+import {
+  SupportRequestEntity,
+  TicketResponseEntity,
+  UserKycEntity,
+} from '@common/database/model';
 import { TicketListDto } from './dto/ticket-list.dto';
 import { AddTicketResponseDto } from './dto/ticket-response.dto';
 import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
 import { MailService } from '@common/services/mail/mail.service';
+import { TicketUtil } from '@common/utils/ticket.util';
+import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service';
+import { AdminNotificationType } from '@common/database/model';
 
 @Injectable()
 export class AdminTicketsService {
@@ -20,9 +24,10 @@ export class AdminTicketsService {
     private ticketRepository: Repository<SupportRequestEntity>,
     @InjectRepository(TicketResponseEntity)
     private ticketResponseRepository: Repository<TicketResponseEntity>,
-    @InjectRepository(UserEntity)
-    private userRepository: Repository<UserEntity>,
+    @InjectRepository(UserKycEntity)
+    private userKycRepository: Repository<UserKycEntity>,
     private mailService: MailService,
+    private adminNotificationsService: AdminNotificationsService,
   ) {}
 
   async getTicketList(dto: TicketListDto) {
@@ -67,6 +72,7 @@ export class AdminTicketsService {
       title: ticket.title,
       createdDate: ticket.createdAt,
       status: ticket.status,
+      statusColor: TicketUtil.getStatusColor(ticket.status), // Color mapping for UI
       userEmail: ticket.user.email || '—',
       userPhone: ticket.user.fullMobileNumber || '—',
     }));
@@ -102,6 +108,16 @@ export class AdminTicketsService {
     // Get user info
     const user = ticket.user;
 
+    // Derive full name from KYC provider payload if available
+    const kyc = await this.userKycRepository.findOne({
+      where: { userId: user.id },
+    });
+    const fullName = kyc?.providerPayload
+      ? `${(kyc.providerPayload as any)?.info?.firstName || ''} ${
+          (kyc.providerPayload as any)?.info?.lastName || ''
+        }`.trim() || '—'
+      : '—';
+
     return {
       ticket: {
         id: ticket.id,
@@ -109,21 +125,23 @@ export class AdminTicketsService {
         title: ticket.title,
         description: ticket.description,
         status: ticket.status,
+        statusColor: TicketUtil.getStatusColor(ticket.status), // Color mapping for UI
         createdAt: ticket.createdAt,
         updatedAt: ticket.updatedAt,
       },
       user: {
         email: user.email || '—',
         phoneNumber: user.fullMobileNumber || '—',
-        fullName: '—', // Will be fetched from 3rd party KYC if available
+        fullName,
       },
       attachments: ticket.attachmentUrl
-        ? [
-            {
-              url: ticket.attachmentUrl,
-              type: this.getAttachmentType(ticket.attachmentUrl),
-            },
-          ]
+        ? ticket.attachmentUrl.split(',').map((rawUrl) => {
+            const url = rawUrl.trim();
+            return {
+              url,
+              type: this.getAttachmentType(url),
+            };
+          })
         : [],
       responses: responses.map((response) => ({
         id: response.id,
@@ -170,6 +188,18 @@ export class AdminTicketsService {
       }
     }
 
+    // Notify all admins about ticket update (excluding the admin who responded)
+    try {
+      await this.adminNotificationsService.notifyAllAdmins(
+        AdminNotificationType.TICKET,
+        'Ticket Updated',
+        `A support ticket has received a new response. Ticket: ${ticket.title} (ID: ${ticket.id.substring(0, 8).toUpperCase()})`,
+      );
+    } catch (error) {
+      // Don't fail if notification fails
+      console.error('Failed to notify admins about ticket update:', error);
+    }
+
     return {
       message: 'Response added successfully',
       response: {
@@ -207,11 +237,29 @@ export class AdminTicketsService {
       });
     }
 
+    // Notify all admins about ticket status change
+    try {
+      const statusMessages = {
+        OPEN: 'opened',
+        SOLVED: 'solved',
+        REJECTED: 'rejected',
+      };
+      await this.adminNotificationsService.notifyAllAdmins(
+        AdminNotificationType.TICKET,
+        'Ticket Status Changed',
+        `A support ticket status has been updated to ${statusMessages[dto.status] || dto.status}. Ticket: ${ticket.title} (ID: ${ticket.id.substring(0, 8).toUpperCase()})`,
+      );
+    } catch (error) {
+      // Don't fail if notification fails
+      console.error('Failed to notify admins about ticket status change:', error);
+    }
+
     return {
       message: 'Ticket status updated successfully',
       ticket: {
         id: ticket.id,
         status: ticket.status,
+        statusColor: TicketUtil.getStatusColor(ticket.status), // Color mapping for UI
         updatedAt: ticket.updatedAt,
       },
     };

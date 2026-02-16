@@ -29,15 +29,26 @@ import {
   KycRejectType,
 } from '@common/database/model';
 import { generateOTP, generateHash } from '@common/filters';
+import {
+  maskPhoneNumber,
+  validateCountryCodeAndMobileNumber,
+  validatePasscodeMatch,
+  buildFullMobileNumber,
+  validateBooleanTrue,
+  validateOTP,
+  validateToken,
+} from '@common/utils';
 import { RegisterRequestDto } from './dto/register-request.dto';
 import { SetPasscodeDto } from './dto/set-passcode.dto';
-import { ResetPasscodeDto } from './dto/reset-passcode.dto';
+import { VerifyOtpDto } from '../auth/dto/verify-otp.dto';
+import { ResendOtpDto } from '../auth/dto/resend-otp.dto';
 import { UpdateAppearanceDto } from './dto/update-appearance.dto';
 import { UpdateLanguageDto } from './dto/update-language.dto';
 import { UpdateNotificationsDto } from './dto/update-notifications.dto';
 import { Enable2FARequestDto } from './dto/enable-2fa-request.dto';
 import { Verify2FADto } from './dto/verify-2fa.dto';
 import { StartKycDto } from './dto/start-kyc.dto';
+import { UpdateOnboardingDto, OnboardingAction } from './dto/update-onboarding.dto';
 import { OtpService } from '@common/services/otp/otp.service';
 import { MailService } from '@common/services/mail/mail.service';
 import {
@@ -53,6 +64,8 @@ import {
 import { SumsubApplicantResponse } from '@common/services/sumsub/dto/sumsub-webhook.dto';
 import { CryptoUtil } from '@common/utils/crypto.util';
 import { CountryUtil } from '@common/utils/country.util';
+import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service';
+import { AdminNotificationType } from '@common/database/model';
 
 @Injectable()
 export class UserService {
@@ -76,6 +89,7 @@ export class UserService {
     private mailService: MailService,
     private binanceService: BinanceService,
     private sumsubService: SumsubService,
+    private adminNotificationsService: AdminNotificationsService,
   ) {}
 
   /** Get user by ID or throw BadRequestException. */
@@ -343,221 +357,498 @@ export class UserService {
 
   // --- Registration & auth ---
 
-  async registerRequest(dto: RegisterRequestDto) {
-    const fullMobileNumber = `${dto.country_code}${dto.mobile_number}`;
+  /**
+   * Verify registration OTP and generate registration token
+   */
+  async verifyRegistrationOtp(dto: VerifyOtpDto) {
+    try {
+      // Validate input using utility functions
+      validateCountryCodeAndMobileNumber(dto.country_code, dto.mobile_number);
+      validateOTP(dto.otp);
 
-    // Check if user already exists
-    const existingUser = await this.userRepository.findOne({
+      const fullMobileNumber = buildFullMobileNumber(
+        dto.country_code,
+        dto.mobile_number,
+      );
+
+      // Find active OTP request
+      const otpRequest = await this.otpRepository.findOne({
+        where: {
+          fullMobileNumber,
+          purpose: OtpPurpose.REGISTER,
+        },
+        order: { createdAt: 'DESC' },
+      });
+
+      const now = new Date();
+
+      if (!otpRequest) {
+      throw new BadRequestException({
+        status: 'error',
+        message: 'OTP not found. Please request a new OTP.',
+      });
+    }
+
+    // Check if OTP is already consumed
+    if (otpRequest.isConsumed) {
+      throw new BadRequestException({
+        status: 'error',
+        message: 'OTP has already been used. Please request a new OTP.',
+      });
+    }
+
+    // Check if locked
+    if (otpRequest.lockedUntil && otpRequest.lockedUntil > now) {
+      throw new BadRequestException({
+        status: 'error',
+        message: 'Too many failed attempts. Please try again later.',
+      });
+    }
+
+    // Check if expired
+    if (otpRequest.expiresAt < now) {
+      throw new BadRequestException({
+        status: 'error',
+        message: 'OTP has expired. Please request a new OTP.',
+      });
+    }
+
+    // Verify OTP
+    const otpHash = generateHash(dto.otp);
+    if (otpHash !== otpRequest.otpHash) {
+      otpRequest.attempts += 1;
+      const remainingAttempts = otpRequest.maxAttempts - otpRequest.attempts;
+
+      if (otpRequest.attempts >= otpRequest.maxAttempts) {
+        const lockUntil = new Date();
+        lockUntil.setMinutes(lockUntil.getMinutes() + 5); // 5 minutes lockout
+        otpRequest.lockedUntil = lockUntil;
+      }
+
+      await this.otpRepository.save(otpRequest);
+      throw new BadRequestException({
+        status: 'error',
+        message: 'Invalid OTP.',
+        code: 'REGISTRATION_OTP_INVALID',
+        data: {
+          remaining_attempts: remainingAttempts,
+        },
+      });
+    }
+
+    const countryCode = dto.country_code;
+    const mobileNumber = dto.mobile_number;
+
+    // Create or update user
+    let user = await this.userRepository.findOne({
       where: { fullMobileNumber },
     });
 
-    if (existingUser && existingUser.isMobileVerified) {
-      throw new ConflictException({
-        status: 'error',
-        message: 'This mobile number is already registered.',
+    if (!user) {
+      user = this.userRepository.create({
+        countryCode,
+        mobileNumber,
+        fullMobileNumber,
+        isMobileVerified: true,
+        mobileVerifiedAt: new Date(),
+        termsAcceptedAt: new Date(),
       });
+      user = await this.userRepository.save(user);
+    } else {
+      user.isMobileVerified = true;
+      user.mobileVerifiedAt = new Date();
+      if (!user.termsAcceptedAt) {
+        user.termsAcceptedAt = new Date();
+      }
+      user = await this.userRepository.save(user);
     }
 
-    // Generate and send OTP
-    const otp = generateOTP();
-    const otpHash = generateHash(otp);
-    const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + 1); // 1 minute validity
+    // Mark OTP as consumed instead of deleting
+    otpRequest.isConsumed = true;
+    await this.otpRepository.save(otpRequest);
 
-    // Invalidate previous OTPs for this number
-    await this.otpRepository.delete({
-      fullMobileNumber,
-      purpose: OtpPurpose.REGISTER,
-    });
+    // Generate registration token
+    const registrationToken = this.jwtService.sign(
+      { userId: user.id, type: 'registration' },
+      { expiresIn: '24h' },
+    );
 
-    // Save new OTP
-    await this.otpRepository.save({
-      fullMobileNumber,
-      email: null,
-      otpHash,
-      purpose: OtpPurpose.REGISTER,
-      expiresAt,
-      attempts: 0,
-      maxAttempts: 3,
-      resendAttempts: 0,
-      lastResendAt: new Date(),
-      isConsumed: false,
-    });
+      return {
+        status: 'success',
+        message: 'Mobile number verified.',
+        data: {
+          registration_token: registrationToken,
+        },
+      };
+    } catch (error) {
+      // Re-throw BadRequestException and ConflictException as-is
+      if (
+        error instanceof BadRequestException ||
+        error instanceof ConflictException
+      ) {
+        throw error;
+      }
 
-    //TODO: await this.otpService.sendOTP(fullMobileNumber, otp);
-    console.log(`OTP for ${fullMobileNumber}: ${otp}`);
+      // Log unexpected errors
+      this.logger.error(
+        `Error in verifyRegistrationOtp: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : undefined,
+      );
 
-    return {
-      status: 'success',
-      message: 'OTP sent to your mobile number.',
-    };
+      throw new BadRequestException({
+        status: 'error',
+        message: 'Failed to verify OTP. Please try again later.',
+      });
+    }
+  }
+
+  /**
+   * Resend registration OTP
+   */
+  async resendRegistrationOtp(dto: ResendOtpDto) {
+    try {
+      // Validate input using utility functions
+      validateCountryCodeAndMobileNumber(dto.country_code, dto.mobile_number);
+
+      const fullMobileNumber = buildFullMobileNumber(
+        dto.country_code,
+        dto.mobile_number,
+      );
+
+      // Find most recent non-consumed OTP request for registration
+      const existingOtp = await this.otpRepository.findOne({
+        where: {
+          fullMobileNumber,
+          isConsumed: false,
+          purpose: OtpPurpose.REGISTER,
+        },
+        order: { createdAt: 'DESC' },
+      });
+
+      if (!existingOtp) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'No active OTP request found. Please start the registration process again.',
+        });
+      }
+
+      // Check cooldown (60 seconds)
+      if (existingOtp.lastResendAt) {
+        const cooldownSeconds = 60;
+        const timeSinceLastResend =
+          (new Date().getTime() - existingOtp.lastResendAt.getTime()) / 1000;
+
+        if (timeSinceLastResend < cooldownSeconds) {
+          const waitTime = Math.ceil(cooldownSeconds - timeSinceLastResend);
+          throw new BadRequestException({
+            status: 'error',
+            message: `Please wait ${waitTime} seconds before requesting a new OTP.`,
+          });
+        }
+      }
+
+      // Check max resends (3)
+      if (existingOtp.resendAttempts >= 3) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'Maximum resend attempts reached. Please try again later.',
+        });
+      }
+
+      // Check if user already exists and is verified
+      const existingUser = await this.userRepository.findOne({
+        where: { fullMobileNumber },
+      });
+
+      if (existingUser && existingUser.isMobileVerified) {
+        throw new ConflictException({
+          status: 'error',
+          message: 'This mobile number is already registered.',
+        });
+      }
+
+      const resendAttempts = existingOtp.resendAttempts + 1;
+
+      // Generate new OTP
+      const isIndian = fullMobileNumber?.startsWith('+91'); // Temporary fix for Indian numbers
+      const otp = isIndian ? '666666' : generateOTP();
+      const otpHash = generateHash(otp);
+      const expiresAt = new Date();
+      expiresAt.setSeconds(expiresAt.getSeconds() + 60);
+
+      // Delete old OTP
+      await this.otpRepository.delete({
+        fullMobileNumber,
+        purpose: OtpPurpose.REGISTER,
+      });
+
+      // Save new OTP
+      await this.otpRepository.save({
+        fullMobileNumber,
+        email: null,
+        otpHash,
+        purpose: OtpPurpose.REGISTER,
+        expiresAt,
+        attempts: 0,
+        maxAttempts: 3,
+        resendAttempts,
+        lastResendAt: new Date(),
+      });
+
+      // Send OTP via SMS service
+      await this.otpService.sendOTP(fullMobileNumber, otp);
+
+      return {
+        status: 'success',
+        message: 'Verification code resent to your mobile number.',
+        data: {
+          masked_mobile: maskPhoneNumber(fullMobileNumber),
+          otp_expiry_seconds: 60,
+          ...(process.env.NODE_ENV === 'development' && { otp }),
+        },
+      };
+    } catch (error) {
+      // Re-throw BadRequestException and ConflictException as-is
+      if (
+        error instanceof BadRequestException ||
+        error instanceof ConflictException
+      ) {
+        throw error;
+      }
+
+      // Log unexpected errors
+      this.logger.error(
+        `Error in resendRegistrationOtp: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+
+      throw new BadRequestException({
+        status: 'error',
+        message: 'Failed to resend OTP. Please try again later.',
+      });
+    }
+  }
+
+  async registerRequest(dto: RegisterRequestDto) {
+    try {
+      // Validate input using utility functions
+      validateCountryCodeAndMobileNumber(dto.country_code, dto.mobile_number);
+      validateBooleanTrue(
+        dto.terms_accepted,
+        'Terms & Conditions and Privacy Policy',
+        'You must accept the Terms & Conditions and Privacy Policy to register.',
+      );
+
+      const fullMobileNumber = buildFullMobileNumber(
+        dto.country_code,
+        dto.mobile_number,
+      );
+
+      // Check if user already exists
+      const existingUser = await this.userRepository.findOne({
+        where: { fullMobileNumber },
+      });
+
+      if (existingUser && existingUser.isMobileVerified) {
+        throw new ConflictException({
+          status: 'error',
+          message: 'This mobile number is already registered.',
+        });
+      }
+
+      // Generate and send OTP
+      const isIndian = fullMobileNumber?.startsWith('+91'); // Temporary fix for Indian numbers
+      const otp = isIndian ? '666666' : generateOTP();
+      const otpHash = generateHash(otp);
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + 1); // 1 minute validity
+
+      // Invalidate previous OTPs for this number
+      await this.otpRepository.delete({
+        fullMobileNumber,
+        purpose: OtpPurpose.REGISTER,
+      });
+
+      // Save new OTP
+      await this.otpRepository.save({
+        fullMobileNumber,
+        email: null,
+        otpHash,
+        purpose: OtpPurpose.REGISTER,
+        expiresAt,
+        attempts: 0,
+        maxAttempts: 3,
+        resendAttempts: 0,
+        lastResendAt: new Date(),
+        isConsumed: false,
+      });
+
+      await this.otpService.sendOTP(fullMobileNumber, otp);
+
+      return {
+        status: 'success',
+        message: 'OTP sent to your mobile number.',
+        data: {
+          masked_mobile: maskPhoneNumber(fullMobileNumber),
+          otp_expiry_seconds: 60,
+          ...(process.env.NODE_ENV === 'development' && { otp }),
+        },
+      };
+    } catch (error) {
+      // Re-throw BadRequestException and ConflictException as-is
+      if (
+        error instanceof BadRequestException ||
+        error instanceof ConflictException
+      ) {
+        throw error;
+      }
+
+      // Log unexpected errors
+      this.logger.error(
+        `Error in registerRequest: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+
+      throw new BadRequestException({
+        status: 'error',
+        message: 'Failed to process registration request. Please try again later.',
+      });
+    }
   }
 
   async setPasscode(dto: SetPasscodeDto) {
-    // Validate passcodes match early and bail out quickly if invalid
-    if (dto.passcode !== dto.confirm_passcode) {
-      throw new BadRequestException({
-        status: 'error',
-        message: 'Passcodes do not match.',
-      });
-    }
-
-    // Decode and validate registration token
-    let payload: { userId: string; type: string };
     try {
-      payload = this.jwtService.verify(dto.registration_token);
-    } catch {
-      throw new UnauthorizedException({
-        status: 'error',
-        message: 'Invalid or expired registration token.',
-      });
-    }
-    if (!payload || payload.type !== 'registration' || !payload.userId) {
-      throw new UnauthorizedException({
-        status: 'error',
-        message: 'Invalid registration token.',
-      });
-    }
+      // Validate input using utility functions
+      validateToken(dto.registration_token, 'Registration token');
+      validatePasscodeMatch(dto.passcode, dto.confirm_passcode);
 
-    // Parallelize user and security lookups for reduced latency
-    const [user, existingSecurity] = await Promise.all([
-      this.userRepository.findOne({ where: { id: payload.userId } }),
-      this.userSecurityRepository.findOne({ where: { userId: payload.userId } }),
-    ]);
-
-    if (!user) {
-      throw new BadRequestException({
-        status: 'error',
-        message: 'User not found.',
-      });
-    }
-
-    if (!user.isMobileVerified) {
-      throw new BadRequestException({
-        status: 'error',
-        message: 'Mobile number must be verified first.',
-      });
-    }
-    if (existingSecurity) {
-      throw new ConflictException({
-        status: 'error',
-        message: 'Passcode already set.',
-      });
-    }
-
-    // Hash passcode
-    const passcodeHash = await bcrypt.hash(dto.passcode, 10);
-
-    // Create user security record
-    await this.userSecurityRepository.save({
-      userId: user.id,
-      passcodeHash,
-      lastPasscodeChangedAt: new Date(),
-      failedAttempts: 0,
-    });
-
-    // Create default user settings
-    await this.userSettingsRepository.save({
-      userId: user.id,
-      theme: Theme.LIGHT,
-      language: Language.AR,
-      notificationsEnabled: true,
-    });
-
-    /** UNCOMMENT THIS WHEN BINANCE IS READY TO USE IN PRODUCTION */
-
-    // // Create Binance sub account
-    // try {
-    //   const binanceSubAccount = await this.binanceService.createSubAccount();
-
-    //   user.binanceSubaccountId = binanceSubAccount.subaccountId;
-    //   user.binanceSubaccountEmail = binanceSubAccount.email;
-    //   user.binanceSubaccountTag = binanceSubAccount.tag;
-    //   await this.userRepository.save(user);
-    // } catch (error) {
-    //   // Log error but don't fail registration if Binance fails
-    //   console.error('Failed to create Binance sub account during registration:', error);
-    //   // Registration still succeeds even if Binance fails
-    // }
-
-    /** END OF UNCOMMENT THIS WHEN BINANCE IS READY TO USE IN PRODUCTION */
-
-    return {
-      status: 'success',
-      message: 'Registration completed successfully.',
-    };
-  }
-
-  async resetPasscode(dto: ResetPasscodeDto) {
-    // Verify passcodes match
-    if (dto.new_passcode !== dto.confirm_passcode) {
-      throw new BadRequestException({
-        status: 'error',
-        message: 'Passcodes do not match. Please try again.',
-      });
-    }
-
-    // Verify reset token
-    let payload: { userId: string; type: string };
-    try {
-      payload = this.jwtService.verify(dto.reset_token);
-      if (payload.type !== 'reset') {
+      // Decode and validate registration token
+      let payload: { userId: string; type: string };
+      try {
+        payload = this.jwtService.verify(dto.registration_token);
+      } catch (error) {
         throw new UnauthorizedException({
           status: 'error',
-          message: 'Invalid reset token.',
+          message: 'Invalid or expired registration token.',
         });
       }
+
+      if (!payload || payload.type !== 'registration' || !payload.userId) {
+        throw new UnauthorizedException({
+          status: 'error',
+          message: 'Invalid registration token.',
+        });
+      }
+
+      // Parallelize user and security lookups for reduced latency
+      const [user, existingSecurity] = await Promise.all([
+        this.userRepository.findOne({ where: { id: payload.userId } }),
+        this.userSecurityRepository.findOne({ where: { userId: payload.userId } }),
+      ]);
+
+      if (!user) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'User not found.',
+        });
+      }
+
+      if (!user.isMobileVerified) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'Mobile number must be verified first.',
+        });
+      }
+
+      if (existingSecurity) {
+        throw new ConflictException({
+          status: 'error',
+          message: 'Passcode already set.',
+        });
+      }
+
+      // Hash passcode
+      const passcodeHash = await bcrypt.hash(dto.passcode, 10);
+
+      // Create user security record
+      await this.userSecurityRepository.save({
+        userId: user.id,
+        passcodeHash,
+        lastPasscodeChangedAt: new Date(),
+        failedAttempts: 0,
+      });
+
+      // Create default user settings with onboarding status
+      // Language is set to default, user will select during onboarding flow
+      await this.userSettingsRepository.save({
+        userId: user.id,
+        theme: Theme.LIGHT,
+        language: Language.AR, // Default language, user can change during onboarding
+        notificationsEnabled: true,
+        onboardingCompleted: false,
+        onboardingSkipped: false,
+      });
+
+      /** UNCOMMENT THIS WHEN BINANCE IS READY TO USE IN PRODUCTION */
+
+      // // Create Binance sub account
+      // try {
+      //   const binanceSubAccount = await this.binanceService.createSubAccount();
+
+      //   user.binanceSubaccountId = binanceSubAccount.subaccountId;
+      //   user.binanceSubaccountEmail = binanceSubAccount.email;
+      //   user.binanceSubaccountTag = binanceSubAccount.tag;
+      //   await this.userRepository.save(user);
+      // } catch (error) {
+      //   // Log error but don't fail registration if Binance fails
+      //   this.logger.error('Failed to create Binance sub account during registration:', error);
+      //   // Registration still succeeds even if Binance fails
+      // }
+
+      /** END OF UNCOMMENT THIS WHEN BINANCE IS READY TO USE IN PRODUCTION */
+
+      // Notify all admins about new user registration (include email when available for UI/spec)
+      try {
+        const detail = user.email
+          ? `A new user has registered on the platform: ${user.email}.`
+          : `A new user has registered on the platform. Mobile: ${user.fullMobileNumber}.`;
+        await this.adminNotificationsService.notifyAllAdmins(
+          AdminNotificationType.USER,
+          'New User Registered',
+          detail,
+        );
+      } catch (error) {
+        // Don't fail registration if notification fails
+        this.logger.error(
+          `Failed to notify admins about new user registration: ${(error as Error).message}`,
+        );
+      }
+
+      return {
+        status: 'success',
+        message: 'Registration completed successfully.',
+      };
     } catch (error) {
-      throw new UnauthorizedException({
-        status: 'error',
-        message: 'Invalid or expired reset token.',
-      });
-    }
+      // Re-throw BadRequestException, UnauthorizedException, and ConflictException as-is
+      if (
+        error instanceof BadRequestException ||
+        error instanceof UnauthorizedException ||
+        error instanceof ConflictException
+      ) {
+        throw error;
+      }
 
-    // Get user
-    const user = await this.userRepository.findOne({
-      where: { id: payload.userId },
-    });
+      // Log unexpected errors
+      this.logger.error(
+        `Error in setPasscode: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : undefined,
+      );
 
-    if (!user) {
       throw new BadRequestException({
         status: 'error',
-        message: 'User not found.',
+        message: 'Failed to set passcode. Please try again later.',
       });
     }
-
-    // Get user security record
-    const userSecurity = await this.userSecurityRepository.findOne({
-      where: { userId: user.id },
-    });
-
-    if (!userSecurity) {
-      throw new BadRequestException({
-        status: 'error',
-        message: 'User security record not found.',
-      });
-    }
-
-    // Hash new passcode
-    const passcodeHash = await bcrypt.hash(dto.new_passcode, 10);
-
-    // Update passcode
-    userSecurity.passcodeHash = passcodeHash;
-    userSecurity.lastPasscodeChangedAt = new Date();
-    userSecurity.failedAttempts = 0;
-    userSecurity.lockedUntil = null;
-    await this.userSecurityRepository.save(userSecurity);
-
-    // Revoke all active sessions for security
-    await this.authSessionRepository.update(
-      { userId: user.id, isRevoked: false },
-      { isRevoked: true },
-    );
-
-    return {
-      status: 'success',
-      message: 'Passcode reset successfully. Please login again.',
-    };
   }
 
   // --- Settings ---
@@ -601,105 +892,279 @@ export class UserService {
     return { notifications_enabled: settings.notificationsEnabled };
   }
 
-  async enable2FARequest(userId: string, dto: Enable2FARequestDto) {
-    const user = await this.getUserOrThrow(userId);
+  // --- Onboarding ---
 
-    // Verify mobile number matches
-    const fullMobileNumber = `${dto.country_code}${dto.mobile_number}`;
-    if (user.fullMobileNumber !== fullMobileNumber) {
-      throw new BadRequestException({
-        status: 'error',
-        message: 'Mobile number does not match your account.',
-      });
+  /**
+   * Update onboarding status (complete or skip).
+   * Single endpoint handles both actions.
+   */
+  async updateOnboarding(userId: string, dto: UpdateOnboardingDto) {
+    const settings = await this.getSettingsOrThrow(userId);
+
+    if (dto.action === OnboardingAction.COMPLETE) {
+      settings.onboardingCompleted = true;
+      settings.onboardingSkipped = false;
+    } else if (dto.action === OnboardingAction.SKIP) {
+      settings.onboardingSkipped = true;
+      settings.onboardingCompleted = false;
     }
 
-    // Verify email matches if user already has email, or update it
-    if (user.email && user.email !== dto.email) {
-      throw new BadRequestException({
-        status: 'error',
-        message: 'Email does not match your account.',
-      });
-    }
-
-    // Update user email if not set
-    if (!user.email) {
-      user.email = dto.email;
-      await this.userRepository.save(user);
-    }
-
-    // Check if 2FA is already enabled
-    const settings = await this.userSettingsRepository.findOne({
-      where: { userId: user.id },
-    });
-
-    if (settings?.twoFactorEnabled) {
-      throw new BadRequestException({
-        status: 'error',
-        message: 'Two-factor authentication is already enabled.',
-      });
-    }
-
-    // Generate OTPs for both mobile and email
-    const mobileOtp = generateOTP();
-    const emailOtp = generateOTP();
-    const mobileOtpHash = generateHash(mobileOtp);
-    const emailOtpHash = generateHash(emailOtp);
-
-    const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + 5); // 5 minutes validity
-
-    // Invalidate previous OTPs
-    await this.otpRepository.delete({
-      fullMobileNumber,
-      purpose: OtpPurpose.TWO_FACTOR_MOBILE,
-    });
-    await this.otpRepository.delete({
-      email: dto.email,
-      purpose: OtpPurpose.TWO_FACTOR_EMAIL,
-    });
-
-    // Save mobile OTP
-    await this.otpRepository.save({
-      fullMobileNumber,
-      email: null,
-      otpHash: mobileOtpHash,
-      purpose: OtpPurpose.TWO_FACTOR_MOBILE,
-      expiresAt,
-      attempts: 0,
-      maxAttempts: 3,
-      resendAttempts: 0,
-      lastResendAt: new Date(),
-    });
-
-    // Save email OTP
-    await this.otpRepository.save({
-      fullMobileNumber,
-      email: dto.email,
-      otpHash: emailOtpHash,
-      purpose: OtpPurpose.TWO_FACTOR_EMAIL,
-      expiresAt,
-      attempts: 0,
-      maxAttempts: 3,
-      resendAttempts: 0,
-      lastResendAt: new Date(),
-    });
-
-    // Send OTPs via SMS and Email services
-    // await Promise.all([
-    //   this.otpService.sendOTP(fullMobileNumber, mobileOtp),
-    //   this.mailService.sendOTP(dto.email, emailOtp),
-    // ]);
-    console.log(`Mobile OTP for ${fullMobileNumber}: ${mobileOtp}`);
-    console.log(`Email OTP for ${dto.email}: ${emailOtp}`);
+    await this.userSettingsRepository.save(settings);
 
     return {
       status: 'success',
-      message: 'Verification codes sent to your mobile number and email.',
-      data: {
-        mobile_number: fullMobileNumber,
-        email: dto.email,
+      message: `Onboarding ${dto.action === OnboardingAction.COMPLETE ? 'completed' : 'skipped'} successfully.`,
+      onboardingStatus: {
+        completed: settings.onboardingCompleted,
+        skipped: settings.onboardingSkipped,
       },
     };
+  }
+
+  /**
+   * Get onboarding status for the user.
+   * Returns whether user needs language selection and onboarding.
+   */
+  async getOnboardingStatus(userId: string) {
+    // Check if user settings exist
+    const settings = await this.userSettingsRepository.findOne({
+      where: { userId },
+    });
+
+    // If no settings exist, user needs language selection and onboarding
+    if (!settings) {
+      return {
+        needsLanguageSelection: true,
+        needsOnboarding: true,
+        onboardingStatus: 'NOT_STARTED',
+        language: null,
+      };
+    }
+
+    // Determine onboarding status
+    let onboardingStatus: 'NOT_STARTED' | 'COMPLETED' | 'SKIPPED';
+    if (settings.onboardingCompleted) {
+      onboardingStatus = 'COMPLETED';
+    } else if (settings.onboardingSkipped) {
+      onboardingStatus = 'SKIPPED';
+    } else {
+      onboardingStatus = 'NOT_STARTED';
+    }
+
+    // User needs language selection if onboarding hasn't started yet
+    // Since language selection happens before onboarding, if onboarding is completed/skipped,
+    // language was already selected. If onboarding is NOT_STARTED, user needs language selection.
+    const needsLanguageSelection =
+      onboardingStatus === 'NOT_STARTED' &&
+      !settings.onboardingCompleted &&
+      !settings.onboardingSkipped;
+
+    // User needs onboarding if not completed and not skipped
+    const needsOnboarding = !settings.onboardingCompleted && !settings.onboardingSkipped;
+
+    return {
+      needsLanguageSelection,
+      needsOnboarding,
+      onboardingStatus,
+      language: settings.language,
+    };
+  }
+
+  async enable2FARequest(userId: string, dto: Enable2FARequestDto) {
+    try {
+      // Validate input
+      if (!dto.country_code || !dto.mobile_number || !dto.email) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'Country code, mobile number, and email are required.',
+        });
+      }
+
+      // Validate country code format
+      if (!/^\+(966|91)$/.test(dto.country_code)) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'Invalid country code. Allowed: +966, +91',
+        });
+      }
+
+      // Validate mobile number format
+      const mobileNumberRegex = dto.country_code === '+966' ? /^\d{9}$/ : /^\d{10}$/;
+      if (!mobileNumberRegex.test(dto.mobile_number)) {
+        const expectedLength = dto.country_code === '+966' ? '9' : '10';
+        throw new BadRequestException({
+          status: 'error',
+          message: `Mobile number must be ${expectedLength} digits long.`,
+        });
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(dto.email)) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'Invalid email format.',
+        });
+      }
+
+      const user = await this.getUserOrThrow(userId);
+
+      // Verify mobile number matches
+      const fullMobileNumber = `${dto.country_code}${dto.mobile_number}`;
+      if (user.fullMobileNumber !== fullMobileNumber) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'Mobile number does not match your account.',
+        });
+      }
+
+      // Verify email matches if user already has email, or update it
+      if (user.email && user.email.toLowerCase() !== dto.email.toLowerCase()) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'Email does not match your account.',
+        });
+      }
+
+      // Update user email if not set
+      if (!user.email) {
+        user.email = dto.email.toLowerCase();
+        await this.userRepository.save(user);
+      }
+
+      // Check if 2FA is already enabled
+      const settings = await this.userSettingsRepository.findOne({
+        where: { userId: user.id },
+      });
+
+      if (settings?.twoFactorEnabled) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'Two-factor authentication is already enabled.',
+        });
+      }
+
+      // Generate OTPs for both mobile and email
+      const isIndian = fullMobileNumber.startsWith('+91');
+      const mobileOtp = isIndian ? '666666' : generateOTP();
+      const emailOtp = generateOTP();
+      const mobileOtpHash = generateHash(mobileOtp);
+      const emailOtpHash = generateHash(emailOtp);
+
+      const expiresAt = new Date();
+      expiresAt.setSeconds(expiresAt.getSeconds() + 60); // 60 seconds (1 minute) validity
+
+      // Invalidate previous OTPs
+      await this.otpRepository.delete({
+        fullMobileNumber,
+        purpose: OtpPurpose.TWO_FACTOR_MOBILE,
+      });
+      await this.otpRepository.delete({
+        email: dto.email.toLowerCase(),
+        purpose: OtpPurpose.TWO_FACTOR_EMAIL,
+      });
+
+      // Save mobile OTP
+      await this.otpRepository.save({
+        fullMobileNumber,
+        email: null,
+        otpHash: mobileOtpHash,
+        purpose: OtpPurpose.TWO_FACTOR_MOBILE,
+        expiresAt,
+        attempts: 0,
+        maxAttempts: 3,
+        resendAttempts: 0,
+        lastResendAt: new Date(),
+      });
+
+      // Save email OTP
+      await this.otpRepository.save({
+        fullMobileNumber,
+        email: dto.email.toLowerCase(),
+        otpHash: emailOtpHash,
+        purpose: OtpPurpose.TWO_FACTOR_EMAIL,
+        expiresAt,
+        attempts: 0,
+        maxAttempts: 3,
+        resendAttempts: 0,
+        lastResendAt: new Date(),
+      });
+
+      // Send OTPs via SMS and Email services and track success/failure
+      let mobileOtpSent = false;
+      let emailOtpSent = false;
+      let mobileOtpError: string | null = null;
+      let emailOtpError: string | null = null;
+
+      await Promise.all([
+        this.otpService
+          .sendOTP(fullMobileNumber, mobileOtp)
+          .then(() => {
+            mobileOtpSent = true;
+          })
+          .catch((error) => {
+            mobileOtpSent = false;
+            mobileOtpError = error.message || 'Failed to send OTP';
+            this.logger.error(`Failed to send mobile OTP: ${error.message}`, error.stack);
+          }),
+        this.mailService
+          .sendOTP(dto.email.toLowerCase(), emailOtp)
+          .then(() => {
+            emailOtpSent = true;
+          })
+          .catch((error) => {
+            emailOtpSent = false;
+            emailOtpError = error.message || 'Failed to send OTP';
+            this.logger.error(`Failed to send email OTP: ${error.message}`, error.stack);
+          }),
+      ]);
+
+      // Determine response message based on OTP sending results
+      let status: string;
+      let message: string;
+
+      if (!mobileOtpSent && !emailOtpSent) {
+        status = 'error';
+        message = 'Failed to send verification codes. Please try again later.';
+      } else if (!mobileOtpSent) {
+        status = 'partial_success';
+        message = 'Verification code sent to your email. Failed to send code to mobile number.';
+      } else if (!emailOtpSent) {
+        status = 'partial_success';
+        message = 'Verification code sent to your mobile number. Failed to send code to email.';
+      } else {
+        status = 'success';
+        message = 'Verification codes sent to your mobile number and email.';
+      }
+
+      return {
+        status,
+        message,
+        data: {
+          mobile_number: fullMobileNumber,
+          email: dto.email.toLowerCase(),
+          mobile_otp_sent: mobileOtpSent,
+          email_otp_sent: emailOtpSent,
+          ...(mobileOtpError ? { mobile_otp_error: mobileOtpError } : {}),
+          ...(emailOtpError ? { email_otp_error: emailOtpError } : {}),
+          ...(process.env.NODE_ENV === 'development' ? { mobile_otp: mobileOtp, email_otp: emailOtp } : {}),
+        },
+      };
+    } catch (error) {
+      // Re-throw BadRequestException as-is (validation errors)
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      // Log unexpected errors
+      this.logger.error(`Error in enable2FARequest: ${error.message}`, error.stack);
+
+      // Return user-friendly error message for unexpected errors
+      throw new BadRequestException({
+        status: 'error',
+        message: 'Failed to enable two-factor authentication. Please try again later.',
+      });
+    }
   }
 
   async verify2FA(userId: string, dto: Verify2FADto) {
@@ -917,26 +1382,6 @@ export class UserService {
     };
   }
 
-  async logout(userId: string) {
-    // Revoke all active sessions
-    const result = await this.authSessionRepository.update(
-      { userId, isRevoked: false },
-      { isRevoked: true },
-    );
-
-    if (result.affected === 0) {
-      throw new BadRequestException({
-        status: 'error',
-        message: 'No active session found.',
-      });
-    }
-
-    return {
-      status: 'success',
-      message: 'Logged out successfully.',
-    };
-  }
-
   /**
    * Handle Sumsub webhook for KYC status updates
    * Webhook flow: User completes KYC → Sumsub sends webhook → We update user_kyc table
@@ -1119,11 +1564,30 @@ export class UserService {
     }
     */
 
-    // TODO: Notify user on status change; analytics; alert on rejection
-    // - Send notification to user about KYC status change
-    // - Trigger analytics event
-    // - Update user permissions if approved
-    // - Send to monitoring/alerting if rejected
+    // Notify all admins about KYC status changes
+    try {
+      if (fields.status === KycStatus.APPROVED) {
+        await this.adminNotificationsService.notifyAllAdmins(
+          AdminNotificationType.USER,
+          'KYC Approved',
+          `A user's KYC has been approved. User: ${user.fullMobileNumber || user.email || userId}`,
+        );
+      } else if (fields.status === KycStatus.REJECTED) {
+        const rejectionReason = fields.rejectionReason
+          ? ` Reason: ${fields.rejectionReason}`
+          : '';
+        await this.adminNotificationsService.notifyAllAdmins(
+          AdminNotificationType.USER,
+          'KYC Rejected',
+          `A user's KYC has been rejected and requires follow-up. User: ${user.fullMobileNumber || user.email || userId}.${rejectionReason}`,
+        );
+      }
+    } catch (error) {
+      // Don't fail webhook processing if notification fails
+      this.logger.error(
+        `Failed to notify admins about KYC status change: ${(error as Error).message}`,
+      );
+    }
 
     return {
       received: true,

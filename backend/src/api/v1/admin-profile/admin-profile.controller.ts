@@ -21,7 +21,7 @@ import {
   VerifyNewPhoneDto,
 } from './dto/change-phone.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { AdminJwtAuthGuard } from '@common/guards';
+import { AdminJwtAuthGuard, SuperAdminGuard } from '@common/guards';
 import { CurrentAdmin } from '@common/decorators';
 
 @ApiTags('Admin Profile')
@@ -33,9 +33,11 @@ export class AdminProfileController {
 
   // Change Email Flow
   @Post('change-email/initiate')
+  @UseGuards(SuperAdminGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Step 1: Initiate change email - sends OTP to current email' })
+  @ApiOperation({ summary: 'Step 1: Initiate change email - sends OTP to current email (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'OTP sent to current email' })
+  @ApiResponse({ status: 403, description: 'Access denied. Super Admin role required' })
   async initiateChangeEmail(
     @CurrentAdmin() adminId: string,
     @Ip() ipAddress: string,
@@ -44,10 +46,12 @@ export class AdminProfileController {
   }
 
   @Post('change-email/verify-current')
+  @UseGuards(SuperAdminGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Step 2: Verify current email with OTP' })
+  @ApiOperation({ summary: 'Step 2: Verify current email with OTP (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Current email verified' })
   @ApiResponse({ status: 400, description: 'Invalid or expired OTP' })
+  @ApiResponse({ status: 403, description: 'Access denied. Super Admin role required' })
   async verifyCurrentEmail(
     @CurrentAdmin() adminId: string,
     @Body() dto: VerifyCurrentEmailDto,
@@ -57,10 +61,12 @@ export class AdminProfileController {
   }
 
   @Post('change-email/enter-new')
+  @UseGuards(SuperAdminGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Step 3: Enter new email address' })
+  @ApiOperation({ summary: 'Step 3: Enter new email address (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'OTP sent to new email' })
   @ApiResponse({ status: 400, description: 'Invalid email or email already exists' })
+  @ApiResponse({ status: 403, description: 'Access denied. Super Admin role required' })
   async enterNewEmail(
     @CurrentAdmin() adminId: string,
     @Body() dto: EnterNewEmailDto,
@@ -70,10 +76,12 @@ export class AdminProfileController {
   }
 
   @Post('change-email/verify-new')
+  @UseGuards(SuperAdminGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Step 4: Verify new email with OTP and complete update' })
+  @ApiOperation({ summary: 'Step 4: Verify new email with OTP and complete update (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Email updated successfully' })
   @ApiResponse({ status: 400, description: 'Invalid or expired OTP' })
+  @ApiResponse({ status: 403, description: 'Access denied. Super Admin role required' })
   async verifyNewEmail(
     @CurrentAdmin() adminId: string,
     @Body() dto: VerifyNewEmailDto,
@@ -84,9 +92,11 @@ export class AdminProfileController {
 
   // Change Phone Flow
   @Post('change-phone/initiate')
+  @UseGuards(SuperAdminGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Step 1: Initiate change phone - sends OTP to current phone' })
+  @ApiOperation({ summary: 'Step 1: Initiate change phone - sends OTP to current phone (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'OTP sent to current phone' })
+  @ApiResponse({ status: 403, description: 'Access denied. Super Admin role required' })
   async initiateChangePhone(
     @CurrentAdmin() adminId: string,
     @Ip() ipAddress: string,
@@ -95,10 +105,12 @@ export class AdminProfileController {
   }
 
   @Post('change-phone/verify-current')
+  @UseGuards(SuperAdminGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Step 2: Verify current phone with OTP' })
+  @ApiOperation({ summary: 'Step 2: Verify current phone with OTP (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Current phone verified' })
   @ApiResponse({ status: 400, description: 'Invalid or expired OTP' })
+  @ApiResponse({ status: 403, description: 'Access denied. Super Admin role required' })
   async verifyCurrentPhone(
     @CurrentAdmin() adminId: string,
     @Body() dto: VerifyCurrentPhoneDto,
@@ -108,10 +120,12 @@ export class AdminProfileController {
   }
 
   @Post('change-phone/enter-new')
+  @UseGuards(SuperAdminGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Step 3: Enter new phone number' })
+  @ApiOperation({ summary: 'Step 3: Enter new phone number (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'OTP sent to new phone' })
   @ApiResponse({ status: 400, description: 'Invalid phone or phone already exists' })
+  @ApiResponse({ status: 403, description: 'Access denied. Super Admin role required' })
   async enterNewPhone(
     @CurrentAdmin() adminId: string,
     @Body() dto: EnterNewPhoneDto,
@@ -121,10 +135,12 @@ export class AdminProfileController {
   }
 
   @Post('change-phone/verify-new')
+  @UseGuards(SuperAdminGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Step 4: Verify new phone with OTP and complete update' })
+  @ApiOperation({ summary: 'Step 4: Verify new phone with OTP and complete update (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Phone number updated successfully' })
   @ApiResponse({ status: 400, description: 'Invalid or expired OTP' })
+  @ApiResponse({ status: 403, description: 'Access denied. Super Admin role required' })
   async verifyNewPhone(
     @CurrentAdmin() adminId: string,
     @Body() dto: VerifyNewPhoneDto,

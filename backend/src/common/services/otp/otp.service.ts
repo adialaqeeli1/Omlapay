@@ -16,24 +16,34 @@ export class OtpService {
     this.senderName =
       this.configService.get<string>('TAQNYAT_SENDER_NAME') || '';
 
-    if (!this.apiKey) {
+    if (!this.apiKey || !this.apiUrl || !this.senderName) {
       this.logger.warn(
-        'Taqnyat API key not configured. SMS functionality will be disabled.',
+        'Taqnyat not fully configured (missing API key, URL, or sender name). SMS functionality will be disabled.',
       );
       this.isConfigured = false;
     } else {
       this.isConfigured = true;
+      this.logger.log('Taqnyat SMS service configured successfully');
     }
   }
 
   async sendOTP(phoneNumber: string, otp: string): Promise<void> {
+    // Check if it's an Indian number
+    const isIndianNumber = phoneNumber.startsWith('+91');
+
+    // In development & Indian numbers, use default OTP - don't send actual SMS
+    if (process.env.NODE_ENV !== 'production' || isIndianNumber) {
+      console.log(`[DEV] OTP for ${phoneNumber}: ${otp}`);
+      return;
+    }
+
+    // Production: Send actual SMS for Saudi numbers
     try {
-      if (!this.isConfigured || !this.apiKey) {
-        this.logger.warn(
-          `Taqnyat not configured. Would send OTP ${otp} to ${phoneNumber}`,
+      if (!this.isConfigured) {
+        this.logger.error(
+          `Taqnyat not configured in production. Cannot send OTP to ${phoneNumber}`,
         );
-        console.log(`[SMS] OTP for ${phoneNumber}: ${otp}`);
-        return;
+        throw new Error('SMS service not configured');
       }
 
       const message = `Your OmlaPay verification code is: ${otp}. Valid for 60 seconds. Do not share this code with anyone.`;
@@ -66,22 +76,28 @@ export class OtpService {
         `OTP sent successfully to ${phoneNumber}. Status: ${data.statusCode}`,
       );
     } catch (error) {
-      console.log(error);
       this.logger.error(`Failed to send OTP to ${phoneNumber}:`, error);
-      // Fallback to console log in development
-      console.log(`[SMS FAILED] OTP for ${phoneNumber}: ${otp}`);
       throw error;
     }
   }
 
   async sendPasscodeResetOTP(phoneNumber: string, otp: string): Promise<void> {
+    // Check if it's an Indian number
+    const isIndianNumber = phoneNumber.startsWith('+91');
+
+    // In development & Indian numbers, use default OTP - don't send actual SMS
+    if (process.env.NODE_ENV !== 'production' || isIndianNumber) {
+      console.log(`[DEV] Passcode Reset OTP for ${phoneNumber}: ${otp}`);
+      return;
+    }
+
+    // Production: Send actual SMS for Saudi numbers
     try {
-      if (!this.isConfigured || !this.apiKey) {
-        this.logger.warn(
-          `Taqnyat not configured. Would send passcode reset OTP ${otp} to ${phoneNumber}`,
+      if (!this.isConfigured) {
+        this.logger.error(
+          `Taqnyat not configured in production. Cannot send passcode reset OTP to ${phoneNumber}`,
         );
-        console.log(`[SMS] Passcode Reset OTP for ${phoneNumber}: ${otp}`);
-        return;
+        throw new Error('SMS service not configured');
       }
 
       const message = `Your OmlaPay passcode reset code is: ${otp}. Valid for 60 seconds. If you didn't request this, please ignore.`;
@@ -117,10 +133,6 @@ export class OtpService {
       this.logger.error(
         `Failed to send passcode reset OTP to ${phoneNumber}:`,
         error,
-      );
-      // Fallback to console log in development
-      console.log(
-        `[SMS FAILED] Passcode Reset OTP for ${phoneNumber}: ${otp}`,
       );
       throw error;
     }

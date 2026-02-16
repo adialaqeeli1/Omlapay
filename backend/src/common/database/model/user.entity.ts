@@ -48,6 +48,9 @@ export class UserEntity {
   @Column({ type: 'timestamp', nullable: true })
   emailVerifiedAt: Date | null;
 
+  @Column({ type: 'timestamp', nullable: true })
+  termsAcceptedAt: Date | null;
+
   @Column({ type: 'varchar', length: 100, nullable: true, name: 'binance_subaccount_id' })
   binanceSubaccountId: string | null;
 

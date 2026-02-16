@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -56,7 +57,10 @@ export class NotificationsController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Notification not found' })
-  async markAsRead(@CurrentUser() user: any, @Param('id') id: string) {
+  async markAsRead(
+    @CurrentUser() user: any,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
     return this.notificationsService.markAsRead(user.userId, id);
   }
 }

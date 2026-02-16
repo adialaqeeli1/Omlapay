@@ -15,6 +15,11 @@ import { AuthSessionEntity } from '@common/database/model';
 import { OtpRequestEntity } from '@common/database/model';
 import { AdminEntity } from '@common/database/model';
 import { AdminSecurityEntity } from '@common/database/model';
+import { FaqEntity } from '@common/database/model';
+import { LegalContentEntity } from '@common/database/model';
+import { AboutEntity } from '@common/database/model';
+import { SumsubModule } from '@common/services/sumsub/sumsub.module';
+import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module';
 
 @Module({
   imports: [
@@ -32,7 +37,12 @@ import { AdminSecurityEntity } from '@common/database/model';
       OtpRequestEntity,
       AdminEntity,
       AdminSecurityEntity,
+      FaqEntity,
+      LegalContentEntity,
+      AboutEntity,
     ]),
+    SumsubModule,
+    AdminNotificationsModule,
   ],
   controllers: [DevToolsController],
   providers: [DevToolsService],

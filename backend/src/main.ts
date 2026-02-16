@@ -54,22 +54,19 @@ async function bootstrap() {
   // Global Interceptors
   app.useGlobalInterceptors(new LoggingInterceptor());
 
-  // Swagger Configuration
+  // Swagger Configuration with Basic Auth Protection
+  const swaggerUser = process.env.SWAGGER_USER || 'admin';
+  const swaggerPassword = process.env.SWAGGER_PASSWORD || 'admin';
 
-  // TODO: Uncomment below for basic auth protection
-
-  // const swaggerUser = process.env.SWAGGER_USER || 'admin';
-  // const swaggerPassword = process.env.SWAGGER_PASSWORD || 'admin';
-
-  // app.use(
-  //   ['/docs'],
-  //   ExpressBasicAuth({
-  //     challenge: true,
-  //     users: {
-  //       [swaggerUser]: swaggerPassword,
-  //     },
-  //   }),
-  // );
+  app.use(
+    ['/docs', '/docs-json'],
+    ExpressBasicAuth({
+      challenge: true,
+      users: {
+        [swaggerUser]: swaggerPassword,
+      },
+    }),
+  );
 
   const config = new DocumentBuilder()
     .setTitle(SwaggerConfig.DOCS_TITLE)

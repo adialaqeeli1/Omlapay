@@ -10,6 +10,7 @@ import { UserKycEntity } from '@common/database/model';
 import { UserStatusHistoryEntity } from '@common/database/model';
 import { AdminAuthModule } from '../admin-auth/admin-auth.module';
 import { MailModule } from '@common/services/mail/mail.module';
+import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { MailModule } from '@common/services/mail/mail.module';
     ]),
     AdminAuthModule,
     MailModule,
+    AdminNotificationsModule,
   ],
   controllers: [AdminUsersController],
   providers: [AdminUsersService],

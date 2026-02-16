@@ -49,6 +49,12 @@ export class UserSettingsEntity {
   @Column({ default: false })
   twoFactorEnabled: boolean;
 
+  @Column({ default: false })
+  onboardingCompleted: boolean;
+
+  @Column({ default: false })
+  onboardingSkipped: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -6,17 +6,18 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
-  Headers,
   Ip,
-  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AdminAuthService } from './admin-auth.service';
 import { AdminLoginDto } from './dto/admin-login.dto';
+import { AdminSendOtpDto } from './dto/admin-send-otp.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { AdminVerifyOtpDto } from './dto/verify-otp.dto';
 import { AdminResendOtpDto } from './dto/resend-otp.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { CreateSuperAdminDto } from './dto/create-super-admin.dto';
+import { AdminRefreshTokenDto } from './dto/refresh-token.dto';
 import { AdminJwtAuthGuard } from '@common/guards';
 import { CurrentAdmin } from '@common/decorators';
 
@@ -25,11 +26,23 @@ import { CurrentAdmin } from '@common/decorators';
 export class AdminAuthController {
   constructor(private readonly adminAuthService: AdminAuthService) {}
 
+  @Post('send-otp')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Send OTP for admin login (Step 1)' })
+  @ApiResponse({ status: 200, description: 'OTP sent successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  async sendOtp(
+    @Body() dto: AdminSendOtpDto,
+    @Ip() ipAddress: string,
+  ) {
+    return this.adminAuthService.sendOtpForLogin(dto, ipAddress);
+  }
+
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Admin login with email/phone, password, and OTP' })
+  @ApiOperation({ summary: 'Admin login with password + OTP + terms (Step 2)' })
   @ApiResponse({ status: 200, description: 'Login successful' })
-  @ApiResponse({ status: 400, description: 'Invalid input' })
+  @ApiResponse({ status: 400, description: 'Invalid input or OTP' })
   @ApiResponse({ status: 401, description: 'Invalid login credentials' })
   @ApiResponse({ status: 423, description: 'Account temporarily locked' })
   async login(
@@ -37,6 +50,15 @@ export class AdminAuthController {
     @Ip() ipAddress: string,
   ) {
     return this.adminAuthService.login(dto, ipAddress);
+  }
+
+  @Post('refresh-token')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Refresh access token using refresh token' })
+  @ApiResponse({ status: 200, description: 'New access token generated' })
+  @ApiResponse({ status: 401, description: 'Invalid or expired refresh token' })
+  async refreshToken(@Body() dto: AdminRefreshTokenDto) {
+    return this.adminAuthService.refreshToken(dto);
   }
 
   @Post('logout')
@@ -99,6 +121,21 @@ export class AdminAuthController {
   @ApiResponse({ status: 401, description: 'Invalid session' })
   async getMe(@CurrentAdmin() adminId: string) {
     return this.adminAuthService.getMe(adminId);
+  }
+
+  @Post('create-super-admin')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ 
+    summary: 'Create Super Admin account',
+    description: 'Creates a new Super Admin account with email and password.'
+  })
+  @ApiResponse({ status: 201, description: 'Super Admin created successfully' })
+  @ApiResponse({ status: 400, description: 'Email or phone already exists' })
+  async createSuperAdmin(
+    @Body() dto: CreateSuperAdminDto,
+    @Ip() ipAddress: string,
+  ) {
+    return this.adminAuthService.createSuperAdmin(dto, ipAddress);
   }
 }
 

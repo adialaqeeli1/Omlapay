@@ -1,13 +1,20 @@
-import { IsString, IsNotEmpty, IsOptional, Length } from 'class-validator';
+import { IsString, IsNotEmpty, Length, Matches, IsBoolean } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AdminLoginDto {
   @ApiProperty({
     example: 'admin@example.com',
-    description: 'Email or phone number',
+    description: 'Email or mobile number (supports: email, +9665XXXXXXXX, 05XXXXXXXX, +91XXXXXXXXXX, or 10-digit Indian mobile)',
   })
   @IsString()
   @IsNotEmpty()
+  @Matches(
+    /^([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|(\+966[5][0-9]{8})|05[0-9]{8}|(\+91[6-9]\d{9})|[6-9]\d{9})$/,
+    {
+      message:
+        'Must be a valid email, or Saudi mobile number (+966 or 05). Landlines are not supported.',
+    },
+  )
   identifier: string;
 
   @ApiProperty({ example: 'Password@123', description: 'Admin password' })
@@ -17,12 +24,18 @@ export class AdminLoginDto {
 
   @ApiProperty({
     example: '123456',
-    description: '6-digit OTP (required after password verification)',
-    required: false,
+    description: '6-digit OTP received via email or SMS',
   })
-  @IsOptional()
   @IsString()
+  @IsNotEmpty()
   @Length(6, 6)
-  otp?: string;
+  otp: string;
+
+  @ApiProperty({
+    example: true,
+    description: 'Must agree to terms and conditions',
+  })
+  @IsBoolean()
+  acceptTerms: boolean;
 }
 

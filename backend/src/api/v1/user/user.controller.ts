@@ -22,14 +22,16 @@ import {
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { RegisterRequestDto } from './dto/register-request.dto';
+import { VerifyOtpDto } from '../auth/dto/verify-otp.dto';
+import { ResendOtpDto } from '../auth/dto/resend-otp.dto';
 import { SetPasscodeDto } from './dto/set-passcode.dto';
-import { ResetPasscodeDto } from './dto/reset-passcode.dto';
 import { UpdateAppearanceDto } from './dto/update-appearance.dto';
 import { UpdateLanguageDto } from './dto/update-language.dto';
 import { UpdateNotificationsDto } from './dto/update-notifications.dto';
 import { Enable2FARequestDto } from './dto/enable-2fa-request.dto';
 import { Verify2FADto } from './dto/verify-2fa.dto';
 import { StartKycDto } from './dto/start-kyc.dto';
+import { UpdateOnboardingDto } from './dto/update-onboarding.dto';
 import { JwtAuthGuard } from '@common/guards';
 import { CurrentUser } from '@common/decorators';
 
@@ -47,6 +49,25 @@ export class UserController {
     return this.userService.registerRequest(dto);
   }
 
+  @Post('register/verify-otp')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verify registration OTP' })
+  @ApiResponse({ status: 200, description: 'Mobile number verified, registration token issued' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired OTP' })
+  async verifyRegistrationOtp(@Body() dto: VerifyOtpDto) {
+    return this.userService.verifyRegistrationOtp(dto);
+  }
+
+  @Post('register/resend-otp')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Resend registration OTP' })
+  @ApiResponse({ status: 200, description: 'OTP resent successfully' })
+  @ApiResponse({ status: 400, description: 'Rate limit exceeded or no active registration found' })
+  @ApiResponse({ status: 409, description: 'Mobile number already registered' })
+  async resendRegistrationOtp(@Body() dto: ResendOtpDto) {
+    return this.userService.resendRegistrationOtp(dto);
+  }
+
   @Post('register/set-passcode')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Create passcode to complete registration' })
@@ -60,19 +81,6 @@ export class UserController {
   })
   async setPasscode(@Body() dto: SetPasscodeDto) {
     return this.userService.setPasscode(dto);
-  }
-
-  @Post('reset-passcode')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Reset passcode after forgot passcode flow' })
-  @ApiResponse({ status: 200, description: 'Passcode reset successfully' })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid reset token or passcodes do not match',
-  })
-  @ApiResponse({ status: 401, description: 'Invalid or expired reset token' })
-  async resetPasscode(@Body() dto: ResetPasscodeDto) {
-    return this.userService.resetPasscode(dto);
   }
 
   @Put('settings/appearance')
@@ -156,6 +164,43 @@ export class UserController {
     return this.userService.getNotifications(user.userId);
   }
 
+  @Post('onboarding')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Update onboarding status (complete or skip)',
+    description: 'Single endpoint to mark onboarding as completed or skipped',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Onboarding status updated successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async updateOnboarding(
+    @CurrentUser() user: any,
+    @Body() dto: UpdateOnboardingDto,
+  ) {
+    return this.userService.updateOnboarding(user.userId, dto);
+  }
+
+  @Get('onboarding-status')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Get onboarding status',
+    description: 'Returns whether user needs language selection and onboarding',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Onboarding status retrieved successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getOnboardingStatus(@CurrentUser() user: any) {
+    return this.userService.getOnboardingStatus(user.userId);
+  }
+
   @Post('settings/2fa/enable')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -205,21 +250,6 @@ export class UserController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async disable2FA(@CurrentUser() user: any) {
     return this.userService.disable2FA(user.userId);
-  }
-
-  @Post('logout')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Logout user and revoke all sessions' })
-  @ApiResponse({
-    status: 200,
-    description: 'Logged out successfully',
-  })
-  @ApiResponse({ status: 400, description: 'No active session found' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async logout(@CurrentUser() user: any) {
-    return this.userService.logout(user.userId);
   }
 
   @Post('kyc/start')

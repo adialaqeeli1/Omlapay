@@ -60,4 +60,33 @@ export class CryptoUtil {
     
     return payload as T;
   }
+
+  /**
+   * Convert time string (e.g., "1d", "7d", "1h", "24h", "30m") to seconds.
+   * Supports: s (seconds), m (minutes), h (hours), d (days)
+   * @param timeString - Time string like "1d", "7d", "1h", "24h", "30m"
+   * @returns Number of seconds
+   */
+  static timeStringToSeconds(timeString: string): number {
+    if (!timeString || typeof timeString !== 'string') {
+      throw new Error('Invalid time string');
+    }
+
+    const match = timeString.match(/^(\d+)([smhd])$/i);
+    if (!match) {
+      throw new Error(`Invalid time format: ${timeString}. Expected format: "1d", "7d", "1h", "24h", "30m", etc.`);
+    }
+
+    const value = parseInt(match[1], 10);
+    const unit = match[2].toLowerCase();
+
+    const multipliers: Record<string, number> = {
+      s: 1,
+      m: 60,
+      h: 60 * 60,
+      d: 24 * 60 * 60,
+    };
+
+    return value * multipliers[unit];
+  }
 }

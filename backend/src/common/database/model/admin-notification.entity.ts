@@ -10,10 +10,10 @@ import {
 import { AdminEntity } from './admin.entity';
 
 export enum AdminNotificationType {
-  SECURITY = 'SECURITY',
-  USER = 'USER',
-  TRANSACTION = 'TRANSACTION',
-  TICKET = 'TICKET',
+  SECURITY = 'SECURITY', //Moderation
+  USER = 'USER', //User Lifecycle
+  TRANSACTION = 'TRANSACTION', //Transaction
+  TICKET = 'TICKET', //Support
 }
 
 @Entity('admin_notifications')

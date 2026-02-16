@@ -12,6 +12,7 @@ import { MailModule } from '@common/services/mail/mail.module';
 import { OtpModule } from '@common/services/otp/otp.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { SuperAdminGuard } from '@common/guards';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET_KEY'),
-        signOptions: { expiresIn: '1h' },
+        signOptions: { expiresIn: configService.get<string>('JWT_EXP_TIME') },
       }),
     }),
     AdminAuthModule,
@@ -35,7 +36,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     OtpModule,
   ],
   controllers: [AdminProfileController],
-  providers: [AdminProfileService],
+  providers: [AdminProfileService, SuperAdminGuard],
   exports: [AdminProfileService],
 })
 export class AdminProfileModule {}

@@ -26,6 +26,9 @@ export class AdminSessionEntity {
   @Column({ type: 'varchar', length: 255, name: 'token_hash' })
   tokenHash: string;
 
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'refresh_token_hash' })
+  refreshTokenHash: string | null;
+
   @Column({ type: 'varchar', length: 45, nullable: true, name: 'ip_address' })
   ipAddress: string | null;
 
@@ -37,6 +40,9 @@ export class AdminSessionEntity {
 
   @Column({ type: 'timestamp', nullable: true, name: 'revoked_at' })
   revokedAt: Date | null;
+
+  @Column({ type: 'timestamp', nullable: true, name: 'last_activity_at' })
+  lastActivityAt: Date | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

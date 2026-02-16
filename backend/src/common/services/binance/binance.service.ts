@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { createSign } from 'crypto';
+import { createSign, createPrivateKey, sign } from 'crypto';
 import { CryptoUtil } from '@common/utils/crypto.util';
 
 /** Binance eKYC share-kyc-data: basicInfo (2-alpha country codes, userSubmitIp required). */
@@ -89,10 +89,14 @@ export class BinanceService {
 
     // Create signature
     const payload = new URLSearchParams(params).toString();
-    const signer = createSign('RSA-SHA256');
-    signer.update(payload, 'utf8');
-    signer.end();
-    const signature = signer.sign(privateKeyPem, 'base64');
+    
+    // Normalize line endings for Ed25519 PKCS#8 PEM key
+    const privateKey = privateKeyPem.trim().replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    
+    // Create Ed25519 signature using PKCS#8 PEM format
+    const key = createPrivateKey(privateKey);
+    const buffer = Buffer.from(payload, 'utf8');
+    const signature = sign(null, buffer, key).toString('base64');
 
     const body = new URLSearchParams({ ...params, signature });
 
@@ -467,6 +471,119 @@ export class BinanceService {
       };
     } catch (error) {
       this.logger.error('Failed to create Binance sub-account API key', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get coin information from Binance API
+   * @see https://binance-docs.github.io/apidocs/spot/en/#all-coins-39-information-user_data
+   * GET /sapi/v1/capital/config/getall
+   */
+  async getAllCoins(): Promise<Array<{
+    coin: string;
+    name: string;
+    networkList: Array<{
+      network: string;
+      coin: string;
+      withdrawIntegerMultiple: string;
+      isDefault: boolean;
+      depositEnable: boolean;
+      withdrawEnable: boolean;
+      depositDesc?: string;
+      withdrawDesc?: string;
+      name: string;
+      resetAddressStatus: boolean;
+      addressRegex: string;
+      memoRegex: string;
+      withdrawFee: string;
+      withdrawMin: string;
+      withdrawMax: string;
+      minConfirm: number;
+      unLockConfirm: number;
+    }>;
+  }>> {
+    const apiKey = process.env.BINANCE_API_KEY;
+    const privateKeyPem = process.env.BINANCE_API_PRIVATE_KEY_PEM;
+
+    if (!apiKey || !privateKeyPem) {
+      throw new Error(
+        'Missing Binance API credentials. Set BINANCE_API_KEY and BINANCE_API_PRIVATE_KEY_PEM',
+      );
+    }
+
+    const baseUrl = process.env.BINANCE_API_BASE_URL;
+    if (!baseUrl) {
+      throw new Error(
+        'Missing BINANCE_API_BASE_URL (e.g. https://api.binance.com)',
+      );
+    }
+
+    const endpoint = '/sapi/v1/capital/config/getall';
+    const timestamp = Date.now();
+
+    const params: Record<string, string> = {
+      timestamp: String(timestamp),
+    };
+
+    const recvWindow = process.env.BINANCE_RECV_WINDOW;
+    if (recvWindow) {
+      params.recvWindow = recvWindow;
+    }
+
+    // Create signature
+    const payload = new URLSearchParams(params).toString();
+    const signer = createSign('RSA-SHA256');
+    signer.update(payload, 'utf8');
+    signer.end();
+    const signature = signer.sign(privateKeyPem, 'base64');
+
+    const queryString = new URLSearchParams({ ...params, signature }).toString();
+
+    try {
+      const res = await fetch(`${baseUrl}${endpoint}?${queryString}`, {
+        method: 'GET',
+        headers: {
+          'X-MBX-APIKEY': apiKey,
+        },
+      });
+
+      const contentType = res.headers.get('content-type') || '';
+      const isJson = contentType.toLowerCase().includes('application/json');
+      const rawBody = await res.text();
+
+      let parsed: any | undefined;
+      if (isJson) {
+        try {
+          parsed = JSON.parse(rawBody);
+        } catch {
+          // Fall through
+        }
+      }
+
+      if (!res.ok) {
+        const msg =
+          parsed?.msg ||
+          parsed?.message ||
+          rawBody?.slice(0, 500) ||
+          'Unknown error response';
+        throw new Error(
+          `Binance API error (${res.status}) content-type="${contentType}": ${msg}`,
+        );
+      }
+
+      if (!isJson || parsed == null) {
+        throw new Error(
+          `Binance API returned non-JSON response (${res.status}) content-type="${contentType}": ${rawBody.slice(
+            0,
+            500,
+          )}`,
+        );
+      }
+
+      return parsed as Array<any>;
+    } catch (error) {
+      this.logger.error('Failed to fetch Binance coins', error);
       throw error;
     }
   }

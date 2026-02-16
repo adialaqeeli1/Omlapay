@@ -1,6 +1,10 @@
 import { config } from 'dotenv';
 config();
 import { DataSource, DataSourceOptions } from 'typeorm';
+
+// Some TS/IDE configs don't include Node globals, so `__dirname` may be untyped.
+declare const __dirname: string;
+
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
   host: process.env.POSTGRES_HOST,
@@ -10,7 +14,7 @@ export const dataSourceOptions: DataSourceOptions = {
   database: process.env.POSTGRES_DB,
   synchronize: false,
   migrationsRun: true,
-  migrations: ['dist/database/migrations/*{.ts,.js}'],
+  migrations: [__dirname + '/migrations/*{.ts,.js}'],
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
 };
 

@@ -5,6 +5,9 @@ import { HomeModule } from './home/home.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { DevToolsModule } from './dev-tools/dev-tools.module';
 import { CoinsModule } from './coins/coins.module';
+import { LegalModule } from './legal/legal.module';
+import { AboutModule } from './about/about.module';
+import { SupportRequestsModule } from './support-requests/support-requests.module';
 import { AdminAuthModule } from './admin-auth/admin-auth.module';
 import { AdminDashboardModule } from './admin-dashboard/admin-dashboard.module';
 import { AdminProfileModule } from './admin-profile/admin-profile.module';
@@ -27,6 +30,9 @@ import { AdminNotificationsModule } from './admin-notifications/admin-notificati
     HomeModule,
     NotificationsModule,
     CoinsModule,
+    LegalModule,
+    AboutModule,
+    SupportRequestsModule,
     
     // Admin modules
     AdminAuthModule,

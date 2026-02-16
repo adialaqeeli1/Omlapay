@@ -1,14 +1,14 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Post, Body, HttpCode, HttpStatus, Get, UseGuards, Req } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { VerifyOtpDto } from './dto/verify-otp.dto';
-import { ResendOtpDto } from './dto/resend-otp.dto';
-import { EmailVerificationRequestDto } from './dto/email-verification-request.dto';
-import { VerifyEmailDto } from './dto/verify-email.dto';
+import { SoftLoginDto } from './dto/soft-login.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ForgotPasscodeDto } from './dto/forgot-passcode.dto';
 import { ForgotPasscodeVerifyOtpDto } from './dto/forgot-passcode-verify-otp.dto';
 import { ForgotPasscodeResendOtpDto } from './dto/forgot-passcode-resend-otp.dto';
+import { ResetPasscodeDto } from '../user/dto/reset-passcode.dto';
+import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
@@ -23,52 +23,6 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Incorrect passcode' })
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
-  }
-
-  @Post('verify-otp')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Verify registration OTP' })
-  @ApiResponse({ status: 200, description: 'Mobile number verified' })
-  @ApiResponse({ status: 400, description: 'Invalid or expired OTP' })
-  async verifyOtp(@Body() dto: VerifyOtpDto) {
-    return this.authService.verifyOtp(dto);
-  }
-
-  @Post('resend-otp')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary:
-      'Resend OTP. Automatically detects the most recent OTP request for the mobile number.',
-  })
-  @ApiResponse({ status: 200, description: 'OTP resent successfully' })
-  @ApiResponse({ status: 400, description: 'Rate limit exceeded, no active OTP request, or invalid request' })
-  async resendOtp(@Body() dto: ResendOtpDto) {
-    return this.authService.resendOtp(dto);
-  }
-
-  @Post('email/request-verification')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Submit email address for verification' })
-  @ApiResponse({ status: 200, description: 'Verification email sent' })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid email or mobile not verified',
-  })
-  @ApiResponse({ status: 409, description: 'Email already registered' })
-  async requestEmailVerification(@Body() dto: EmailVerificationRequestDto) {
-    return this.authService.requestEmailVerification(dto);
-  }
-
-  @Post('email/verify')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Verify email verification code' })
-  @ApiResponse({ status: 200, description: 'Email verified successfully' })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid or expired verification code',
-  })
-  async verifyEmail(@Body() dto: VerifyEmailDto) {
-    return this.authService.verifyEmail(dto);
   }
 
   @Post('forgot-passcode')
@@ -112,5 +66,81 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Rate limit exceeded' })
   async resendForgotPasscodeOtps(@Body() dto: ForgotPasscodeResendOtpDto) {
     return this.authService.resendForgotPasscodeOtps(dto);
+  }
+
+  @Post('forgot-passcode/reset')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reset passcode after forgot passcode flow' })
+  @ApiResponse({ status: 200, description: 'Passcode reset successfully' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid reset token or passcodes do not match',
+  })
+  @ApiResponse({ status: 401, description: 'Invalid or expired reset token' })
+  async resetPasscode(@Body() dto: ResetPasscodeDto) {
+    return this.authService.resetPasscode(dto);
+  }
+
+  @Post('soft-login')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Soft login - Verify passcode for existing session',
+  })
+  @ApiResponse({ status: 200, description: 'Passcode verified successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid passcode, session expired, or account locked' })
+  async softLogin(@Req() req, @Body() dto: SoftLoginDto) {
+    return this.authService.softLogin(req.user.userId, req.user.sessionId, dto);
+  }
+
+  @Post('refresh-token')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Refresh access token using refresh token',
+  })
+  @ApiResponse({ status: 200, description: 'Token refreshed successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid or expired refresh token' })
+  async refreshToken(@Body() dto: RefreshTokenDto) {
+    return this.authService.refreshToken(dto);
+  }
+
+  @Get('session-status')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Check if current session is valid',
+  })
+  @ApiResponse({ status: 200, description: 'Session status retrieved' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getSessionStatus(@Req() req) {
+    return this.authService.getSessionStatus(req.user.userId, req.user.sessionId);
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Logout - Revoke current session',
+  })
+  @ApiResponse({ status: 200, description: 'Logged out successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async logout(@Req() req) {
+    return this.authService.logout(req.user.userId, req.user.sessionId);
+  }
+
+  @Post('logout-all')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Logout all devices - Revoke all sessions',
+  })
+  @ApiResponse({ status: 200, description: 'All sessions logged out' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async logoutAll(@Req() req) {
+    return this.authService.logoutAll(req.user.userId);
   }
 }
