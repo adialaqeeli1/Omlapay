@@ -26,11 +26,24 @@ export class AdminTicketsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get ticket list with filters and pagination' })
+  @ApiOperation({
+    summary: 'Get ticket list with search, filters, and pagination',
+    description:
+      'Search by user email/phone or ticket title. Filter by status (Open, Solved, Rejected) and date range. Sort by user, title, createdAt, or status.',
+  })
   @ApiResponse({ status: 200, description: 'Ticket list retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getTicketList(@Query() dto: TicketListDto) {
     return this.adminTicketsService.getTicketList(dto);
+  }
+
+  @Get('open-count')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get open ticket count for sidebar badge' })
+  @ApiResponse({ status: 200, description: 'Open count retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getOpenCount() {
+    return this.adminTicketsService.getOpenCount();
   }
 
   @Get(':ticketId')

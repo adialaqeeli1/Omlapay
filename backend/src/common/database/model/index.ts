@@ -10,6 +10,7 @@ export * from './binance-webhook.entity';
 export * from './coin.entity';
 export * from './faq.entity';
 export * from './legal-content.entity';
+export * from './send-pending-request.entity';
 export * from './notification.entity';
 export * from './otp-request.entity';
 export * from './support-request.entity';

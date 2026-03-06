@@ -21,7 +21,8 @@ export class CreateSupportRequestDto {
   description: string;
 
   @ApiPropertyOptional({
-    description: 'Comma-separated URLs of attached files (PNG, JPG, PDF only)',
+    description:
+      'Comma-separated URLs of attached files (PNG, JPG, PDF only). Upload via POST /v1/user/upload?prefix=support-requests to get URLs.',
     example: 'https://example.com/file1.png,https://example.com/file2.pdf',
   })
   @IsOptional()

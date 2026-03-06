@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Inject,
   ConflictException,
   BadRequestException,
   UnauthorizedException,
@@ -9,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import { UserEntity } from '@common/database/model';
+import { UserEntity, CoinEntity } from '@common/database/model';
 import { UserSecurityEntity } from '@common/database/model';
 import { AuthSessionEntity } from '@common/database/model';
 import {
@@ -20,6 +21,7 @@ import {
   UserSettingsEntity,
   Theme,
   Language,
+  DisplayCurrency,
 } from '@common/database/model';
 import {
   UserKycEntity,
@@ -27,10 +29,12 @@ import {
   KycLevel,
   KycProvider,
   KycRejectType,
+  BinanceWebhookEntity,
 } from '@common/database/model';
 import { generateOTP, generateHash } from '@common/filters';
 import {
   maskPhoneNumber,
+  maskEmail,
   validateCountryCodeAndMobileNumber,
   validatePasscodeMatch,
   buildFullMobileNumber,
@@ -38,11 +42,15 @@ import {
   validateOTP,
   validateToken,
 } from '@common/utils';
+import { successResponse } from '@common/utils/response.util';
+import { UserAccountService } from './user-account.service';
 import { RegisterRequestDto } from './dto/register-request.dto';
 import { SetPasscodeDto } from './dto/set-passcode.dto';
 import { VerifyOtpDto } from '../auth/dto/verify-otp.dto';
 import { ResendOtpDto } from '../auth/dto/resend-otp.dto';
 import { UpdateAppearanceDto } from './dto/update-appearance.dto';
+import { UpdateCurrencyDto } from './dto/update-currency.dto';
+import { InviteContactDto } from './dto/invite-contact.dto';
 import { UpdateLanguageDto } from './dto/update-language.dto';
 import { UpdateNotificationsDto } from './dto/update-notifications.dto';
 import { Enable2FARequestDto } from './dto/enable-2fa-request.dto';
@@ -64,7 +72,10 @@ import {
 import { SumsubApplicantResponse } from '@common/services/sumsub/dto/sumsub-webhook.dto';
 import { CryptoUtil } from '@common/utils/crypto.util';
 import { CountryUtil } from '@common/utils/country.util';
-import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service';
+import {
+  IAdminNotifier,
+} from '@common/services/admin-notifier/admin-notifier.interface';
+import { APP_INVITE_URL } from '@common/constants';
 import { AdminNotificationType } from '@common/database/model';
 
 @Injectable()
@@ -84,12 +95,17 @@ export class UserService {
     private userSettingsRepository: Repository<UserSettingsEntity>,
     @InjectRepository(UserKycEntity)
     private userKycRepository: Repository<UserKycEntity>,
+    @InjectRepository(BinanceWebhookEntity)
+    private binanceWebhookRepository: Repository<BinanceWebhookEntity>,
+    @InjectRepository(CoinEntity)
+    private coinRepository: Repository<CoinEntity>,
     private jwtService: JwtService,
     private otpService: OtpService,
     private mailService: MailService,
     private binanceService: BinanceService,
     private sumsubService: SumsubService,
-    private adminNotificationsService: AdminNotificationsService,
+    @Inject(IAdminNotifier) private adminNotifier: IAdminNotifier,
+    private userAccountService: UserAccountService,
   ) {}
 
   /** Get user by ID or throw BadRequestException. */
@@ -116,30 +132,56 @@ export class UserService {
   }
 
   /**
+   * Get account details: masked phone, email (if present), and wallet addresses by network.
+   * Delegates to UserAccountService.
+   */
+  async getAccountDetails(userId: string) {
+    return this.userAccountService.getAccountDetails(userId);
+  }
+
+  /**
    * Map StartKycDto to Sumsub fixedInfo (only non-empty fields).
    * residentialCountry → nationality; address + city → addresses[0].
+   *
+   * NOTE: SumSub dashboard shows "john only" when the verification level's Applicant data step
+   * uses a single "Full name" field instead of separate "First name" and "Last name" fields.
+   * Configure: Dashboard → Settings → Levels → [your level] → Applicant data step →
+   * add both "First name" and "Last name" (not just "Full name").
    */
   private buildSumsubFixedInfoFromDto(dto?: StartKycDto): SumsubFixedInfo | undefined {
     if (!dto) return undefined;
     const info: SumsubFixedInfo = {};
-    if (dto.firstName) info.firstName = dto.firstName;
-    if (dto.lastName) info.lastName = dto.lastName;
-    if (dto.dob) info.dob = dto.dob;
-    if (dto.country) info.country = dto.country;
-    if (dto.residentialCountry) info.nationality = dto.residentialCountry;
-    if (dto.address || dto.city) {
+    const firstName = dto.firstName?.trim();
+    const lastName = dto.lastName?.trim();
+    if (firstName) info.firstName = firstName;
+    if (lastName) info.lastName = lastName;
+    const dob = dto.dob?.trim();
+    const country = dto.country?.trim();
+    const residentialCountry = dto.residentialCountry?.trim();
+    if (dob) info.dob = dob;
+    if (country) info.country = country;
+    if (residentialCountry) info.nationality = residentialCountry;
+    const address = dto.address?.trim();
+    const city = dto.city?.trim();
+    if (address || city) {
       info.addresses = [{
-        ...(dto.address && { street: dto.address }),
-        ...(dto.city && { town: dto.city }),
-        ...(dto.residentialCountry && { country: dto.residentialCountry }),
+        ...(address && { street: address }),
+        ...(city && { town: city }),
+        ...(residentialCountry && { country: residentialCountry }),
       }];
     }
     return Object.keys(info).length > 0 ? info : undefined;
   }
 
-  /** Get JWT secret from env (fallback for backward compatibility). */
+  /** Get JWT secret from env. */
   private getJwtSecret(): string {
-    return process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || 'kyc-doc-secret';
+    const secret = process.env.JWT_SECRET_KEY;
+    if (!secret || !secret.trim()) {
+      throw new Error(
+        'JWT_SECRET_KEY or JWT_SECRET must be set.',
+      );
+    }
+    return secret;
   }
 
   /** Create signed token for KYC document proxy (Binance fetches image by URL). */
@@ -159,7 +201,7 @@ export class UserService {
         this.getJwtSecret(),
       );
     } catch (err) {
-      throw new BadRequestException((err as Error).message || 'Invalid document token');
+      throw new BadRequestException(err instanceof Error ? err.message : 'Invalid document token');
     }
   }
 
@@ -237,6 +279,9 @@ export class UserService {
    */
   async startKyc(userId: string, dto?: StartKycDto) {
     this.logger.log(`[KYC] Starting KYC process for user ${userId}`);
+    if (dto?.firstName || dto?.lastName) {
+      this.logger.debug(`[KYC] Request body: firstName="${dto.firstName ?? ''}", lastName="${dto.lastName ?? ''}"`);
+    }
 
     // 1. Fetch user details
     const user = await this.userRepository.findOne({
@@ -279,23 +324,33 @@ export class UserService {
     this.logger.debug(`[KYC] Using verification level: ${levelName} for user ${userId}`);
 
     const fixedInfo = this.buildSumsubFixedInfoFromDto(dto);
+    if (fixedInfo?.firstName || fixedInfo?.lastName) {
+      this.logger.debug(
+        `[KYC] Pre-filling Sumsub fixedInfo: firstName=${fixedInfo.firstName ?? '(empty)'}, lastName=${fixedInfo.lastName ?? '(empty)'}`,
+      );
+    }
 
-    // 4. Pre-fill applicant fixedInfo if provided (create or update applicant before SDK token)
-    if (fixedInfo && Object.keys(fixedInfo).length > 0) {
-      try {
-        const existing = await this.sumsubService.getApplicantByExternalUserId(user.id);
-        if (existing?.id) {
+    // 4. Ensure Sumsub applicant exists (create if not), then pre-fill fixedInfo if provided
+    try {
+      const existing = await this.sumsubService.getApplicantByExternalUserId(user.id);
+      if (existing?.id) {
+        if (fixedInfo && Object.keys(fixedInfo).length > 0) {
           await this.sumsubService.updateApplicantFixedInfo(existing.id, fixedInfo);
-        } else {
-          await this.sumsubService.createApplicant(user.id, levelName, {
-            email: user.email ?? undefined,
-            phone: user.fullMobileNumber,
-            fixedInfo,
-          });
         }
-      } catch (err) {
-        this.logger.warn(`[KYC] Pre-fill fixedInfo failed, continuing with SDK token: ${(err as Error).message}`);
+      } else {
+        await this.sumsubService.createApplicant(user.id, levelName, {
+          email: user.email ?? undefined,
+          phone: user.fullMobileNumber,
+          ...(fixedInfo && Object.keys(fixedInfo).length > 0 ? { fixedInfo } : {}),
+        });
       }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      this.logger.error(`[KYC] Applicant create/update failed: ${msg}`);
+      throw new BadRequestException({
+        status: 'error',
+        message: `Failed to pre-fill KYC data in SumSub. Please try again. Details: ${msg}`,
+      });
     }
 
     // 5. Create SDK access token via Sumsub API
@@ -344,13 +399,13 @@ export class UserService {
       };
     } catch (error) {
       this.logger.error(
-        `[KYC] Failed to start KYC for user ${userId}: ${error.message}`,
-        error.stack,
+        `[KYC] Failed to start KYC for user ${userId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : undefined,
       );
       throw new BadRequestException({
         status: 'error',
         message: 'Failed to start KYC process. Please try again later.',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        details: process.env.NODE_ENV === 'development' && error instanceof Error ? error.message : undefined,
       });
     }
   }
@@ -789,30 +844,26 @@ export class UserService {
         onboardingSkipped: false,
       });
 
-      /** UNCOMMENT THIS WHEN BINANCE IS READY TO USE IN PRODUCTION */
+      // Create Binance sub account
+      try {
+        const binanceSubAccount = await this.binanceService.createSubAccount(user.id.slice(0, 31));
 
-      // // Create Binance sub account
-      // try {
-      //   const binanceSubAccount = await this.binanceService.createSubAccount();
-
-      //   user.binanceSubaccountId = binanceSubAccount.subaccountId;
-      //   user.binanceSubaccountEmail = binanceSubAccount.email;
-      //   user.binanceSubaccountTag = binanceSubAccount.tag;
-      //   await this.userRepository.save(user);
-      // } catch (error) {
-      //   // Log error but don't fail registration if Binance fails
-      //   this.logger.error('Failed to create Binance sub account during registration:', error);
-      //   // Registration still succeeds even if Binance fails
-      // }
-
-      /** END OF UNCOMMENT THIS WHEN BINANCE IS READY TO USE IN PRODUCTION */
+        user.binanceSubaccountId = binanceSubAccount.subaccountId;
+        user.binanceSubaccountEmail = binanceSubAccount.email;
+        user.binanceSubaccountTag = binanceSubAccount.tag;
+        await this.userRepository.save(user);
+      } catch (error) {
+        // Log error but don't fail registration if Binance fails
+        this.logger.error('Failed to create Binance sub account during registration:', error);
+        // Registration still succeeds even if Binance fails
+      }
 
       // Notify all admins about new user registration (include email when available for UI/spec)
       try {
         const detail = user.email
           ? `A new user has registered on the platform: ${user.email}.`
           : `A new user has registered on the platform. Mobile: ${user.fullMobileNumber}.`;
-        await this.adminNotificationsService.notifyAllAdmins(
+        await this.adminNotifier.notifyAllAdmins(
           AdminNotificationType.USER,
           'New User Registered',
           detail,
@@ -820,7 +871,7 @@ export class UserService {
       } catch (error) {
         // Don't fail registration if notification fails
         this.logger.error(
-          `Failed to notify admins about new user registration: ${(error as Error).message}`,
+          `Failed to notify admins about new user registration: ${error instanceof Error ? error.message : 'Unknown error'}`,
         );
       }
 
@@ -890,6 +941,57 @@ export class UserService {
   async getNotifications(userId: string) {
     const settings = await this.getSettingsOrThrow(userId);
     return { notifications_enabled: settings.notificationsEnabled };
+  }
+
+  async updateCurrency(userId: string, dto: UpdateCurrencyDto) {
+    const settings = await this.getSettingsOrThrow(userId);
+    settings.displayCurrency = dto.currency;
+    await this.userSettingsRepository.save(settings);
+    return successResponse(
+      { currency: dto.currency },
+      'Display currency updated successfully.',
+    );
+  }
+
+  async getCurrency(userId: string) {
+    const settings = await this.getSettingsOrThrow(userId);
+    const currency = settings.displayCurrency ?? DisplayCurrency.USD;
+    return successResponse({ currency });
+  }
+
+  /**
+   * Send invitation to a contact who is not yet on Omlapay.
+   * Sends SMS with app download link. Only for non-registered phone numbers.
+   */
+  async inviteContact(userId: string, dto: InviteContactDto) {
+    validateCountryCodeAndMobileNumber(dto.country_code, dto.mobile_number);
+
+    const fullMobileNumber = buildFullMobileNumber(
+      dto.country_code,
+      dto.mobile_number,
+    );
+
+    const existingUser = await this.userRepository.findOne({
+      where: { fullMobileNumber },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException({
+        status: 'error',
+        message: 'This number is already registered on Omlapay.',
+      });
+    }
+
+    const message = `You've been invited to join Omlapay! Download the app to send and receive crypto securely: ${APP_INVITE_URL}`;
+
+    await this.otpService.sendSms(fullMobileNumber, message);
+
+    this.logger.log(`Invitation sent to ${fullMobileNumber} by user ${userId}`);
+
+    return successResponse(
+      { phone: maskPhoneNumber(fullMobileNumber) },
+      'Invitation sent successfully.',
+    );
   }
 
   // --- Onboarding ---
@@ -1104,8 +1206,8 @@ export class UserService {
           })
           .catch((error) => {
             mobileOtpSent = false;
-            mobileOtpError = error.message || 'Failed to send OTP';
-            this.logger.error(`Failed to send mobile OTP: ${error.message}`, error.stack);
+            mobileOtpError = error instanceof Error ? error.message : 'Failed to send OTP';
+            this.logger.error(`Failed to send mobile OTP: ${mobileOtpError}`, error instanceof Error ? error.stack : undefined);
           }),
         this.mailService
           .sendOTP(dto.email.toLowerCase(), emailOtp)
@@ -1114,8 +1216,8 @@ export class UserService {
           })
           .catch((error) => {
             emailOtpSent = false;
-            emailOtpError = error.message || 'Failed to send OTP';
-            this.logger.error(`Failed to send email OTP: ${error.message}`, error.stack);
+            emailOtpError = error instanceof Error ? error.message : 'Failed to send OTP';
+            this.logger.error(`Failed to send email OTP: ${emailOtpError}`, error instanceof Error ? error.stack : undefined);
           }),
       ]);
 
@@ -1157,7 +1259,7 @@ export class UserService {
       }
 
       // Log unexpected errors
-      this.logger.error(`Error in enable2FARequest: ${error.message}`, error.stack);
+      this.logger.error(`Error in enable2FARequest: ${error instanceof Error ? error.message : 'Unknown error'}`, error instanceof Error ? error.stack : undefined);
 
       // Return user-friendly error message for unexpected errors
       throw new BadRequestException({
@@ -1512,18 +1614,10 @@ export class UserService {
       { userId, status: fields.status, applicantId },
     );
 
-    /* 
-    // TODO: Auto-start Binance KYC flow (requires production Binance Broker API)
-    // - Create Binance sub-account
-    // - Start Binance KYC after Sumsub approval
-    // Currently disabled because Binance Broker APIs are not available on testnet
-
-    // 6. Auto-start Binance KYC flow if Sumsub is approved
     if (fields.status === KycStatus.APPROVED) {
       this.logger.log(`[Sumsub Webhook] Sumsub approved for user ${userId}, checking Binance flow`);
-      
+
       try {
-        // Check if Binance KYC already exists and is in progress
         const binanceKyc = await this.userKycRepository.findOne({
           where: { userId, provider: KycProvider.BINANCE },
         });
@@ -1535,39 +1629,33 @@ export class UserService {
             `[Sumsub Webhook] Binance KYC already exists with status ${binanceKyc?.status}, skipping auto-start`,
           );
         } else {
-          // Create Binance sub-account if it doesn't exist
           if (!user.binanceSubaccountId) {
             this.logger.log(`[Sumsub Webhook] Creating Binance sub-account for user ${userId}`);
-            const sub = await this.binanceService.createSubAccount();
+            const sub = await this.binanceService.createSubAccount(userId.slice(0, 31));
             user.binanceSubaccountId = sub.subaccountId;
             user.binanceSubaccountEmail = sub.email;
             user.binanceSubaccountTag = sub.tag;
             await this.userRepository.save(user);
             this.logger.log(`[Sumsub Webhook] Binance sub-account created: ${sub.subaccountId}`);
-          } else {
-            this.logger.log(`[Sumsub Webhook] Binance sub-account already exists: ${user.binanceSubaccountId}`);
           }
 
-          // Start Binance KYC automatically
           this.logger.log(`[Sumsub Webhook] Starting Binance KYC for user ${userId}`);
-          await this.startBinanceKyc(userId);
+          const applicantIp = (applicant as any)?.info?.ipAddress || '0.0.0.0';
+          await this.startBinanceKyc(userId, applicantIp);
           this.logger.log(`[Sumsub Webhook] Binance KYC started successfully for user ${userId}`);
         }
       } catch (error) {
-        // Log error but don't fail the webhook processing
         this.logger.error(
-          `[Sumsub Webhook] Failed to auto-start Binance KYC for user ${userId}: ${(error as Error).message}`,
-          (error as Error).stack,
+          `[Sumsub Webhook] Failed to auto-start Binance KYC for user ${userId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          error instanceof Error ? error.stack : undefined,
         );
-        // Continue processing - webhook is still considered successful
       }
     }
-    */
 
     // Notify all admins about KYC status changes
     try {
       if (fields.status === KycStatus.APPROVED) {
-        await this.adminNotificationsService.notifyAllAdmins(
+        await this.adminNotifier.notifyAllAdmins(
           AdminNotificationType.USER,
           'KYC Approved',
           `A user's KYC has been approved. User: ${user.fullMobileNumber || user.email || userId}`,
@@ -1576,7 +1664,7 @@ export class UserService {
         const rejectionReason = fields.rejectionReason
           ? ` Reason: ${fields.rejectionReason}`
           : '';
-        await this.adminNotificationsService.notifyAllAdmins(
+        await this.adminNotifier.notifyAllAdmins(
           AdminNotificationType.USER,
           'KYC Rejected',
           `A user's KYC has been rejected and requires follow-up. User: ${user.fullMobileNumber || user.email || userId}.${rejectionReason}`,
@@ -1585,7 +1673,7 @@ export class UserService {
     } catch (error) {
       // Don't fail webhook processing if notification fails
       this.logger.error(
-        `Failed to notify admins about KYC status change: ${(error as Error).message}`,
+        `Failed to notify admins about KYC status change: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
 
@@ -1610,47 +1698,33 @@ export class UserService {
       }),
     ]);
 
-    // If webhook was delayed/missed, sync latest Sumsub status on read and persist
-    // and persist it to DB so the client sees up-to-date status.
+    // Always sync latest Sumsub status from SumSub API when user checks status (webhook may be delayed/missed).
+    // Fetch by externalUserId (our user.id) - same identifier used when creating applicant in startKyc.
     let effectiveSumsubKyc = sumsubKyc;
     try {
-      const shouldSyncFromSumsub =
-        !!sumsubKyc &&
-        sumsubKyc.provider === KycProvider.SUMSUB &&
-        sumsubKyc.status !== KycStatus.APPROVED &&
-        sumsubKyc.status !== KycStatus.REJECTED;
+      const applicant = await this.sumsubService.getApplicantByExternalUserId(user.id);
 
-      if (shouldSyncFromSumsub) {
-        const applicant = sumsubKyc.referenceId
-          ? await this.sumsubService.getApplicantById(sumsubKyc.referenceId)
-          : await this.sumsubService.getApplicantByExternalUserId(userId);
-
-        if (applicant?.review?.reviewStatus) {
-          const fields = this.buildSumsubKycFields(applicant, {});
-          await this.userKycRepository.update(
-            { userId, provider: KycProvider.SUMSUB },
-            {
-              status: fields.status,
-              referenceId: applicant.id,
-              reviewAnswer: fields.reviewAnswer,
-              rejectType: fields.rejectType,
-              rejectionReason: fields.rejectionReason,
-              verifiedAt: fields.status === KycStatus.APPROVED ? new Date() : null,
-              providerPayload: fields.providerPayload as any,
-            },
-          );
-        } else if (applicant && !sumsubKyc.referenceId) {
-          await this.userKycRepository.update(
-            { userId, provider: KycProvider.SUMSUB },
-            {
-              referenceId: applicant.id,
-              providerPayload: applicant as any,
-            },
-          );
-        }
+      if (applicant) {
+        const fields = this.buildSumsubKycFields(applicant, {});
+        await this.userKycRepository.upsert(
+          {
+            userId,
+            provider: KycProvider.SUMSUB,
+            level: sumsubKyc?.level ?? KycLevel.BASIC,
+            status: fields.status,
+            referenceId: applicant.id,
+            reviewAnswer: fields.reviewAnswer,
+            rejectType: fields.rejectType,
+            rejectionReason: fields.rejectionReason,
+            verifiedAt: fields.status === KycStatus.APPROVED ? new Date() : null,
+            providerPayload: fields.providerPayload as any,
+          },
+          ['userId', 'provider'],
+        );
         effectiveSumsubKyc = await this.userKycRepository.findOne({
           where: { userId, provider: KycProvider.SUMSUB },
         });
+        this.logger.debug(`[KYC] Synced Sumsub status for user ${userId}: ${fields.status}`);
       }
     } catch (e: any) {
       // Don't fail status endpoint if Sumsub API errors; return last known DB state.
@@ -1662,6 +1736,10 @@ export class UserService {
     const canStartBinanceKyc =
       effectiveSumsubKyc?.status === KycStatus.APPROVED &&
       (!binanceKyc || binanceKyc.status === KycStatus.REJECTED);
+
+    const binanceKycPassed = binanceKyc?.status === KycStatus.APPROVED;
+    const canCreateApiKeys =
+      binanceKycPassed && !user.binanceApiKey && !user.binanceSecretKey;
 
     return {
       status: 'success',
@@ -1681,6 +1759,8 @@ export class UserService {
           verifiedAt: binanceKyc?.verifiedAt ?? null,
           rejectionReason: binanceKyc?.rejectionReason ?? null,
           canStart: canStartBinanceKyc,
+          canCreateApiKeys,
+          hasApiKeys: !!(user.binanceApiKey && user.binanceSecretKey),
           updatedAt: binanceKyc?.updatedAt ?? null,
         },
       },
@@ -1691,7 +1771,7 @@ export class UserService {
    * Start Binance KYC (only after Sumsub is approved).
    * Ensures sub-account exists, fetches Sumsub applicant data, shares KYC with Binance eKYC API, upserts user_kyc BINANCE.
    */
-  async startBinanceKyc(userId: string) {
+  async startBinanceKyc(userId: string, clientIp: string = '0.0.0.0') {
     this.logger.log(`[KYC] Starting Binance KYC for user ${userId}`);
 
     const user = await this.getUserOrThrow(userId);
@@ -1704,13 +1784,13 @@ export class UserService {
     // Ensure Binance sub-account exists
     if (!user.binanceSubaccountId) {
       try {
-        const sub = await this.binanceService.createSubAccount();
+        const sub = await this.binanceService.createSubAccount(userId.slice(0, 31));
         user.binanceSubaccountId = sub.subaccountId;
         user.binanceSubaccountEmail = sub.email;
         user.binanceSubaccountTag = sub.tag;
         await this.userRepository.save(user);
       } catch (err) {
-        this.logger.error(`[KYC] Binance sub-account creation failed: ${(err as Error).message}`);
+        this.logger.error(`[KYC] Binance sub-account creation failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
         throw new BadRequestException({
           status: 'error',
           message: 'Could not create Binance sub-account. Try again later.',
@@ -1770,7 +1850,7 @@ export class UserService {
       residentialCountry: CountryUtil.alpha3ToAlpha2(info.nationality ?? info.country ?? ''),
       dob: info.dob ?? '1990-01-01',
       country: CountryUtil.alpha3ToAlpha2(info.country ?? info.nationality ?? ''),
-      userSubmitIp: '0.0.0.0',
+      userSubmitIp: clientIp,
       address: (info.addresses?.[0]?.street ?? 'N/A').slice(0, 400),
       city: (info.addresses?.[0]?.town ?? '').slice(0, 100) || 'N/A',
     };
@@ -1788,7 +1868,7 @@ export class UserService {
       nationalityCountry: basicInfo.country,
       idNumber: (firstDoc.number ?? 'N/A').slice(0, 50),
       ...(firstDoc.validUntil && { idExpiry: firstDoc.validUntil.slice(0, 10) }),
-      userSubmitIp: '0.0.0.0',
+      userSubmitIp: clientIp,
     };
 
     const requestNo = `omlapay-${userId}-${Date.now()}`;
@@ -1806,10 +1886,11 @@ export class UserService {
     try {
       await this.binanceService.shareKycData(params, requestNo);
     } catch (err) {
-      this.logger.error(`[KYC] Binance shareKycData failed: ${(err as Error).message}`);
+      const errMsg = err instanceof Error ? err.message : 'Unknown error';
+      this.logger.error(`[KYC] Binance shareKycData failed: ${errMsg}`);
       throw new BadRequestException({
         status: 'error',
-        message: (err as Error).message || 'Binance KYC submission failed.',
+        message: errMsg || 'Binance KYC submission failed.',
       });
     }
 
@@ -1839,61 +1920,119 @@ export class UserService {
 
   /**
    * Handle Binance KYC status webhook (notifyUrl callback).
+   * Verifies HMAC signature, persists raw payload for audit, then processes the status update.
    */
-  async handleBinanceKycWebhook(payload: any) {
+  async handleBinanceKycWebhook(payload: any, rawBody?: string, signatureHeader?: string) {
+    // 1. Verify webhook signature if secret is configured
+    const secret = process.env.BINANCE_KYC_SECRET;
+    if (secret && rawBody && signatureHeader) {
+      const isValid = CryptoUtil.verifyHmacSignature(rawBody, signatureHeader, secret);
+      if (!isValid) {
+        this.logger.warn('[KYC] Binance webhook signature verification failed');
+        return { received: false, reason: 'Invalid signature' };
+      }
+    }
+
     const entityCustomerId = payload?.entityCustomerId ?? payload?.userId;
+    const binanceStatus = payload?.kycStatus ?? payload?.basicStatus ?? payload?.status;
+    const eventType = binanceStatus ? `kyc_status_${binanceStatus}` : 'kyc_status_unknown';
+
+    // 2. Persist raw webhook payload for audit/debugging
+    let webhookRecord: BinanceWebhookEntity | null = null;
+    try {
+      webhookRecord = this.binanceWebhookRepository.create({
+        eventType,
+        payload,
+        processed: false,
+      });
+      webhookRecord = await this.binanceWebhookRepository.save(webhookRecord);
+    } catch (err) {
+      this.logger.error(
+        `[KYC] Failed to persist Binance webhook: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      );
+    }
+
+    // 3. Validate required fields
     if (!entityCustomerId) {
       this.logger.warn('[KYC] Binance webhook missing entityCustomerId');
-      return;
+      if (webhookRecord) {
+        await this.binanceWebhookRepository.update(webhookRecord.webhookId, {
+          processed: true,
+          errorMessage: 'Missing entityCustomerId',
+        });
+      }
+      return { received: true, processed: false, reason: 'Missing entityCustomerId' };
     }
 
-    const binanceStatus = payload?.kycStatus ?? payload?.basicStatus ?? payload?.status;
     if (!binanceStatus) {
       this.logger.warn('[KYC] Binance webhook missing status');
-      return;
+      if (webhookRecord) {
+        await this.binanceWebhookRepository.update(webhookRecord.webhookId, {
+          processed: true,
+          errorMessage: 'Missing status',
+        });
+      }
+      return { received: true, processed: false, reason: 'Missing status' };
     }
 
+    // 4. Find existing KYC record
     const existing = await this.userKycRepository.findOne({
       where: { userId: entityCustomerId, provider: KycProvider.BINANCE },
     });
     if (!existing) {
       this.logger.debug(`[KYC] No Binance KYC record for user ${entityCustomerId}`);
-      return;
+      if (webhookRecord) {
+        await this.binanceWebhookRepository.update(webhookRecord.webhookId, {
+          processed: true,
+          errorMessage: `No Binance KYC record for user ${entityCustomerId}`,
+        });
+      }
+      return { received: true, processed: false, reason: 'No KYC record found' };
     }
 
+    // 5. Map status and update
     const status = UserKycEntity.mapBinanceStatus(binanceStatus);
     const rejectionReason = payload?.rejectReason ?? payload?.failReason ?? payload?.rejectionReason ?? null;
 
-    await this.userKycRepository.update(
-      { userId: entityCustomerId, provider: KycProvider.BINANCE },
-      {
-        status,
-        rejectionReason,
-        verifiedAt: status === KycStatus.APPROVED ? new Date() : null,
-      },
-    );
+    // Idempotency: skip if status is already the same
+    if (existing.status === status && existing.rejectionReason === rejectionReason) {
+      this.logger.debug(`[KYC] Binance webhook duplicate: user=${entityCustomerId} status=${status}, skipping`);
+      if (webhookRecord) {
+        await this.binanceWebhookRepository.update(webhookRecord.webhookId, {
+          processed: true,
+        });
+      }
+      return { received: true, processed: false, reason: 'Duplicate status' };
+    }
+
+    existing.status = status;
+    existing.rejectionReason = rejectionReason;
+    existing.verifiedAt = status === KycStatus.APPROVED ? new Date() : null;
+    existing.providerPayload = JSON.parse(JSON.stringify(payload)) as Record<string, unknown>;
+    await this.userKycRepository.save(existing);
     this.logger.log(`[KYC] Binance webhook: user=${entityCustomerId} status=${binanceStatus} -> ${status}`);
 
-    /* 
-    // TODO: Auto-create API keys on KYC approval (requires production Binance Broker API)
-    // - Automatically generate sub-account API keys when Binance KYC is approved
-    // Currently disabled because Binance Broker createSubAccountApiKey API is not available on testnet
-    
-    // Auto-create API keys if KYC is approved
+    // 6. Auto-create API keys when KYC is PASS (Step 4 of Binance flow)
     if (status === KycStatus.APPROVED) {
       this.logger.log(`[KYC] Binance KYC approved for user ${entityCustomerId}, creating API keys`);
-      
       try {
         await this.createBinanceApiKeys(entityCustomerId);
       } catch (error) {
         this.logger.error(
-          `[KYC] Failed to auto-create Binance API keys for user ${entityCustomerId}: ${(error as Error).message}`,
-          (error as Error).stack,
+          `[KYC] Failed to auto-create Binance API keys for user ${entityCustomerId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          error instanceof Error ? error.stack : undefined,
         );
-        // Don't fail the webhook - API keys can be created manually later
       }
     }
-    */
+
+    // 7. Mark webhook as processed
+    if (webhookRecord) {
+      await this.binanceWebhookRepository.update(webhookRecord.webhookId, {
+        processed: true,
+      });
+    }
+
+    return { received: true, processed: true, status };
   }
 
   /**
@@ -1965,10 +2104,11 @@ export class UserService {
         },
       };
     } catch (err) {
-      this.logger.error(`[KYC] Failed to create Binance API keys: ${(err as Error).message}`);
+      const errMsg = err instanceof Error ? err.message : 'Unknown error';
+      this.logger.error(`[KYC] Failed to create Binance API keys: ${errMsg}`);
       throw new BadRequestException({
         status: 'error',
-        message: (err as Error).message || 'Failed to create API keys.',
+        message: errMsg || 'Failed to create API keys.',
       });
     }
   }
@@ -2019,15 +2159,17 @@ export class UserService {
         status: 'success',
         data: {
           kycStatus: result.kycStatus,
+          kycPassed: result.kycStatus === 'PASS',
           currentLevel: result.currentLevel,
           subaccountId: user.binanceSubaccountId,
         },
       };
     } catch (err) {
-      this.logger.error(`[KYC] Failed to check Binance KYC status: ${(err as Error).message}`);
+      const errMsg = err instanceof Error ? err.message : 'Unknown error';
+      this.logger.error(`[KYC] Failed to check Binance KYC status: ${errMsg}`);
       throw new BadRequestException({
         status: 'error',
-        message: (err as Error).message || 'Failed to check KYC status.',
+        message: errMsg || 'Failed to check KYC status.',
       });
     }
   }

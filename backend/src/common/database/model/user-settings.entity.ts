@@ -20,6 +20,12 @@ export enum Language {
   AR = 'ar',
 }
 
+/** Display currency for balance and prices (USD or SAR) */
+export enum DisplayCurrency {
+  USD = 'usd',
+  SAR = 'sar',
+}
+
 @Entity('user_settings')
 export class UserSettingsEntity {
   @PrimaryColumn('uuid')
@@ -54,6 +60,14 @@ export class UserSettingsEntity {
 
   @Column({ default: false })
   onboardingSkipped: boolean;
+
+  @Column({
+    type: 'enum',
+    enum: DisplayCurrency,
+    default: DisplayCurrency.USD,
+    nullable: true,
+  })
+  displayCurrency: DisplayCurrency | null;
 
   @CreateDateColumn()
   createdAt: Date;

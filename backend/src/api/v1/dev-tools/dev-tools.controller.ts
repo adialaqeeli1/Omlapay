@@ -7,11 +7,15 @@ import {
   HttpStatus,
   Query,
   Param,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { DevToolsService } from './dev-tools.service';
 import { CreateBinanceOrderDto } from './dto/create-binance-order.dto';
 import { CreateBinanceSubaccountDto } from './dto/create-binance-subaccount.dto';
+import { BlockSubaccountDto } from './dto/block-subaccount.dto';
+import { UnblockSubaccountDto } from './dto/unblock-subaccount.dto';
 import { successResponse, errorResponse } from '@common/utils';
 
 @ApiTags('Dev Tools')
@@ -24,7 +28,7 @@ export class DevToolsController {
   @ApiOperation({
     summary: 'Seed database with dummy data',
     description:
-      'Creates 2-3 users with related data and 50-100 records for transactions, notifications, etc. WARNING: This will clear existing data!',
+      'Seeds all tables: users, admins, wallets, transactions, notifications, swaps, KYC, support tickets, ticket responses, user status history, auth sessions, OTP requests, system settings, send pending requests, FAQs, legal content, about. WARNING: This will clear existing data!',
   })
   @ApiResponse({
     status: 200,
@@ -85,6 +89,44 @@ export class DevToolsController {
   })
   async testBinanceSubaccount(@Body() dto: CreateBinanceSubaccountDto) {
     return this.devToolsService.testBinanceSubaccount(dto);
+  }
+
+  @Post('binance/subaccount/block')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Block sub-account by Binance subAccountId',
+    description:
+      'Dev-only endpoint. Accepts apiKey, privateKey, baseUrl (like test-subaccount). Finds the user linked to the Binance sub-account and blocks them (sets isActive = false).',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Sub-account blocked successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid request or sub-account already blocked',
+  })
+  async blockSubaccount(@Body() dto: BlockSubaccountDto) {
+    return this.devToolsService.blockSubaccount(dto);
+  }
+
+  @Post('binance/subaccount/unblock')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Unblock sub-account by Binance subAccountId',
+    description:
+      'Dev-only endpoint. Accepts apiKey, privateKey, baseUrl (like test-subaccount). Finds the user linked to the Binance sub-account and unblocks them (sets isActive = true).',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Sub-account unblocked successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid request or sub-account already active',
+  })
+  async unblockSubaccount(@Body() dto: UnblockSubaccountDto) {
+    return this.devToolsService.unblockSubaccount(dto);
   }
 
   @Post('binance-testnet/order')
@@ -398,6 +440,33 @@ export class DevToolsController {
   })
   async step5VerifyBalance() {
     return this.devToolsService.step5VerifyBalance();
+  }
+
+  @Get('receive/qr')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Test QR code generation for receive flow',
+    description:
+      'Generates a QR code for a wallet address. Uses sample addresses when no address provided. For testing QR library, format (PNG/SVG), and blockchain URI encoding.',
+  })
+  @ApiQuery({ name: 'network', required: true, description: 'Network (TRX, BTC, ETH, BNB, SOL)' })
+  @ApiQuery({ name: 'coin', required: true, description: 'Coin (USDT, USDC, BTC, ETH, BNB, SOL)' })
+  @ApiQuery({ name: 'format', required: false, description: 'Output format: png or svg', enum: ['png', 'svg'] })
+  @ApiQuery({ name: 'address', required: false, description: 'Override address (uses sample if omitted)' })
+  @ApiResponse({ status: 200, description: 'QR code image (PNG or SVG)' })
+  @ApiResponse({ status: 400, description: 'Invalid params' })
+  @ApiResponse({ status: 500, description: 'QR generation failed' })
+  async testReceiveQr(
+    @Res() res: Response,
+    @Query('network') network: string,
+    @Query('coin') coin: string,
+    @Query('format') format?: string,
+    @Query('address') address?: string,
+  ) {
+    return this.devToolsService.testReceiveQr(
+      { network, coin, format: format ?? 'png', address },
+      res,
+    );
   }
 
   // Send Funds Flow - Step by Step

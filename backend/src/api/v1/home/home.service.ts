@@ -52,13 +52,13 @@ export class HomeService {
     const formattedTransactions = recentTransactions.map((tx) => ({
       id: tx.id,
       coin_symbol: tx.coin.symbol,
-      coin_name: tx.coin.name,
+      coinName: tx.coin.name,
       amount: tx.amount,
       direction: tx.direction,
       type: tx.txType,
       status: tx.status,
-      created_at: tx.createdAt,
-      tx_hash: tx.txHash,
+      createdAt: tx.createdAt,
+      txHash: tx.txHash,
     }));
 
     // Count unread notifications
@@ -69,10 +69,10 @@ export class HomeService {
     return {
       status: 'success',
       data: {
-        profile_image: user.profileImageUrl || null,
-        total_balance: totalBalance.toFixed(2),
-        recent_transactions: formattedTransactions,
-        unread_notifications: unreadNotifications,
+        profileImage: user.profileImageUrl || null,
+        totalBalance: totalBalance.toFixed(2),
+        recentTransactions: formattedTransactions,
+        unreadNotifications: unreadNotifications,
       },
     };
   }

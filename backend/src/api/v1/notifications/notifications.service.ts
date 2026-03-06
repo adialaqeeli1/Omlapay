@@ -1,13 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThanOrEqual, LessThanOrEqual, Between, LessThan } from 'typeorm';
 import { NotificationEntity } from '@common/database/model';
+import { encodeCursor, decodeCursor } from '@common/utils';
 import { GetNotificationsDto } from './dto/get-notifications.dto';
-
-interface DecodedCursor {
-  id: string;
-  timestamp: string;
-}
 
 @Injectable()
 export class NotificationsService {
@@ -15,23 +11,6 @@ export class NotificationsService {
     @InjectRepository(NotificationEntity)
     private notificationRepository: Repository<NotificationEntity>,
   ) {}
-
-  private encodeCursor(id: string, timestamp: Date): string {
-    const cursor = { id, timestamp: timestamp.toISOString() };
-    return Buffer.from(JSON.stringify(cursor)).toString('base64');
-  }
-
-  private decodeCursor(cursor: string): DecodedCursor | null {
-    try {
-      const decoded = Buffer.from(cursor, 'base64').toString('utf-8');
-      return JSON.parse(decoded);
-    } catch (error) {
-      throw new BadRequestException({
-        status: 'error',
-        message: 'Invalid cursor format',
-      });
-    }
-  }
 
   async getNotifications(userId: string, query: GetNotificationsDto) {
     const { after, limit = 20, type, is_read, from_date, to_date } = query;
@@ -60,7 +39,7 @@ export class NotificationsService {
 
     // Handle cursor-based pagination
     if (after) {
-      const decodedCursor = this.decodeCursor(after);
+      const decodedCursor = decodeCursor(after);
       if (decodedCursor) {
         // Fetch items created before the cursor timestamp
         // If timestamps are equal, use ID for deterministic ordering
@@ -101,26 +80,26 @@ export class NotificationsService {
       title: notif.title,
       message: notif.message,
       type: notif.type,
-      is_read: notif.isRead,
-      created_at: notif.createdAt,
-      reference_id: notif.referenceId,
-      reference_type: notif.referenceType,
+      isRead: notif.isRead,
+      createdAt: notif.createdAt,
+      referenceId: notif.referenceId,
+      referenceType: notif.referenceType,
     }));
 
     // Generate next cursor if there are more items
     let nextCursor: string | null = null;
     if (hasMore && notifications.length > 0) {
       const lastItem = notifications[notifications.length - 1];
-      nextCursor = this.encodeCursor(lastItem.id, lastItem.createdAt);
+      nextCursor = encodeCursor(lastItem.id, lastItem.createdAt);
     }
 
     return {
       status: 'success',
-      unread_count: unreadCount,
+      unreadCount,
       notifications: formattedNotifications,
       pagination: {
-        next_cursor: nextCursor,
-        has_more: hasMore,
+        nextCursor,
+        hasMore,
         limit,
       },
     };
@@ -148,6 +127,22 @@ export class NotificationsService {
     return {
       status: 'success',
       message: 'Notification marked as read.',
+    };
+  }
+
+  /**
+   * Mark all notifications as read for the user.
+   */
+  async markAllAsRead(userId: string) {
+    const result = await this.notificationRepository.update(
+      { userId, isRead: false },
+      { isRead: true },
+    );
+
+    return {
+      status: 'success',
+      message: 'All notifications marked as read.',
+      markedCount: result.affected ?? 0,
     };
   }
 }

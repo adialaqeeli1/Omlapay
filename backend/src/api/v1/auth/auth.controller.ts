@@ -2,6 +2,7 @@ import { Controller, Post, Body, HttpCode, HttpStatus, Get, UseGuards, Req } fro
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { CheckUserDto } from './dto/check-user.dto';
 import { SoftLoginDto } from './dto/soft-login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ForgotPasscodeDto } from './dto/forgot-passcode.dto';
@@ -14,6 +15,23 @@ import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Post('check-user')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Check if user exists (two-step login flow)',
+    description:
+      'Returns whether a user exists for the given phone number. Use before showing passcode or registration screen.',
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Returns userExists: true if user has account (show passcode screen), false if not (show registration).',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid mobile number' })
+  async checkUser(@Body() dto: CheckUserDto) {
+    return this.authService.checkUser(dto);
+  }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)

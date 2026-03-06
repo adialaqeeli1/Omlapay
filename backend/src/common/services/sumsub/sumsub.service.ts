@@ -240,6 +240,9 @@ export class SumsubService {
     if (opts.phone) body.phone = opts.phone;
     if (opts.fixedInfo && Object.keys(opts.fixedInfo).length > 0) {
       body.fixedInfo = opts.fixedInfo;
+      this.logger.debug(
+        `[SumSub] Create applicant fixedInfo: firstName="${opts.fixedInfo.firstName ?? ''}", lastName="${opts.fixedInfo.lastName ?? ''}"`,
+      );
     }
     const bodyStr = JSON.stringify(body);
     const result = await this.fetchApi<SumsubApplicantResponse>('POST', path, bodyStr);
@@ -255,12 +258,16 @@ export class SumsubService {
 
   /**
    * Update applicant fixedInfo (individual only). Only include fields you want to change.
+   * Per https://docs.sumsub.com/reference/change-provided-info-fixedinfo - PATCH overwrites specified fields.
    */
   async updateApplicantFixedInfo(
     applicantId: string,
     fixedInfo: SumsubFixedInfo,
   ): Promise<unknown> {
     if (Object.keys(fixedInfo).length === 0) return {};
+    this.logger.debug(
+      `[SumSub] PATCH fixedInfo: applicantId=${applicantId}, firstName="${fixedInfo.firstName ?? ''}", lastName="${fixedInfo.lastName ?? ''}"`,
+    );
     const path = `/resources/applicants/${encodeURIComponent(applicantId)}/fixedInfo`;
     const bodyStr = JSON.stringify(fixedInfo);
     const result = await this.fetchApi('PATCH', path, bodyStr);
@@ -276,15 +283,22 @@ export class SumsubService {
 
   /**
    * Get applicant by our internal user id (externalUserId in Sumsub).
+   * Path: GET /resources/applicants/{externalUserId}/one
+   * @see https://docs.sumsub.com/reference/get-applicant-data-via-externaluserid
+   *
+   * Note: SumSub returns 400 "Invalid parameters" when applicant does not exist yet (e.g. first-time user).
+   * We treat both 400 and 404 as "not found" so the caller can proceed to create the applicant.
    */
   async getApplicantByExternalUserId(
     externalUserId: string,
   ): Promise<SumsubApplicantResponse | null> {
-    const path = `/resources/applicants/-;externalUserId=${encodeURIComponent(externalUserId)}/one`;
+    const path = `/resources/applicants/${encodeURIComponent(externalUserId)}/one`;
     const result = await this.fetchApi<SumsubApplicantResponse>('GET', path);
 
-    if (result.status === 404) {
-      this.logger.debug(`No applicant for externalUserId=${externalUserId}`);
+    if (result.status === 404 || result.status === 400) {
+      this.logger.debug(
+        `No applicant for externalUserId=${externalUserId} (status ${result.status})`,
+      );
       return null;
     }
     if (!result.ok) {

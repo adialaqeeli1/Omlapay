@@ -8,39 +8,12 @@ import { SwaggerConfig } from './common/utils/constants';
 import { ValidationPipe } from './common/pipes/validation.pipe';
 import { AllExceptionsFilter } from './common/filters/error.filter';
 import { LoggingInterceptor } from './common/interceptors';
-import { json } from 'express';
-
 async function bootstrap() {
-  // Create app with raw body enabled for specific routes
+  // rawBody: true enables req.rawBody (Buffer) for webhook signature verification.
+  // Do NOT use bodyParser: false - it causes "stream encoding should not be set" errors.
   const app = await NestFactory.create(AppModule, {
-    bodyParser: false, // Disable default body parser to add our custom one
+    rawBody: true,
   });
-
-  // Custom middleware to capture raw body for webhook signature verification
-  app.use((req: any, res: any, next: any) => {
-    if (req.originalUrl?.includes('webhooks/sumsub') ?? req.path?.includes('webhooks/sumsub')) {
-      let data = '';
-      req.setEncoding('utf8');
-      req.on('data', (chunk: string) => {
-        data += chunk;
-      });
-      req.on('end', () => {
-        req.rawBody = data;
-        // Parse JSON manually
-        try {
-          req.body = JSON.parse(data);
-        } catch (e) {
-          req.body = {};
-        }
-        next();
-      });
-    } else {
-      next();
-    }
-  });
-
-  // Add default JSON parser for all other routes
-  app.use(json());
 
   // Enable API versioning
   app.enableVersioning({
@@ -55,15 +28,20 @@ async function bootstrap() {
   app.useGlobalInterceptors(new LoggingInterceptor());
 
   // Swagger Configuration with Basic Auth Protection
-  const swaggerUser = process.env.SWAGGER_USER || 'admin';
-  const swaggerPassword = process.env.SWAGGER_PASSWORD || 'admin';
+  const swaggerUser = process.env.SWAGGER_USER;
+  const swaggerPassword = process.env.SWAGGER_PASSWORD;
+  if (!swaggerUser || !swaggerPassword || !swaggerUser.trim() || !swaggerPassword.trim()) {
+    throw new Error('SWAGGER_USER and SWAGGER_PASSWORD must be set.');
+  }
+  const effectiveSwaggerUser = swaggerUser?.trim();
+  const effectiveSwaggerPassword = swaggerPassword?.trim();
 
   app.use(
     ['/docs', '/docs-json'],
     ExpressBasicAuth({
       challenge: true,
       users: {
-        [swaggerUser]: swaggerPassword,
+        [effectiveSwaggerUser as string]: effectiveSwaggerPassword as string,
       },
     }),
   );
@@ -92,4 +70,8 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port);
 }
-void bootstrap();
+
+bootstrap().catch((err) => {
+  console.error('Application bootstrap failed:', err instanceof Error ? err.message : err);
+  process.exit(1);
+});

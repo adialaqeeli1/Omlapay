@@ -34,14 +34,33 @@ import { AdminSecurityEntity } from '@common/database/model';
 import { FaqEntity } from '@common/database/model';
 import { LegalContentEntity, LegalContentType } from '@common/database/model';
 import { AboutEntity } from '@common/database/model';
+import {
+  SupportRequestEntity,
+  SupportRequestStatus,
+} from '@common/database/model';
+import { TicketResponseEntity } from '@common/database/model';
+import {
+  SendPendingRequestEntity,
+  RecipientType,
+} from '@common/database/model';
+import { SystemSettingsEntity } from '@common/database/model';
+import { OtpPurpose } from '@common/database/model';
 import { successResponse, errorResponse } from '@common/utils';
 import { SumsubService } from '@common/services/sumsub/sumsub.service';
 import { BinanceService } from '@common/services/binance/binance.service';
 import {
   AdminNotificationsService,
 } from '../admin-notifications/admin-notifications.service';
-import { AdminNotificationType } from '@common/database/model';
+import {
+  AdminNotificationType,
+  UserStatusHistoryEntity,
+  UserStatus,
+} from '@common/database/model';
+import * as QRCode from 'qrcode';
+import { Response } from 'express';
 import { CreateBinanceSubaccountDto } from './dto/create-binance-subaccount.dto';
+import { BlockSubaccountDto } from './dto/block-subaccount.dto';
+import { UnblockSubaccountDto } from './dto/unblock-subaccount.dto';
 
 @Injectable()
 export class DevToolsService {
@@ -78,6 +97,16 @@ export class DevToolsService {
     private legalContentRepository: Repository<LegalContentEntity>,
     @InjectRepository(AboutEntity)
     private aboutRepository: Repository<AboutEntity>,
+    @InjectRepository(UserStatusHistoryEntity)
+    private userStatusHistoryRepository: Repository<UserStatusHistoryEntity>,
+    @InjectRepository(SupportRequestEntity)
+    private supportRequestRepository: Repository<SupportRequestEntity>,
+    @InjectRepository(TicketResponseEntity)
+    private ticketResponseRepository: Repository<TicketResponseEntity>,
+    @InjectRepository(SendPendingRequestEntity)
+    private sendPendingRequestRepository: Repository<SendPendingRequestEntity>,
+    @InjectRepository(SystemSettingsEntity)
+    private systemSettingsRepository: Repository<SystemSettingsEntity>,
     private readonly sumsubService: SumsubService,
     private readonly adminNotificationsService: AdminNotificationsService,
     private readonly binanceService: BinanceService,
@@ -98,6 +127,9 @@ export class DevToolsService {
       // Clear existing data using TRUNCATE CASCADE to handle foreign keys
       const entityManager = this.userRepository.manager;
       
+      await entityManager.query('TRUNCATE TABLE ticket_responses CASCADE');
+      await entityManager.query('TRUNCATE TABLE support_requests CASCADE');
+      await entityManager.query('TRUNCATE TABLE send_pending_requests CASCADE');
       await entityManager.query('TRUNCATE TABLE auth_sessions CASCADE');
       await entityManager.query('TRUNCATE TABLE notifications CASCADE');
       await entityManager.query('TRUNCATE TABLE binance_webhooks CASCADE');
@@ -120,12 +152,17 @@ export class DevToolsService {
       await entityManager.query('TRUNCATE TABLE faqs CASCADE');
       await entityManager.query('TRUNCATE TABLE legal_content CASCADE');
       await entityManager.query('TRUNCATE TABLE about CASCADE');
+      await entityManager.query('TRUNCATE TABLE system_settings CASCADE');
 
       // Create Coins
       const coins = await this.createCoins();
 
       // Create Users
       const users = await this.createUsers();
+
+      // Create seed admins (before tickets, user_status_history, send_pending)
+      await this.createSeedAdmins();
+      const admins = await this.adminRepository.find();
 
       // Create Wallets
       await this.createWallets(users, coins);
@@ -142,13 +179,30 @@ export class DevToolsService {
       // Create KYC records
       await this.createKycRecords(users);
 
+      // Create Support tickets and responses
+      const supportRequests = await this.createSupportRequests(users);
+      await this.createTicketResponses(supportRequests, admins);
+
+      // Create User status history (admin actions)
+      await this.createUserStatusHistory(users, admins);
+
+      // Create Auth sessions and OTP requests for testing
+      await this.createAuthSessions(users);
+      const otpRequests = await this.createOtpRequests(users);
+
+      // Create System settings
+      await this.createSystemSettings();
+
+      // Create Send pending requests (requires otp_requests)
+      const wallets = await this.walletRepository.find();
+      await this.createSendPendingRequests(users, coins, wallets, otpRequests);
+
       // Create FAQs, Legal Content, and About content
       await this.createFaqs();
       await this.createLegalContent();
       await this.createAboutContent();
 
-      // Create seed admins and sample admin notifications (inbox data for UI)
-      await this.createSeedAdmins();
+      // Create sample admin notifications (inbox data for UI)
       await this.createSampleAdminNotifications();
 
       return successResponse(
@@ -156,6 +210,8 @@ export class DevToolsService {
           users_created: users.length,
           coins_created: coins.length,
           transactions_created: transactions.length,
+          support_requests_created: supportRequests.length,
+          admins_created: admins.length,
         },
         'Database seeded successfully',
       );
@@ -737,6 +793,105 @@ export class DevToolsService {
     return this.signAndFetchBinanceGet('/api/v3/account', {});
   }
 
+  /** Sample addresses per network for QR testing (no real funds) */
+  private static readonly SAMPLE_ADDRESSES: Record<string, string> = {
+    TRX: 'TXJTGk4K6W6qkS5uJ6q1rP25U4v9e',
+    BTC: '1HPn8Rx2y6nNSfagQBKy27GB99Vbzg89wv',
+    ETH: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
+    BNB: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
+    SOL: 'DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK',
+  };
+
+  async testReceiveQr(
+    params: {
+      network: string;
+      coin: string;
+      format: string;
+      address?: string;
+    },
+    res: Response,
+  ) {
+    const { network, coin, format, address } = params;
+    const validNetworks = ['TRX', 'BTC', 'ETH', 'BNB', 'SOL'];
+    const validCoins = ['USDT', 'USDC', 'BTC', 'ETH', 'BNB', 'SOL'];
+
+    if (!network || !validNetworks.includes(network.toUpperCase())) {
+      res.status(400).json(
+        errorResponse('Invalid network', { validNetworks }),
+      );
+      return;
+    }
+
+    if (!coin || !validCoins.includes(coin.toUpperCase())) {
+      res.status(400).json(
+        errorResponse('Invalid coin', { validCoins }),
+      );
+      return;
+    }
+
+    const fmt = (format ?? 'png').toLowerCase() === 'svg' ? 'svg' : 'png';
+    const addr =
+      address ?? DevToolsService.SAMPLE_ADDRESSES[network.toUpperCase()];
+
+    if (!addr) {
+      res.status(400).json(
+        errorResponse('No sample address for network. Provide address param.'),
+      );
+      return;
+    }
+
+    const qrContent = this.buildTestQrContent(
+      addr,
+      network.toUpperCase(),
+      coin.toUpperCase(),
+    );
+
+    const options = {
+      width: 400,
+      margin: 2,
+      errorCorrectionLevel: 'M' as const,
+    };
+
+    try {
+      if (fmt === 'svg') {
+        const svg = await QRCode.toString(qrContent, {
+          ...options,
+          type: 'svg',
+        });
+        res.setHeader('Content-Type', 'image/svg+xml');
+        res.send(Buffer.from(svg, 'utf8'));
+      } else {
+        const buffer = await QRCode.toBuffer(qrContent, {
+          ...options,
+          type: 'png',
+        });
+        res.setHeader('Content-Type', 'image/png');
+        res.send(buffer);
+      }
+    } catch (err) {
+      res.status(500).json(
+        errorResponse('QR generation failed', (err as Error).message),
+      );
+    }
+  }
+
+  private buildTestQrContent(
+    address: string,
+    network: string,
+    coin: string,
+  ): string {
+    if (network === 'BTC' && coin === 'BTC') {
+      return `bitcoin:${address}`;
+    }
+    if (
+      (network === 'ETH' || network === 'BNB') &&
+      (coin === 'ETH' || coin === 'BNB')
+    ) {
+      return `ethereum:${address}`;
+    }
+    return address;
+  }
+
   // Send Funds Flow - Step by Step
   async step0CheckPreconditions() {
     const nodeEnv = process.env.NODE_ENV?.toLowerCase();
@@ -1156,8 +1311,8 @@ export class DevToolsService {
       },
       {
         type: NotificationType.SYSTEM,
-        title: 'Welcome to OmlaPay',
-        message: 'Thank you for joining OmlaPay',
+        title: 'Welcome to Omlapay',
+        message: 'Thank you for joining Omlapay',
       },
       {
         type: NotificationType.SYSTEM,
@@ -1273,6 +1428,255 @@ export class DevToolsService {
       });
 
       await this.userKycRepository.save(kyc);
+    }
+  }
+
+  /**
+   * Creates support tickets (OPEN, SOLVED, REJECTED) for admin ticket list testing.
+   */
+  private async createSupportRequests(
+    users: UserEntity[],
+  ): Promise<SupportRequestEntity[]> {
+    const tickets: SupportRequestEntity[] = [];
+    const titles = [
+      'Cannot withdraw funds',
+      'KYC verification stuck',
+      'Transaction failed',
+      'Account locked',
+      'Swap not completing',
+      'Wrong amount received',
+      'Need to update phone number',
+      'Two-factor not working',
+    ];
+    const descriptions = [
+      'I have been trying to withdraw but it keeps failing.',
+      'My KYC has been pending for 3 days.',
+      'Transaction ID abc123 failed with no error message.',
+      'My account was locked after password reset.',
+      'Swap from USDT to BTC is stuck in pending.',
+      'I sent 100 USDT but received only 95.',
+      'I changed my phone and need to update it.',
+      '2FA codes are not being accepted.',
+    ];
+    const statuses = [
+      SupportRequestStatus.OPEN,
+      SupportRequestStatus.OPEN,
+      SupportRequestStatus.SOLVED,
+      SupportRequestStatus.SOLVED,
+      SupportRequestStatus.REJECTED,
+    ];
+
+    for (let i = 0; i < 25; i++) {
+      const user = users[Math.floor(Math.random() * users.length)];
+      const idx = i % titles.length;
+      const ticket = this.supportRequestRepository.create({
+        userId: user.id,
+        title: titles[idx],
+        description: descriptions[idx],
+        attachmentUrl: Math.random() > 0.8 ? 'https://cdn.omlapay.com/attachments/sample.png' : null,
+        status: statuses[Math.floor(Math.random() * statuses.length)],
+      });
+      const saved = await this.supportRequestRepository.save(ticket);
+      tickets.push(saved);
+    }
+
+    return tickets;
+  }
+
+  /**
+   * Creates ticket responses (admin replies) for support tickets.
+   */
+  private async createTicketResponses(
+    supportRequests: SupportRequestEntity[],
+    admins: AdminEntity[],
+  ): Promise<void> {
+    const messages = [
+      'Thank you for contacting support. We are looking into this.',
+      'Your request has been escalated to our technical team.',
+      'Please try again after 24 hours. The issue should be resolved.',
+      'We have verified your account. You can proceed now.',
+      'This was caused by a temporary outage. Apologies for the inconvenience.',
+      'Your KYC has been approved. Please refresh the app.',
+    ];
+
+    for (const ticket of supportRequests) {
+      const numResponses = Math.floor(Math.random() * 3) + 1;
+      for (let r = 0; r < numResponses; r++) {
+        const admin = admins[Math.floor(Math.random() * admins.length)];
+        const response = this.ticketResponseRepository.create({
+          ticketId: ticket.id,
+          adminId: admin.adminId,
+          message: messages[Math.floor(Math.random() * messages.length)],
+        });
+        await this.ticketResponseRepository.save(response);
+      }
+    }
+  }
+
+  /**
+   * Creates user status history (block/unblock actions by admins).
+   */
+  private async createUserStatusHistory(
+    users: UserEntity[],
+    admins: AdminEntity[],
+  ): Promise<void> {
+    const reasons = [
+      'Terms of service violation',
+      'Suspicious activity detected',
+      'User request',
+      'Duplicate account',
+      'Fraudulent activity',
+    ];
+
+    for (let i = 0; i < 15; i++) {
+      const user = users[Math.floor(Math.random() * users.length)];
+      const admin = admins[Math.floor(Math.random() * admins.length)];
+      const isBlock = Math.random() > 0.5;
+      const history = this.userStatusHistoryRepository.create({
+        userId: user.id,
+        oldStatus: isBlock ? UserStatus.ACTIVE : UserStatus.BLOCKED,
+        newStatus: isBlock ? UserStatus.BLOCKED : UserStatus.ACTIVE,
+        reason: reasons[Math.floor(Math.random() * reasons.length)],
+        changedByAdminId: admin.adminId,
+      });
+      await this.userStatusHistoryRepository.save(history);
+    }
+  }
+
+  /**
+   * Creates auth sessions for testing login/session flows.
+   */
+  private async createAuthSessions(users: UserEntity[]): Promise<void> {
+    const tokenHash = await bcrypt.hash('seed-access-token', 10);
+    const refreshHash = await bcrypt.hash('seed-refresh-token', 10);
+
+    for (let i = 0; i < 8; i++) {
+      const user = users[Math.floor(Math.random() * users.length)];
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7);
+
+      const session = this.authSessionRepository.create({
+        userId: user.id,
+        accessTokenHash: tokenHash,
+        refreshTokenHash: refreshHash,
+        expiresAt,
+        isRevoked: Math.random() > 0.9,
+        ipAddress: `192.168.1.${Math.floor(Math.random() * 255)}`,
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
+      });
+      await this.authSessionRepository.save(session);
+    }
+  }
+
+  /**
+   * Creates OTP requests for testing (SEND_VERIFICATION, REGISTER, etc.).
+   */
+  private async createOtpRequests(users: UserEntity[]): Promise<OtpRequestEntity[]> {
+    const otpHash = await bcrypt.hash('123456', 10);
+    const otpRequests: OtpRequestEntity[] = [];
+
+    for (let i = 0; i < 12; i++) {
+      const user = users[Math.floor(Math.random() * users.length)];
+      const purposes = [
+        OtpPurpose.SEND_VERIFICATION,
+        OtpPurpose.REGISTER,
+        OtpPurpose.RESET,
+        OtpPurpose.EMAIL_VERIFICATION,
+      ];
+      const purpose = purposes[i % purposes.length];
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+
+      const otp = this.otpRequestRepository.create({
+        fullMobileNumber: user.fullMobileNumber,
+        email: user.email,
+        otpHash,
+        purpose,
+        attempts: Math.floor(Math.random() * 2),
+        maxAttempts: 3,
+        expiresAt,
+        lockedUntil: null,
+        resendAttempts: 0,
+        lastResendAt: null,
+        isConsumed: Math.random() > 0.6,
+      });
+      const saved = await this.otpRequestRepository.save(otp);
+      otpRequests.push(saved);
+    }
+
+    return otpRequests;
+  }
+
+  /**
+   * Creates system settings (app config key-value).
+   */
+  private async createSystemSettings(): Promise<void> {
+    const settings = [
+      { key: 'maintenance_mode', value: 'false' },
+      { key: 'min_withdrawal_amount_usd', value: '10' },
+      { key: 'max_withdrawal_amount_usd', value: '10000' },
+      { key: 'kyc_required_for_withdrawal', value: 'true' },
+      { key: 'support_email', value: 'support@omlapay.com' },
+      { key: 'display_currency', value: 'USD' },
+    ];
+
+    for (const { key, value } of settings) {
+      const setting = this.systemSettingsRepository.create({
+        settingKey: key,
+        settingValue: value,
+      });
+      await this.systemSettingsRepository.save(setting);
+    }
+  }
+
+  /**
+   * Creates send pending requests (awaiting OTP confirmation).
+   */
+  private async createSendPendingRequests(
+    users: UserEntity[],
+    coins: CoinEntity[],
+    wallets: WalletEntity[],
+    otpRequests: OtpRequestEntity[],
+  ): Promise<void> {
+    const networks = ['mainnet', 'testnet', 'polygon', 'bsc'];
+
+    for (let i = 0; i < 10; i++) {
+      const user = users[Math.floor(Math.random() * users.length)];
+      const userWallets = wallets.filter((w) => w.userId === user.id);
+      if (userWallets.length === 0) continue;
+
+      const otp = otpRequests.find((o) => o.fullMobileNumber === user.fullMobileNumber)
+        ?? otpRequests[Math.floor(Math.random() * otpRequests.length)];
+      const wallet = userWallets[Math.floor(Math.random() * userWallets.length)];
+      const coin = coins.find((c) => c.id === wallet.coinId);
+      if (!coin) continue;
+
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + 30);
+
+      const recipientType =
+        Math.random() > 0.5 ? RecipientType.INTERNAL : RecipientType.EXTERNAL;
+
+      const pending = this.sendPendingRequestRepository.create({
+        userId: user.id,
+        otpRequestId: otp.id,
+        recipientType,
+        recipientIdentifier:
+          recipientType === RecipientType.INTERNAL
+            ? `+966${500000000 + Math.floor(Math.random() * 500000000)}`
+            : this.generateRandomAddress(),
+        coinId: coin.id,
+        network: networks[Math.floor(Math.random() * networks.length)],
+        amount: (Math.random() * 500).toFixed(coin.decimals),
+        fee: (Math.random() * 2).toFixed(coin.decimals),
+        recipientUserId: null,
+        recipientWalletId: null,
+        recipientAddress: recipientType === RecipientType.EXTERNAL ? this.generateRandomAddress() : null,
+        addressTag: null,
+        expiresAt,
+      });
+
+      await this.sendPendingRequestRepository.save(pending);
     }
   }
 
@@ -1773,6 +2177,136 @@ For privacy-related inquiries, please contact us through the app support channel
         (error as Error).message,
       );
     }
+  }
+
+  /**
+   * Block a sub-account by Binance subAccountId.
+   * Accepts apiKey, privateKey, baseUrl in body (like test-subaccount).
+   * Finds the user linked to the sub-account and sets isActive = false.
+   * Dev-only endpoint.
+   */
+  async blockSubaccount(dto: BlockSubaccountDto) {
+    const nodeEnv = process.env.NODE_ENV?.toLowerCase();
+    if (nodeEnv !== 'development' && nodeEnv !== 'dev') {
+      throw new ForbiddenException({
+        status: 'error',
+        message:
+          'Binance sub-account block endpoint is only available in development or dev environment.',
+      });
+    }
+
+    const { subAccountId } = dto;
+
+    const user = await this.userRepository.findOne({
+      where: { binanceSubaccountId: subAccountId },
+    });
+
+    if (!user) {
+      return errorResponse(
+        'User not found',
+        `No user found with binanceSubaccountId: ${subAccountId}`,
+      );
+    }
+
+    if (!user.isActive) {
+      return errorResponse(
+        'Sub-account already blocked',
+        `User ${user.id} (subAccountId: ${subAccountId}) is already blocked.`,
+      );
+    }
+
+    const oldStatus = UserStatus.ACTIVE;
+    user.isActive = false;
+    await this.userRepository.save(user);
+
+    const admin = await this.adminRepository.findOne({
+      where: { isActive: true },
+      order: { createdAt: 'ASC' },
+    });
+
+    if (admin) {
+      await this.userStatusHistoryRepository.save({
+        userId: user.id,
+        oldStatus,
+        newStatus: UserStatus.BLOCKED,
+        reason: dto.reason ?? 'Blocked via dev-tools (sub-account)',
+        changedByAdminId: admin.adminId,
+      });
+    }
+
+    return successResponse(
+      {
+        userId: user.id,
+        subAccountId,
+        status: 'Blocked',
+      },
+      'Sub-account blocked successfully',
+    );
+  }
+
+  /**
+   * Unblock a sub-account by Binance subAccountId.
+   * Accepts apiKey, privateKey, baseUrl in body (like test-subaccount).
+   * Finds the user linked to the sub-account and sets isActive = true.
+   * Dev-only endpoint.
+   */
+  async unblockSubaccount(dto: UnblockSubaccountDto) {
+    const nodeEnv = process.env.NODE_ENV?.toLowerCase();
+    if (nodeEnv !== 'development' && nodeEnv !== 'dev') {
+      throw new ForbiddenException({
+        status: 'error',
+        message:
+          'Binance sub-account unblock endpoint is only available in development or dev environment.',
+      });
+    }
+
+    const { subAccountId } = dto;
+
+    const user = await this.userRepository.findOne({
+      where: { binanceSubaccountId: subAccountId },
+    });
+
+    if (!user) {
+      return errorResponse(
+        'User not found',
+        `No user found with binanceSubaccountId: ${subAccountId}`,
+      );
+    }
+
+    if (user.isActive) {
+      return errorResponse(
+        'Sub-account already active',
+        `User ${user.id} (subAccountId: ${subAccountId}) is already active.`,
+      );
+    }
+
+    const oldStatus = UserStatus.BLOCKED;
+    user.isActive = true;
+    await this.userRepository.save(user);
+
+    const admin = await this.adminRepository.findOne({
+      where: { isActive: true },
+      order: { createdAt: 'ASC' },
+    });
+
+    if (admin) {
+      await this.userStatusHistoryRepository.save({
+        userId: user.id,
+        oldStatus,
+        newStatus: UserStatus.ACTIVE,
+        reason: 'Unblocked via dev-tools (sub-account)',
+        changedByAdminId: admin.adminId,
+      });
+    }
+
+    return successResponse(
+      {
+        userId: user.id,
+        subAccountId,
+        status: 'Active',
+      },
+      'Sub-account unblocked successfully',
+    );
   }
 
   /**

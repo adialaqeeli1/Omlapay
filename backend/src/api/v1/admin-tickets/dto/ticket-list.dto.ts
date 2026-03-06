@@ -1,9 +1,38 @@
-import { IsOptional, IsEnum, IsDateString, IsInt, Min, Max } from 'class-validator';
+import {
+  IsOptional,
+  IsEnum,
+  IsDateString,
+  IsInt,
+  IsString,
+  Min,
+  Max,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { SupportRequestStatus } from '@common/database/model';
 
+export enum TicketListSortBy {
+  USER = 'user',
+  TITLE = 'title',
+  CREATED_AT = 'createdAt',
+  STATUS = 'status',
+}
+
+export enum TicketListSortOrder {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
+
 export class TicketListDto {
+  @ApiProperty({
+    description: 'Search by user email, phone, or ticket title',
+    required: false,
+    example: 'baha.taha@gmail.com',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
   @ApiProperty({
     description: 'Filter by ticket status',
     required: false,
@@ -56,4 +85,24 @@ export class TicketListDto {
   @Min(1)
   @Max(100)
   limit?: number = 10;
+
+  @ApiProperty({
+    description: 'Sort by field',
+    required: false,
+    enum: TicketListSortBy,
+    default: TicketListSortBy.CREATED_AT,
+  })
+  @IsOptional()
+  @IsEnum(TicketListSortBy)
+  sortBy?: TicketListSortBy = TicketListSortBy.CREATED_AT;
+
+  @ApiProperty({
+    description: 'Sort order',
+    required: false,
+    enum: TicketListSortOrder,
+    default: TicketListSortOrder.DESC,
+  })
+  @IsOptional()
+  @IsEnum(TicketListSortOrder)
+  sortOrder?: TicketListSortOrder = TicketListSortOrder.DESC;
 }

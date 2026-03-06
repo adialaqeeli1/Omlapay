@@ -74,6 +74,13 @@ export class JwtAuthGuard implements CanActivate {
             message: 'Session has expired.',
           });
         }
+
+        if (session.userId !== payload.userId) {
+          throw new UnauthorizedException({
+            status: 'error',
+            message: 'Session does not match token.',
+          });
+        }
       }
 
       request.user = payload;

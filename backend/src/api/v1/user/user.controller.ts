@@ -26,6 +26,8 @@ import { VerifyOtpDto } from '../auth/dto/verify-otp.dto';
 import { ResendOtpDto } from '../auth/dto/resend-otp.dto';
 import { SetPasscodeDto } from './dto/set-passcode.dto';
 import { UpdateAppearanceDto } from './dto/update-appearance.dto';
+import { UpdateCurrencyDto } from './dto/update-currency.dto';
+import { InviteContactDto } from './dto/invite-contact.dto';
 import { UpdateLanguageDto } from './dto/update-language.dto';
 import { UpdateNotificationsDto } from './dto/update-notifications.dto';
 import { Enable2FARequestDto } from './dto/enable-2fa-request.dto';
@@ -164,6 +166,53 @@ export class UserController {
     return this.userService.getNotifications(user.userId);
   }
 
+  @Put('settings/currency')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update user display currency preference' })
+  @ApiResponse({ status: 200, description: 'Display currency updated (USD or SAR)' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async updateCurrency(
+    @CurrentUser() user: any,
+    @Body() dto: UpdateCurrencyDto,
+  ) {
+    return this.userService.updateCurrency(user.userId, dto);
+  }
+
+  @Get('settings/currency')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get user display currency preference' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns user display currency (USD or SAR)',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getCurrency(@CurrentUser() user: any) {
+    return this.userService.getCurrency(user.userId);
+  }
+
+  @Post('invite')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Send invitation to a contact',
+    description:
+      'Sends an SMS invitation to a phone number that is not yet registered on Omlapay. Use when user selects a contact from the Send flow who does not have an account.',
+  })
+  @ApiResponse({ status: 200, description: 'Invitation sent successfully' })
+  @ApiResponse({ status: 400, description: 'Phone already registered or invalid' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async inviteContact(
+    @CurrentUser() user: any,
+    @Body() dto: InviteContactDto,
+  ) {
+    return this.userService.inviteContact(user.userId, dto);
+  }
+
   @Post('onboarding')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -199,6 +248,23 @@ export class UserController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getOnboardingStatus(@CurrentUser() user: any) {
     return this.userService.getOnboardingStatus(user.userId);
+  }
+
+  @Get('account-details')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get account details',
+    description:
+      'Returns masked phone, email (if present), and wallet addresses by network. Wallets require KYC.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Account details retrieved successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getAccountDetails(@CurrentUser() user: any) {
+    return this.userService.getAccountDetails(user.userId);
   }
 
   @Post('settings/2fa/enable')
@@ -269,7 +335,11 @@ export class UserController {
   @Get('kyc/status')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get user KYC status for Sumsub and Binance' })
+  @ApiOperation({
+    summary: 'Get user KYC status for Sumsub and Binance',
+    description:
+      'Returns combined KYC status. Sumsub must be APPROVED before Binance KYC can start.',
+  })
   @ApiResponse({
     status: 200,
     description: 'KYC status retrieved successfully',
@@ -283,20 +353,33 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Start Binance KYC (requires Sumsub approved)' })
+  @ApiOperation({
+    summary: 'Step 2: Share KYC with Binance (requires Sumsub approved)',
+    description:
+      'Creates sub-account if needed, shares KYC via /bapi/ekyc/v2/public/ekyc/customer/share-kyc-data. Requires Sumsub KYC approved first.',
+  })
   @ApiResponse({ status: 200, description: 'Binance KYC submitted' })
   @ApiResponse({ status: 400, description: 'Sumsub not approved or config missing' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async startBinanceKyc(@CurrentUser() user: any) {
-    return this.userService.startBinanceKyc(user.userId);
+  async startBinanceKyc(@CurrentUser() user: any, @Req() req: any) {
+    const clientIp =
+      req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+      req.headers['x-real-ip'] ||
+      req.socket?.remoteAddress ||
+      '0.0.0.0';
+    return this.userService.startBinanceKyc(user.userId, clientIp);
   }
 
   @Post('kyc/binance/check-status')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Check Binance KYC status from Binance API' })
-  @ApiResponse({ status: 200, description: 'KYC status retrieved' })
+  @ApiOperation({
+    summary: 'Step 3: Check Binance KYC status',
+    description:
+      'Calls /bapi/ekyc/v2/public/ekyc/customer/check-kyc-status. kycPassed=true when data.levelInfo.currentLevel.kycStatus=PASS.',
+  })
+  @ApiResponse({ status: 200, description: 'KYC status retrieved (kycPassed when PASS)' })
   @ApiResponse({ status: 400, description: 'No Binance sub-account found' })
   async checkBinanceKycStatus(@CurrentUser() user: any) {
     return this.userService.checkBinanceKycStatus(user.userId);
@@ -306,7 +389,11 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Create Binance API keys for sub-account (after KYC approved)' })
+  @ApiOperation({
+    summary: 'Step 4: Create sub-account API keys (after KYC PASS)',
+    description:
+      'Calls POST /sapi/v1/broker/subAccountApi. Only available when Binance KYC status is PASS.',
+  })
   @ApiResponse({ status: 200, description: 'API keys created' })
   @ApiResponse({ status: 400, description: 'KYC not approved or keys already exist' })
   async createBinanceApiKeys(@CurrentUser() user: any) {
@@ -333,13 +420,23 @@ export class UserController {
     @Headers('x-payload-digest-alg') algorithm: string | undefined,
     @Req() req: any,
   ) {
-    return this.userService.handleSumsubWebhook(payload, digest, req.rawBody, algorithm);
+    const rawBody = req.rawBody
+      ? typeof req.rawBody === 'string'
+        ? req.rawBody
+        : req.rawBody.toString('utf8')
+      : undefined;
+    return this.userService.handleSumsubWebhook(payload, digest, rawBody, algorithm);
   }
 
   @Post('webhooks/binance-kyc')
   @HttpCode(HttpStatus.OK)
   @ApiExcludeEndpoint()
-  async handleBinanceKycWebhook(@Body() payload: any) {
-    return this.userService.handleBinanceKycWebhook(payload);
+  async handleBinanceKycWebhook(
+    @Body() payload: any,
+    @Headers('x-sha2-signature') signatureHeader: string | undefined,
+    @Req() req: any,
+  ) {
+    const rawBody = req.rawBody ? req.rawBody.toString('utf8') : undefined;
+    return this.userService.handleBinanceKycWebhook(payload, rawBody, signatureHeader);
   }
 }

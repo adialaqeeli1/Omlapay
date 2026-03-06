@@ -1,4 +1,4 @@
-import { createHmac } from 'crypto';
+import { createHmac, randomBytes, createCipheriv, createDecipheriv } from 'crypto';
 
 /**
  * Shared crypto utilities for HMAC signatures and token generation.
@@ -59,6 +59,59 @@ export class CryptoUtil {
     if (payload.exp < Date.now()) throw new Error('Token expired');
     
     return payload as T;
+  }
+
+  /**
+   * AES-256-GCM encryption key from env. Must be exactly 64 hex chars (32 bytes).
+   * Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   */
+  private static getEncryptionKey(): Buffer {
+    const hex = process.env.FIELD_ENCRYPTION_KEY;
+    if (!hex || hex.length !== 64) {
+      throw new Error(
+        'FIELD_ENCRYPTION_KEY must be set to a 64-char hex string (32 bytes). ' +
+        'Generate with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"',
+      );
+    }
+    return Buffer.from(hex, 'hex');
+  }
+
+  /**
+   * Encrypt a plaintext string with AES-256-GCM.
+   * @returns `iv:authTag:ciphertext` (all base64)
+   */
+  static encryptField(plaintext: string): string {
+    const key = CryptoUtil.getEncryptionKey();
+    const iv = randomBytes(12);
+    const cipher = createCipheriv('aes-256-gcm', key, iv);
+    const encrypted = Buffer.concat([
+      cipher.update(plaintext, 'utf8'),
+      cipher.final(),
+    ]);
+    const authTag = cipher.getAuthTag();
+    return `${iv.toString('base64')}:${authTag.toString('base64')}:${encrypted.toString('base64')}`;
+  }
+
+  /**
+   * Decrypt an AES-256-GCM ciphertext produced by encryptField.
+   * @param ciphertext - Format: `iv:authTag:encrypted` (all base64)
+   */
+  static decryptField(ciphertext: string): string {
+    const parts = ciphertext.split(':');
+    if (parts.length !== 3) {
+      throw new Error('Invalid encrypted field format');
+    }
+    const [ivB64, authTagB64, encryptedB64] = parts;
+    const key = CryptoUtil.getEncryptionKey();
+    const iv = Buffer.from(ivB64, 'base64');
+    const authTag = Buffer.from(authTagB64, 'base64');
+    const encrypted = Buffer.from(encryptedB64, 'base64');
+    const decipher = createDecipheriv('aes-256-gcm', key, iv);
+    decipher.setAuthTag(authTag);
+    return Buffer.concat([
+      decipher.update(encrypted),
+      decipher.final(),
+    ]).toString('utf8');
   }
 
   /**

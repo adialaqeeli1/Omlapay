@@ -80,6 +80,35 @@ export class SupportRequestsController {
     return this.supportRequestsService.getSupportRequests(user.userId, dto);
   }
 
+  @Post(':requestId/reopen')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Reopen a solved support request',
+    description:
+      'Reopens a support request that was previously marked as SOLVED. Rejected tickets cannot be reopened. Only the ticket owner can reopen.',
+  })
+  @ApiParam({
+    name: 'requestId',
+    description: 'Support request ID (UUID)',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Support request reopened successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Request already open or cannot be reopened' })
+  @ApiResponse({ status: 404, description: 'Support request not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async reopenSupportRequest(
+    @CurrentUser() user: any,
+    @Param('requestId', ParseUUIDPipe) requestId: string,
+  ) {
+    return this.supportRequestsService.reopenSupportRequest(
+      user.userId,
+      requestId,
+    );
+  }
+
   @Get(':requestId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

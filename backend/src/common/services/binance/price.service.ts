@@ -1,4 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
+import {
+  COIN_TO_BINANCE_SYMBOL,
+  isStablecoin,
+  DEFAULT_USD_TO_SAR_RATE,
+} from '@common/constants';
 
 /**
  * Currency codes supported for conversion
@@ -44,19 +49,6 @@ interface ExchangeRateResponse {
 }
 
 /**
- * Mapping from coin symbols to Binance trading pairs (USDT pairs)
- * Note: USDT and USDC are stablecoins, so they're handled specially
- */
-const COIN_TO_BINANCE_SYMBOL: Record<string, string> = {
-  BTC: 'BTCUSDT',
-  ETH: 'ETHUSDT',
-  SOL: 'SOLUSDT',
-  USDC: 'USDCUSDT',
-  BNB: 'BNBUSDT',
-  // USDT is not mapped - handled as stablecoin (price = 1 USD)
-};
-
-/**
  * Price service for fetching cryptocurrency prices and currency conversion.
  * Uses Binance public API for prices (no authentication required).
  * Uses free public exchange rate API for USD/SAR conversion.
@@ -93,9 +85,9 @@ export class PriceService {
 
       if (!response.ok) {
         this.logger.warn(
-          `Failed to fetch USD/SAR rate: ${response.statusText}. Using default rate 3.75`,
+          `Failed to fetch USD/SAR rate: ${response.statusText}. Using default rate ${DEFAULT_USD_TO_SAR_RATE}`,
         );
-        return 3.75; // Fallback rate (approximate)
+        return DEFAULT_USD_TO_SAR_RATE;
       }
 
       const data: ExchangeRateResponse = await response.json();
@@ -113,17 +105,17 @@ export class PriceService {
 
       if (!sarRate || isNaN(sarRate) || sarRate <= 0) {
         this.logger.warn(
-          'Invalid USD/SAR rate from exchange rate API. Using default rate 3.75',
+          `Invalid USD/SAR rate from exchange rate API. Using default rate ${DEFAULT_USD_TO_SAR_RATE}`,
         );
-        return 3.75; // Fallback rate
+        return DEFAULT_USD_TO_SAR_RATE;
       }
 
       return sarRate;
     } catch (error) {
       this.logger.error(
-        `Error fetching USD/SAR rate: ${(error as Error).message}. Using default rate 3.75`,
+        `Error fetching USD/SAR rate: ${(error as Error).message}. Using default rate ${DEFAULT_USD_TO_SAR_RATE}`,
       );
-      return 3.75; // Fallback rate
+      return DEFAULT_USD_TO_SAR_RATE;
     }
   }
 
@@ -152,7 +144,7 @@ export class PriceService {
         const binanceSymbol = this.getBinanceSymbol(coinSymbol);
 
         // Handle stablecoins (USDT, USDC) - price is approximately 1 USD
-        if (coinSymbol.toUpperCase() === 'USDT' || coinSymbol.toUpperCase() === 'USDC') {
+        if (isStablecoin(coinSymbol)) {
           const usdPrice = 1.0;
           prices[coinSymbol] =
             currency === Currency.SAR && usdToSarRate

@@ -1,24 +1,33 @@
 import {
   Injectable,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
   SupportRequestEntity,
+  SupportRequestStatus,
   TicketResponseEntity,
   UserKycEntity,
 } from '@common/database/model';
-import { TicketListDto } from './dto/ticket-list.dto';
+import {
+  TicketListDto,
+  TicketListSortBy,
+  TicketListSortOrder,
+} from './dto/ticket-list.dto';
 import { AddTicketResponseDto } from './dto/ticket-response.dto';
 import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
 import { MailService } from '@common/services/mail/mail.service';
 import { TicketUtil } from '@common/utils/ticket.util';
+import { getFullNameFromKyc } from '@common/utils/kyc.util';
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service';
 import { AdminNotificationType } from '@common/database/model';
 
 @Injectable()
 export class AdminTicketsService {
+  private readonly logger = new Logger(AdminTicketsService.name);
+
   constructor(
     @InjectRepository(SupportRequestEntity)
     private ticketRepository: Repository<SupportRequestEntity>,
@@ -31,15 +40,36 @@ export class AdminTicketsService {
   ) {}
 
   async getTicketList(dto: TicketListDto) {
-    const { status, fromDate, toDate, page = 1, limit = 10 } = dto;
+    const {
+      search,
+      status,
+      fromDate,
+      toDate,
+      page = 1,
+      limit = 10,
+      sortBy = TicketListSortBy.CREATED_AT,
+      sortOrder = TicketListSortOrder.DESC,
+    } = dto;
     const skip = (page - 1) * limit;
 
-    // Build query
-    const queryBuilder = this.ticketRepository.createQueryBuilder('ticket');
+    // Build query (base 1=1 so all filters use andWhere)
+    const queryBuilder = this.ticketRepository
+      .createQueryBuilder('ticket')
+      .leftJoinAndSelect('ticket.user', 'user')
+      .where('1=1');
+
+    // Apply search (user email, phone, or ticket title)
+    if (search && search.trim()) {
+      const searchTerm = `%${search.trim()}%`;
+      queryBuilder.andWhere(
+        '(user.email ILIKE :search OR user.fullMobileNumber ILIKE :search OR ticket.title ILIKE :search)',
+        { search: searchTerm },
+      );
+    }
 
     // Apply status filter
     if (status) {
-      queryBuilder.where('ticket.status = :status', { status });
+      queryBuilder.andWhere('ticket.status = :status', { status });
     }
 
     // Apply date range filter
@@ -54,16 +84,23 @@ export class AdminTicketsService {
       queryBuilder.andWhere('ticket.createdAt <= :toDate', { toDate });
     }
 
+    // Apply sort
+    const orderColumn =
+      sortBy === TicketListSortBy.USER
+        ? 'user.email'
+        : sortBy === TicketListSortBy.TITLE
+          ? 'ticket.title'
+          : sortBy === TicketListSortBy.STATUS
+            ? 'ticket.status'
+            : 'ticket.createdAt';
+    const orderDir = sortOrder === TicketListSortOrder.ASC ? 'ASC' : 'DESC';
+    queryBuilder.orderBy(orderColumn, orderDir);
+
     // Get total count
     const total = await queryBuilder.getCount();
 
-    // Apply pagination and ordering
-    const tickets = await queryBuilder
-      .leftJoinAndSelect('ticket.user', 'user')
-      .orderBy('ticket.createdAt', 'DESC')
-      .skip(skip)
-      .take(limit)
-      .getMany();
+    // Apply pagination
+    const tickets = await queryBuilder.skip(skip).take(limit).getMany();
 
     // Format tickets
     const formattedTickets = tickets.map((ticket) => ({
@@ -85,6 +122,20 @@ export class AdminTicketsService {
         total,
         totalPages: Math.ceil(total / limit),
       },
+    };
+  }
+
+  /**
+   * Returns count of open (pending) tickets for sidebar badge.
+   * Mirrors notifications unread-count pattern.
+   */
+  async getOpenCount(): Promise<{ openCount: number }> {
+    const count = await this.ticketRepository.count({
+      where: { status: SupportRequestStatus.OPEN },
+    });
+
+    return {
+      openCount: count,
     };
   }
 
@@ -112,11 +163,7 @@ export class AdminTicketsService {
     const kyc = await this.userKycRepository.findOne({
       where: { userId: user.id },
     });
-    const fullName = kyc?.providerPayload
-      ? `${(kyc.providerPayload as any)?.info?.firstName || ''} ${
-          (kyc.providerPayload as any)?.info?.lastName || ''
-        }`.trim() || '—'
-      : '—';
+    const fullName = getFullNameFromKyc(kyc);
 
     return {
       ticket: {
@@ -183,8 +230,9 @@ export class AdminTicketsService {
           dto.message,
         );
       } catch (error) {
-        // Don't fail if email sending fails
-        console.error('Failed to send ticket response email:', error);
+        this.logger.warn(
+          `Failed to send ticket response email: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
       }
     }
 
@@ -196,8 +244,9 @@ export class AdminTicketsService {
         `A support ticket has received a new response. Ticket: ${ticket.title} (ID: ${ticket.id.substring(0, 8).toUpperCase()})`,
       );
     } catch (error) {
-      // Don't fail if notification fails
-      console.error('Failed to notify admins about ticket update:', error);
+      this.logger.warn(
+        `Failed to notify admins about ticket update: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
 
     return {
@@ -250,8 +299,9 @@ export class AdminTicketsService {
         `A support ticket status has been updated to ${statusMessages[dto.status] || dto.status}. Ticket: ${ticket.title} (ID: ${ticket.id.substring(0, 8).toUpperCase()})`,
       );
     } catch (error) {
-      // Don't fail if notification fails
-      console.error('Failed to notify admins about ticket status change:', error);
+      this.logger.warn(
+        `Failed to notify admins about ticket status change: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
 
     return {

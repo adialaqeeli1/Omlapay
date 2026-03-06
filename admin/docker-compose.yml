@@ -1,0 +1,11 @@
+version: '3.9'
+
+services:
+  omlapay-admin:
+    image: omlapay-admin:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    restart: unless-stopped

@@ -18,6 +18,11 @@ import { AdminSecurityEntity } from '@common/database/model';
 import { FaqEntity } from '@common/database/model';
 import { LegalContentEntity } from '@common/database/model';
 import { AboutEntity } from '@common/database/model';
+import { UserStatusHistoryEntity } from '@common/database/model';
+import { SupportRequestEntity } from '@common/database/model';
+import { TicketResponseEntity } from '@common/database/model';
+import { SendPendingRequestEntity } from '@common/database/model';
+import { SystemSettingsEntity } from '@common/database/model';
 import { SumsubModule } from '@common/services/sumsub/sumsub.module';
 import { AdminNotificationsModule } from '../admin-notifications/admin-notifications.module';
 
@@ -40,6 +45,11 @@ import { AdminNotificationsModule } from '../admin-notifications/admin-notificat
       FaqEntity,
       LegalContentEntity,
       AboutEntity,
+      UserStatusHistoryEntity,
+      SupportRequestEntity,
+      TicketResponseEntity,
+      SendPendingRequestEntity,
+      SystemSettingsEntity,
     ]),
     SumsubModule,
     AdminNotificationsModule,

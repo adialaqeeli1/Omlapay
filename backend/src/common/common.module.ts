@@ -6,6 +6,9 @@ import { DatabaseModule } from './database/database.module';
 import { MailModule } from './services/mail/mail.module';
 import { OtpModule } from './services/otp/otp.module';
 import { BinanceModule } from './services/binance/binance.module';
+import { StorageModule } from './services/storage/storage.module';
+import { UserKycGuardModule } from './services/user-kyc-guard/user-kyc-guard.module';
+import { SystemSettingsModule } from './services/system-settings/system-settings.module';
 import { jwtConfig } from './config/jwt.config';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AuthSessionEntity } from './database/model/auth-session.entity';
@@ -28,6 +31,9 @@ import { AuthSessionEntity } from './database/model/auth-session.entity';
     MailModule,
     OtpModule,
     BinanceModule,
+    StorageModule,
+    UserKycGuardModule,
+    SystemSettingsModule,
   ],
   providers: [JwtAuthGuard],
   exports: [
@@ -35,6 +41,8 @@ import { AuthSessionEntity } from './database/model/auth-session.entity';
     MailModule,
     OtpModule,
     BinanceModule,
+    StorageModule,
+    UserKycGuardModule,
     JwtModule,
     JwtAuthGuard,
     TypeOrmModule, // Export TypeORM to make repositories available globally

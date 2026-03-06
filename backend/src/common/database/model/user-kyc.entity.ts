@@ -197,23 +197,26 @@ import {
 
     /**
      * Map Binance KYC status to our KycStatus enum.
-     * Binance statuses: INITIAL, PROCESS, REVIEW, PASS, REJECT
+     * Binance statuses: INITIAL, PROCESS, REVIEW, PASS, REJECT, REFUSED, DISABLE
      * @param binanceStatus - Binance KYC status from their API/webhook
      */
     static mapBinanceStatus(binanceStatus: string): KycStatus {
       switch (binanceStatus?.toUpperCase()) {
         case 'INITIAL':
-          return KycStatus.INIT; // KYC initiated, documents requested
+          return KycStatus.INIT;
         case 'PROCESS':
-          return KycStatus.PENDING; // Being processed
+          return KycStatus.PENDING;
         case 'REVIEW':
-          return KycStatus.ON_HOLD; // Under manual review
+          return KycStatus.ON_HOLD;
         case 'PASS':
-          return KycStatus.APPROVED; // KYC approved
+          return KycStatus.APPROVED;
         case 'REJECT':
-          return KycStatus.REJECTED; // KYC rejected (Binance doesn't allow resubmission)
+        case 'REFUSED':
+          return KycStatus.REJECTED;
+        case 'DISABLE':
+          return KycStatus.REJECTED;
         default:
-          return KycStatus.PENDING; // Fallback for unknown statuses
+          return KycStatus.PENDING;
       }
     }
   }

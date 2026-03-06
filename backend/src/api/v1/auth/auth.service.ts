@@ -3,6 +3,7 @@ import {
   BadRequestException,
   UnauthorizedException,
   ConflictException,
+  InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -29,6 +30,7 @@ import {
   validatePasscodeMatch,
 } from '@common/utils';
 import { LoginDto } from './dto/login.dto';
+import { CheckUserDto } from './dto/check-user.dto';
 import { SoftLoginDto } from './dto/soft-login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ForgotPasscodeDto } from './dto/forgot-passcode.dto';
@@ -57,6 +59,41 @@ export class AuthService {
     private otpService: OtpService,
     private mailService: MailService,
   ) {}
+
+  /**
+   * Check if a user exists for the given phone number (two-step login flow).
+   * Returns userExists so client can show passcode screen or registration screen.
+   */
+  async checkUser(dto: CheckUserDto) {
+    validateCountryCodeAndMobileNumber(dto.country_code, dto.mobile_number);
+
+    const fullMobileNumber = buildFullMobileNumber(
+      dto.country_code,
+      dto.mobile_number,
+    );
+
+    const user = await this.userRepository.findOne({
+      where: { fullMobileNumber },
+    });
+
+    if (!user) {
+      return { status: 'success', data: { userExists: false } };
+    }
+
+    const userSecurity = await this.userSecurityRepository.findOne({
+      where: { userId: user.id },
+    });
+
+    const hasPasscode = !!userSecurity?.passcodeHash;
+
+    return {
+      status: 'success',
+      data: {
+        userExists: true,
+        hasPasscode,
+      },
+    };
+  }
 
   async login(dto: LoginDto) {
     try {
@@ -215,7 +252,7 @@ export class AuthService {
         error instanceof Error ? error.stack : undefined,
       );
 
-      throw new BadRequestException({
+      throw new InternalServerErrorException({
         status: 'error',
         message: 'Failed to process login request. Please try again later.',
       });
@@ -378,7 +415,7 @@ export class AuthService {
         error instanceof Error ? error.stack : undefined,
       );
 
-      throw new BadRequestException({
+      throw new InternalServerErrorException({
         status: 'error',
         message: 'Failed to process forgot passcode request. Please try again later.',
       });
@@ -707,7 +744,7 @@ export class AuthService {
         error instanceof Error ? error.stack : undefined,
       );
 
-      throw new BadRequestException({
+      throw new InternalServerErrorException({
         status: 'error',
         message: 'Failed to verify OTP. Please try again later.',
       });
@@ -976,7 +1013,7 @@ export class AuthService {
         error instanceof Error ? error.stack : undefined,
       );
 
-      throw new BadRequestException({
+      throw new InternalServerErrorException({
         status: 'error',
         message: 'Failed to resend OTP. Please try again later.',
       });
@@ -1078,8 +1115,8 @@ export class AuthService {
       const maxAttempts = 5;
 
       if (failedAttempts >= maxAttempts) {
-        // Lock account for 30 minutes
-        const lockDuration = 30 * 60 * 1000; // 30 minutes in ms
+        // Lock account for 30 seconds
+        const lockDuration = 30 * 1000; // 30 seconds in ms
         userSecurity.lockedUntil = new Date(Date.now() + lockDuration);
         userSecurity.failedAttempts = failedAttempts;
         userSecurity.lastFailedAt = now;
@@ -1088,7 +1125,7 @@ export class AuthService {
         throw new UnauthorizedException({
           status: 'error',
           message:
-            'Too many attempts. Try again in 1800 seconds.',
+            'Too many attempts. Try again in 30 seconds.',
           code: 'ACCOUNT_LOCKED',
           data: { locked_until: userSecurity.lockedUntil },
         });
@@ -1137,7 +1174,7 @@ export class AuthService {
         error instanceof Error ? error.stack : undefined,
       );
 
-      throw new BadRequestException({
+      throw new InternalServerErrorException({
         status: 'error',
         message: 'Failed to verify passcode. Please try again later.',
       });
@@ -1319,9 +1356,9 @@ export class AuthService {
 
     return {
       status: 'valid',
-      session_id: session.id,
-      expires_at: session.expiresAt,
-      created_at: session.createdAt,
+      sessionId: session.id,
+      expiresAt: session.expiresAt,
+      createdAt: session.createdAt,
     };
   }
 
@@ -1379,7 +1416,7 @@ export class AuthService {
         error instanceof Error ? error.stack : undefined,
       );
 
-      throw new BadRequestException({
+      throw new InternalServerErrorException({
         status: 'error',
         message: 'Failed to logout. Please try again later.',
       });
@@ -1420,7 +1457,7 @@ export class AuthService {
         error instanceof Error ? error.stack : undefined,
       );
 
-      throw new BadRequestException({
+      throw new InternalServerErrorException({
         status: 'error',
         message: 'Failed to logout all sessions. Please try again later.',
       });
@@ -1512,7 +1549,7 @@ export class AuthService {
         error instanceof Error ? error.stack : undefined,
       );
 
-      throw new BadRequestException({
+      throw new InternalServerErrorException({
         status: 'error',
         message: 'Failed to reset passcode. Please try again later.',
       });

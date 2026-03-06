@@ -46,7 +46,7 @@ export class OtpService {
         throw new Error('SMS service not configured');
       }
 
-      const message = `Your OmlaPay verification code is: ${otp}. Valid for 60 seconds. Do not share this code with anyone.`;
+      const message = `Your Omlapay verification code is: ${otp}. Valid for 60 seconds. Do not share this code with anyone.`;
 
       // Remove '+' and convert to number for recipients array
       const recipientNumber = parseInt(phoneNumber.replace('+', ''));
@@ -100,7 +100,7 @@ export class OtpService {
         throw new Error('SMS service not configured');
       }
 
-      const message = `Your OmlaPay passcode reset code is: ${otp}. Valid for 60 seconds. If you didn't request this, please ignore.`;
+      const message = `Your Omlapay passcode reset code is: ${otp}. Valid for 60 seconds. If you didn't request this, please ignore.`;
 
       // Remove '+' and convert to number for recipients array
       const recipientNumber = parseInt(phoneNumber.replace('+', ''));
@@ -134,6 +134,58 @@ export class OtpService {
         `Failed to send passcode reset OTP to ${phoneNumber}:`,
         error,
       );
+      throw error;
+    }
+  }
+
+  /**
+   * Send a generic SMS message (e.g. invite, notification).
+   * In development or for Indian numbers, logs instead of sending.
+   */
+  async sendSms(phoneNumber: string, message: string): Promise<void> {
+    const isIndianNumber = phoneNumber.startsWith('+91');
+
+    if (process.env.NODE_ENV !== 'production' || isIndianNumber) {
+      this.logger.log(`[DEV] SMS to ${phoneNumber}: ${message}`);
+      return;
+    }
+
+    try {
+      if (!this.isConfigured) {
+        this.logger.error(
+          `Taqnyat not configured in production. Cannot send SMS to ${phoneNumber}`,
+        );
+        throw new Error('SMS service not configured');
+      }
+
+      const recipientNumber = parseInt(phoneNumber.replace('+', ''), 10);
+
+      const response = await fetch(`${this.apiUrl}/messages`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recipients: [recipientNumber],
+          body: message,
+          sender: this.senderName,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          `Taqnyat API error: ${response.status} - ${JSON.stringify(data)}`,
+        );
+      }
+
+      this.logger.log(
+        `SMS sent successfully to ${phoneNumber}. Status: ${data.statusCode}`,
+      );
+    } catch (error) {
+      this.logger.error(`Failed to send SMS to ${phoneNumber}:`, error);
       throw error;
     }
   }

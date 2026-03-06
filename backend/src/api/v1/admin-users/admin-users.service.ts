@@ -2,9 +2,10 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike } from 'typeorm';
+import { Repository } from 'typeorm';
 import { UserEntity } from '@common/database/model';
 import { WalletEntity } from '@common/database/model';
 import { TransactionEntity, TransactionDirection } from '@common/database/model';
@@ -18,12 +19,23 @@ import {
   UserListSortOrder,
 } from './dto/user-list.dto';
 import { BlockUserDto } from './dto/block-user.dto';
+import {
+  UserActivityListDto,
+  WalletTypeFilter,
+  ActivityTypeFilter,
+} from './dto/user-activity-list.dto';
+import { UserTransactionListDto } from './dto/user-transaction-list.dto';
 import { MailService } from '@common/services/mail/mail.service';
+import { getFullNameFromKyc } from '@common/utils/kyc.util';
+import { maskPhoneNumber } from '@common/utils';
+import { getSupportEmail } from '@common/constants';
 import { AdminNotificationsService } from '../admin-notifications/admin-notifications.service';
 import { AdminNotificationType } from '@common/database/model';
 
 @Injectable()
 export class AdminUsersService {
+  private readonly logger = new Logger(AdminUsersService.name);
+
   constructor(
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
@@ -136,17 +148,10 @@ export class AdminUsersService {
           where: { userId: user.id },
         });
 
-        // Derive full name from KYC provider payload if available
-        const fullNameFromKyc = kyc?.providerPayload
-          ? `${(kyc.providerPayload as any)?.info?.firstName || ''} ${
-              (kyc.providerPayload as any)?.info?.lastName || ''
-            }`
-              .trim()
-              || '—'
-          : '—';
+        const fullNameFromKyc = getFullNameFromKyc(kyc);
 
         // Mask phone number (show first 3 and last 2 digits)
-        const maskedPhone = this.maskPhoneNumber(user.fullMobileNumber);
+        const maskedPhone = maskPhoneNumber(user.fullMobileNumber);
 
         return {
           id: user.id,
@@ -171,14 +176,17 @@ export class AdminUsersService {
     };
   }
 
-  private maskPhoneNumber(phone: string): string {
-    if (!phone || phone.length < 6) return phone;
-    const cleaned = phone.replace(/\D/g, '');
-    if (cleaned.length < 6) return phone;
-    const first3 = cleaned.slice(0, 3);
-    const last2 = cleaned.slice(-2);
-    const masked = '*'.repeat(cleaned.length - 5);
-    return `+${first3}${masked}${last2}`;
+  /**
+   * Maps WalletTypeFilter to transaction network values for DB query.
+   */
+  private getNetworksForWalletType(walletType: WalletTypeFilter): string[] {
+    const mapping: Record<WalletTypeFilter, string[]> = {
+      [WalletTypeFilter.EVM]: ['ETH', 'BNB', 'BSC'],
+      [WalletTypeFilter.BITCOIN]: ['BTC'],
+      [WalletTypeFilter.TRON]: ['TRX', 'TRON'],
+      [WalletTypeFilter.SOLANA]: ['SOL'],
+    };
+    return mapping[walletType] ?? [];
   }
 
   async getUserDetails(userId: string) {
@@ -206,10 +214,7 @@ export class AdminUsersService {
       where: { userId: user.id },
     });
 
-    // Extract fullName from Sumsub providerPayload if available
-    const fullName = kyc?.providerPayload
-      ? `${(kyc.providerPayload as any)?.info?.firstName || ''} ${(kyc.providerPayload as any)?.info?.lastName || ''}`.trim() || '—'
-      : '—';
+    const fullName = getFullNameFromKyc(kyc);
 
     return {
       id: user.id,
@@ -229,7 +234,10 @@ export class AdminUsersService {
     };
   }
 
-  async getUserTransactions(userId: string, page: number = 1, limit: number = 10) {
+  async getUserTransactions(
+    userId: string,
+    dto: UserTransactionListDto,
+  ) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
@@ -238,25 +246,150 @@ export class AdminUsersService {
       throw new NotFoundException('User not found');
     }
 
+    const page = dto.page ?? 1;
+    const limit = dto.limit ?? 10;
     const skip = (page - 1) * limit;
 
-    const [transactions, total] = await this.transactionRepository.findAndCount({
-      where: { userId: user.id },
-      relations: ['coin'],
-      order: { createdAt: 'DESC' },
-      skip,
-      take: limit,
-    });
+    const queryBuilder = this.transactionRepository
+      .createQueryBuilder('tx')
+      .leftJoinAndSelect('tx.coin', 'coin')
+      .where('tx.userId = :userId', { userId: user.id });
+
+    if (dto.walletType) {
+      const networks = this.getNetworksForWalletType(dto.walletType);
+      queryBuilder.andWhere('UPPER(tx.network) IN (:...networks)', {
+        networks: networks.map((n) => n.toUpperCase()),
+      });
+    }
+
+    const total = await queryBuilder.getCount();
+
+    const transactions = await queryBuilder
+      .orderBy('tx.createdAt', 'DESC')
+      .skip(skip)
+      .take(limit)
+      .getMany();
 
     return {
       data: transactions.map((tx) => ({
+        id: tx.id,
         coin: tx.coin.symbol,
         amount: tx.amount,
         direction: tx.direction === TransactionDirection.IN ? 'RECEIVED' : 'SENT',
         from: tx.senderAddress,
         to: tx.receiverAddress,
+        txHash: tx.txHash,
+        status: tx.status,
+        network: tx.network,
         timestamp: tx.createdAt,
       })),
+      pagination: {
+        page,
+        limit,
+        totalRecords: total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
+   * Returns combined transactions and swaps for user activity view.
+   * Supports filtering by type (TRANSACTION, SWAP, ALL) and walletType (EVM, BITCOIN, TRON, SOLANA).
+   */
+  async getUserActivity(userId: string, dto: UserActivityListDto) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const type = dto.type ?? ActivityTypeFilter.ALL;
+    const page = dto.page ?? 1;
+    const limit = dto.limit ?? 10;
+
+    const items: Array<{
+      id: string;
+      type: 'TRANSACTION' | 'SWAP';
+      coin?: string;
+      amount: string;
+      direction: string;
+      from?: string;
+      to?: string;
+      txHash: string | null;
+      status: string;
+      network: string;
+      timestamp: Date;
+      coinSent?: string;
+      coinReceived?: string;
+    }> = [];
+
+    if (type === ActivityTypeFilter.ALL || type === ActivityTypeFilter.TRANSACTION) {
+      const txQueryBuilder = this.transactionRepository
+        .createQueryBuilder('tx')
+        .leftJoinAndSelect('tx.coin', 'coin')
+        .where('tx.userId = :userId', { userId: user.id });
+
+      if (dto.walletType) {
+        const networks = this.getNetworksForWalletType(dto.walletType);
+        txQueryBuilder.andWhere('UPPER(tx.network) IN (:...networks)', {
+          networks: networks.map((n) => n.toUpperCase()),
+        });
+      }
+
+      const transactions = await txQueryBuilder
+        .orderBy('tx.createdAt', 'DESC')
+        .getMany();
+
+      for (const tx of transactions) {
+        items.push({
+          id: tx.id,
+          type: 'TRANSACTION',
+          coin: tx.coin.symbol,
+          amount: tx.amount,
+          direction: tx.direction === TransactionDirection.IN ? 'RECEIVED' : 'SENT',
+          from: tx.senderAddress,
+          to: tx.receiverAddress,
+          txHash: tx.txHash,
+          status: tx.status,
+          network: tx.network,
+          timestamp: tx.createdAt,
+        });
+      }
+    }
+
+    if (type === ActivityTypeFilter.ALL || type === ActivityTypeFilter.SWAP) {
+      const swaps = await this.swapRepository.find({
+        where: { userId: user.id },
+        relations: ['fromCoin', 'toCoin'],
+        order: { createdAt: 'DESC' },
+      });
+
+      for (const swap of swaps) {
+        items.push({
+          id: swap.id,
+          type: 'SWAP',
+          amount: swap.fromAmount,
+          direction: 'SWAP',
+          txHash: null,
+          status: swap.status,
+          network: '—',
+          timestamp: swap.createdAt,
+          coinSent: swap.fromCoin.symbol,
+          coinReceived: swap.toCoin.symbol,
+        });
+      }
+    }
+
+    items.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+    const total = items.length;
+    const skip = (page - 1) * limit;
+    const paginatedItems = items.slice(skip, skip + limit);
+
+    return {
+      data: paginatedItems,
       pagination: {
         page,
         limit,
@@ -335,12 +468,10 @@ export class AdminUsersService {
       await this.mailService.sendUserBlockNotification(
         user.email,
         dto.reason,
-        'support@gmail.com',
+        getSupportEmail(),
       );
     }
 
-    // Send internal notification if reason indicates suspicious activity
-    // Check if reason contains keywords that suggest suspicious activity
     const suspiciousKeywords = ['suspicious', 'fraud', 'scam', 'violation', 'abuse'];
     const isSuspiciousActivity = suspiciousKeywords.some((keyword) =>
       dto.reason.toLowerCase().includes(keyword),
@@ -348,7 +479,7 @@ export class AdminUsersService {
 
     if (isSuspiciousActivity) {
       await this.mailService.sendInternalBlockNotification(
-        'support@gmail.com',
+        getSupportEmail(),
         user.email || user.fullMobileNumber,
         dto.reason,
         adminId,
@@ -363,8 +494,9 @@ export class AdminUsersService {
         `A user has been blocked by an administrator. User: ${user.fullMobileNumber || user.email || userId}. Reason: ${dto.reason}`,
       );
     } catch (error) {
-      // Don't fail if notification fails
-      console.error('Failed to notify admins about user block:', error);
+      this.logger.warn(
+        `Failed to notify admins about user block: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
 
     return {
@@ -411,8 +543,9 @@ export class AdminUsersService {
         `A user has been unblocked by an administrator. User: ${user.fullMobileNumber || user.email || userId}`,
       );
     } catch (error) {
-      // Don't fail if notification fails
-      console.error('Failed to notify admins about user unblock:', error);
+      this.logger.warn(
+        `Failed to notify admins about user unblock: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
 
     return {

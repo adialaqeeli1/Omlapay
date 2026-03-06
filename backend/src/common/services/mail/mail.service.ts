@@ -15,7 +15,7 @@ export class MailService {
     this.mailgunDomain = this.configService.get<string>('MAILGUN_SANDBOX_DOMAIN') || '';
     this.mailgunBaseUrl = this.configService.get<string>('MAILGUN_BASE_URL') || '';
     this.fromEmail = `noreply@${this.mailgunDomain}`;
-    this.fromName = 'OmlaPay';
+    this.fromName = 'Omlapay';
 
     if (!this.mailgunApiKey || !this.mailgunDomain || !this.mailgunBaseUrl) {
       this.logger.warn(
@@ -84,19 +84,19 @@ export class MailService {
   }
 
   async sendVerificationEmail(email: string, code: string): Promise<void> {
-    const subject = 'Verify Your Email - OmlaPay';
-    const text = `Your OmlaPay email verification code is: ${code}. This code is valid for 5 minutes. If you didn't request this, please ignore this email.`;
+    const subject = 'Verify Your Email - Omlapay';
+    const text = `Your Omlapay email verification code is: ${code}. This code is valid for 5 minutes. If you didn't request this, please ignore this email.`;
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Verify Your Email</h2>
-        <p>Your OmlaPay email verification code is:</p>
+        <p>Your Omlapay email verification code is:</p>
         <div style="background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
           ${code}
         </div>
         <p style="color: #666;">This code is valid for 5 minutes.</p>
         <p style="color: #666;">If you didn't request this verification, please ignore this email.</p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-        <p style="color: #999; font-size: 12px;">This is an automated email from OmlaPay. Please do not reply.</p>
+        <p style="color: #999; font-size: 12px;">This is an automated email from Omlapay. Please do not reply.</p>
       </div>
     `;
 
@@ -114,8 +114,8 @@ export class MailService {
   }
 
   async sendPasscodeResetOTP(email: string, otp: string): Promise<void> {
-    const subject = 'Passcode Reset Request - OmlaPay';
-    const text = `Your OmlaPay passcode reset code is: ${otp}. This code is valid for 60 seconds. If you didn't request this, please ignore this email and contact support immediately.`;
+    const subject = 'Passcode Reset Request - Omlapay';
+    const text = `Your Omlapay passcode reset code is: ${otp}. This code is valid for 60 seconds. If you didn't request this, please ignore this email and contact support immediately.`;
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Passcode Reset Request</h2>
@@ -127,7 +127,7 @@ export class MailService {
         <p style="color: #d9534f; font-weight: bold;">⚠️ Security Alert:</p>
         <p style="color: #666;">If you didn't request a passcode reset, please ignore this email and contact our support team immediately.</p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-        <p style="color: #999; font-size: 12px;">This is an automated email from OmlaPay. Please do not reply.</p>
+        <p style="color: #999; font-size: 12px;">This is an automated email from Omlapay. Please do not reply.</p>
       </div>
     `;
 
@@ -145,19 +145,19 @@ export class MailService {
   }
 
   async sendOTP(email: string, otp: string): Promise<void> {
-    const subject = 'Your Verification Code - OmlaPay';
-    const text = `Your OmlaPay verification code is: ${otp}. This code is valid for 60 seconds. Do not share this code with anyone.`;
+    const subject = 'Your Verification Code - Omlapay';
+    const text = `Your Omlapay verification code is: ${otp}. This code is valid for 60 seconds. Do not share this code with anyone.`;
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Your Verification Code</h2>
-        <p>Your OmlaPay verification code is:</p>
+        <p>Your Omlapay verification code is:</p>
         <div style="background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
           ${otp}
         </div>
         <p style="color: #666;">This code is valid for 60 seconds.</p>
         <p style="color: #666;">Do not share this code with anyone.</p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-        <p style="color: #999; font-size: 12px;">This is an automated email from OmlaPay. Please do not reply.</p>
+        <p style="color: #999; font-size: 12px;">This is an automated email from Omlapay. Please do not reply.</p>
       </div>
     `;
 
@@ -176,12 +176,12 @@ export class MailService {
     reason: string,
     supportEmail: string = 'support@gmail.com',
   ): Promise<void> {
-    const subject = 'Account Restriction Notice - OmlaPay';
-    const text = `Your OmlaPay account has been restricted. Reason: ${reason}. Please contact support at ${supportEmail} for more details.`;
+    const subject = 'Account Restriction Notice - Omlapay';
+    const text = `Your Omlapay account has been restricted. Reason: ${reason}. Please contact support at ${supportEmail} for more details.`;
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #d9534f;">Account Restriction Notice</h2>
-        <p>Your OmlaPay account has been restricted.</p>
+        <p>Your Omlapay account has been restricted.</p>
         <div style="background-color: #f8f9fa; padding: 20px; margin: 20px 0; border-left: 4px solid #d9534f;">
           <p style="margin: 0;"><strong>Reason:</strong></p>
           <p style="margin: 10px 0 0 0;">${reason}</p>
@@ -189,7 +189,7 @@ export class MailService {
         <p style="color: #666;">Your account is restricted. Please contact support for more details.</p>
         <p style="color: #666;">Support Email: <a href="mailto:${supportEmail}">${supportEmail}</a></p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-        <p style="color: #999; font-size: 12px;">This is an automated email from OmlaPay. Please do not reply.</p>
+        <p style="color: #999; font-size: 12px;">This is an automated email from Omlapay. Please do not reply.</p>
       </div>
     `;
 
@@ -223,7 +223,7 @@ export class MailService {
         <p><strong>Action Performed By:</strong> Admin ${adminId}</p>
         <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-        <p style="color: #999; font-size: 12px;">This is an automated notification from OmlaPay Admin System.</p>
+        <p style="color: #999; font-size: 12px;">This is an automated notification from Omlapay Admin System.</p>
       </div>
     `;
 
@@ -260,7 +260,7 @@ export class MailService {
         </div>
         <p style="color: #666;">Please log in to your account to view the full conversation and respond if needed.</p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-        <p style="color: #999; font-size: 12px;">This is an automated email from OmlaPay. Please do not reply.</p>
+        <p style="color: #999; font-size: 12px;">This is an automated email from Omlapay. Please do not reply.</p>
       </div>
     `;
 

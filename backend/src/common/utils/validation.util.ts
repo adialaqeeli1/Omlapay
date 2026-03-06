@@ -98,23 +98,16 @@ export function validateCountryCodeAndMobileNumber(
 
 /**
  * Validates passcode format
- * - Minimum 6 digits
+ * - Exactly 6 digits
  * - Numeric only
  */
 export function validatePasscode(passcode: string, fieldName = 'Passcode'): void {
   validateRequired(passcode, fieldName);
 
-  if (passcode.length < 6) {
+  if (!/^\d{6}$/.test(passcode)) {
     throw new BadRequestException({
       status: 'error',
-      message: `${fieldName} must be at least 6 digits long.`,
-    });
-  }
-
-  if (!/^\d+$/.test(passcode)) {
-    throw new BadRequestException({
-      status: 'error',
-      message: `${fieldName} must contain only digits.`,
+      message: `${fieldName} must be exactly 6 digits.`,
     });
   }
 }
@@ -202,15 +195,15 @@ export function validateUUID(uuid: string, fieldName = 'ID'): void {
 }
 
 /**
- * Validates OTP format (typically 4-6 digits)
+ * Validates OTP format
  */
 export function validateOTP(otp: string): void {
   validateRequired(otp, 'OTP');
 
-  if (!/^\d{4,6}$/.test(otp)) {
+  if (!/^\d{6}$/.test(otp)) {
     throw new BadRequestException({
       status: 'error',
-      message: 'OTP must be 4 to 6 digits.',
+      message: 'OTP must be exactly 6 digits.',
     });
   }
 }

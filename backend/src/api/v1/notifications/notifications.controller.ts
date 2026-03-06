@@ -46,6 +46,20 @@ export class NotificationsController {
     return this.notificationsService.getNotifications(user.userId, query);
   }
 
+  @Post('mark-all-read')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Mark all notifications as read' })
+  @ApiResponse({
+    status: 200,
+    description: 'All notifications marked as read successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async markAllAsRead(@CurrentUser() user: any) {
+    return this.notificationsService.markAllAsRead(user.userId);
+  }
+
   @Post(':id/read')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

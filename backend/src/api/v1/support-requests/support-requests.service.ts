@@ -244,6 +244,72 @@ export class SupportRequestsService {
   }
 
   /**
+   * Reopen a solved support request.
+   * Only SOLVED tickets can be reopened. REJECTED tickets cannot be reopened.
+   * @param userId - ID of the user
+   * @param requestId - ID of the support request
+   * @returns Updated support request
+   */
+  async reopenSupportRequest(
+    userId: string,
+    requestId: string,
+  ): Promise<any> {
+    validateUUID(userId, 'User ID');
+    validateUUID(requestId, 'Request ID');
+
+    const request = await this.supportRequestRepository.findOne({
+      where: { id: requestId, userId },
+    });
+
+    if (!request) {
+      throw new NotFoundException({
+        status: 'error',
+        message: 'Support request not found.',
+      });
+    }
+
+    if (request.status === SupportRequestStatus.OPEN) {
+      throw new BadRequestException({
+        status: 'error',
+        message: 'Support request is already open.',
+      });
+    }
+
+    if (request.status === SupportRequestStatus.REJECTED) {
+      throw new BadRequestException({
+        status: 'error',
+        message:
+          'Rejected tickets cannot be reopened. Please raise a new ticket.',
+      });
+    }
+
+    if (request.status !== SupportRequestStatus.SOLVED) {
+      throw new BadRequestException({
+        status: 'error',
+        message: 'Only solved requests can be reopened.',
+      });
+    }
+
+    request.status = SupportRequestStatus.OPEN;
+    await this.supportRequestRepository.save(request);
+
+    this.logger.log(
+      `Support request ${requestId} reopened by user ${userId}`,
+    );
+
+    return successResponse({
+      message: 'Support request reopened successfully.',
+      request: {
+        id: request.id,
+        title: request.title,
+        status: this.mapStatusForUser(request.status),
+        statusColor: TicketUtil.getStatusColor(request.status),
+        updatedAt: request.updatedAt,
+      },
+    });
+  }
+
+  /**
    * Validate attachment URLs format and file types.
    * @param attachmentUrl - Comma-separated URLs
    * @throws BadRequestException if validation fails

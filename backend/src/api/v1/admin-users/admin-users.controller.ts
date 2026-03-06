@@ -16,6 +16,8 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@ne
 import { AdminUsersService } from './admin-users.service';
 import { UserListDto } from './dto/user-list.dto';
 import { BlockUserDto } from './dto/block-user.dto';
+import { UserTransactionListDto } from './dto/user-transaction-list.dto';
+import { UserActivityListDto } from './dto/user-activity-list.dto';
 import { AdminJwtAuthGuard } from '@common/guards';
 import { CurrentAdmin } from '@common/decorators';
 
@@ -48,18 +50,36 @@ export class AdminUsersController {
 
   @Get(':userId/transactions')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get user transaction history' })
-  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
+  @ApiOperation({
+    summary: 'Get user transaction history',
+    description:
+      'Returns transactions with txHash, status, network. Optional walletType filter: EVM, BITCOIN, TRON, SOLANA.',
+  })
   @ApiResponse({ status: 200, description: 'Transaction history retrieved successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getUserTransactions(
     @Param('userId', ParseUUIDPipe) userId: string,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query() dto: UserTransactionListDto,
   ) {
-    return this.adminUsersService.getUserTransactions(userId, page, limit);
+    return this.adminUsersService.getUserTransactions(userId, dto);
+  }
+
+  @Get(':userId/activity')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Get combined user activity (transactions + swaps)',
+    description:
+      'Returns transactions and swaps in one list, sorted by timestamp. Filter by type (TRANSACTION, SWAP, ALL) and walletType (EVM, BITCOIN, TRON, SOLANA).',
+  })
+  @ApiResponse({ status: 200, description: 'Activity retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getUserActivity(
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @Query() dto: UserActivityListDto,
+  ) {
+    return this.adminUsersService.getUserActivity(userId, dto);
   }
 
   @Get(':userId/swaps')

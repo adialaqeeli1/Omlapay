@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import { Repository, Between, MoreThanOrEqual, LessThanOrEqual, IsNull } from 'typeorm';
 import { TransactionEntity, TransactionDirection, TransactionStatus } from '@common/database/model';
 import { UserEntity } from '@common/database/model';
 import { UserKycEntity, KycStatus } from '@common/database/model';
@@ -69,6 +69,20 @@ export class AdminDashboardService {
       return sum + parseFloat(tx.amount);
     }, 0);
 
+    // Total External Sent (OUT, COMPLETED, counterpartyPhone IS NULL = sent to non-registered users)
+    const externalSentTransactions = await this.transactionRepository.find({
+      where: {
+        direction: TransactionDirection.OUT,
+        status: TransactionStatus.COMPLETED,
+        counterpartyPhone: IsNull(),
+        ...(Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {}),
+      },
+    });
+
+    const totalExternalSent = externalSentTransactions.reduce((sum, tx) => {
+      return sum + parseFloat(tx.amount);
+    }, 0);
+
     // Total Transactions (both IN and OUT, COMPLETED status)
     const totalTransactions = await this.transactionRepository.count({
       where: {
@@ -98,6 +112,7 @@ export class AdminDashboardService {
     return {
       totalFundsReceived: totalFundsReceived.toFixed(2),
       totalFundsSent: totalFundsSent.toFixed(2),
+      totalExternalSent: totalExternalSent.toFixed(2),
       totalTransactions,
       totalUsers,
       totalKycCompletedUsers: kycCompletedCount,

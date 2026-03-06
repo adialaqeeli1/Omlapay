@@ -3,8 +3,8 @@ export const IMAGE_FILE_TYPE = '.(png|jpeg|jpg|svg|webp)';
 export const IMAGE_AND_PDF_FILE_TYPE = '.(png|jpeg|jpg|svg|webp|pdf)';
 
 export const SwaggerConfig = {
-  DOCS_TITLE: 'OmlaPay APIs',
-  DOCS_DESCRIPTION: 'Default APIs for OmlaPay',
+  DOCS_TITLE: 'Omlapay APIs',
+  DOCS_DESCRIPTION: 'Default APIs for Omlapay',
   DOCS_VERSION: '1.0',
   DOCS_ENDPOINT: 'docs',
 };

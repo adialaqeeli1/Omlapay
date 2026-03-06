@@ -32,6 +32,7 @@ import {
   validateRequired,
   validatePasswordMatch,
   validateAccountActive,
+  maskPhoneNumber,
 } from '@common/utils';
 
 @Injectable()
@@ -73,12 +74,6 @@ export class AdminProfileService {
     const [local, domain] = email.split('@');
     if (local.length <= 2) return `${local[0]}***@${domain}`;
     return `${local[0]}${'*'.repeat(local.length - 2)}${local[local.length - 1]}@${domain}`;
-  }
-
-  private maskPhone(phone: string): string {
-    if (!phone) return '';
-    if (phone.length <= 4) return '***';
-    return `${phone.substring(0, 3)}${'*'.repeat(phone.length - 6)}${phone.substring(phone.length - 3)}`;
   }
 
   // Change Email Flow
@@ -359,13 +354,13 @@ export class AdminProfileService {
     await this.createAuditLog(
       'CHANGE_PHONE_INITIATED',
       adminId,
-      { maskedPhone: this.maskPhone(admin.phoneNumber) },
+      { maskedPhone: maskPhoneNumber(admin.phoneNumber) },
       ipAddress || null,
     );
 
     return {
       message: 'OTP sent to your current phone number',
-      maskedPhone: this.maskPhone(admin.phoneNumber),
+      maskedPhone: maskPhoneNumber(admin.phoneNumber),
     };
   }
 
@@ -483,13 +478,13 @@ export class AdminProfileService {
     await this.createAuditLog(
       'CHANGE_PHONE_NEW_PHONE_ENTERED',
       adminId,
-      { maskedNewPhone: this.maskPhone(dto.newPhoneNumber) },
+      { maskedNewPhone: maskPhoneNumber(dto.newPhoneNumber) },
       ipAddress || null,
     );
 
     return {
       message: 'OTP sent to new phone number',
-      maskedNewPhone: this.maskPhone(dto.newPhoneNumber),
+      maskedNewPhone: maskPhoneNumber(dto.newPhoneNumber),
     };
   }
 
@@ -552,7 +547,7 @@ export class AdminProfileService {
     await this.createAuditLog(
       'CHANGE_PHONE_COMPLETED',
       adminId,
-      { newPhone: this.maskPhone(newPhone) },
+      { newPhone: maskPhoneNumber(newPhone) },
       ipAddress || null,
     );
 
@@ -729,7 +724,7 @@ export class AdminProfileService {
     await this.createAuditLog(
       'OTP_RESENT',
       adminId,
-      { type, sentTo: type === 'email' ? this.maskEmail(sentTo) : this.maskPhone(sentTo) },
+      { type, sentTo: type === 'email' ? this.maskEmail(sentTo) : maskPhoneNumber(sentTo) },
       ipAddress || null,
     );
 
