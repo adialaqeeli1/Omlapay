@@ -1,0 +1,73 @@
+part of 'app_router.dart';
+
+class Routes {
+  static const String splash = _Paths.splash;
+  static const String onboarding = _Paths.onboarding;
+  static const String login = _Paths.login;
+  static const String hardLogin = _Paths.hardLogin;
+  static const String softLogin = _Paths.softLogin;
+  static const String enterPasscode = _Paths.enterPasscode;
+  static const String home = _Paths.home;
+  static const String history = _Paths.history;
+  static const String profile = _Paths.profile;
+  static const String settings = _Paths.settings;
+  static const String about = _Paths.about;
+  static const String faqs = _Paths.faqs;
+  static const String termsAndConditions = _Paths.termsAndConditions;
+  static const String privacyPolicy = _Paths.privacyPolicy;
+  static const String helpCenter = _Paths.helpCenter;
+  static const String sendRequest = _Paths.sendRequest;
+  static const String pastRequests = _Paths.pastRequests;
+  static const String coinDetails = _Paths.coinDetails;
+  static const String transactionDetail = _Paths.transactionDetail;
+  static const String sendCoin = _Paths.sendCoin;
+  static const String receiveCoin = _Paths.receiveCoin;
+  static const String sendReview = _Paths.sendReview;
+  static const String sendVerification = _Paths.sendVerification;
+  static const String sendSuccess = _Paths.sendSuccess;
+  static const String swapCoin = _Paths.swapCoin;
+  static const String swapReview = _Paths.swapReview;
+  static const String swapSuccess = _Paths.swapSuccess;
+  static const String transactionDetails = _Paths.transactionDetails;
+  static const String wallets = _Paths.wallets;
+  static const String qrCode = _Paths.qrCode;
+  static const String accountDetails = _Paths.accountDetails;
+  static const String notifications = _Paths.notifications;
+  static const String kycVerification = _Paths.kycVerification;
+}
+
+abstract class _Paths {
+  static const String splash = '/';
+  static const String onboarding = '/onboarding';
+  static const String login = '/login';
+  static const String hardLogin = '/hard-login';
+  static const String softLogin = '/soft-login';
+  static const String enterPasscode = '/enter-passcode';
+  static const String home = '/home';
+  static const String history = '/history';
+  static const String profile = '/profile';
+  static const String settings = '/settings';
+  static const String about = '/about';
+  static const String faqs = '/faqs';
+  static const String termsAndConditions = '/terms-and-conditions';
+  static const String privacyPolicy = '/privacy-policy';
+  static const String helpCenter = '/help-center';
+  static const String sendRequest = '/send-request';
+  static const String pastRequests = '/past-requests';
+  static const String coinDetails = '/coin-details';
+  static const String transactionDetail = '/transaction-detail';
+  static const String sendCoin = '/send-coin';
+  static const String receiveCoin = '/receive-coin';
+  static const String sendReview = '/send-review';
+  static const String sendVerification = '/send-verification';
+  static const String sendSuccess = '/send-success';
+  static const String swapCoin = '/swap-coin';
+  static const String swapReview = '/swap-review';
+  static const String swapSuccess = '/swap-success';
+  static const String transactionDetails = '/transaction-details';
+  static const String wallets = '/wallets';
+  static const String qrCode = '/qr-code';
+  static const String accountDetails = '/account-details';
+  static const String notifications = '/notifications';
+  static const String kycVerification = '/kyc-verification';
+}

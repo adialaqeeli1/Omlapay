@@ -1,0 +1,25 @@
+# OmlaPay Project Rules
+
+## Tech Stack
+- **Flutter**: Latest stable
+- **State Management**: Provider (LocaleProvider for localization)
+- **Localization**: `flutter_localizations` with ARB files in `assets/l10n/`.
+- **Architecture**: MVVM-ish (Providers, Services, Utils, UI).
+- **Code Gen**: `build_runner`, `freezed`, `json_serializable`.
+
+## Coding Standards
+- **Localization**: ALWAYS use `context.l10n!.keyName` for user-facing strings. DO NOT hardcode strings.
+- **Async/Await**: Use explicit types for Futures.
+- **Error Handling**: Use `AppException` with localization keys (`messageKey`).
+- **Dependencies**: Use `scripts/run.sh` to run the project. It handles code generation automatically.
+
+## Editor Workflow
+- **VS Code / Cursor**: Use the pre-configured "Run Setup" task (Cmd+Shift+B or automatic on Debug Launch) to clean and generate code.
+- **Script**: `scripts/run.sh --build-only` sets up the environment without running the app.
+
+## AI Behavior
+- When adding new strings, ALWAYS add them to BOTH `assets/l10n/app_en.arb` AND `assets/l10n/app_ar.arb`.
+- If a string needs to be added, use snakeCase for keys. 
+- Avoid using reserved keywords (like `continue`) for keys; use `continueAction` instead.
+- Run `flutter gen-l10n` or use the setup script after modifying ARB files.
+- **Icons**: Use `flutter_launcher_icons.yaml` for configuration. Run `dart run flutter_launcher_icons` to regenerate.

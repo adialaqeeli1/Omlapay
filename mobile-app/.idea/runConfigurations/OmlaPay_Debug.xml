@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="OmlaPay (Debug)" type="FlutterRunConfigurationType" factoryName="Flutter">
+    <option name="filePath" value="$PROJECT_DIR$/lib/main.dart" />
+    <method v="2">
+      <option name="ExternalSystemTaskExecution" enabled="true">
+        <option name="task" value="$PROJECT_DIR$/scripts/run.sh" />
+        <option name="args" value="--build-only" />
+      </option>
+    </method>
+  </configuration>
+</component>

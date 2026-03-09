@@ -1,0 +1,213 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../../core/theme/theme.dart';
+import '../../../../widgets/common_back_button.dart';
+import '../provider/swap_provider.dart';
+import '../widgets/currency_input_card.dart';
+import '../../../../widgets/theme_aware_icon.dart';
+import 'coin_selection_sheet.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../routes/app_router.dart';
+
+class SwapCoinView extends StatelessWidget {
+  const SwapCoinView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<SwapProvider>();
+
+    if (provider.isLoading) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: CommonBackButton(),
+          title: const Text('Swap', style: TextStyle(color: Colors.white)),
+          centerTitle: true,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: CommonBackButton(),
+        title: const Text('Swap', style: TextStyle(color: Colors.white)),
+        centerTitle: true,
+      ),
+      body: CustomScrollView(
+        physics: AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            sliver: SliverFillRemaining(
+              hasScrollBody: false,
+              child: Column(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    spacing: 6,
+                    children: [
+                      // From Card
+                      CurrencyInputCard(
+                        title: 'From',
+                        coinSymbol: provider.fromCoin?.symbol ?? 'Select',
+                        amount: provider.fromCoin?.amount ?? '0',
+                        controller: provider.fromAmountController,
+                        isFrom: true,
+                        errorText: provider.error,
+                        onMaxPressed: provider.setMaxAmount,
+                        hasBorder: true,
+                        onCoinTap: () =>
+                            _showCoinSelection(context, provider, true),
+                      ),
+
+                      // Swap Icon
+                      Center(
+                        child: GestureDetector(
+                          onTap: provider.swapCoins,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.black,
+                            ),
+                            child: const ThemeAwareIcon(
+                              assetPath: 'assets/icons/swap.svg',
+                              width: 24,
+                              height: 24,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // To Card
+                      CurrencyInputCard(
+                        title: 'To',
+                        coinSymbol: provider.toCoin?.symbol ?? 'Select',
+                        amount: provider.toCoin?.amount ?? '0',
+                        controller: provider.toAmountController,
+                        isFrom: false,
+                        readOnly: true,
+                        onCoinTap: () =>
+                            _showCoinSelection(context, provider, false),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16.0),
+                  Column(
+                    mainAxisAlignment: .center,
+                    crossAxisAlignment: .center,
+                    children: [
+                      // Swap Fees
+                      if (provider.fromCoin != null && provider.toCoin != null)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Swap fees:',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                            ),
+                            Text(
+                              '1.3 USDT', // Mock value
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      SizedBox(height: 4),
+                      // Exchange rate info (mock)
+                      if (provider.fromCoin != null && provider.toCoin != null)
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            '1 ${provider.fromCoin!.symbol} ≈ 0.00032 ${provider.toCoin!.symbol}',
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+
+                  const Spacer(),
+
+                  SizedBox(height: 16.0),
+                  // Preview Conversion Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed:
+                          provider.error == null &&
+                              provider.fromAmountController.text.isNotEmpty
+                          ? () {
+                              context.push(Routes.swapReview, extra: provider);
+                            }
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.tealColor,
+                        disabledBackgroundColor: AppColors.tealColor
+                            .withOpacity(0.3),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        'Confirm swap',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30), // Bottom padding
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCoinSelection(
+    BuildContext context,
+    SwapProvider provider,
+    bool isFrom,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => SizedBox(
+        height: MediaQuery.of(context).size.height * 0.7,
+        child: CoinSelectionSheet(
+          title: isFrom ? 'From' : 'To',
+          coins: provider.coins,
+          selectedCoin: isFrom ? provider.fromCoin : provider.toCoin,
+          onCoinSelected: (coin) {
+            if (isFrom) {
+              provider.setFromCoin(coin);
+            } else {
+              provider.setToCoin(coin);
+            }
+          },
+        ),
+      ),
+    );
+  }
+}
