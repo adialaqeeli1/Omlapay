@@ -475,22 +475,7 @@ class _HardLoginScreenState extends State<HardLoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        // Forgot passcode link
-                        Center(
-                          child: TextButton(
-                            onPressed: () {
-                              // TODO: Handle forgot passcode
-                            },
-                            child: Text(
-                              l10n.forgotPasscode,
-                              style: TextStyle(
-                                color: AppColors.primaryColor,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
+
                         // Sign up link
                         Center(
                           child: TextButton(

@@ -20,7 +20,9 @@ class _ChooseLanguage extends StatelessWidget {
                     style: context.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       height: 1.2,
-                      // Text color is handled by Theme, but we can enforce it if needed
+                      color: context.isDarkMode
+                          ? AppColors.textWhite
+                          : AppColors.textBlack,
                     ),
                   ),
                   Text(
@@ -28,7 +30,9 @@ class _ChooseLanguage extends StatelessWidget {
                     style: context.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       height: 1.2,
-                      // Text color is handled by Theme, but we can enforce it if needed
+                      color: context.isDarkMode
+                          ? AppColors.textWhite
+                          : AppColors.textBlack,
                     ),
                   ),
                 ],
