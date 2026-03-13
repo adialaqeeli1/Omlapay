@@ -1,5 +1,20 @@
+/// API endpoint paths and base URL configuration for OmlaPay backend.
 class Endpoints {
-  // API
-  static String get baseUrl =>
-      'https://api.example.com'; // Update with your API URL
+  /// Protocol for API requests.
+  static String get protocol => 'https';
+
+  /// API host domain.
+  static String get domain => 'api.omlapay.xyz';
+
+  /// Full base URL for all API requests (e.g. https://api.omlapay.xyz).
+  static String get baseUrl => '$protocol://$domain';
+
+  /// API version prefix used in paths.
+  static String get apiVersion => '/v1';
+
+  /// List coins with prices; supports query param `currency` (e.g. /v1/coins?currency=usd).
+  static String get coins => '$apiVersion/coins';
+
+  /// Sync coin metadata and active status from upstream; POST with empty body.
+  static String get coinsSync => '$coins/sync';
 }

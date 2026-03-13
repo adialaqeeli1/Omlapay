@@ -19,10 +19,10 @@ class ThemeProvider extends ChangeNotifier {
       } else if (savedTheme == 'dark') {
         _themeMode = ThemeMode.dark;
       } else {
-        _themeMode = ThemeMode.system;
+        _themeMode = ThemeMode.dark;
       }
     } else {
-      _themeMode = ThemeMode.system;
+      _themeMode = ThemeMode.dark;
     }
     notifyListeners();
   }
