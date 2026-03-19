@@ -734,6 +734,66 @@ abstract class AppLocalizations {
   /// **'Filter'**
   String get filter;
 
+  /// No description provided for @transactionType.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction type'**
+  String get transactionType;
+
+  /// No description provided for @dateStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Date Start'**
+  String get dateStart;
+
+  /// No description provided for @dateEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Date End'**
+  String get dateEnd;
+
+  /// No description provided for @dateFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Date from...'**
+  String get dateFrom;
+
+  /// No description provided for @dateTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Date to...'**
+  String get dateTo;
+
+  /// No description provided for @year.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get year;
+
+  /// No description provided for @month.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get month;
+
+  /// No description provided for @day.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get day;
+
+  /// No description provided for @reset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get reset;
+
+  /// No description provided for @apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
+
   /// No description provided for @all.
   ///
   /// In en, this message translates to:
@@ -937,6 +997,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save As'**
   String get saveAs;
+
+  /// No description provided for @shareTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Share to'**
+  String get shareTo;
+
+  /// No description provided for @whatsapp.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp'**
+  String get whatsapp;
+
+  /// No description provided for @messages.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages'**
+  String get messages;
+
+  /// No description provided for @mail.
+  ///
+  /// In en, this message translates to:
+  /// **'Mail'**
+  String get mail;
 
   /// No description provided for @recently.
   ///

@@ -340,6 +340,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filter => 'Filter';
 
   @override
+  String get transactionType => 'Transaction type';
+
+  @override
+  String get dateStart => 'Date Start';
+
+  @override
+  String get dateEnd => 'Date End';
+
+  @override
+  String get dateFrom => 'Date from...';
+
+  @override
+  String get dateTo => 'Date to...';
+
+  @override
+  String get year => 'Year';
+
+  @override
+  String get month => 'Month';
+
+  @override
+  String get day => 'Day';
+
+  @override
+  String get reset => 'Reset';
+
+  @override
+  String get apply => 'Apply';
+
+  @override
   String get all => 'All';
 
   @override
@@ -456,6 +486,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get saveAs => 'Save As';
+
+  @override
+  String get shareTo => 'Share to';
+
+  @override
+  String get whatsapp => 'WhatsApp';
+
+  @override
+  String get messages => 'Messages';
+
+  @override
+  String get mail => 'Mail';
 
   @override
   String get recently => 'Recently';

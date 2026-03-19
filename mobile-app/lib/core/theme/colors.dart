@@ -37,7 +37,8 @@ class AppColors {
   static const Color greenColor = Color(0xFF00C566);
 
   //Card Colors
-  static const Color darkCardColor = Color(0xFF1E1E1E);
+  static const Color darkCardColor = Color(0xFF141414);
+  static const Color lightCardColor = Color(0xFFF2F2F2);
   static const Color balanceCardGradientStart = Color(0x991C1C1E);
   static const Color balanceCardGradientEnd = Color(0x991A605B);
   static const Color iconBackground = Color(0xFF2C2C2C);

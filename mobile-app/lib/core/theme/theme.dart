@@ -37,6 +37,7 @@ class AppTheme {
       labelSmall: TextStyle(color: AppColors.textBlack),
     ),
     dividerTheme: const DividerThemeData(color: AppColors.divider),
+    cardColor: AppColors.lightCardColor,
   );
 
   static ThemeData get darkTheme => ThemeData(
@@ -69,5 +70,6 @@ class AppTheme {
       labelSmall: TextStyle(color: AppColors.textWhite),
     ),
     dividerTheme: const DividerThemeData(color: AppColors.divider),
+    cardColor: AppColors.darkCardColor,
   );
 }

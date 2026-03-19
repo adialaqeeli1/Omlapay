@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/models/transaction_model/transaction_model.dart';
 import '../../../core/theme/theme.dart';
 import '../../../providers/global_provider.dart';
 import '../../../widgets/common_back_button.dart';
 import 'package:provider/provider.dart';
+import '../../../widgets/theme_aware_icon.dart';
 import 'widgets/save_as_bottom_sheet.dart';
 
 class TransactionDetailView extends StatefulWidget {
@@ -40,7 +42,9 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
             color: isDarkMode ? AppColors.white : AppColors.textBlack,
           ),
         ),
-        backgroundColor: isDarkMode ? AppColors.darkBackground : AppColors.lightBackground,
+        backgroundColor: isDarkMode
+            ? AppColors.darkBackground
+            : AppColors.lightBackground,
         elevation: 0,
       ),
       body: SafeArea(
@@ -78,7 +82,9 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                             '${_getTypePrefix(widget.transaction.type)}${_formatAmount(widget.transaction.amount)} ${widget.transaction.coinSymbol}',
                             style: context.textTheme.headlineMedium?.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: isDarkMode ? AppColors.white : AppColors.textBlack,
+                              color: isDarkMode
+                                  ? AppColors.white
+                                  : AppColors.textBlack,
                               fontSize: 24,
                             ),
                           ),
@@ -95,17 +101,22 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                           if (isSent) ...[
                             const SizedBox(height: 8),
                             Text(
-                              widget.transaction.status == TransactionStatus.failed
+                              widget.transaction.status ==
+                                      TransactionStatus.failed
                                   ? l10n.failed
-                                  : widget.transaction.status == TransactionStatus.completed
-                                      ? l10n.completed
-                                      : l10n.pending,
+                                  : widget.transaction.status ==
+                                        TransactionStatus.completed
+                                  ? l10n.completed
+                                  : l10n.pending,
                               style: context.textTheme.bodyMedium?.copyWith(
-                                color: widget.transaction.status == TransactionStatus.failed
+                                color:
+                                    widget.transaction.status ==
+                                        TransactionStatus.failed
                                     ? Colors.red
-                                    : widget.transaction.status == TransactionStatus.completed
-                                        ? AppColors.greenColor
-                                        : AppColors.textGrey,
+                                    : widget.transaction.status ==
+                                          TransactionStatus.completed
+                                    ? AppColors.greenColor
+                                    : AppColors.textGrey,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -119,7 +130,9 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                     _buildDetailRow(
                       context,
                       l10n.date,
-                      DateFormat('yyyy-MM-dd HH:mm:ss').format(widget.transaction.date),
+                      DateFormat(
+                        'yyyy-MM-dd HH:mm:ss',
+                      ).format(widget.transaction.date),
                     ),
                     const SizedBox(height: 16),
                     _buildDetailRow(
@@ -145,7 +158,8 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                       _buildDetailRow(
                         context,
                         l10n.transactionFees,
-                        widget.transaction.fee != null && widget.transaction.fee! > 0
+                        widget.transaction.fee != null &&
+                                widget.transaction.fee! > 0
                             ? '${widget.transaction.fee} ${widget.transaction.coinSymbol}'
                             : 'Free',
                       ),
@@ -159,10 +173,12 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                       _buildDetailRow(
                         context,
                         l10n.address,
-                        widget.transaction.toAddress ?? '09405093285dj9483cjxyg89y...',
+                        widget.transaction.toAddress ??
+                            '09405093285dj9483cjxyg89y...',
                         isAddress: true,
                       ),
-                      if (widget.transaction.note != null && widget.transaction.note!.isNotEmpty) ...[
+                      if (widget.transaction.note != null &&
+                          widget.transaction.note!.isNotEmpty) ...[
                         const SizedBox(height: 16),
                         _buildDetailRow(
                           context,
@@ -181,10 +197,14 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: isDarkMode ? AppColors.darkBackground : AppColors.lightBackground,
+                color: isDarkMode
+                    ? AppColors.darkBackground
+                    : AppColors.lightBackground,
                 border: Border(
                   top: BorderSide(
-                    color: isDarkMode ? AppColors.darkCardColor : const Color(0xFFE8E8E8),
+                    color: isDarkMode
+                        ? AppColors.darkCardColor
+                        : const Color(0xFFE8E8E8),
                     width: 1,
                   ),
                 ),
@@ -196,18 +216,21 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: isDarkMode ? AppColors.darkCardColor : const Color(0xFFF5F5F5),
+                      color: isDarkMode
+                          ? AppColors.darkCardColor
+                          : const Color(0xFFF5F5F5),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: IconButton(
-                      icon: Icon(
-                        CupertinoIcons.doc_on_clipboard,
-                        color: isDarkMode ? AppColors.white : AppColors.textBlack,
-                        size: 20,
+                      icon: ThemeAwareIcon(
+                        assetPath: 'assets/icons/share.svg',
+                        width: 24,
+                        height: 24,
+                        colorToInvert: isDarkMode
+                            ? AppColors.iconBlack
+                            : AppColors.white,
                       ),
-                      onPressed: () {
-                        // TODO: Handle copy/share action
-                      },
+                      onPressed: () => _shareTransaction(),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -269,7 +292,10 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                 alignment: Alignment.centerRight,
                 child: isNetwork
                     ? Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primaryColor,
                           borderRadius: BorderRadius.circular(20),
@@ -288,7 +314,9 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                             ? '${value.substring(0, 20)}...'
                             : value,
                         style: context.textTheme.bodyMedium?.copyWith(
-                          color: isDarkMode ? AppColors.white : AppColors.textBlack,
+                          color: isDarkMode
+                              ? AppColors.white
+                              : AppColors.textBlack,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -329,6 +357,20 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
     }
   }
 
+  void _shareTransaction() {
+    final tx = widget.transaction;
+    final amountText =
+        '${_getTypePrefix(tx.type)}${_formatAmount(tx.amount)} ${tx.coinSymbol}';
+    final dateText = DateFormat('MMMM, yyyy').format(tx.date);
+    final hashText = tx.transactionHash ?? tx.toAddress ?? tx.fromAddress ?? '';
+    final shareText = [
+      amountText,
+      dateText,
+      if (hashText.isNotEmpty) hashText,
+    ].join('\n');
+    SharePlus.instance.share(ShareParams(text: shareText));
+  }
+
   void _showSaveAsBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -345,7 +387,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
   void _handleSave(SaveFormat format) {
     final l10n = context.l10n!;
     final formatName = format == SaveFormat.png ? l10n.png : l10n.pdf;
-    
+
     setState(() {
       _successMessage = l10n.transactionSavedSuccessfully(formatName);
       _showSuccessBanner = true;

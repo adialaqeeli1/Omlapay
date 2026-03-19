@@ -10,6 +10,7 @@ import '../../../widgets/common_back_button.dart';
 import '../../../widgets/common_loading_indicator.dart';
 import 'providers/history_provider.dart';
 import 'widgets/coin_filter_tabs.dart';
+import 'widgets/history_filter_bottom_sheet.dart';
 import 'widgets/transaction_item.dart';
 import 'widgets/transaction_section_header.dart';
 
@@ -25,41 +26,58 @@ class HistoryView extends StatelessWidget {
 
     return ChangeNotifierProvider(
       create: (_) => HistoryProvider(),
-      child: Scaffold(
-        appBar: AppBar(
-          leading: context.canPop()
-              ? CommonBackButton(onPressed: () => GoRouter.of(context).pop())
-              : null,
-          title: Text(
-            l10n.transactionHistory,
-            style: theme.textTheme.titleLarge?.copyWith(
-              color: theme.brightness == Brightness.dark
-                  ? AppColors.white
-                  : AppColors.textBlack,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          actions: [
-            IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/filter-icon.svg',
-                width: 24,
-                height: 24,
-                colorFilter: ColorFilter.mode(
-                  theme.brightness == Brightness.dark
-                      ? AppColors.white
-                      : AppColors.textBlack,
-                  BlendMode.srcIn,
-                ),
+      child: Builder(
+        builder: (providerContext) => Scaffold(
+          appBar: AppBar(
+            leading: context.canPop()
+                ? CommonBackButton(onPressed: () => GoRouter.of(context).pop())
+                : null,
+            title: Text(
+              l10n.transactionHistory,
+              style: theme.textTheme.titleLarge?.copyWith(
+                color: theme.brightness == Brightness.dark
+                    ? AppColors.white
+                    : AppColors.textBlack,
+                fontWeight: FontWeight.bold,
               ),
-              onPressed: () {
-                // TODO: Open filter bottom sheet for transaction type (Sent/Received/Swap)
-              },
             ),
-          ],
-        ),
-        body: SafeArea(
-          child: Consumer<HistoryProvider>(
+            actions: [
+              IconButton(
+                icon: SvgPicture.asset(
+                  'assets/icons/filter-icon.svg',
+                  width: 24,
+                  height: 24,
+                  colorFilter: ColorFilter.mode(
+                    theme.brightness == Brightness.dark
+                        ? AppColors.white
+                        : AppColors.textBlack,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                onPressed: () {
+                  final provider =
+                      providerContext.read<HistoryProvider>();
+                  HistoryFilterBottomSheet.show(
+                    providerContext,
+                    selectedTransactionType:
+                        provider.selectedTransactionTypeFilter,
+                    dateStart: provider.dateStart,
+                    dateEnd: provider.dateEnd,
+                    onApply: ({
+                      transactionType,
+                      dateStart,
+                      dateEnd,
+                    }) {
+                      provider.setTransactionTypeFilter(transactionType);
+                      provider.setDateRange(dateStart, dateEnd);
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+          body: SafeArea(
+            child: Consumer<HistoryProvider>(
             builder: (context, provider, child) {
               if (provider.isLoading) {
                 return const Center(child: CommonLoadingIndicator());
@@ -167,6 +185,7 @@ class HistoryView extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 

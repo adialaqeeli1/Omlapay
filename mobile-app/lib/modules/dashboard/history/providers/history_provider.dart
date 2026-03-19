@@ -4,25 +4,62 @@ import '../../../../core/models/transaction_model/transaction_model.dart';
 
 class HistoryProvider extends ChangeNotifier {
   String? _selectedCoinFilter; // null = All, or coin symbol like 'USDT', 'BTC', etc.
+  TransactionType? _selectedTransactionTypeFilter; // null = All
+  DateTime? _dateStart;
+  DateTime? _dateEnd;
   List<TransactionModel> _transactions = [];
   bool _isLoading = false;
   String? _errorMessage;
 
   String? get selectedCoinFilter => _selectedCoinFilter;
+  TransactionType? get selectedTransactionTypeFilter =>
+      _selectedTransactionTypeFilter;
+  DateTime? get dateStart => _dateStart;
+  DateTime? get dateEnd => _dateEnd;
   List<TransactionModel> get transactions => _filteredTransactions;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
   List<TransactionModel> get _filteredTransactions {
-    if (_selectedCoinFilter == null || _selectedCoinFilter == 'All') {
-      developer.log('HistoryProvider: Returning all ${_transactions.length} transactions');
-      return _transactions;
+    var result = _transactions;
+
+    if (_selectedCoinFilter != null && _selectedCoinFilter != 'All') {
+      result = result
+          .where((tx) =>
+              tx.coinSymbol.toUpperCase() == _selectedCoinFilter!.toUpperCase())
+          .toList();
     }
-    final filtered = _transactions
-        .where((tx) => tx.coinSymbol.toUpperCase() == _selectedCoinFilter!.toUpperCase())
-        .toList();
-    developer.log('HistoryProvider: Filtered ${filtered.length} transactions for coin: $_selectedCoinFilter');
-    return filtered;
+
+    if (_selectedTransactionTypeFilter != null) {
+      result = result
+          .where((tx) => tx.type == _selectedTransactionTypeFilter)
+          .toList();
+    }
+
+    if (_dateStart != null) {
+      final startOfDay =
+          DateTime(_dateStart!.year, _dateStart!.month, _dateStart!.day);
+      result = result
+          .where((tx) => !tx.date.isBefore(startOfDay))
+          .toList();
+    }
+
+    if (_dateEnd != null) {
+      final endOfDay = DateTime(
+        _dateEnd!.year,
+        _dateEnd!.month,
+        _dateEnd!.day,
+        23,
+        59,
+        59,
+        999,
+      );
+      result = result
+          .where((tx) => !tx.date.isAfter(endOfDay))
+          .toList();
+    }
+
+    return result;
   }
 
   HistoryProvider() {
@@ -82,9 +119,27 @@ class HistoryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setTransactionTypeFilter(TransactionType? type) {
+    developer.log('HistoryProvider: Setting transaction type filter to: $type');
+    _selectedTransactionTypeFilter = type;
+    notifyListeners();
+  }
+
+  void setDateRange(DateTime? start, DateTime? end) {
+    developer.log(
+      'HistoryProvider: Setting date range: $start - $end',
+    );
+    _dateStart = start;
+    _dateEnd = end;
+    notifyListeners();
+  }
+
   void clearFilter() {
     developer.log('HistoryProvider: Clearing filter');
     _selectedCoinFilter = null;
+    _selectedTransactionTypeFilter = null;
+    _dateStart = null;
+    _dateEnd = null;
     notifyListeners();
   }
 
