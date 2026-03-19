@@ -226,6 +226,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dontHaveAccountSignUp => 'Don\'t have account? Sign Up';
 
   @override
+  String get welcomeToOmlapayLetsGetStarted =>
+      'Welcome to Omlapay, Let\'s get started!';
+
+  @override
+  String get pleaseEnterYourDataToReceiveVerificationCodes =>
+      'Please enter your data to receive verification codes';
+
+  @override
+  String get alreadyHaveAccountLogin => 'Already have an account? Login';
+
+  @override
   String get continueAsGuest => 'Continue as a guest';
 
   @override
@@ -535,6 +546,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get verifyYourPhoneNumber => 'Verify your phone number';
 
   @override
+  String get verifyYourAccount => 'Verify your account';
+
+  @override
+  String verificationCodeSentViaSmsTo(String phone) {
+    return 'An 6 digit verification code has been sent via SMS to $phone.';
+  }
+
+  @override
   String verificationCodesInSeconds(int seconds) {
     return 'You should receive the verification codes in $seconds Seconds';
   }
@@ -551,6 +570,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get setYourNewPasscode => 'Set your new passcode';
+
+  @override
+  String get createAPasscode => 'Create a passcode';
 
   @override
   String get confirmYourPasscode => 'Confirm your passcode';

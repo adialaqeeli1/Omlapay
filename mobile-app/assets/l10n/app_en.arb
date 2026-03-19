@@ -71,6 +71,9 @@
     "phoneNumberMustBe9Digits": "Phone number must be 9 digits",
     "forgotPasscode": "Forgot passcode",
     "dontHaveAccountSignUp": "Don't have account? Sign Up",
+    "welcomeToOmlapayLetsGetStarted": "Welcome to Omlapay, Let's get started!",
+    "pleaseEnterYourDataToReceiveVerificationCodes": "Please enter your data to receive verification codes",
+    "alreadyHaveAccountLogin": "Already have an account? Login",
     "continueAsGuest": "Continue as a guest",
     "byCreatingAnAccountIAgreeToMushafars": "By creating an account I agree to Mushafar's",
     "termsOfService": "Terms of Service",
@@ -181,6 +184,15 @@
     "markAsRead": "Mark as read",
     "forgotPasscodeTitle": "Forgot passcode",
     "verifyYourPhoneNumber": "Verify your phone number",
+    "verifyYourAccount": "Verify your account",
+    "verificationCodeSentViaSmsTo": "An 6 digit verification code has been sent via SMS to {phone}.",
+    "@verificationCodeSentViaSmsTo": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
     "verificationCodesInSeconds": "You should receive the verification codes in {seconds} Seconds",
     "@verificationCodesInSeconds": {
         "placeholders": {
@@ -193,6 +205,7 @@
     "resendOtp": "Resend OTP",
     "needHelpContactSupport": "Need Help? Contact Support",
     "setYourNewPasscode": "Set your new passcode",
+    "createAPasscode": "Create a passcode",
     "confirmYourPasscode": "Confirm your passcode",
     "passcodesMismatchTryAgain": "Passcodes don't match. Try again."
 }

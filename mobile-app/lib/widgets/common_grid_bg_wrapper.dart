@@ -5,6 +5,7 @@ import 'package:omlapay_mobile_app/widgets/common_transparent_card.dart';
 
 import '../core/extentions/context_extensions.dart';
 import '../core/theme/theme.dart';
+import '../modules/auth/providers/login_provider.dart';
 import '../routes/app_router.dart';
 
 class CommonGridBgWrapper extends StatelessWidget {
@@ -200,7 +201,12 @@ class _CommonGridBgWrapperDelegate extends SliverPersistentHeaderDelegate {
                               label: l10n.login,
                               backgroundColor: const Color(0xFF333333),
                               textColor: Colors.white,
-                              onTap: () => context.push(Routes.login),
+                              onTap: () => context.push(
+                                Routes.loginOrRegister,
+                                extra: <String, String>{
+                                  LoginProvider.extraModeKey: LoginProvider.modeHardLogin,
+                                },
+                              ),
                             ),
 
                             _buildHeaderButton(
@@ -208,7 +214,12 @@ class _CommonGridBgWrapperDelegate extends SliverPersistentHeaderDelegate {
                               label: l10n.register,
                               backgroundColor: AppColors.primaryColor,
                               textColor: Colors.white,
-                              onTap: () {},
+                              onTap: () => context.push(
+                                Routes.loginOrRegister,
+                                extra: <String, String>{
+                                  LoginProvider.extraModeKey: LoginProvider.modeRegister,
+                                },
+                              ),
                             ),
                           ],
                         ),

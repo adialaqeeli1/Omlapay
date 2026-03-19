@@ -35,7 +35,10 @@ class LoginProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> onContinuePressed(BuildContext context) async {
+  Future<void> onContinuePressed(
+    BuildContext context, {
+    bool isRegister = false,
+  }) async {
     if (!canContinue) {
       return;
     }
@@ -43,14 +46,24 @@ class LoginProvider extends ChangeNotifier {
     _isSubmitting = true;
     notifyListeners();
 
-    context.go(
-      Routes.enterOrSetPasscode,
-      extra: {
-        extraModeKey: modeHardLogin,
-        extraCountryCodeKey: countryCode,
-        extraPhoneNumberKey: digitsOnlyPhone,
-      },
-    );
+    if (isRegister) {
+      context.go(
+        Routes.registerVerification,
+        extra: {
+          extraCountryCodeKey: countryCode,
+          extraPhoneNumberKey: digitsOnlyPhone,
+        },
+      );
+    } else {
+      context.go(
+        Routes.enterOrSetPasscode,
+        extra: {
+          extraModeKey: modeHardLogin,
+          extraCountryCodeKey: countryCode,
+          extraPhoneNumberKey: digitsOnlyPhone,
+        },
+      );
+    }
     _isSubmitting = false;
     notifyListeners();
   }

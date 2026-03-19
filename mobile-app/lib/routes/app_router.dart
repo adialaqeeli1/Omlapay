@@ -8,7 +8,9 @@ import '../modules/auth/providers/login_provider.dart';
 import '../modules/auth/providers/passcode_provider.dart';
 import '../modules/auth/views/enter_or_set_passcode.dart';
 import '../modules/auth/views/forgot_passcode.dart';
-import '../modules/auth/views/login_screen.dart';
+import '../modules/auth/views/login_or_register_screen.dart';
+import '../modules/auth/views/verification_screen.dart';
+import '../modules/auth/providers/verification_provider.dart';
 import '../modules/coin_details/view/coin_details_view.dart';
 import '../modules/coin_details/providers/coin_details_provider.dart';
 import '../modules/dashboard/dashboard_view.dart';
@@ -74,11 +76,11 @@ class AppRouter {
         ),
       ),
       GoRoute(
-        path: Routes.login,
-        name: 'login',
+        path: Routes.loginOrRegister,
+        name: 'loginOrRegister',
         builder: (context, state) => ChangeNotifierProvider(
           create: (_) => LoginProvider(),
-          child: const LoginScreen(),
+          child: const LoginOrRegisterScreen(),
         ),
         redirect: AuthMiddleware.isUnauthenticated,
       ),
@@ -107,8 +109,7 @@ class AppRouter {
                   routePayload[LoginProvider.extraCountryCodeKey] as String?;
               final payloadPhoneNumber =
                   routePayload[LoginProvider.extraPhoneNumberKey] as String?;
-              if (payloadCountryCode != null &&
-                  payloadCountryCode.isNotEmpty) {
+              if (payloadCountryCode != null && payloadCountryCode.isNotEmpty) {
                 countryCode = payloadCountryCode;
               }
               if (payloadPhoneNumber != null) {
@@ -162,6 +163,25 @@ class AppRouter {
           );
         },
         redirect: AuthMiddleware.forgotPasscode,
+      ),
+      GoRoute(
+        path: Routes.registerVerification,
+        name: 'registerVerification',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final countryCode =
+              extra?[LoginProvider.extraCountryCodeKey] as String? ?? '';
+          final phoneNumber =
+              extra?[LoginProvider.extraPhoneNumberKey] as String? ?? '';
+          return ChangeNotifierProvider(
+            create: (_) => VerificationProvider(
+              phoneNumber: phoneNumber,
+              countryCode: countryCode,
+            ),
+            child: const VerificationScreen(),
+          );
+        },
+        redirect: AuthMiddleware.registerVerification,
       ),
       ShellRoute(
         builder: (context, state, child) => DashboardView(child: child),

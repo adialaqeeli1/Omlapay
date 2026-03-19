@@ -226,6 +226,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dontHaveAccountSignUp => 'ليس لديك حساب؟ سجل';
 
   @override
+  String get welcomeToOmlapayLetsGetStarted => 'مرحبًا بك في أوملاباي، لنبدأ!';
+
+  @override
+  String get pleaseEnterYourDataToReceiveVerificationCodes =>
+      'يرجى إدخال بياناتك لاستلام رموز التحقق';
+
+  @override
+  String get alreadyHaveAccountLogin => 'لديك حساب بالفعل؟ تسجيل الدخول';
+
+  @override
   String get continueAsGuest => 'المتابعة كضيف';
 
   @override
@@ -534,6 +544,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get verifyYourPhoneNumber => 'تحقق من رقم هاتفك';
 
   @override
+  String get verifyYourAccount => 'تحقق من حسابك';
+
+  @override
+  String verificationCodeSentViaSmsTo(String phone) {
+    return 'تم إرسال رمز التحقق المكون من 6 أرقام عبر الرسائل القصيرة إلى $phone.';
+  }
+
+  @override
   String verificationCodesInSeconds(int seconds) {
     return 'يجب أن تستلم رموز التحقق خلال $seconds ثانية';
   }
@@ -550,6 +568,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get setYourNewPasscode => 'قم بتعيين رمز المرور الجديد';
+
+  @override
+  String get createAPasscode => 'إنشاء رمز مرور';
 
   @override
   String get confirmYourPasscode => 'تأكيد رمز المرور';
