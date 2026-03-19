@@ -9,6 +9,7 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/theme.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../widgets/common_back_button.dart';
+import '../../../widgets/theme_aware_icon.dart';
 import '../services/wallet_address_service.dart';
 
 class AccountDetailsView extends StatefulWidget {
@@ -135,16 +136,12 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                 ),
               ),
             ),
-            // IconButton(
-            //   icon: Icon(
-            //     Icons.edit,
-            //     size: 20,
-            //     color: textColor,
-            //   ),
-            //   onPressed: onEdit,
-            //   padding: EdgeInsets.zero,
-            //   constraints: const BoxConstraints(),
-            // ),
+            IconButton(
+              icon: ThemeAwareIcon(assetPath: 'assets/icons/edit.svg'),
+              onPressed: onEdit,
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints.loose(const Size(24, 24)),
+            ),
           ],
         ),
       ],
@@ -186,49 +183,36 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
           onTypeChanged: onTypeChanged,
         ),
         const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: theme.brightness == Brightness.dark
-                ? Colors.grey[900]
-                : Colors.grey[100],
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: SelectableText(
-                  currentAddress,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    fontFamily: GoogleFonts.poppins().fontFamily,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              IconButton(
-                icon: Icon(
-                  Icons.copy,
-                  size: 20,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: SelectableText(
+                currentAddress,
+                style: TextStyle(
                   color: textColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  fontFamily: GoogleFonts.poppins().fontFamily,
                 ),
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: currentAddress));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${l10n.copy}: $currentAddress'),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                },
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 12),
+            IconButton(
+              icon: Icon(Icons.copy, size: 20, color: textColor),
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: currentAddress));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${l10n.copy}: $currentAddress'),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              },
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          ],
         ),
       ],
     );
@@ -279,7 +263,9 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                     style: TextStyle(
                       color: isSelected ? textColor : AppColors.textLightGrey,
                       fontSize: 16,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w400,
                       fontFamily: GoogleFonts.poppins().fontFamily,
                     ),
                   ),
@@ -288,7 +274,9 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                     height: 2,
                     width: displayText.length * 10.0,
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primaryColor : Colors.transparent,
+                      color: isSelected
+                          ? AppColors.primaryColor
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(1),
                     ),
                   ),

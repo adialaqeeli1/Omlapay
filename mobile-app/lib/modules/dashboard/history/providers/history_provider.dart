@@ -96,9 +96,9 @@ class HistoryProvider extends ChangeNotifier {
     notifyListeners();
 
     // Simulate API call delay
-    Future.delayed(const Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 500), () async {
       try {
-        _transactions = _generateDummyTransactions();
+        _transactions = await _generateDummyTransactions();
         _isLoading = false;
         developer.log(
           'HistoryProvider: Successfully loaded ${_transactions.length} dummy transactions',
@@ -150,10 +150,11 @@ class HistoryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<TransactionModel> _generateDummyTransactions() {
+  Future<List<TransactionModel>> _generateDummyTransactions() async {
     developer.log('HistoryProvider: Generating dummy transactions');
 
     try {
+      await Future.delayed(const Duration(milliseconds: 500));
       return MockData.getTransactions();
     } catch (e) {
       developer.log(
