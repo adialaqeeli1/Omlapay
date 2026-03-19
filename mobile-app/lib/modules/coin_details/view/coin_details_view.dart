@@ -219,11 +219,12 @@ class CoinDetailsView extends StatelessWidget {
                             fontSize: 18.0,
                           ),
                         ),
-                        // Dropdown placeholder for "Sent"
+
                         Row(
+                          spacing: 4,
                           children: [
                             Text(
-                              l10n.sent,
+                              l10n.all,
                               style: context.textTheme.bodyMedium?.copyWith(
                                 color: AppColors.textGrey,
                               ),
