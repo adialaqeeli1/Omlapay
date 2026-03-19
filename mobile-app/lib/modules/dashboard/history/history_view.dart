@@ -6,7 +6,6 @@ import '../../../core/extentions/context_extensions.dart';
 import '../../../core/models/transaction_model/transaction_model.dart';
 import '../../../core/theme/theme.dart';
 import '../../../routes/app_router.dart';
-import '../../../widgets/common_back_button.dart';
 import '../../../widgets/common_loading_indicator.dart';
 import 'providers/history_provider.dart';
 import 'widgets/coin_filter_tabs.dart';
@@ -29,9 +28,7 @@ class HistoryView extends StatelessWidget {
       child: Builder(
         builder: (providerContext) => Scaffold(
           appBar: AppBar(
-            leading: context.canPop()
-                ? CommonBackButton(onPressed: () => GoRouter.of(context).pop())
-                : null,
+            scrolledUnderElevation: 0,
             title: Text(
               l10n.transactionHistory,
               style: theme.textTheme.titleLarge?.copyWith(
@@ -55,19 +52,14 @@ class HistoryView extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
-                  final provider =
-                      providerContext.read<HistoryProvider>();
+                  final provider = providerContext.read<HistoryProvider>();
                   HistoryFilterBottomSheet.show(
                     providerContext,
                     selectedTransactionType:
                         provider.selectedTransactionTypeFilter,
                     dateStart: provider.dateStart,
                     dateEnd: provider.dateEnd,
-                    onApply: ({
-                      transactionType,
-                      dateStart,
-                      dateEnd,
-                    }) {
+                    onApply: ({transactionType, dateStart, dateEnd}) {
                       provider.setTransactionTypeFilter(transactionType);
                       provider.setDateRange(dateStart, dateEnd);
                     },
@@ -78,114 +70,115 @@ class HistoryView extends StatelessWidget {
           ),
           body: SafeArea(
             child: Consumer<HistoryProvider>(
-            builder: (context, provider, child) {
-              if (provider.isLoading) {
-                return const Center(child: CommonLoadingIndicator());
-              }
+              builder: (context, provider, child) {
+                if (provider.isLoading) {
+                  return const Center(child: CommonLoadingIndicator());
+                }
 
-              if (provider.transactions.isEmpty) {
-                return Center(
-                  child: Transform.translate(
-                    offset: Offset(
-                      0,
-                      -MediaQuery.of(context).size.height * 0.1,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SvgPicture.asset(
-                          theme.brightness == Brightness.dark
-                              ? 'assets/icons/empty-state-dark.svg'
-                              : 'assets/icons/empty-state.svg',
-                          width: 250,
-                          height: 200,
-                        ),
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.01,
-                        ),
-                        Text(
-                          l10n.noTransactionsFound,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.brightness == Brightness.dark
-                                ? AppColors.textWhite
-                                : AppColors.textBlack,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                          ),
-                        ),
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.01,
-                        ),
-                        Text(
-                          l10n.allIncomingTransactionsListed,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textLightGrey,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }
-
-              // Group transactions by date
-              final groupedTransactions = _groupTransactionsByDate(
-                provider.transactions,
-              );
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Spacing after heading
-                  const SizedBox(height: 16),
-                  // Coin Filter Tabs
-                  CoinFilterTabs(
-                    selectedCoin: provider.selectedCoinFilter,
-                    onCoinSelected: (coin) {
-                      provider.setCoinFilter(coin);
-                    },
-                  ),
-                  // Transactions List
-                  Expanded(
-                    child: ListView.builder(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: horizontalPadding,
+                if (provider.transactions.isEmpty) {
+                  return Center(
+                    child: Transform.translate(
+                      offset: Offset(
+                        0,
+                        -MediaQuery.of(context).size.height * 0.1,
                       ),
-                      itemCount: groupedTransactions.length,
-                      itemBuilder: (context, index) {
-                        final group = groupedTransactions[index];
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            TransactionSectionHeader(
-                              date: group['date'] as DateTime,
-                              isFirst: index == 0,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SvgPicture.asset(
+                            theme.brightness == Brightness.dark
+                                ? 'assets/icons/empty-state-dark.svg'
+                                : 'assets/icons/empty-state.svg',
+                            width: 250,
+                            height: 200,
+                          ),
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.01,
+                          ),
+                          Text(
+                            l10n.noTransactionsFound,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: theme.brightness == Brightness.dark
+                                  ? AppColors.textWhite
+                                  : AppColors.textBlack,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
                             ),
-                            ...(group['transactions'] as List<TransactionModel>)
-                                .map(
-                                  (transaction) => TransactionItem(
-                                    transaction: transaction,
-                                    onTap: () {
-                                      context.push(
-                                        Routes.transactionDetail,
-                                        extra: transaction,
-                                      );
-                                    },
-                                  ),
-                                ),
-                          ],
-                        );
+                          ),
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.01,
+                          ),
+                          Text(
+                            l10n.allIncomingTransactionsListed,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: AppColors.textLightGrey,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                // Group transactions by date
+                final groupedTransactions = _groupTransactionsByDate(
+                  provider.transactions,
+                );
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Spacing after heading
+                    const SizedBox(height: 16),
+                    // Coin Filter Tabs
+                    CoinFilterTabs(
+                      selectedCoin: provider.selectedCoinFilter,
+                      onCoinSelected: (coin) {
+                        provider.setCoinFilter(coin);
                       },
                     ),
-                  ),
-                ],
-              );
-            },
+                    // Transactions List
+                    Expanded(
+                      child: ListView.builder(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: horizontalPadding,
+                        ),
+                        itemCount: groupedTransactions.length,
+                        itemBuilder: (context, index) {
+                          final group = groupedTransactions[index];
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TransactionSectionHeader(
+                                date: group['date'] as DateTime,
+                                isFirst: index == 0,
+                              ),
+                              ...(group['transactions']
+                                      as List<TransactionModel>)
+                                  .map(
+                                    (transaction) => TransactionItem(
+                                      transaction: transaction,
+                                      onTap: () {
+                                        context.push(
+                                          Routes.transactionDetail,
+                                          extra: transaction,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 
