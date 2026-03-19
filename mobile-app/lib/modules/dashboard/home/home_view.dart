@@ -454,29 +454,35 @@ class HomeView extends StatelessWidget {
           ],
         ),
       ),
-      if (isAuthenticated)
-        Positioned.directional(
-          textDirection: context.textDirection,
-          end: 16,
-          bottom: 0,
-          child: IconButton(
-            onPressed: () {
+      // if (isAuthenticated)
+      Positioned.directional(
+        textDirection: context.textDirection,
+        end: 16,
+        bottom: 0,
+        child: IconButton(
+          onPressed: () {
+            if (isAuthenticated) {
               if (context.read<GlobalProvider>().isBalanceLoading) return;
               context.read<GlobalProvider>().toggleBalanceVisibility();
-            },
-            icon: SvgPicture.asset(
-              context.watch<GlobalProvider>().isBalanceVisible
-                  ? 'assets/icons/eye.svg'
-                  : 'assets/icons/eye-close.svg',
-              width: 24,
-              height: 24,
-              colorFilter: ColorFilter.mode(
-                AppColors.primaryColor,
-                BlendMode.srcIn,
-              ),
+              return;
+            } else {
+              context.push(Routes.loginOrRegister);
+              return;
+            }
+          },
+          icon: SvgPicture.asset(
+            context.watch<GlobalProvider>().isBalanceVisible
+                ? 'assets/icons/eye.svg'
+                : 'assets/icons/eye-close.svg',
+            width: 24,
+            height: 24,
+            colorFilter: ColorFilter.mode(
+              AppColors.primaryColor,
+              BlendMode.srcIn,
             ),
           ),
         ),
+      ),
     ],
   );
 }
