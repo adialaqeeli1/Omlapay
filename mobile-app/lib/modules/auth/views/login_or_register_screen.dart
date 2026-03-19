@@ -11,11 +11,18 @@ import '../providers/login_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_back_button.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class LoginOrRegisterScreen extends StatelessWidget {
+  const LoginOrRegisterScreen({super.key});
+
+  static bool _isRegisterMode(BuildContext context) {
+    final extra = GoRouterState.of(context).extra;
+    if (extra is! Map<String, dynamic>) return false;
+    return extra[LoginProvider.extraModeKey] == LoginProvider.modeRegister;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isRegister = _isRegisterMode(context);
     final loginProvider = context.watch<LoginProvider>();
     final l10n = context.l10n!;
     final theme = context.theme;
@@ -67,31 +74,35 @@ class LoginScreen extends StatelessWidget {
                     if (!context.canPop()) const SizedBox(height: 44),
                     Row(
                       children: [
-                        Container(
-                          width: 44,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryColor,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Container(
-                          width: 14,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: indicatorInactiveColor,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
+                        ...List.generate(isRegister ? 4 : 2, (index) {
+                          final isActive = index == 0;
+                          final count = isRegister ? 4 : 2;
+                          return Padding(
+                            padding: EdgeInsetsDirectional.only(
+                              end: index < count - 1 ? 4 : 0,
+                            ),
+                            child: Container(
+                              width: isActive ? 44 : 14,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: isActive
+                                    ? AppColors.primaryColor
+                                    : indicatorInactiveColor,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          );
+                        }),
                       ],
                     ),
                     const SizedBox(height: 28),
                     Text(
-                      l10n.welcomeBackToOmlapay,
+                      isRegister
+                          ? l10n.welcomeToOmlapayLetsGetStarted
+                          : l10n.welcomeBackToOmlapay,
                       style: GoogleFonts.poppinsTextTheme().displaySmall
                           ?.copyWith(
-                            fontSize: 36,
+                            fontSize: 34,
                             fontWeight: FontWeight.w700,
                             height: 1.24,
                             color: theme.colorScheme.onSurface,
@@ -100,10 +111,12 @@ class LoginScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 18),
                     Text(
-                      l10n.pleaseEnterYourNumberAndPasscodeToLogin,
+                      isRegister
+                          ? l10n.pleaseEnterYourDataToReceiveVerificationCodes
+                          : l10n.pleaseEnterYourNumberAndPasscodeToLogin,
                       style: GoogleFonts.poppinsTextTheme().titleMedium
                           ?.copyWith(
-                            fontSize: 20,
+                            fontSize: 18,
                             fontWeight: FontWeight.w400,
                             color: subtitleColor,
                             height: 1.35,
@@ -197,7 +210,10 @@ class LoginScreen extends StatelessWidget {
                       height: 52,
                       child: ElevatedButton(
                         onPressed: loginProvider.canContinue
-                            ? () => loginProvider.onContinuePressed(context)
+                            ? () => loginProvider.onContinuePressed(
+                                context,
+                                isRegister: isRegister,
+                              )
                             : null,
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
@@ -220,9 +236,20 @@ class LoginScreen extends StatelessWidget {
                     const SizedBox(height: 36),
                     Center(
                       child: GestureDetector(
-                        onTap: () => context.push(Routes.onboarding),
+                        onTap: () {
+                          context.go(
+                            Routes.loginOrRegister,
+                            extra: <String, String>{
+                              LoginProvider.extraModeKey: isRegister
+                                  ? LoginProvider.modeHardLogin
+                                  : LoginProvider.modeRegister,
+                            },
+                          );
+                        },
                         child: Text(
-                          l10n.dontHaveAccountSignUp,
+                          isRegister
+                              ? l10n.alreadyHaveAccountLogin
+                              : l10n.dontHaveAccountSignUp,
                           textAlign: TextAlign.center,
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontSize: 18,

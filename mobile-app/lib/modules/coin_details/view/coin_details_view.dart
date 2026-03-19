@@ -91,7 +91,7 @@ class CoinDetailsView extends StatelessWidget {
                                 .isAuthenticated;
 
                             if (!isAuthenticated) {
-                              context.push(Routes.login);
+                              context.push(Routes.loginOrRegister);
                               return;
                             }
                             context

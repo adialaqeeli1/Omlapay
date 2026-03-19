@@ -45,15 +45,75 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     );
     final activeDotColor = AppColors.primaryColor;
     final errorColor = theme.colorScheme.error;
+    final indicatorInactiveColor = theme.colorScheme.onSurface.withValues(
+      alpha: isDark ? 0.16 : 0.20,
+    );
+    final isRegisterMode = mode == LoginProvider.modeRegister;
 
     return Scaffold(
       appBar: AppBar(
         leading: isSoftLogin
             ? null
-            : (context.canPop() ? CommonBackButton() : null),
+            : (isRegisterMode
+                ? IconButton(
+                    onPressed: () {
+                      final provider = context.read<PasscodeProvider>();
+                      context.go(
+                        Routes.registerVerification,
+                        extra: {
+                          LoginProvider.extraCountryCodeKey:
+                              provider.countryCode,
+                          LoginProvider.extraPhoneNumberKey:
+                              provider.phoneNumber,
+                        },
+                      );
+                    },
+                    icon: SvgPicture.asset(
+                      context.textDirection == TextDirection.rtl
+                          ? 'assets/icons/arrow_forward.svg'
+                          : 'assets/icons/arrow_back.svg',
+                      colorFilter: ColorFilter.mode(
+                        context.isDarkMode
+                            ? AppColors.white
+                            : AppColors.darkSurface,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  )
+                : (context.canPop() ? CommonBackButton() : null)),
         elevation: 0,
         backgroundColor: Colors.transparent,
         scrolledUnderElevation: 0,
+        bottom: isRegisterMode
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(24),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                  child: Row(
+                    children: [
+                      ...List.generate(4, (index) {
+                        final isActive = index == 3;
+                        return Padding(
+                          padding: EdgeInsetsDirectional.only(
+                            end: index < 3 ? 4 : 0,
+                          ),
+                          child: Container(
+                            width: isActive ? 44 : 14,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: isActive
+                                  ? AppColors.primaryColor
+                                  : indicatorInactiveColor,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              )
+            : null,
         actions: isSoftLogin
             ? [
                 Padding(
@@ -97,20 +157,25 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: 20,
-                ).copyWith(top: isSoftLogin ? 20 : 0),
+                ).copyWith(
+                  top: isSoftLogin
+                      ? 20
+                      : (isRegisterMode ? 28 : 0),
+                ),
                 child: Column(
                   children: [
-                    Text(
-                      l10n.welcomeToOmlaPay,
-                      style: GoogleFonts.poppinsTextTheme().titleMedium
-                          ?.copyWith(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w500,
-                            color: subtitleColor,
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
+                    if (!isRegisterMode)
+                      Text(
+                        l10n.welcomeToOmlaPay,
+                        style: GoogleFonts.poppinsTextTheme().titleMedium
+                            ?.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w500,
+                              color: subtitleColor,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                    if (!isRegisterMode) const SizedBox(height: 24),
                     Text(
                       _titleForMode(l10n),
                       style: GoogleFonts.poppinsTextTheme().displaySmall
@@ -212,19 +277,23 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
   static Future<void> _onLogout(BuildContext context) async {
     await context.read<AuthProvider>().logout();
     if (context.mounted) {
-      context.go(Routes.login);
+      context.go(Routes.loginOrRegister);
     }
   }
 
   bool _showForgotPasscodeLink() {
     if (mode == LoginProvider.modeResetPasscode ||
-        mode == LoginProvider.modeConfirmPasscode) {
+        mode == LoginProvider.modeConfirmPasscode ||
+        mode == LoginProvider.modeRegister) {
       return false;
     }
     return true;
   }
 
   String _titleForMode(dynamic l10n) {
+    if (mode == LoginProvider.modeRegister) {
+      return l10n.createAPasscode;
+    }
     if (mode == LoginProvider.modeResetPasscode) {
       return l10n.setYourNewPasscode;
     }
@@ -259,9 +328,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              context.l10n?.networkError ?? 'Network error',
-            ),
+            content: Text(context.l10n?.networkError ?? 'Network error'),
           ),
         );
       }
@@ -291,6 +358,22 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
       return;
     }
 
+    if (mode == LoginProvider.modeRegister) {
+      final authProvider = context.read<AuthProvider>();
+      final isValid = await provider.verify(
+        verifyPasscode:
+            ({
+              required String phoneNumber,
+              required String countryCode,
+              required String passcode,
+            }) =>
+                authProvider.setPasscode(phoneNumber, countryCode, passcode),
+      );
+      if (!context.mounted || !isValid) return;
+      context.go(Routes.home);
+      return;
+    }
+
     final authProvider = context.read<AuthProvider>();
 
     if (mode == LoginProvider.modeConfirmPasscode) {
@@ -301,13 +384,13 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
               required String countryCode,
               required String passcode,
             }) async {
-          if (passcode != (pendingPasscode ?? '')) return false;
-          return await authProvider.setPasscode(
-            phoneNumber,
-            countryCode,
-            passcode,
-          );
-        },
+              if (passcode != (pendingPasscode ?? '')) return false;
+              return await authProvider.setPasscode(
+                phoneNumber,
+                countryCode,
+                passcode,
+              );
+            },
       );
       if (!context.mounted || !isValid) return;
       context.go(Routes.home);

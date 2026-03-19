@@ -71,6 +71,9 @@
     "phoneNumberMustBe9Digits": "يجب أن يكون رقم الهاتف 9 أرقام",
     "forgotPasscode": "نسيت كلمة المرور",
     "dontHaveAccountSignUp": "ليس لديك حساب؟ سجل",
+    "welcomeToOmlapayLetsGetStarted": "مرحبًا بك في أوملاباي، لنبدأ!",
+    "pleaseEnterYourDataToReceiveVerificationCodes": "يرجى إدخال بياناتك لاستلام رموز التحقق",
+    "alreadyHaveAccountLogin": "لديك حساب بالفعل؟ تسجيل الدخول",
     "continueAsGuest": "المتابعة كضيف",
     "byCreatingAnAccountIAgreeToMushafars": "بإنشاء حساب، أوافق على",
     "termsOfService": "شروط الخدمة",
@@ -181,6 +184,15 @@
     "markAsRead": "تعليم كمقروء",
     "forgotPasscodeTitle": "نسيت رمز المرور",
     "verifyYourPhoneNumber": "تحقق من رقم هاتفك",
+    "verifyYourAccount": "تحقق من حسابك",
+    "verificationCodeSentViaSmsTo": "تم إرسال رمز التحقق المكون من 6 أرقام عبر الرسائل القصيرة إلى {phone}.",
+    "@verificationCodeSentViaSmsTo": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
     "verificationCodesInSeconds": "يجب أن تستلم رموز التحقق خلال {seconds} ثانية",
     "@verificationCodesInSeconds": {
         "placeholders": {
@@ -193,6 +205,7 @@
     "resendOtp": "إعادة إرسال رمز التحقق",
     "needHelpContactSupport": "تحتاج مساعدة؟ تواصل مع الدعم",
     "setYourNewPasscode": "قم بتعيين رمز المرور الجديد",
+    "createAPasscode": "إنشاء رمز مرور",
     "confirmYourPasscode": "تأكيد رمز المرور",
     "passcodesMismatchTryAgain": "رموز المرور غير متطابقة. حاول مرة أخرى."
 }

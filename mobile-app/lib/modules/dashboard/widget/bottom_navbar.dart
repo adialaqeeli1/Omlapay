@@ -157,7 +157,7 @@ class _NavItem extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                GoRouter.of(context).go(Routes.login);
+                GoRouter.of(context).go(Routes.loginOrRegister);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryColor,

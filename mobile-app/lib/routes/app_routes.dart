@@ -3,9 +3,10 @@ part of 'app_router.dart';
 class Routes {
   static const String splash = _Paths.splash;
   static const String onboarding = _Paths.onboarding;
-  static const String login = _Paths.login;
+  static const String loginOrRegister = _Paths.loginOrRegister;
   static const String enterOrSetPasscode = _Paths.enterOrSetPasscode;
   static const String forgotPasscode = _Paths.forgotPasscode;
+  static const String registerVerification = _Paths.registerVerification;
   static const String home = _Paths.home;
   static const String history = _Paths.history;
   static const String profile = _Paths.profile;
@@ -38,9 +39,10 @@ class Routes {
 abstract class _Paths {
   static const String splash = '/';
   static const String onboarding = '/onboarding';
-  static const String login = '/login';
+  static const String loginOrRegister = '/login-or-register';
   static const String enterOrSetPasscode = '/enter-or-set-passcode';
   static const String forgotPasscode = '/forgot-passcode';
+  static const String registerVerification = '/register-verification';
   static const String home = '/home';
   static const String history = '/history';
   static const String profile = '/profile';

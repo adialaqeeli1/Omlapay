@@ -524,6 +524,24 @@ abstract class AppLocalizations {
   /// **'Don\'t have account? Sign Up'**
   String get dontHaveAccountSignUp;
 
+  /// No description provided for @welcomeToOmlapayLetsGetStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Omlapay, Let\'s get started!'**
+  String get welcomeToOmlapayLetsGetStarted;
+
+  /// No description provided for @pleaseEnterYourDataToReceiveVerificationCodes.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your data to receive verification codes'**
+  String get pleaseEnterYourDataToReceiveVerificationCodes;
+
+  /// No description provided for @alreadyHaveAccountLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? Login'**
+  String get alreadyHaveAccountLogin;
+
   /// No description provided for @continueAsGuest.
   ///
   /// In en, this message translates to:
@@ -1088,6 +1106,18 @@ abstract class AppLocalizations {
   /// **'Verify your phone number'**
   String get verifyYourPhoneNumber;
 
+  /// No description provided for @verifyYourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your account'**
+  String get verifyYourAccount;
+
+  /// No description provided for @verificationCodeSentViaSmsTo.
+  ///
+  /// In en, this message translates to:
+  /// **'An 6 digit verification code has been sent via SMS to {phone}.'**
+  String verificationCodeSentViaSmsTo(String phone);
+
   /// No description provided for @verificationCodesInSeconds.
   ///
   /// In en, this message translates to:
@@ -1117,6 +1147,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Set your new passcode'**
   String get setYourNewPasscode;
+
+  /// No description provided for @createAPasscode.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a passcode'**
+  String get createAPasscode;
 
   /// No description provided for @confirmYourPasscode.
   ///

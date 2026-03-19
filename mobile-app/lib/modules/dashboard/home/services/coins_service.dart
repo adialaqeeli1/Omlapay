@@ -32,18 +32,12 @@ class CoinsService {
 
     final dynamic data = response['data'];
     if (data is! Map<String, dynamic>) {
-      throw AppException(
-        'Invalid coins response',
-        messageKey: 'requestFailed',
-      );
+      throw AppException('Invalid coins response', messageKey: 'requestFailed');
     }
 
     final dynamic coins = data['coins'];
     if (coins is! List) {
-      throw AppException(
-        'Invalid coins list',
-        messageKey: 'requestFailed',
-      );
+      throw AppException('Invalid coins list', messageKey: 'requestFailed');
     }
 
     return coins
@@ -127,7 +121,7 @@ class CoinsService {
     return CoinModel(
       name: name.isEmpty ? symbol : name,
       symbol: symbol.isEmpty ? 'N/A' : symbol,
-      amount: '--',
+      amount: '0.00',
       valueInUsd: displayPrice,
     );
   }
