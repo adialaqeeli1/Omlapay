@@ -5,7 +5,6 @@ import 'package:omlapay_mobile_app/core/theme/theme.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/extentions/context_extensions.dart';
-import '../../core/l10n/app_localizations.dart';
 import '../../providers/auth_provider.dart';
 import '../../routes/app_router.dart';
 

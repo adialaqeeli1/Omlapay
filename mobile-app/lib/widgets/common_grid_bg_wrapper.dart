@@ -200,9 +200,7 @@ class _CommonGridBgWrapperDelegate extends SliverPersistentHeaderDelegate {
                               label: l10n.login,
                               backgroundColor: const Color(0xFF333333),
                               textColor: Colors.white,
-                              onTap: () {
-                                context.push(Routes.hardLogin);
-                              },
+                              onTap: () => context.push(Routes.login),
                             ),
 
                             _buildHeaderButton(

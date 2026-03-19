@@ -11,17 +11,11 @@ import 'providers/global_provider.dart';
 import 'providers/notification_provider.dart';
 import 'core/l10n/app_localizations.dart';
 import 'routes/app_router.dart';
-import 'modules/auth/services/user_service.dart';
 
 Future<void> _initializeApp() async {
   // Initialize storage (non-blocking)
   await StorageService.init().catchError((error) {
     debugPrint("Error initializing storage: $error");
-  });
-
-  // Initialize dummy users data
-  await UserService.initializeDummyUsers().catchError((error) {
-    debugPrint("Error initializing dummy users: $error");
   });
 }
 
@@ -46,7 +40,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
         ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
         ChangeNotifierProvider<GlobalProvider>(create: (_) => GlobalProvider()),
-        ChangeNotifierProvider<NotificationProvider>(create: (_) => NotificationProvider()),
+        ChangeNotifierProvider<NotificationProvider>(
+          create: (_) => NotificationProvider(),
+        ),
       ],
       child: Consumer2<LocaleProvider, ThemeProvider>(
         builder: (context, localeProvider, themeProvider, child) =>

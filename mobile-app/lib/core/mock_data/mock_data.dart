@@ -1,9 +1,48 @@
 import '../models/transaction_model/transaction_model.dart';
 import '../models/coin_model/coin_model.dart';
 import '../models/contact_model/contact_model.dart';
+import '../models/user_model/user_model.dart';
 import '../models/wallet_model/wallet_model.dart';
 
 class MockData {
+  static const List<UserModel> dummyUsers = [
+    UserModel(
+      mobileNumber: '123456789',
+      countryCode: '+966',
+      password: '123456',
+      firstName: 'Ahmed',
+      lastName: 'Al-Saud',
+    ),
+    UserModel(
+      mobileNumber: '502345678',
+      countryCode: '+966',
+      password: '234567',
+      firstName: 'Fatima',
+      lastName: 'Al-Rashid',
+    ),
+    UserModel(
+      mobileNumber: '503456789',
+      countryCode: '+966',
+      password: '345678',
+      firstName: 'Mohammed',
+      lastName: 'Al-Otaibi',
+    ),
+    UserModel(
+      mobileNumber: '504567890',
+      countryCode: '+966',
+      password: '456789',
+      firstName: 'Sara',
+      lastName: 'Al-Mutairi',
+    ),
+    UserModel(
+      mobileNumber: '505678901',
+      countryCode: '+966',
+      password: '567890',
+      firstName: 'Khalid',
+      lastName: 'Al-Ghamdi',
+    ),
+  ];
+
   static final List<CoinModel> coins = [
     CoinModel(
       name: 'Tether USDT',

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../core/extentions/context_extensions.dart';
-import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/theme.dart';
 
 class CoinFilterTabs extends StatelessWidget {
@@ -24,7 +23,8 @@ class CoinFilterTabs extends StatelessWidget {
         // Tabs Row
         Row(
           children: coins.map((coin) {
-            final isSelected = (selectedCoin == null && coin == 'All') ||
+            final isSelected =
+                (selectedCoin == null && coin == 'All') ||
                 selectedCoin?.toUpperCase() == coin.toUpperCase();
 
             return Expanded(
@@ -42,8 +42,12 @@ class CoinFilterTabs extends StatelessWidget {
                         style: context.textTheme.bodyMedium?.copyWith(
                           color: isSelected
                               ? AppColors.primaryColor
-                              : (isDarkMode ? AppColors.textLightGrey : AppColors.textGrey),
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                              : (isDarkMode
+                                    ? AppColors.textLightGrey
+                                    : AppColors.textGrey),
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w500,
                           fontSize: 16,
                         ),
                       ),

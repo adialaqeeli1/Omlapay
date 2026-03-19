@@ -66,7 +66,7 @@ class ProfileView extends StatelessWidget {
                   iconPath: 'assets/icons/about_icon.svg',
                   title: l10n.aboutOmlapay,
                   horizontalPadding: horizontalPadding,
-                  onTap: () => GoRouter.of(context).push(Routes.softLogin),
+                  onTap: () => GoRouter.of(context).push(Routes.login),
                 ),
                 _buildMenuItem(
                   context: context,
@@ -216,11 +216,7 @@ class ProfileView extends StatelessWidget {
           ),
         ],
       ),
-      trailing: Icon(
-        Icons.open_in_new,
-        size: 18,
-        color: iconColor,
-      ),
+      trailing: Icon(Icons.open_in_new, size: 18, color: iconColor),
     );
   }
 
@@ -242,7 +238,7 @@ class ProfileView extends StatelessWidget {
       onTap: () async {
         await context.read<AuthProvider>().logout();
         if (context.mounted) {
-          GoRouter.of(context).go(Routes.hardLogin);
+          GoRouter.of(context).go(Routes.login);
         }
       },
       mouseCursor: SystemMouseCursors.click,
@@ -261,11 +257,7 @@ class ProfileView extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: Icon(
-                Icons.logout,
-                size: iconSize,
-                color: Colors.red,
-              ),
+              child: Icon(Icons.logout, size: iconSize, color: Colors.red),
             ),
           ),
         ),
@@ -296,9 +288,7 @@ class ProfileView extends StatelessWidget {
           child: Text(
             phoneNumber,
             style: context.textTheme.headlineLarge?.copyWith(
-              color: context.isDarkMode
-                  ? AppColors.white
-                  : AppColors.textBlack,
+              color: context.isDarkMode ? AppColors.white : AppColors.textBlack,
               fontWeight: FontWeight.bold,
               fontSize: 20,
             ),

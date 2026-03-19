@@ -1,6 +1,5 @@
 import '../../../core/models/user_model/user_model.dart';
 import '../../../core/services/storage_helper.dart';
-import '../../../core/constants/constants.dart';
 import 'dart:convert';
 
 class WalletAddressService {
@@ -40,7 +39,7 @@ class WalletAddressService {
   ) async {
     final data = StorageService.getString(walletAddressesKey);
     Map<String, dynamic> addressesJson = {};
-    
+
     if (data != null) {
       try {
         addressesJson = jsonDecode(data) as Map<String, dynamic>;
@@ -102,7 +101,8 @@ class WalletAddressService {
   /// Get email for user (mock - in real app this would come from user model or API)
   static String getUserEmail(UserModel user) {
     // Generate a mock email based on user data
-    final email = '${user.firstName.toLowerCase()}.${user.lastName.toLowerCase()}@gmail.com';
+    final email =
+        '${user.firstName.toLowerCase()}.${user.lastName.toLowerCase()}@gmail.com';
     return email;
   }
 }

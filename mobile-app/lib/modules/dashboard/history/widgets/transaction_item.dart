@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../core/extentions/context_extensions.dart';
-import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/models/transaction_model/transaction_model.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/common_coin_icon.dart';
@@ -33,7 +32,9 @@ class TransactionItem extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: _getCoinColor(transaction.coinSymbol).withValues(alpha: 0.1),
+                color: _getCoinColor(
+                  transaction.coinSymbol,
+                ).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -54,9 +55,7 @@ class TransactionItem extends StatelessWidget {
                     transaction.coinSymbol,
                     style: context.textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: isDarkMode
-                          ? AppColors.white
-                          : AppColors.textBlack,
+                      color: isDarkMode ? AppColors.white : AppColors.textBlack,
                       fontSize: 16,
                     ),
                   ),

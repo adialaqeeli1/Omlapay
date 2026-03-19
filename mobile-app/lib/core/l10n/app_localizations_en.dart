@@ -255,6 +255,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get incorrectPasscode => 'Incorrect passcode';
 
   @override
+  String get incorrectPasscodeTryAgain => 'Incorrect passcode. Try again.';
+
+  @override
   String get whoIsOmlapay => 'Who is \"Omlapay\"?';
 
   @override

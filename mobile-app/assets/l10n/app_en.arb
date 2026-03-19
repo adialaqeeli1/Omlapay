@@ -80,6 +80,7 @@
     "pleaseEnterYour6DigitPasscode": "Please enter your 6-digit passcode",
     "userNotFound": "User not found",
     "incorrectPasscode": "Incorrect passcode",
+    "incorrectPasscodeTryAgain": "Incorrect passcode. Try again.",
     "whoIsOmlapay": "Who is \"Omlapay\"?",
     "aboutOmlapayDescription": "is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
     "faqs": "FAQs",

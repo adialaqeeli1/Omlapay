@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../core/extentions/context_extensions.dart';
 import '../../core/services/storage_helper.dart';
 import '../../core/constants/constants.dart';
+import '../../modules/auth/providers/login_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../routes/app_router.dart';
 
@@ -47,9 +48,12 @@ class _SplashViewState extends State<SplashView>
     } else {
       final isLoggedIn = context.read<AuthProvider>().state.isAuthenticated;
       if (isLoggedIn) {
-        GoRouter.of(context).go(Routes.softLogin);
+        GoRouter.of(context).go(
+          Routes.enterOrSetPasscode,
+          extra: {LoginProvider.extraModeKey: LoginProvider.modeSoftLogin},
+        );
       } else {
-        GoRouter.of(context).go(Routes.home);
+        GoRouter.of(context).go(Routes.login);
       }
     }
   }
