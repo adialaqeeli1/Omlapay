@@ -31,6 +31,7 @@ class Routes {
   static const String transactionDetails = _Paths.transactionDetails;
   static const String wallets = _Paths.wallets;
   static const String qrCode = _Paths.qrCode;
+  static const String qrScanner = _Paths.qrScanner;
   static const String accountDetails = _Paths.accountDetails;
   static const String notifications = _Paths.notifications;
   static const String kycVerification = _Paths.kycVerification;
@@ -67,6 +68,7 @@ abstract class _Paths {
   static const String transactionDetails = '/transaction-details';
   static const String wallets = '/wallets';
   static const String qrCode = '/qr-code';
+  static const String qrScanner = '/qr-scanner';
   static const String accountDetails = '/account-details';
   static const String notifications = '/notifications';
   static const String kycVerification = '/kyc-verification';

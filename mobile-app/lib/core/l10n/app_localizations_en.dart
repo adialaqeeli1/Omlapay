@@ -621,4 +621,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passcodesMismatchTryAgain => 'Passcodes don\'t match. Try again.';
+
+  @override
+  String get qrCodeScanner => 'QR Code Scanner';
+
+  @override
+  String get scanQrCode => 'Scan QR Code';
+
+  @override
+  String get scanAQrCode => 'Scan a QR Code';
+
+  @override
+  String get cameraPermissionRequired =>
+      'Camera access is required to scan QR codes';
+
+  @override
+  String get cameraPermissionDenied => 'Camera permission denied';
+
+  @override
+  String get cameraPermissionDeniedMessage =>
+      'Please grant camera access in settings to scan QR codes.';
+
+  @override
+  String get openSettings => 'Open Settings';
+
+  @override
+  String get allowCamera => 'Allow Camera';
+
+  @override
+  String get cameraError => 'Camera error';
+
+  @override
+  String get cameraErrorMessage =>
+      'Unable to access the camera. Please try again.';
+
+  @override
+  String cameraPermissionDialogTitle(String appName) {
+    return '$appName wants to access the camera';
+  }
+
+  @override
+  String get cameraPermissionDialogMessage =>
+      'We need your permission to access the camera to be able to scan the codes';
+
+  @override
+  String get doNotAllow => 'Do not allow';
+
+  @override
+  String get invalidQrCode => 'Invalid QR code';
+
+  @override
+  String get tryAgain => 'Try Again';
+
+  @override
+  String get twoFactorAuthentication => 'Two Factor Authentication';
 }

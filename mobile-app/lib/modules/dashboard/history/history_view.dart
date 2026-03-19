@@ -7,6 +7,7 @@ import '../../../core/models/transaction_model/transaction_model.dart';
 import '../../../core/theme/theme.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_loading_indicator.dart';
+import '../../../widgets/no_transactions_found.dart';
 import 'providers/history_provider.dart';
 import 'widgets/coin_filter_tabs.dart';
 import 'widgets/history_filter_bottom_sheet.dart';
@@ -76,49 +77,7 @@ class HistoryView extends StatelessWidget {
                 }
 
                 if (provider.transactions.isEmpty) {
-                  return Center(
-                    child: Transform.translate(
-                      offset: Offset(
-                        0,
-                        -MediaQuery.of(context).size.height * 0.1,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SvgPicture.asset(
-                            theme.brightness == Brightness.dark
-                                ? 'assets/icons/empty-state-dark.svg'
-                                : 'assets/icons/empty-state.svg',
-                            width: 250,
-                            height: 200,
-                          ),
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.01,
-                          ),
-                          Text(
-                            l10n.noTransactionsFound,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              color: theme.brightness == Brightness.dark
-                                  ? AppColors.textWhite
-                                  : AppColors.textBlack,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                            ),
-                          ),
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.01,
-                          ),
-                          Text(
-                            l10n.allIncomingTransactionsListed,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textLightGrey,
-                              fontSize: 18,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+                  return Center(child: const NoTransactionsFound());
                 }
 
                 // Group transactions by date

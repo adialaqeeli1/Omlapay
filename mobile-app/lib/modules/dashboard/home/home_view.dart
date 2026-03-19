@@ -69,16 +69,14 @@ class HomeView extends StatelessWidget {
           iconPath: 'assets/icons/notifications-icon.svg',
           iconSize: iconSize,
           iconPadding: iconPadding,
-          onTap: () => context.pushNamed('notifications'),
+          onTap: () => context.push(Routes.notifications),
         ),
         // Scan Icon
         CommonIconButton(
           iconPath: 'assets/icons/scan-icon.svg',
           iconSize: iconSize,
           iconPadding: iconPadding,
-          onTap: () {
-            // TODO: Handle scan tap
-          },
+          onTap: () => context.push(Routes.qrScanner),
         ),
       ],
       headerChild: _totalBalanceDropdown(
