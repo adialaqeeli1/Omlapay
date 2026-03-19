@@ -27,9 +27,9 @@ class HistoryView extends StatelessWidget {
       create: (_) => HistoryProvider(),
       child: Scaffold(
         appBar: AppBar(
-          leading: CommonBackButton(
-            onPressed: () => GoRouter.of(context).pop(),
-          ),
+          leading: context.canPop()
+              ? CommonBackButton(onPressed: () => GoRouter.of(context).pop())
+              : null,
           title: Text(
             l10n.transactionHistory,
             style: theme.textTheme.titleLarge?.copyWith(
@@ -62,15 +62,16 @@ class HistoryView extends StatelessWidget {
           child: Consumer<HistoryProvider>(
             builder: (context, provider, child) {
               if (provider.isLoading) {
-                return const Center(
-                  child: CommonLoadingIndicator(),
-                );
+                return const Center(child: CommonLoadingIndicator());
               }
 
               if (provider.transactions.isEmpty) {
                 return Center(
                   child: Transform.translate(
-                    offset: Offset(0, -MediaQuery.of(context).size.height * 0.1),
+                    offset: Offset(
+                      0,
+                      -MediaQuery.of(context).size.height * 0.1,
+                    ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -81,7 +82,9 @@ class HistoryView extends StatelessWidget {
                           width: 250,
                           height: 200,
                         ),
-                        SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.01,
+                        ),
                         Text(
                           l10n.noTransactionsFound,
                           style: theme.textTheme.titleMedium?.copyWith(
@@ -92,7 +95,9 @@ class HistoryView extends StatelessWidget {
                             fontSize: 20,
                           ),
                         ),
-                        SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.01,
+                        ),
                         Text(
                           l10n.allIncomingTransactionsListed,
                           style: theme.textTheme.bodyMedium?.copyWith(
@@ -107,7 +112,9 @@ class HistoryView extends StatelessWidget {
               }
 
               // Group transactions by date
-              final groupedTransactions = _groupTransactionsByDate(provider.transactions);
+              final groupedTransactions = _groupTransactionsByDate(
+                provider.transactions,
+              );
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,7 +131,9 @@ class HistoryView extends StatelessWidget {
                   // Transactions List
                   Expanded(
                     child: ListView.builder(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                      ),
                       itemCount: groupedTransactions.length,
                       itemBuilder: (context, index) {
                         final group = groupedTransactions[index];
@@ -136,15 +145,17 @@ class HistoryView extends StatelessWidget {
                               isFirst: index == 0,
                             ),
                             ...(group['transactions'] as List<TransactionModel>)
-                                .map((transaction) => TransactionItem(
-                                      transaction: transaction,
-                                      onTap: () {
-                                        context.push(
-                                          Routes.transactionDetail,
-                                          extra: transaction,
-                                        );
-                                      },
-                                    )),
+                                .map(
+                                  (transaction) => TransactionItem(
+                                    transaction: transaction,
+                                    onTap: () {
+                                      context.push(
+                                        Routes.transactionDetail,
+                                        extra: transaction,
+                                      );
+                                    },
+                                  ),
+                                ),
                           ],
                         );
                       },
@@ -160,7 +171,8 @@ class HistoryView extends StatelessWidget {
   }
 
   List<Map<String, dynamic>> _groupTransactionsByDate(
-      List<TransactionModel> transactions) {
+    List<TransactionModel> transactions,
+  ) {
     // Sort transactions by date (newest first)
     final sorted = List<TransactionModel>.from(transactions)
       ..sort((a, b) => b.date.compareTo(a.date));
@@ -195,14 +207,19 @@ class HistoryView extends StatelessWidget {
     }
 
     // Add older transactions grouped by month
-    final olderList = olderTransactions.entries
-        .map((entry) => {
-              'date': entry.key,
-              'transactions': entry.value,
-              'isRecently': false,
-            })
-        .toList()
-      ..sort((a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime));
+    final olderList =
+        olderTransactions.entries
+            .map(
+              (entry) => {
+                'date': entry.key,
+                'transactions': entry.value,
+                'isRecently': false,
+              },
+            )
+            .toList()
+          ..sort(
+            (a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime),
+          );
 
     result.addAll(olderList);
 

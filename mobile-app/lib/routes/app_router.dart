@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import 'debug_route_observer.dart';
 import '../../core/models/transaction_model/transaction_model.dart';
 import 'package:omlapay_mobile_app/core/models/coin_model/coin_model.dart';
 import '../core/models/wallet_model/wallet_model.dart';
@@ -61,6 +63,7 @@ part 'app_routes.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
+    observers: [DebugRouteObserver()],
     routes: [
       GoRoute(
         path: Routes.splash,
