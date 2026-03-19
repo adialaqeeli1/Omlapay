@@ -1,10 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/models/transaction_model/transaction_model.dart';
 import 'package:omlapay_mobile_app/core/models/coin_model/coin_model.dart';
 import '../core/models/wallet_model/wallet_model.dart';
+import '../modules/auth/providers/forgot_passcode_provider.dart';
 import '../modules/auth/providers/login_provider.dart';
 import '../modules/auth/providers/passcode_provider.dart';
 import '../modules/auth/views/enter_or_set_passcode.dart';
+import '../modules/auth/views/forgot_passcode.dart';
 import '../modules/auth/views/login_screen.dart';
 import '../modules/coin_details/view/coin_details_view.dart';
 import '../modules/coin_details/providers/coin_details_provider.dart';
@@ -114,15 +117,51 @@ class AppRouter {
             }
           }
 
+          final pendingPasscode = routePayload is Map<String, dynamic>
+              ? routePayload[LoginProvider.extraPendingPasscodeKey] as String?
+              : null;
+
+          // Use a key that changes when switching to confirm passcode so we get
+          // a fresh PasscodeProvider with empty state. Otherwise the same provider
+          // (with 6 digits from set passcode) is reused and the first keypress
+          // triggers verify and redirects to home.
+          final providerKey = mode == LoginProvider.modeConfirmPasscode
+              ? ValueKey('confirm_${pendingPasscode ?? ""}')
+              : ValueKey('passcode_${mode}_${countryCode}_$phoneNumber');
+
           return ChangeNotifierProvider(
+            key: providerKey,
             create: (_) => PasscodeProvider(
               countryCode: countryCode,
               phoneNumber: phoneNumber,
             ),
-            child: EnterOrSetPasscodeScreen(isSoftLogin: isSoftLogin),
+            child: EnterOrSetPasscodeScreen(
+              isSoftLogin: isSoftLogin,
+              mode: mode,
+              pendingPasscode: pendingPasscode,
+            ),
           );
         },
         redirect: AuthMiddleware.enterOrSetPasscode,
+      ),
+      GoRoute(
+        path: Routes.forgotPasscode,
+        name: 'forgotPasscode',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final countryCode =
+              extra?[LoginProvider.extraCountryCodeKey] as String? ?? '';
+          final phoneNumber =
+              extra?[LoginProvider.extraPhoneNumberKey] as String? ?? '';
+          return ChangeNotifierProvider(
+            create: (_) => ForgotPasscodeProvider(
+              phoneNumber: phoneNumber,
+              countryCode: countryCode,
+            ),
+            child: const ForgotPasscodeScreen(),
+          );
+        },
+        redirect: AuthMiddleware.forgotPasscode,
       ),
       ShellRoute(
         builder: (context, state, child) => DashboardView(child: child),

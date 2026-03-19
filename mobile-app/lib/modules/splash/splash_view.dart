@@ -53,7 +53,7 @@ class _SplashViewState extends State<SplashView>
           extra: {LoginProvider.extraModeKey: LoginProvider.modeSoftLogin},
         );
       } else {
-        GoRouter.of(context).go(Routes.login);
+        GoRouter.of(context).go(Routes.home);
       }
     }
   }

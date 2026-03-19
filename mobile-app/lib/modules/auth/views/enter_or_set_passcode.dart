@@ -10,12 +10,21 @@ import '../../../providers/auth_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_back_button.dart';
 import '../../../widgets/logout_alert_dialog.dart';
+import '../providers/login_provider.dart';
 import '../providers/passcode_provider.dart';
+import '../services/forgot_passcode_service.dart';
 
 class EnterOrSetPasscodeScreen extends StatelessWidget {
-  const EnterOrSetPasscodeScreen({super.key, this.isSoftLogin = false});
+  const EnterOrSetPasscodeScreen({
+    super.key,
+    this.isSoftLogin = false,
+    this.mode,
+    this.pendingPasscode,
+  });
 
   final bool isSoftLogin;
+  final String? mode;
+  final String? pendingPasscode;
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +112,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      l10n.enterPasscode,
+                      _titleForMode(l10n),
                       style: GoogleFonts.poppinsTextTheme().displaySmall
                           ?.copyWith(
                             fontSize: 30,
@@ -145,7 +154,9 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                       height: 22,
                       child: passcodeProvider.hasError
                           ? Text(
-                              l10n.incorrectPasscodeTryAgain,
+                              mode == LoginProvider.modeConfirmPasscode
+                                  ? l10n.passcodesMismatchTryAgain
+                                  : l10n.incorrectPasscodeTryAgain,
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
@@ -156,22 +167,23 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                           : null,
                     ),
                     const SizedBox(height: 4),
-                    GestureDetector(
-                      onTap: () => _onForgotPasscode(
-                        context,
-                        isSoftLogin,
-                        passcodeProvider,
-                      ),
-                      child: Text(
-                        l10n.forgotPasscode,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontSize: 18 / 1.35,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primaryColor,
+                    if (_showForgotPasscodeLink())
+                      GestureDetector(
+                        onTap: () => _onForgotPasscode(
+                          context,
+                          isSoftLogin,
+                          passcodeProvider,
                         ),
-                        textAlign: TextAlign.center,
+                        child: Text(
+                          l10n.forgotPasscode,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontSize: 18 / 1.35,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primaryColor,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                    ),
                     const Spacer(),
                     _KeypadGrid(
                       onDigitPressed: (digit) =>
@@ -204,16 +216,55 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     }
   }
 
-  static void _onForgotPasscode(
+  bool _showForgotPasscodeLink() {
+    if (mode == LoginProvider.modeResetPasscode ||
+        mode == LoginProvider.modeConfirmPasscode) {
+      return false;
+    }
+    return true;
+  }
+
+  String _titleForMode(dynamic l10n) {
+    if (mode == LoginProvider.modeResetPasscode) {
+      return l10n.setYourNewPasscode;
+    }
+    if (mode == LoginProvider.modeConfirmPasscode) {
+      return l10n.confirmYourPasscode;
+    }
+    return l10n.enterPasscode;
+  }
+
+  static Future<void> _onForgotPasscode(
     BuildContext context,
     bool isSoftLogin,
     PasscodeProvider passcodeProvider,
-  ) {
+  ) async {
+    if (!passcodeProvider.hasPhoneContext) return;
     passcodeProvider.clearPasscode();
-    if (isSoftLogin) {
-      _onLogout(context);
-    } else {
-      context.pop();
+    try {
+      await ForgotPasscodeService.requestOtp(
+        passcodeProvider.phoneNumber,
+        passcodeProvider.countryCode,
+      );
+      if (context.mounted) {
+        context.push(
+          Routes.forgotPasscode,
+          extra: {
+            LoginProvider.extraCountryCodeKey: passcodeProvider.countryCode,
+            LoginProvider.extraPhoneNumberKey: passcodeProvider.phoneNumber,
+          },
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              context.l10n?.networkError ?? 'Network error',
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -227,7 +278,42 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
       return;
     }
 
+    if (mode == LoginProvider.modeResetPasscode) {
+      context.go(
+        Routes.enterOrSetPasscode,
+        extra: {
+          LoginProvider.extraModeKey: LoginProvider.modeConfirmPasscode,
+          LoginProvider.extraCountryCodeKey: provider.countryCode,
+          LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+          LoginProvider.extraPendingPasscodeKey: provider.passcode,
+        },
+      );
+      return;
+    }
+
     final authProvider = context.read<AuthProvider>();
+
+    if (mode == LoginProvider.modeConfirmPasscode) {
+      final isValid = await provider.verify(
+        verifyPasscode:
+            ({
+              required String phoneNumber,
+              required String countryCode,
+              required String passcode,
+            }) async {
+          if (passcode != (pendingPasscode ?? '')) return false;
+          return await authProvider.setPasscode(
+            phoneNumber,
+            countryCode,
+            passcode,
+          );
+        },
+      );
+      if (!context.mounted || !isValid) return;
+      context.go(Routes.home);
+      return;
+    }
+
     final isValid = await provider.verify(
       verifyPasscode:
           ({

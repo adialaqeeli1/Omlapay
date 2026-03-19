@@ -43,13 +43,18 @@ class AuthProvider extends ChangeNotifier {
       final normalizedPhone = mobileNumber.replaceAll(RegExp(r'[^0-9]'), '');
       final normalizedCountry = countryCode.trim();
 
+      final overrideKey = '$normalizedCountry$normalizedPhone';
+      final overridePasscode = MockData.passcodeOverrides[overrideKey];
+
       UserModel? user;
       for (final u in MockData.dummyUsers) {
         if (u.mobileNumber == normalizedPhone &&
-            u.countryCode == normalizedCountry &&
-            u.password == password) {
-          user = u;
-          break;
+            u.countryCode == normalizedCountry) {
+          final effectivePassword = overridePasscode ?? u.password;
+          if (password == effectivePassword) {
+            user = u.copyWith(password: effectivePassword);
+            break;
+          }
         }
       }
 
@@ -83,6 +88,47 @@ class AuthProvider extends ChangeNotifier {
     await StorageService.remove(AppConstants.tokenKey);
     _state = const AuthState(authStatus: AuthStatus.unauthorized);
     notifyListeners();
+  }
+
+  Future<bool> setPasscode(
+    String phoneNumber,
+    String countryCode,
+    String newPasscode,
+  ) async {
+    try {
+      final normalizedPhone = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
+      final normalizedCountry = countryCode.trim();
+      final overrideKey = '$normalizedCountry$normalizedPhone';
+
+      final userExists = MockData.dummyUsers.any(
+        (u) =>
+            u.mobileNumber == normalizedPhone &&
+            u.countryCode == normalizedCountry,
+      );
+      if (!userExists) return false;
+
+      MockData.passcodeOverrides[overrideKey] = newPasscode;
+
+      final user = MockData.dummyUsers.firstWhere(
+        (u) =>
+            u.mobileNumber == normalizedPhone &&
+            u.countryCode == normalizedCountry,
+      );
+      final updatedUser = user.copyWith(password: newPasscode);
+
+      _state = state.copyWith(
+        authStatus: AuthStatus.authorized,
+        user: updatedUser,
+      );
+      await StorageService.setString(
+        AppConstants.userKey,
+        jsonEncode(updatedUser.toJson()),
+      );
+      notifyListeners();
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> verifyUser() async {

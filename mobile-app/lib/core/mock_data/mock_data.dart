@@ -5,6 +5,9 @@ import '../models/user_model/user_model.dart';
 import '../models/wallet_model/wallet_model.dart';
 
 class MockData {
+  /// Mock overrides for passcode reset. Key: countryCode + phoneNumber.
+  static final Map<String, String> passcodeOverrides = {};
+
   static const List<UserModel> dummyUsers = [
     UserModel(
       mobileNumber: '123456789',

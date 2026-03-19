@@ -526,4 +526,35 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get markAsRead => 'تعليم كمقروء';
+
+  @override
+  String get forgotPasscodeTitle => 'نسيت رمز المرور';
+
+  @override
+  String get verifyYourPhoneNumber => 'تحقق من رقم هاتفك';
+
+  @override
+  String verificationCodesInSeconds(int seconds) {
+    return 'يجب أن تستلم رموز التحقق خلال $seconds ثانية';
+  }
+
+  @override
+  String get didntReceiveCodesResendOtp =>
+      'لم تستلم الرموز؟ إعادة إرسال رمز التحقق.';
+
+  @override
+  String get resendOtp => 'إعادة إرسال رمز التحقق';
+
+  @override
+  String get needHelpContactSupport => 'تحتاج مساعدة؟ تواصل مع الدعم';
+
+  @override
+  String get setYourNewPasscode => 'قم بتعيين رمز المرور الجديد';
+
+  @override
+  String get confirmYourPasscode => 'تأكيد رمز المرور';
+
+  @override
+  String get passcodesMismatchTryAgain =>
+      'رموز المرور غير متطابقة. حاول مرة أخرى.';
 }
