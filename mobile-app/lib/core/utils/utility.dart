@@ -434,4 +434,36 @@ class Utility {
   static String getCryptoCoinIconFromSymbol(String symbol) {
     return "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/${symbol.toLowerCase()}.png";
   }
+
+  /// Validates common crypto wallet address formats.
+  /// Returns true for EVM (0x...), Bitcoin (1, 3, bc1), Tron (T...), Solana (base58).
+  static bool isValidWalletAddress(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty || trimmed.length < 20) return false;
+
+    // EVM: 0x + 40 hex chars
+    if (trimmed.startsWith('0x') && trimmed.length == 42) {
+      return RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(trimmed);
+    }
+
+    // Bitcoin: 1 (P2PKH), 3 (P2SH), or bc1 (Bech32)
+    if (trimmed.startsWith('1') || trimmed.startsWith('3')) {
+      return RegExp(r'^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$').hasMatch(trimmed);
+    }
+    if (trimmed.startsWith('bc1')) {
+      return trimmed.length >= 42 && trimmed.length <= 62;
+    }
+
+    // Tron: T + 33 hex chars
+    if (trimmed.startsWith('T') && trimmed.length == 34) {
+      return RegExp(r'^T[0-9a-fA-F]{33}$').hasMatch(trimmed);
+    }
+
+    // Solana: base58, typically 32-44 chars
+    if (RegExp(r'^[1-9A-HJ-NP-Za-km-z]{32,44}$').hasMatch(trimmed)) {
+      return true;
+    }
+
+    return false;
+  }
 }

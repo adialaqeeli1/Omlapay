@@ -8,7 +8,7 @@ import '../../../../providers/global_provider.dart';
 import '../services/coins_service.dart';
 
 class HomeProvider extends ChangeNotifier {
-  static const Duration _autoRefreshInterval = Duration(milliseconds: 800);
+  static const Duration _autoRefreshInterval = Duration(minutes: 2);
 
   HomeProvider(this._globalProvider, this._coinsService) {
     _activeCurrency = _globalProvider.selectedCurrency;

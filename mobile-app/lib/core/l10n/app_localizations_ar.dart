@@ -620,4 +620,58 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get passcodesMismatchTryAgain =>
       'رموز المرور غير متطابقة. حاول مرة أخرى.';
+
+  @override
+  String get qrCodeScanner => 'ماسح رمز QR';
+
+  @override
+  String get scanQrCode => 'مسح رمز QR';
+
+  @override
+  String get scanAQrCode => 'امسح رمز QR';
+
+  @override
+  String get cameraPermissionRequired =>
+      'الوصول إلى الكاميرا مطلوب لمسح رموز QR';
+
+  @override
+  String get cameraPermissionDenied => 'تم رفض إذن الكاميرا';
+
+  @override
+  String get cameraPermissionDeniedMessage =>
+      'يرجى منح الوصول إلى الكاميرا في الإعدادات لمسح رموز QR.';
+
+  @override
+  String get openSettings => 'فتح الإعدادات';
+
+  @override
+  String get allowCamera => 'السماح بالكاميرا';
+
+  @override
+  String get cameraError => 'خطأ في الكاميرا';
+
+  @override
+  String get cameraErrorMessage =>
+      'تعذر الوصول إلى الكاميرا. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String cameraPermissionDialogTitle(String appName) {
+    return '$appName يريد الوصول إلى الكاميرا';
+  }
+
+  @override
+  String get cameraPermissionDialogMessage =>
+      'نحتاج إلى إذنك للوصول إلى الكاميرا لمسح الرموز';
+
+  @override
+  String get doNotAllow => 'عدم السماح';
+
+  @override
+  String get invalidQrCode => 'رمز QR غير صالح';
+
+  @override
+  String get tryAgain => 'حاول مرة أخرى';
+
+  @override
+  String get twoFactorAuthentication => 'المصادقة الثنائية';
 }

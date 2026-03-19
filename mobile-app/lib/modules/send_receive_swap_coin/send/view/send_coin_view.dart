@@ -4,8 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/theme.dart';
-
+import '../../../../core/utils/utility.dart';
 import '../../../../routes/app_router.dart';
+import '../../../scan/view/qr_scanner_view.dart';
 import '../../../../widgets/common_back_button.dart';
 import '../../../../widgets/common_coin_icon.dart';
 import '../../swap/view/coin_selection_sheet.dart';
@@ -215,9 +216,7 @@ class SendCoinView extends StatelessWidget {
               const SizedBox(width: 8),
               _buildIconButton(
                 svgPath: 'assets/icons/scan-icon.svg',
-                onTap: () {
-                  // Placeholder for scan
-                },
+                onTap: () => _openQrScanner(context, provider),
               ),
               const SizedBox(width: 12),
             ],
@@ -429,6 +428,19 @@ class SendCoinView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _openQrScanner(
+    BuildContext context,
+    SendProvider provider,
+  ) async {
+    final result = await context.push<String>(
+      Routes.qrScanner,
+      extra: QrScannerExtra(validator: Utility.isValidWalletAddress),
+    );
+    if (result != null && context.mounted) {
+      provider.recipientController.text = result;
+    }
   }
 
   void _showContactSelection(BuildContext context, SendProvider provider) {

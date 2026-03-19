@@ -221,5 +221,28 @@
     "setYourNewPasscode": "قم بتعيين رمز المرور الجديد",
     "createAPasscode": "إنشاء رمز مرور",
     "confirmYourPasscode": "تأكيد رمز المرور",
-    "passcodesMismatchTryAgain": "رموز المرور غير متطابقة. حاول مرة أخرى."
+    "passcodesMismatchTryAgain": "رموز المرور غير متطابقة. حاول مرة أخرى.",
+    "qrCodeScanner": "ماسح رمز QR",
+    "scanQrCode": "مسح رمز QR",
+    "scanAQrCode": "امسح رمز QR",
+    "cameraPermissionRequired": "الوصول إلى الكاميرا مطلوب لمسح رموز QR",
+    "cameraPermissionDenied": "تم رفض إذن الكاميرا",
+    "cameraPermissionDeniedMessage": "يرجى منح الوصول إلى الكاميرا في الإعدادات لمسح رموز QR.",
+    "openSettings": "فتح الإعدادات",
+    "allowCamera": "السماح بالكاميرا",
+    "cameraError": "خطأ في الكاميرا",
+    "cameraErrorMessage": "تعذر الوصول إلى الكاميرا. يرجى المحاولة مرة أخرى.",
+    "cameraPermissionDialogTitle": "{appName} يريد الوصول إلى الكاميرا",
+    "@cameraPermissionDialogTitle": {
+        "placeholders": {
+            "appName": {
+                "type": "String"
+            }
+        }
+    },
+    "cameraPermissionDialogMessage": "نحتاج إلى إذنك للوصول إلى الكاميرا لمسح الرموز",
+    "doNotAllow": "عدم السماح",
+    "invalidQrCode": "رمز QR غير صالح",
+    "tryAgain": "حاول مرة أخرى",
+    "twoFactorAuthentication": "المصادقة الثنائية"
 }

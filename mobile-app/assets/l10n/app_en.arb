@@ -221,5 +221,28 @@
     "setYourNewPasscode": "Set your new passcode",
     "createAPasscode": "Create a passcode",
     "confirmYourPasscode": "Confirm your passcode",
-    "passcodesMismatchTryAgain": "Passcodes don't match. Try again."
+    "passcodesMismatchTryAgain": "Passcodes don't match. Try again.",
+    "qrCodeScanner": "QR Code Scanner",
+    "scanQrCode": "Scan QR Code",
+    "scanAQrCode": "Scan a QR Code",
+    "cameraPermissionRequired": "Camera access is required to scan QR codes",
+    "cameraPermissionDenied": "Camera permission denied",
+    "cameraPermissionDeniedMessage": "Please grant camera access in settings to scan QR codes.",
+    "openSettings": "Open Settings",
+    "allowCamera": "Allow Camera",
+    "cameraError": "Camera error",
+    "cameraErrorMessage": "Unable to access the camera. Please try again.",
+    "cameraPermissionDialogTitle": "{appName} wants to access the camera",
+    "@cameraPermissionDialogTitle": {
+        "placeholders": {
+            "appName": {
+                "type": "String"
+            }
+        }
+    },
+    "cameraPermissionDialogMessage": "We need your permission to access the camera to be able to scan the codes",
+    "doNotAllow": "Do not allow",
+    "invalidQrCode": "Invalid QR code",
+    "tryAgain": "Try Again",
+    "twoFactorAuthentication": "Two Factor Authentication"
 }

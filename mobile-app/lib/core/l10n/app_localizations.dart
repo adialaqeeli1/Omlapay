@@ -1249,6 +1249,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Passcodes don\'t match. Try again.'**
   String get passcodesMismatchTryAgain;
+
+  /// No description provided for @qrCodeScanner.
+  ///
+  /// In en, this message translates to:
+  /// **'QR Code Scanner'**
+  String get qrCodeScanner;
+
+  /// No description provided for @scanQrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR Code'**
+  String get scanQrCode;
+
+  /// No description provided for @scanAQrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a QR Code'**
+  String get scanAQrCode;
+
+  /// No description provided for @cameraPermissionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera access is required to scan QR codes'**
+  String get cameraPermissionRequired;
+
+  /// No description provided for @cameraPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera permission denied'**
+  String get cameraPermissionDenied;
+
+  /// No description provided for @cameraPermissionDeniedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Please grant camera access in settings to scan QR codes.'**
+  String get cameraPermissionDeniedMessage;
+
+  /// No description provided for @openSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get openSettings;
+
+  /// No description provided for @allowCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Camera'**
+  String get allowCamera;
+
+  /// No description provided for @cameraError.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera error'**
+  String get cameraError;
+
+  /// No description provided for @cameraErrorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to access the camera. Please try again.'**
+  String get cameraErrorMessage;
+
+  /// No description provided for @cameraPermissionDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} wants to access the camera'**
+  String cameraPermissionDialogTitle(String appName);
+
+  /// No description provided for @cameraPermissionDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'We need your permission to access the camera to be able to scan the codes'**
+  String get cameraPermissionDialogMessage;
+
+  /// No description provided for @doNotAllow.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not allow'**
+  String get doNotAllow;
+
+  /// No description provided for @invalidQrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid QR code'**
+  String get invalidQrCode;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get tryAgain;
+
+  /// No description provided for @twoFactorAuthentication.
+  ///
+  /// In en, this message translates to:
+  /// **'Two Factor Authentication'**
+  String get twoFactorAuthentication;
 }
 
 class _AppLocalizationsDelegate

@@ -50,6 +50,7 @@ import '../modules/transaction_details/view/transaction_details_view.dart';
 import '../modules/wallets/provider/wallets_provider.dart';
 import '../modules/wallets/view/wallets_view.dart';
 import '../modules/wallets/view/qr_code_view.dart';
+import '../modules/scan/view/qr_scanner_view.dart';
 import '../modules/settings/settings_view.dart';
 import '../modules/settings/view/account_details_view.dart';
 import '../modules/notifications/notifications_view.dart';
@@ -395,6 +396,11 @@ class AppRouter {
           final wallet = state.extra as WalletModel;
           return QrCodeView(wallet: wallet);
         },
+      ),
+      GoRoute(
+        path: Routes.qrScanner,
+        name: 'qrScanner',
+        builder: (context, state) => QrScannerView(extra: state.extra),
       ),
     ],
   );
