@@ -338,6 +338,36 @@ class AppLocalizationsAr extends AppLocalizations {
   String get filter => 'تصفية';
 
   @override
+  String get transactionType => 'نوع المعاملة';
+
+  @override
+  String get dateStart => 'تاريخ البداية';
+
+  @override
+  String get dateEnd => 'تاريخ النهاية';
+
+  @override
+  String get dateFrom => 'التاريخ من...';
+
+  @override
+  String get dateTo => 'التاريخ إلى...';
+
+  @override
+  String get year => 'السنة';
+
+  @override
+  String get month => 'الشهر';
+
+  @override
+  String get day => 'اليوم';
+
+  @override
+  String get reset => 'إعادة تعيين';
+
+  @override
+  String get apply => 'تطبيق';
+
+  @override
   String get all => 'الكل';
 
   @override
@@ -454,6 +484,18 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get saveAs => 'حفظ كـ';
+
+  @override
+  String get shareTo => 'مشاركة إلى';
+
+  @override
+  String get whatsapp => 'واتساب';
+
+  @override
+  String get messages => 'الرسائل';
+
+  @override
+  String get mail => 'البريد';
 
   @override
   String get recently => 'مؤخراً';
