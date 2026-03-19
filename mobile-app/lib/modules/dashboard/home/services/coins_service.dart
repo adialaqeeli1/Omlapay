@@ -98,6 +98,9 @@ class CoinsService {
     return _activeSymbols.contains(symbol);
   }
 
+  /// Exposed for [CoinsPricesStreamService] to parse SSE payloads.
+  bool isCoinActive(Map<String, dynamic> coin) => _isCoinActive(coin);
+
   CoinModel _toCoinModel(Map<String, dynamic> coin) {
     final symbol = (coin['symbol'] as String? ?? '').trim().toUpperCase();
     final name = (coin['name'] as String? ?? '').trim();
@@ -125,6 +128,9 @@ class CoinsService {
       valueInUsd: displayPrice,
     );
   }
+
+  /// Exposed for [CoinsPricesStreamService] to map API payload to [CoinModel].
+  CoinModel toCoinModel(Map<String, dynamic> coin) => _toCoinModel(coin);
 
   String _formatPrice(num price, {required int chainDecimals}) {
     final safeChainDecimals = chainDecimals.clamp(0, 8);

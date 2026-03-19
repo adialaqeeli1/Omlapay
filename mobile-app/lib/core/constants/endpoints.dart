@@ -17,4 +17,7 @@ class Endpoints {
 
   /// Sync coin metadata and active status from upstream; POST with empty body.
   static String get coinsSync => '$coins/sync';
+
+  /// SSE stream for real-time coin price updates; supports query param `currency`.
+  static String get coinsPricesStream => '$coins/prices/stream';
 }
