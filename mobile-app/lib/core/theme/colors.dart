@@ -46,4 +46,10 @@ class AppColors {
   // Success Card Gradient
   static const Color successGradientStart = Color(0xFF1C1C1E);
   static const Color successGradientEnd = Color(0xFF1A605B);
+
+  /// Logout button background from Figma: #2AA29A with ~12% opacity
+  static const Color logoutButtonBackground = Color(0x1F2AA29A);
+
+  /// Destructive action (Logout confirm) - reddish-pink/coral
+  static const Color logoutDestructiveColor = Color(0xFFE57373);
 }

@@ -1,11 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+
 import '../core/constants/constants.dart';
-import '../core/services/storage_helper.dart';
-import '../core/models/user_model/user_model.dart';
 import '../core/models/auth_state/auth_state.dart';
-import '../modules/auth/services/user_service.dart';
+import '../core/models/user_model/user_model.dart';
+import '../core/mock_data/mock_data.dart';
+import '../core/services/storage_helper.dart';
 
 class AuthProvider extends ChangeNotifier {
   AuthState _state = const AuthState();
@@ -39,41 +40,37 @@ class AuthProvider extends ChangeNotifier {
       _state = state.copyWith(isLoading: true, errorMessage: null);
       notifyListeners();
 
-      // Simulate network delay
-      await Future.delayed(const Duration(seconds: 1));
+      final normalizedPhone = mobileNumber.replaceAll(RegExp(r'[^0-9]'), '');
+      final normalizedCountry = countryCode.trim();
 
-      // Find user verification
-      final user = UserService.findUserByPhone(mobileNumber, countryCode);
+      UserModel? user;
+      for (final u in MockData.dummyUsers) {
+        if (u.mobileNumber == normalizedPhone &&
+            u.countryCode == normalizedCountry &&
+            u.password == password) {
+          user = u;
+          break;
+        }
+      }
 
-      if (user != null && user.password == password) {
-        // Persist user session
+      if (user != null) {
+        _state = state.copyWith(
+          authStatus: AuthStatus.authorized,
+          user: user,
+          isLoading: false,
+          errorMessage: null,
+        );
         await StorageService.setString(
           AppConstants.userKey,
           jsonEncode(user.toJson()),
         );
-
-        // Simulate saving a token
-        await StorageService.setString(
-          AppConstants.tokenKey,
-          'dummy_jwt_token',
-        );
-
-        _state = state.copyWith(
-          isLoading: false,
-          authStatus: AuthStatus.authorized,
-          user: user,
-        );
         notifyListeners();
         return true;
-      } else {
-        _state = state.copyWith(
-          isLoading: false,
-          errorMessage: 'Invalid credentials',
-          authStatus: AuthStatus.unauthorized,
-        );
-        notifyListeners();
-        return false;
       }
+
+      _state = state.copyWith(isLoading: false, errorMessage: null);
+      notifyListeners();
+      return false;
     } catch (e) {
       _state = state.copyWith(isLoading: false, errorMessage: e.toString());
       notifyListeners();

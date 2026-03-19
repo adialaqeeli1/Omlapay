@@ -70,45 +70,43 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
       }
     }
 
-    return CommonBottomSheet(
-      title: l10n.filter,
-      childrens: options.map((option) {
-        return ListTile(
-          onTap: () {
-            setState(() {
-              _selectedFilter = option;
-            });
-            widget.onFilterSelected(option);
-            Navigator.of(context).pop();
-          },
-          title: Text(
-            getOptionLabel(option),
-            style: TextStyle(
-              color: textColor,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+    void onSelectFilter(TransactionType? value) {
+      setState(() {
+        _selectedFilter = value;
+      });
+      widget.onFilterSelected(value);
+      Navigator.of(context).pop();
+    }
+
+    return RadioGroup<TransactionType?>(
+      groupValue: _selectedFilter,
+      onChanged: onSelectFilter,
+      child: CommonBottomSheet(
+        title: l10n.filter,
+        childrens: options.map((option) {
+          return ListTile(
+            onTap: () => onSelectFilter(option),
+            title: Text(
+              getOptionLabel(option),
+              style: TextStyle(
+                color: textColor,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-          trailing: Radio<TransactionType?>(
-            value: option,
-            groupValue: _selectedFilter,
-            onChanged: (value) {
-              setState(() {
-                _selectedFilter = value;
-              });
-              widget.onFilterSelected(value);
-              Navigator.of(context).pop();
-            },
-            activeColor: AppColors.primaryColor,
-            fillColor: WidgetStateProperty.resolveWith<Color>((states) {
-              if (states.contains(WidgetState.selected)) {
-                return AppColors.primaryColor;
-              }
-              return textColor.withValues(alpha: 0.3);
-            }),
-          ),
-        );
-      }).toList(),
+            trailing: Radio<TransactionType?>(
+              value: option,
+              activeColor: AppColors.primaryColor,
+              fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return AppColors.primaryColor;
+                }
+                return textColor.withValues(alpha: 0.3);
+              }),
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 }

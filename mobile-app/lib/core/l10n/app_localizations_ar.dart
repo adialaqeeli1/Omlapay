@@ -254,6 +254,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get incorrectPasscode => 'رمز المرور غير صحيح';
 
   @override
+  String get incorrectPasscodeTryAgain => 'رمز المرور غير صحيح. حاول مرة أخرى.';
+
+  @override
   String get whoIsOmlapay => 'من هو \"أوملاباي\"؟';
 
   @override

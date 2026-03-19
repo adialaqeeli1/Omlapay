@@ -578,6 +578,12 @@ abstract class AppLocalizations {
   /// **'Incorrect passcode'**
   String get incorrectPasscode;
 
+  /// No description provided for @incorrectPasscodeTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect passcode. Try again.'**
+  String get incorrectPasscodeTryAgain;
+
   /// No description provided for @whoIsOmlapay.
   ///
   /// In en, this message translates to:

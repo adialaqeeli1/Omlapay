@@ -2,10 +2,10 @@ import 'package:go_router/go_router.dart';
 import '../../core/models/transaction_model/transaction_model.dart';
 import 'package:omlapay_mobile_app/core/models/coin_model/coin_model.dart';
 import '../core/models/wallet_model/wallet_model.dart';
-import '../modules/auth/enter_passcode_screen.dart';
-import '../modules/auth/hard_login_screen.dart';
-import '../modules/auth/login_screen.dart';
-import '../modules/auth/soft_login_screen.dart';
+import '../modules/auth/providers/login_provider.dart';
+import '../modules/auth/providers/passcode_provider.dart';
+import '../modules/auth/views/enter_or_set_passcode.dart';
+import '../modules/auth/views/login_screen.dart';
 import '../modules/coin_details/view/coin_details_view.dart';
 import '../modules/coin_details/providers/coin_details_provider.dart';
 import '../modules/dashboard/dashboard_view.dart';
@@ -73,30 +73,56 @@ class AppRouter {
       GoRoute(
         path: Routes.login,
         name: 'login',
-        builder: (context, state) => const LoginScreen(),
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => LoginProvider(),
+          child: const LoginScreen(),
+        ),
         redirect: AuthMiddleware.isUnauthenticated,
       ),
       GoRoute(
-        path: Routes.hardLogin,
-        name: 'hardLogin',
-        builder: (context, state) => const HardLoginScreen(),
-        redirect: AuthMiddleware.isUnauthenticated,
-      ),
-      GoRoute(
-        path: Routes.softLogin,
-        name: 'softLogin',
-        builder: (context, state) => const SoftLoginScreen(),
-      ),
-      GoRoute(
-        path: Routes.enterPasscode,
-        name: 'enterPasscode',
+        path: Routes.enterOrSetPasscode,
+        name: 'enterOrSetPasscode',
         builder: (context, state) {
-          final extra = state.extra as Map<String, String>?;
-          return EnterPasscodeScreen(
-            phoneNumber: extra?['phoneNumber'] ?? '',
-            countryCode: extra?['countryCode'] ?? '+966',
+          final routePayload = state.extra;
+          final mode = routePayload is Map<String, dynamic>
+              ? routePayload[LoginProvider.extraModeKey] as String?
+              : null;
+          final isSoftLogin = mode == LoginProvider.modeSoftLogin;
+
+          String countryCode;
+          String phoneNumber;
+
+          if (isSoftLogin) {
+            final user = context.read<AuthProvider>().state.user!;
+            countryCode = user.countryCode;
+            phoneNumber = user.mobileNumber;
+          } else {
+            countryCode = LoginProvider.countryCode;
+            phoneNumber = '';
+            if (routePayload is Map<String, dynamic>) {
+              final payloadCountryCode =
+                  routePayload[LoginProvider.extraCountryCodeKey] as String?;
+              final payloadPhoneNumber =
+                  routePayload[LoginProvider.extraPhoneNumberKey] as String?;
+              if (payloadCountryCode != null &&
+                  payloadCountryCode.isNotEmpty) {
+                countryCode = payloadCountryCode;
+              }
+              if (payloadPhoneNumber != null) {
+                phoneNumber = payloadPhoneNumber;
+              }
+            }
+          }
+
+          return ChangeNotifierProvider(
+            create: (_) => PasscodeProvider(
+              countryCode: countryCode,
+              phoneNumber: phoneNumber,
+            ),
+            child: EnterOrSetPasscodeScreen(isSoftLogin: isSoftLogin),
           );
         },
+        redirect: AuthMiddleware.enterOrSetPasscode,
       ),
       ShellRoute(
         builder: (context, state, child) => DashboardView(child: child),
@@ -198,7 +224,8 @@ class AppRouter {
         path: Routes.transactionDetail,
         name: 'transactionDetail',
         builder: (context, state) {
-          final TransactionModel? transaction = state.extra as TransactionModel?;
+          final TransactionModel? transaction =
+              state.extra as TransactionModel?;
           return TransactionDetailView(transaction: transaction!);
         },
         redirect: AuthMiddleware.isAuthenticated,

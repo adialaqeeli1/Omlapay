@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:crypto_font_icons/crypto_font_icons.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/theme.dart';
-import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_coin_icon.dart';
 import '../../../../widgets/no_transactions_found.dart';
 import '../../../../core/models/transaction_model/transaction_model.dart';
