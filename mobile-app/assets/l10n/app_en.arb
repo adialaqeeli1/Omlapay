@@ -178,5 +178,21 @@
             }
         }
     },
-    "markAsRead": "Mark as read"
+    "markAsRead": "Mark as read",
+    "forgotPasscodeTitle": "Forgot passcode",
+    "verifyYourPhoneNumber": "Verify your phone number",
+    "verificationCodesInSeconds": "You should receive the verification codes in {seconds} Seconds",
+    "@verificationCodesInSeconds": {
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "didntReceiveCodesResendOtp": "Didn't receive the codes? Resend OTP.",
+    "resendOtp": "Resend OTP",
+    "needHelpContactSupport": "Need Help? Contact Support",
+    "setYourNewPasscode": "Set your new passcode",
+    "confirmYourPasscode": "Confirm your passcode",
+    "passcodesMismatchTryAgain": "Passcodes don't match. Try again."
 }

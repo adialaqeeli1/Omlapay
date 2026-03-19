@@ -527,4 +527,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get markAsRead => 'Mark as read';
+
+  @override
+  String get forgotPasscodeTitle => 'Forgot passcode';
+
+  @override
+  String get verifyYourPhoneNumber => 'Verify your phone number';
+
+  @override
+  String verificationCodesInSeconds(int seconds) {
+    return 'You should receive the verification codes in $seconds Seconds';
+  }
+
+  @override
+  String get didntReceiveCodesResendOtp =>
+      'Didn\'t receive the codes? Resend OTP.';
+
+  @override
+  String get resendOtp => 'Resend OTP';
+
+  @override
+  String get needHelpContactSupport => 'Need Help? Contact Support';
+
+  @override
+  String get setYourNewPasscode => 'Set your new passcode';
+
+  @override
+  String get confirmYourPasscode => 'Confirm your passcode';
+
+  @override
+  String get passcodesMismatchTryAgain => 'Passcodes don\'t match. Try again.';
 }

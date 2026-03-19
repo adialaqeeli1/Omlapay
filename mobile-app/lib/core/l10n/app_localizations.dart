@@ -1075,6 +1075,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mark as read'**
   String get markAsRead;
+
+  /// No description provided for @forgotPasscodeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot passcode'**
+  String get forgotPasscodeTitle;
+
+  /// No description provided for @verifyYourPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your phone number'**
+  String get verifyYourPhoneNumber;
+
+  /// No description provided for @verificationCodesInSeconds.
+  ///
+  /// In en, this message translates to:
+  /// **'You should receive the verification codes in {seconds} Seconds'**
+  String verificationCodesInSeconds(int seconds);
+
+  /// No description provided for @didntReceiveCodesResendOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'t receive the codes? Resend OTP.'**
+  String get didntReceiveCodesResendOtp;
+
+  /// No description provided for @resendOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend OTP'**
+  String get resendOtp;
+
+  /// No description provided for @needHelpContactSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Need Help? Contact Support'**
+  String get needHelpContactSupport;
+
+  /// No description provided for @setYourNewPasscode.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your new passcode'**
+  String get setYourNewPasscode;
+
+  /// No description provided for @confirmYourPasscode.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your passcode'**
+  String get confirmYourPasscode;
+
+  /// No description provided for @passcodesMismatchTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Passcodes don\'t match. Try again.'**
+  String get passcodesMismatchTryAgain;
 }
 
 class _AppLocalizationsDelegate

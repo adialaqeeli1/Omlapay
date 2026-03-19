@@ -178,5 +178,21 @@
             }
         }
     },
-    "markAsRead": "تعليم كمقروء"
+    "markAsRead": "تعليم كمقروء",
+    "forgotPasscodeTitle": "نسيت رمز المرور",
+    "verifyYourPhoneNumber": "تحقق من رقم هاتفك",
+    "verificationCodesInSeconds": "يجب أن تستلم رموز التحقق خلال {seconds} ثانية",
+    "@verificationCodesInSeconds": {
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "didntReceiveCodesResendOtp": "لم تستلم الرموز؟ إعادة إرسال رمز التحقق.",
+    "resendOtp": "إعادة إرسال رمز التحقق",
+    "needHelpContactSupport": "تحتاج مساعدة؟ تواصل مع الدعم",
+    "setYourNewPasscode": "قم بتعيين رمز المرور الجديد",
+    "confirmYourPasscode": "تأكيد رمز المرور",
+    "passcodesMismatchTryAgain": "رموز المرور غير متطابقة. حاول مرة أخرى."
 }

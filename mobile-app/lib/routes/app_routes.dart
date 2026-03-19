@@ -5,6 +5,7 @@ class Routes {
   static const String onboarding = _Paths.onboarding;
   static const String login = _Paths.login;
   static const String enterOrSetPasscode = _Paths.enterOrSetPasscode;
+  static const String forgotPasscode = _Paths.forgotPasscode;
   static const String home = _Paths.home;
   static const String history = _Paths.history;
   static const String profile = _Paths.profile;
@@ -39,6 +40,7 @@ abstract class _Paths {
   static const String onboarding = '/onboarding';
   static const String login = '/login';
   static const String enterOrSetPasscode = '/enter-or-set-passcode';
+  static const String forgotPasscode = '/forgot-passcode';
   static const String home = '/home';
   static const String history = '/history';
   static const String profile = '/profile';

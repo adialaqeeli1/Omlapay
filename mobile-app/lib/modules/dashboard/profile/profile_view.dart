@@ -238,7 +238,7 @@ class ProfileView extends StatelessWidget {
       onTap: () async {
         await context.read<AuthProvider>().logout();
         if (context.mounted) {
-          GoRouter.of(context).go(Routes.login);
+          GoRouter.of(context).push(Routes.login);
         }
       },
       mouseCursor: SystemMouseCursors.click,

@@ -28,6 +28,7 @@ class AuthMiddleware {
 
   /// Redirect for enterOrSetPasscode route. Behavior depends on route extra mode:
   /// - soft_login: require authenticated (else → login)
+  /// - reset_passcode, confirm_passcode: allow (forgot passcode flow)
   /// - hard_login, register, or unknown: require unauthenticated (else → home)
   static String? enterOrSetPasscode(BuildContext context, GoRouterState state) {
     final authProvider = context.read<AuthProvider>();
@@ -44,8 +45,29 @@ class AuthMiddleware {
       return null;
     }
 
+    if (mode == LoginProvider.modeResetPasscode ||
+        mode == LoginProvider.modeConfirmPasscode) {
+      return null;
+    }
+
     if (authProvider.state.isAuthenticated) {
       return Routes.home;
+    }
+    return null;
+  }
+
+  /// Redirect for forgotPasscode route. Require valid extra (phone + country).
+  static String? forgotPasscode(BuildContext context, GoRouterState state) {
+    final extra = state.extra;
+    if (extra is! Map<String, dynamic>) {
+      return Routes.login;
+    }
+    final countryCode =
+        extra[LoginProvider.extraCountryCodeKey] as String? ?? '';
+    final phoneNumber =
+        extra[LoginProvider.extraPhoneNumberKey] as String? ?? '';
+    if (countryCode.isEmpty || phoneNumber.isEmpty) {
+      return Routes.login;
     }
     return null;
   }

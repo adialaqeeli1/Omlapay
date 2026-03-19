@@ -11,6 +11,9 @@ class LoginProvider extends ChangeNotifier {
   static const String modeHardLogin = 'hard_login';
   static const String modeSoftLogin = 'soft_login';
   static const String modeRegister = 'register';
+  static const String modeResetPasscode = 'reset_passcode';
+  static const String modeConfirmPasscode = 'confirm_passcode';
+  static const String extraPendingPasscodeKey = 'pendingPasscode';
   static const int _requiredPhoneLength = 9;
 
   String _rawPhone = '';

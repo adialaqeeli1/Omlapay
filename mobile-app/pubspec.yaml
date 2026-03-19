@@ -60,6 +60,7 @@ dependencies:
   qr_flutter: ^4.1.0
   image: ^4.0.17
   webview_flutter: ^4.10.0
+  pin_code_fields: ^9.1.0
 
 dev_dependencies:
   flutter_test:
