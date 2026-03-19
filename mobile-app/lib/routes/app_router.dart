@@ -20,6 +20,7 @@ import '../modules/dashboard/history/history_view.dart';
 import '../modules/dashboard/history/transaction_detail_view.dart';
 import '../modules/dashboard/home/home_view.dart';
 import '../modules/dashboard/home/provider/home_provider.dart';
+import '../modules/dashboard/home/services/coins_prices_stream_service.dart';
 import '../modules/dashboard/home/services/coins_service.dart';
 import '../modules/dashboard/profile/about/about_view.dart';
 import '../modules/dashboard/profile/about/faqs_view.dart';
@@ -194,8 +195,13 @@ class AppRouter {
             path: Routes.home,
             name: 'home',
             builder: (context, state) => ChangeNotifierProvider(
-              create: (_) =>
-                  HomeProvider(context.read<GlobalProvider>(), CoinsService()),
+              create: (_) {
+                final coinsService = CoinsService();
+                return HomeProvider(
+                  context.read<GlobalProvider>(),
+                  CoinsPricesStreamService(coinsService),
+                );
+              },
               child: const HomeView(),
             ),
           ),
