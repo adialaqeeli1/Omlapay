@@ -66,8 +66,7 @@ class ProfileView extends StatelessWidget {
                   iconPath: 'assets/icons/about_icon.svg',
                   title: l10n.aboutOmlapay,
                   horizontalPadding: horizontalPadding,
-                  onTap: () =>
-                      GoRouter.of(context).push(Routes.loginOrRegister),
+                  onTap: () => GoRouter.of(context).push(Routes.about),
                 ),
                 _buildMenuItem(
                   context: context,

@@ -40,9 +40,11 @@ class SettingsView extends StatelessWidget {
       body: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
           final bool isLoggedIn = authProvider.state.isAuthenticated;
-          
+
           return SingleChildScrollView(
-            physics: AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+            physics: AlwaysScrollableScrollPhysics(
+              parent: ClampingScrollPhysics(),
+            ),
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: Column(
               mainAxisSize: MainAxisSize.min,
