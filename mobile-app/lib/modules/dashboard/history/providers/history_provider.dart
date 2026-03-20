@@ -1,9 +1,13 @@
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
+
 import '../../../../core/mock_data/mock_data.dart';
 import '../../../../core/models/transaction_model/transaction_model.dart';
+import '../../../../providers/coins_prices_provider.dart';
 
 class HistoryProvider extends ChangeNotifier {
+  final CoinsPricesProvider _coinsPrices;
+
   String?
   _selectedCoinFilter; // null = All, or coin symbol like 'USDT', 'BTC', etc.
   TransactionType? _selectedTransactionTypeFilter; // null = All
@@ -25,7 +29,8 @@ class HistoryProvider extends ChangeNotifier {
   List<TransactionModel> get _filteredTransactions {
     var result = _transactions;
 
-    if (_selectedCoinFilter != null && _selectedCoinFilter != 'All') {
+    if (_selectedCoinFilter != null &&
+        _selectedCoinFilter!.trim().isNotEmpty) {
       result = result
           .where(
             (tx) =>
@@ -66,9 +71,32 @@ class HistoryProvider extends ChangeNotifier {
     return result;
   }
 
-  HistoryProvider() {
+  HistoryProvider(this._coinsPrices) {
     developer.log('HistoryProvider: Initializing with dummy data');
+    _coinsPrices.addListener(_onStreamedCoinsUpdated);
     _loadDummyData();
+  }
+
+  void _onStreamedCoinsUpdated() {
+    final before = _selectedCoinFilter;
+    _reconcileCoinFilterWithStream();
+    if (before != _selectedCoinFilter) {
+      notifyListeners();
+    }
+  }
+
+  /// Clear coin filter if that symbol is no longer in the SSE coin list.
+  void _reconcileCoinFilterWithStream() {
+    final symbols = _coinsPrices.coins
+        .map((c) => c.symbol.toUpperCase())
+        .toSet();
+    final sel = _selectedCoinFilter?.trim().toUpperCase();
+    if (sel != null &&
+        sel.isNotEmpty &&
+        symbols.isNotEmpty &&
+        !symbols.contains(sel)) {
+      _selectedCoinFilter = null;
+    }
   }
 
   // TODO: Replace with actual API call when backend is ready
@@ -163,5 +191,11 @@ class HistoryProvider extends ChangeNotifier {
       );
       return [];
     }
+  }
+
+  @override
+  void dispose() {
+    _coinsPrices.removeListener(_onStreamedCoinsUpdated);
+    super.dispose();
   }
 }

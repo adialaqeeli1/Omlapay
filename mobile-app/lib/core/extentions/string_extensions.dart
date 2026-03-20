@@ -93,3 +93,14 @@ extension StringExt on String {
 
   Color? get hexToColor => Utility.hexStringToColor(this);
 }
+
+/// Masked national number for OTP screens, e.g. `+966 XXX XXX 1234`.
+String maskedPhoneForDisplay(String countryCode, String digitsOnlyPhone) {
+  final cc = countryCode.trim();
+  final digits = digitsOnlyPhone.replaceAll(RegExp(r'[^0-9]'), '');
+  if (digits.length < 4) {
+    return '$cc XXX XXX XXXX';
+  }
+  final lastFour = digits.substring(digits.length - 4);
+  return '$cc XXX XXX $lastFour';
+}

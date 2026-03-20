@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../core/extentions/string_extensions.dart';
 import '../services/forgot_passcode_service.dart';
 
 class VerificationProvider extends ChangeNotifier {
@@ -37,14 +38,9 @@ class VerificationProvider extends ChangeNotifier {
   bool get canEnterDigits => !_isVerifying;
   bool get canResend => _countdownSeconds <= 0 && !_isRequestingOtp;
 
-  /// Returns formatted phone for display (e.g. "+966 xxx xxx 1234").
-  String get formattedPhoneForDisplay {
-    if (_phoneNumber.length < 4) {
-      return '$_countryCode xxx xxx xxxx';
-    }
-    final lastFour = _phoneNumber.substring(_phoneNumber.length - 4);
-    return '$_countryCode xxx xxx $lastFour';
-  }
+  /// Returns formatted phone for display (e.g. "+966 XXX XXX 1234").
+  String get formattedPhoneForDisplay =>
+      maskedPhoneForDisplay(_countryCode, _phoneNumber);
 
   void addDigit(String digit) {
     if (!canEnterDigits || _otp.length >= otpLength) return;

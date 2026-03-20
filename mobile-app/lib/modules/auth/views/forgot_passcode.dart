@@ -100,6 +100,16 @@ class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
                 ),
                 textAlign: TextAlign.start,
               ),
+              const SizedBox(height: 12),
+              Text(
+                provider.formattedPhoneForDisplay,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  color: subtitleColor,
+                ),
+                textAlign: TextAlign.start,
+              ),
               const SizedBox(height: 24),
               LayoutBuilder(
                 builder: (context, constraints) {

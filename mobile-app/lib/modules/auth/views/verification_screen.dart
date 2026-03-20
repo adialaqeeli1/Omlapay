@@ -67,11 +67,11 @@ class _VerificationScreenState extends State<VerificationScreen> {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  ...List.generate(3, (index) {
+                  ...List.generate(4, (index) {
                     final isActive = index < 2;
                     return Padding(
                       padding: EdgeInsetsDirectional.only(
-                        end: index < 2 ? 4 : 0,
+                        end: index < 3 ? 4 : 0,
                       ),
                       child: Container(
                         width: isActive ? 44 : 14,
@@ -91,11 +91,11 @@ class _VerificationScreenState extends State<VerificationScreen> {
               Text(
                 l10n.verifyYourAccount,
                 style: GoogleFonts.poppinsTextTheme().displaySmall?.copyWith(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w700,
-                      height: 1.24,
-                      color: theme.colorScheme.onSurface,
-                    ),
+                  fontSize: 30,
+                  fontWeight: FontWeight.w700,
+                  height: 1.24,
+                  color: theme.colorScheme.onSurface,
+                ),
                 textAlign: TextAlign.start,
               ),
               const SizedBox(height: 12),
@@ -123,7 +123,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   final cellWidth = totalPreferredWidth <= availableWidth
                       ? preferredCellSize
                       : (availableWidth - (cellCount - 1) * preferredSpacing) /
-                          cellCount;
+                            cellCount;
                   final cellSize = Size(
                     cellWidth.clamp(40.0, preferredCellSize),
                     preferredCellSize,
