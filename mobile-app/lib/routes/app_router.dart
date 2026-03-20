@@ -16,7 +16,7 @@ import '../modules/auth/views/login_or_register_screen.dart';
 import '../modules/auth/views/verification_screen.dart';
 import '../modules/auth/views/change_passcode_success_view.dart';
 import '../modules/auth/providers/verification_provider.dart';
-import '../modules/coin_details/view/coin_details_view.dart';
+import '../modules/coin_details/coin_details_view.dart';
 import '../modules/dashboard/dashboard_view.dart';
 import '../modules/dashboard/history/history_view.dart';
 import '../modules/dashboard/history/transaction_detail_view.dart';

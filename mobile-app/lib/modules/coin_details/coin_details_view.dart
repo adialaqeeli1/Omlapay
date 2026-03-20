@@ -4,18 +4,18 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/extentions/context_extensions.dart';
-import '../../../core/models/coin_model/coin_model.dart';
-import '../../../core/theme/theme.dart';
-import '../../../providers/auth_provider.dart';
-import '../../../providers/coins_prices_provider.dart';
-import '../../../providers/global_provider.dart';
-import '../../../routes/app_router.dart';
-import '../../../widgets/common_back_button.dart';
-import '../../../widgets/common_coin_icon.dart';
-import '../../../widgets/no_transactions_found.dart';
-import '../../../widgets/receive_send_swap_actions.dart';
-import '../../dashboard/home/widgets/currency_selection_dialog.dart';
+import '../../core/extentions/context_extensions.dart';
+import '../../core/models/coin_model/coin_model.dart';
+import '../../core/theme/theme.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/coins_prices_provider.dart';
+import '../../providers/global_provider.dart';
+import '../../routes/app_router.dart';
+import '../../widgets/common_back_button.dart';
+import '../../widgets/common_coin_icon.dart';
+import '../../widgets/no_transactions_found.dart';
+import '../../widgets/receive_send_swap_actions.dart';
+import '../dashboard/home/widgets/currency_selection_dialog.dart';
 
 class CoinDetailsView extends StatelessWidget {
   const CoinDetailsView({super.key, required this.coinModel});
