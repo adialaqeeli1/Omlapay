@@ -34,6 +34,14 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
     _searchController.addListener(_filterCoins);
   }
 
+  @override
+  void didUpdateWidget(CoinSelectionSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.coins != widget.coins) {
+      _filterCoins();
+    }
+  }
+
   void _filterCoins() {
     final query = _searchController.text.toLowerCase();
     setState(() {

@@ -54,6 +54,7 @@ import '../modules/notifications/notifications_view.dart';
 import '../modules/notifications/notifications_list_provider.dart';
 import '../modules/splash/splash_view.dart';
 import '../providers/auth_provider.dart';
+import '../providers/coins_prices_provider.dart';
 import 'middlewares/auth_middleware.dart';
 
 part 'app_routes.dart';
@@ -286,7 +287,10 @@ class AppRouter {
         path: Routes.sendCoin,
         name: 'sendCoin',
         builder: (context, state) => ChangeNotifierProvider(
-          create: (_) => SendProvider(context.read<AuthProvider>()),
+          create: (_) => SendProvider(
+                context.read<AuthProvider>(),
+                context.read<CoinsPricesProvider>(),
+              ),
           child: const SendCoinView(),
         ),
       ),

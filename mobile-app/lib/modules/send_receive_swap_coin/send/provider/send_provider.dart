@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
-import '../../../../core/mock_data/mock_data.dart';
+
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/contact_model/contact_model.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../../providers/coins_prices_provider.dart';
 
 class SendProvider extends ChangeNotifier {
   final AuthProvider authProvider;
+  final CoinsPricesProvider _coinsPricesProvider;
 
   List<CoinModel> _coins = [];
   bool _isLoading = false;
 
   CoinModel? _selectedCoin;
   ContactModel? _selectedContact;
+
+  /// After the user picks a coin in the sheet, we keep that symbol across SSE updates.
+  bool _userPickedCoin = false;
+  String? _userPickedSymbol;
 
   final TextEditingController amountController = TextEditingController();
   final TextEditingController recipientController = TextEditingController();
@@ -46,9 +52,10 @@ class SendProvider extends ChangeNotifier {
       _selectedContact != null &&
       isVerified;
 
-  SendProvider(this.authProvider) {
+  SendProvider(this.authProvider, this._coinsPricesProvider) {
     authProvider.addListener(notifyListeners);
-    _loadData();
+    _coinsPricesProvider.addListener(_onStreamedCoinsUpdated);
+    _syncCoinsFromPrices();
     amountController.addListener(_validate);
     recipientController.addListener(() {
       // If user types manually, we might clear selected contact or try to find one
@@ -63,22 +70,48 @@ class SendProvider extends ChangeNotifier {
     });
   }
 
-  void _loadData() {
-    // Load coins from MockData
-    _coins = MockData.coins;
-    if (_coins.isNotEmpty) {
-      _selectedCoin = _coins.firstWhere(
-        (c) => c.symbol == 'USDT',
-        orElse: () => _coins[0],
-      );
+  void _onStreamedCoinsUpdated() {
+    _syncCoinsFromPrices();
+  }
+
+  /// Mirrors [CoinsPricesProvider.coins] (SSE) into the send flow list.
+  void _syncCoinsFromPrices() {
+    final incoming = _coinsPricesProvider.coins;
+    _isLoading = _coinsPricesProvider.isLoading && incoming.isEmpty;
+    _coins = List<CoinModel>.from(incoming);
+
+    if (_coins.isEmpty) {
+      _selectedCoin = null;
+      _validate();
+      return;
     }
-    notifyListeners();
+
+    if (!_userPickedCoin) {
+      _selectedCoin = _coins.first;
+    } else {
+      final key = (_userPickedSymbol ?? _selectedCoin?.symbol ?? '')
+          .trim()
+          .toUpperCase();
+      CoinModel? match;
+      if (key.isNotEmpty) {
+        for (final c in _coins) {
+          if (c.symbol.toUpperCase() == key) {
+            match = c;
+            break;
+          }
+        }
+      }
+      _selectedCoin = match ?? _coins.first;
+    }
+
+    _validate();
   }
 
   void setSelectedCoin(CoinModel coin) {
+    _userPickedCoin = true;
+    _userPickedSymbol = coin.symbol;
     _selectedCoin = coin;
     _validate();
-    notifyListeners();
   }
 
   void setSelectedContact(ContactModel contact) {
@@ -127,6 +160,7 @@ class SendProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _coinsPricesProvider.removeListener(_onStreamedCoinsUpdated);
     authProvider.removeListener(notifyListeners);
     amountController.dispose();
     recipientController.dispose();
