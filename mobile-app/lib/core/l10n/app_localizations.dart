@@ -956,6 +956,12 @@ abstract class AppLocalizations {
   /// **'Current price'**
   String get currentPrice;
 
+  /// No description provided for @coinDetailsPriceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'—'**
+  String get coinDetailsPriceUnavailable;
+
   /// No description provided for @today.
   ///
   /// In en, this message translates to:

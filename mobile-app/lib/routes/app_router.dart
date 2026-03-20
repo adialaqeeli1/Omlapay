@@ -14,14 +14,10 @@ import '../modules/auth/views/login_or_register_screen.dart';
 import '../modules/auth/views/verification_screen.dart';
 import '../modules/auth/providers/verification_provider.dart';
 import '../modules/coin_details/view/coin_details_view.dart';
-import '../modules/coin_details/providers/coin_details_provider.dart';
 import '../modules/dashboard/dashboard_view.dart';
 import '../modules/dashboard/history/history_view.dart';
 import '../modules/dashboard/history/transaction_detail_view.dart';
 import '../modules/dashboard/home/home_view.dart';
-import '../modules/dashboard/home/provider/home_provider.dart';
-import '../modules/dashboard/home/services/coins_prices_stream_service.dart';
-import '../modules/dashboard/home/services/coins_service.dart';
 import '../modules/dashboard/profile/about/about_view.dart';
 import '../modules/dashboard/profile/about/faqs_view.dart';
 import '../modules/dashboard/profile/about/privacy_policy_view.dart';
@@ -52,13 +48,12 @@ import '../modules/wallets/provider/wallets_provider.dart';
 import '../modules/wallets/view/wallets_view.dart';
 import '../modules/wallets/view/qr_code_view.dart';
 import '../modules/scan/view/qr_scanner_view.dart';
-import '../modules/settings/settings_view.dart';
+import '../modules/settings/view/settings_view.dart';
 import '../modules/settings/view/account_details_view.dart';
 import '../modules/notifications/notifications_view.dart';
 import '../modules/notifications/notifications_list_provider.dart';
 import '../modules/splash/splash_view.dart';
 import '../providers/auth_provider.dart';
-import '../providers/global_provider.dart';
 import 'middlewares/auth_middleware.dart';
 
 part 'app_routes.dart';
@@ -194,16 +189,7 @@ class AppRouter {
           GoRoute(
             path: Routes.home,
             name: 'home',
-            builder: (context, state) => ChangeNotifierProvider(
-              create: (_) {
-                final coinsService = CoinsService();
-                return HomeProvider(
-                  context.read<GlobalProvider>(),
-                  CoinsPricesStreamService(coinsService),
-                );
-              },
-              child: const HomeView(),
-            ),
+            builder: (context, state) => const HomeView(),
           ),
           GoRoute(
             path: Routes.history,
@@ -282,10 +268,7 @@ class AppRouter {
         name: 'coinDetails',
         builder: (context, state) {
           final CoinModel? coinModel = state.extra as CoinModel?;
-          return ChangeNotifierProvider(
-            create: (_) => CoinDetailsProvider(),
-            child: CoinDetailsView(coinModel: coinModel),
-          );
+          return CoinDetailsView(coinModel: coinModel);
         },
         redirect: AuthMiddleware.isAuthenticated,
       ),
@@ -346,7 +329,7 @@ class AppRouter {
         path: Routes.swapCoin,
         name: 'swapCoin',
         builder: (context, state) => ChangeNotifierProvider(
-          create: (_) => SwapProvider(),
+          create: (_) => SwapProvider(context.read<AuthProvider>()),
           child: const SwapCoinView(),
         ),
       ),

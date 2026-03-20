@@ -20,8 +20,8 @@ import 'package:omlapay_mobile_app/widgets/no_transactions_found.dart';
 import 'package:provider/provider.dart';
 
 import '../../../widgets/receive_send_swap_actions.dart';
+import '../../../../providers/coins_prices_provider.dart';
 import '../../../../providers/global_provider.dart';
-import 'provider/home_provider.dart';
 import 'widgets/currency_selection_dialog.dart';
 
 class HomeView extends StatelessWidget {
@@ -179,14 +179,14 @@ class HomeView extends StatelessWidget {
   }) {
     final currencyName = l10n.currencyName(selectedCurrency.toLowerCase());
 
-    final homeProvider = context.watch<HomeProvider>();
-    if (homeProvider.isLoading) {
+    final coinsPrices = context.watch<CoinsPricesProvider>();
+    if (coinsPrices.isLoading) {
       return const Padding(
         padding: EdgeInsets.all(20.0),
         child: Center(child: CircularProgressIndicator()),
       );
     }
-    final List<CoinModel> coins = homeProvider.coins;
+    final List<CoinModel> coins = coinsPrices.coins;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,

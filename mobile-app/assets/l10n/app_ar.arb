@@ -144,6 +144,7 @@
     "coinHistory": "تاريخ العملة",
     "sent": "أرسلت",
     "currentPrice": "السعر الحالي",
+    "coinDetailsPriceUnavailable": "—",
     "today": "اليوم",
     "received": "تم الاستلام",
     "transactionDetails": "تفاصيل المعاملة",
