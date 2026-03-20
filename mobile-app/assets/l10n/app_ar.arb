@@ -28,6 +28,32 @@
     "account": "الحساب",
     "accountDetails": "تفاصيل الحساب",
     "changePhoneNumber": "تغيير رقم الهاتف",
+    "stepsForChangingPhoneNumber": "خطوات تغيير رقم هاتفك",
+    "changePhoneStepsDescription": "لتغيير رقم هاتفك المسجل سنتبع الخطوات التالية:",
+    "changePhoneStep1": "سيتم إرسال رمز تحقق إلى رقم هاتفك المسجل.",
+    "changePhoneStep2": "بعد إدخال الرمز المُرسل، أدخل رقم الهاتف الجديد.",
+    "changePhoneStep3": "سيتم إرسال رمز تحقق إلى رقم الهاتف الجديد الذي أدخلته.",
+    "changePhoneAfterStepsNote": "بعد اتباع هذه الخطوات، سيتم تغيير رقم هاتفك الحالي إلى الرقم الجديد.",
+    "enterNewPhoneNumber": "أدخل رقم الهاتف الجديد",
+    "verifyNewPhoneNumber": "تحقق من رقم الهاتف الجديد",
+    "changePhoneCurrentOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى {phone}.",
+    "@changePhoneCurrentOtpSent": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "changePhoneNewOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى {phone}.",
+    "@changePhoneNewOtpSent": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "enterValidPhoneNumber": "يرجى إدخال رقم هاتف صالح",
+    "phoneNumberChangedSuccessfully": "تم تغيير رقم هاتفك بنجاح",
     "changeEmail": "تغيير البريد الإلكتروني",
     "stepsForChangingEmail": "خطوات تغيير بريدك الإلكتروني",
     "changeEmailStepsDescription": "لتغيير بريدك الإلكتروني المسجل سنتبع الخطوات التالية:",
