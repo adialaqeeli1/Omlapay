@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/theme/theme.dart';
 
@@ -11,6 +12,8 @@ class CommonTextField extends StatelessWidget {
     this.validator,
     this.onChanged,
     this.keyboardType,
+    this.textInputAction,
+    this.inputFormatters,
     this.obscureText = false,
     this.maxLines = 1,
     this.enabled = true,
@@ -19,6 +22,10 @@ class CommonTextField extends StatelessWidget {
     this.prefixIcon,
     this.suffixIcon,
     this.fillColor,
+    this.contentPadding,
+    this.border,
+    this.enabledBorder,
+    this.focusedBorder,
   });
 
   final TextEditingController? controller;
@@ -27,6 +34,8 @@ class CommonTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
   final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final List<TextInputFormatter>? inputFormatters;
   final bool obscureText;
   final int maxLines;
   final bool enabled;
@@ -35,6 +44,10 @@ class CommonTextField extends StatelessWidget {
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final Color? fillColor;
+  final EdgeInsetsGeometry? contentPadding;
+  final InputBorder? border;
+  final InputBorder? enabledBorder;
+  final InputBorder? focusedBorder;
 
   @override
   Widget build(BuildContext context) {
@@ -49,10 +62,13 @@ class CommonTextField extends StatelessWidget {
           validator: validator,
           onChanged: onChanged,
           keyboardType: keyboardType,
+          textInputAction: textInputAction,
+          inputFormatters: inputFormatters,
           obscureText: obscureText,
           maxLines: maxLines,
           enabled: enabled,
           maxLength: maxLength,
+          onTapOutside: (event) => FocusScope.of(context).unfocus(),
           style: TextStyle(
             color: isDark ? AppColors.textWhite : AppColors.textBlack,
             fontSize: 16,
@@ -66,14 +82,17 @@ class CommonTextField extends StatelessWidget {
             filled: true,
             fillColor:
                 fillColor ?? (isDark ? Colors.grey[900] : Colors.grey[100]),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
-            ),
+            border:
+                border ??
+                OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+            enabledBorder: enabledBorder,
+            focusedBorder: focusedBorder,
+            contentPadding:
+                contentPadding ??
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             counterText: '', // Hide default counter
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,

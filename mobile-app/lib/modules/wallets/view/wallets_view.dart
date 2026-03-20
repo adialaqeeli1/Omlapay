@@ -24,8 +24,7 @@ class WalletsView extends StatelessWidget {
     final authProvider = context.watch<AuthProvider>();
     final l10n = AppLocalizations.of(context)!;
     final title = fromReceive ? l10n.receive : 'Wallets';
-    final showVerificationBanner =
-        authProvider.state.user?.isVerified != true;
+    final showVerificationBanner = authProvider.state.user?.isVerified != true;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -37,7 +36,11 @@ class WalletsView extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.history_rounded, color: Colors.white, size: 24),
+            icon: const Icon(
+              Icons.history_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
             onPressed: () => context.push(Routes.receiveCoin),
             tooltip: l10n.history,
           ),
@@ -74,13 +77,19 @@ class WalletsView extends StatelessWidget {
                               child: Opacity(
                                 opacity: 0.55,
                                 child: ListView.separated(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
                                   itemCount: provider.wallets.length,
                                   separatorBuilder: (context, index) =>
                                       const SizedBox(height: 12),
                                   itemBuilder: (context, index) {
                                     final wallet = provider.wallets[index];
-                                    return _buildWalletItem(context, wallet, provider);
+                                    return _buildWalletItem(
+                                      context,
+                                      wallet,
+                                      provider,
+                                    );
                                   },
                                 ),
                               ),
@@ -184,7 +193,7 @@ class WalletsView extends StatelessWidget {
                 children: [
                   const TextSpan(
                     text:
-                        'Identity verification is required to send coins. Please complete your KYC profile to enable transfers. ',
+                        'Identity verification is required to receive coins. Please complete your KYC profile to enable transfers. ',
                   ),
                   WidgetSpan(
                     child: GestureDetector(
