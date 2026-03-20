@@ -136,12 +136,12 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                 ),
               ),
             ),
-            IconButton(
-              icon: ThemeAwareIcon(assetPath: 'assets/icons/edit.svg'),
-              onPressed: onEdit,
-              padding: EdgeInsets.zero,
-              constraints: BoxConstraints.loose(const Size(24, 24)),
-            ),
+            // IconButton(
+            //   icon: ThemeAwareIcon(assetPath: 'assets/icons/edit.svg'),
+            //   onPressed: onEdit,
+            //   padding: EdgeInsets.zero,
+            //   constraints: BoxConstraints.loose(const Size(24, 24)),
+            // ),
           ],
         ),
       ],

@@ -7,8 +7,11 @@ import 'core/services/storage_helper.dart';
 import 'providers/auth_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/coins_prices_provider.dart';
 import 'providers/global_provider.dart';
 import 'providers/notification_provider.dart';
+import 'modules/dashboard/home/services/coins_prices_stream_service.dart';
+import 'modules/dashboard/home/services/coins_service.dart';
 import 'core/l10n/app_localizations.dart';
 import 'routes/app_router.dart';
 
@@ -40,6 +43,12 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
         ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
         ChangeNotifierProvider<GlobalProvider>(create: (_) => GlobalProvider()),
+        ChangeNotifierProvider<CoinsPricesProvider>(
+          create: (context) => CoinsPricesProvider(
+            context.read<GlobalProvider>(),
+            CoinsPricesStreamService(CoinsService()),
+          ),
+        ),
         ChangeNotifierProvider<NotificationProvider>(
           create: (_) => NotificationProvider(),
         ),

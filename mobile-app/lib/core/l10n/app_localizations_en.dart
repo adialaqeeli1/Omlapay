@@ -467,6 +467,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currentPrice => 'Current price';
 
   @override
+  String get coinDetailsPriceUnavailable => '—';
+
+  @override
   String get today => 'today';
 
   @override

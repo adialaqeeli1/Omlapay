@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 
-import '../../../../core/models/coin_model/coin_model.dart';
-import '../../../../providers/global_provider.dart';
-import '../services/coins_prices_stream_service.dart';
+import '../core/models/coin_model/coin_model.dart';
+import '../modules/dashboard/home/services/coins_prices_stream_service.dart';
+import 'global_provider.dart';
 
-class HomeProvider extends ChangeNotifier {
-  HomeProvider(this._globalProvider, this._pricesStreamService) {
+/// App-wide real-time coin prices from the SSE stream (`/v1/coins/prices/stream`).
+/// Listen with [coins] / [coinForSymbol] anywhere below [MaterialApp].
+class CoinsPricesProvider extends ChangeNotifier {
+  CoinsPricesProvider(this._globalProvider, this._pricesStreamService) {
     _activeCurrency = _globalProvider.selectedCurrency;
     _globalProvider.addListener(_onCurrencyUpdated);
     _isLoading = true;
@@ -25,9 +27,22 @@ class HomeProvider extends ChangeNotifier {
   bool _isDisposed = false;
   StreamSubscription<List<CoinModel>>? _pricesSubscription;
 
+  /// Latest coin rows from the stream (same data as home asset cards).
   List<CoinModel> get coins => _coins;
+
   bool get isLoading => _isLoading;
+
   String? get errorMessage => _errorMessage;
+
+  /// Resolved price row for a symbol, or `null` if not in the last payload.
+  CoinModel? coinForSymbol(String symbol) {
+    final key = symbol.trim().toUpperCase();
+    if (key.isEmpty) return null;
+    for (final c in _coins) {
+      if (c.symbol.toUpperCase() == key) return c;
+    }
+    return null;
+  }
 
   void _onCurrencyUpdated() {
     final selectedCurrency = _globalProvider.selectedCurrency;

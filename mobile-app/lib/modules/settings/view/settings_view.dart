@@ -3,16 +3,16 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/extentions/context_extensions.dart';
-import '../../core/l10n/app_localizations.dart';
-import '../../core/theme/theme.dart';
-import '../../providers/auth_provider.dart';
-import '../../providers/locale_provider.dart';
-import '../../providers/theme_provider.dart';
-import '../../providers/notification_provider.dart';
-import '../../widgets/common_back_button.dart';
-import 'widgets/appearance_selection_widget.dart';
-import 'widgets/language_selection_widget.dart';
+import '../../../core/extentions/context_extensions.dart';
+import '../../../core/l10n/app_localizations.dart';
+import '../../../core/theme/theme.dart';
+import '../../../providers/auth_provider.dart';
+import '../../../providers/locale_provider.dart';
+import '../../../providers/theme_provider.dart';
+import '../../../providers/notification_provider.dart';
+import '../../../widgets/common_back_button.dart';
+import '../widgets/appearance_selection_widget.dart';
+import '../widgets/language_selection_widget.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});

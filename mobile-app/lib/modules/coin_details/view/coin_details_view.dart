@@ -8,6 +8,7 @@ import '../../../core/extentions/context_extensions.dart';
 import '../../../core/models/coin_model/coin_model.dart';
 import '../../../core/theme/theme.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/coins_prices_provider.dart';
 import '../../../providers/global_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_back_button.dart';
@@ -15,8 +16,6 @@ import '../../../widgets/common_coin_icon.dart';
 import '../../../widgets/no_transactions_found.dart';
 import '../../../widgets/receive_send_swap_actions.dart';
 import '../../dashboard/home/widgets/currency_selection_dialog.dart';
-import '../providers/coin_details_provider.dart';
-
 class CoinDetailsView extends StatelessWidget {
   const CoinDetailsView({super.key, required this.coinModel});
 
@@ -26,7 +25,13 @@ class CoinDetailsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
     final selectedCurrency = context.watch<GlobalProvider>().selectedCurrency;
-    final provider = context.watch<CoinDetailsProvider>();
+    final coinsPrices = context.watch<CoinsPricesProvider>();
+    final liveCoin = coinsPrices.coinForSymbol(coinModel?.symbol ?? '');
+    final currencyName = l10n.currencyName(selectedCurrency.toLowerCase());
+    final priceValue = liveCoin?.valueInUsd ?? coinModel?.valueInUsd;
+    final hasPrice = priceValue != null &&
+        priceValue.isNotEmpty &&
+        priceValue != '--';
 
     return Scaffold(
       body: SafeArea(
@@ -268,51 +273,44 @@ class CoinDetailsView extends StatelessWidget {
           ],
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l10n.currentPrice,
-                  style: context.textTheme.bodySmall?.copyWith(
-                    color: AppColors.primaryColor,
-                    fontWeight: FontWeight.w500,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l10n.currentPrice,
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: AppColors.primaryColor,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text:
-                            '${provider.currentPrice.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]} ')} ',
-                        style: context.textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: context.isDarkMode
-                              ? AppColors.white
-                              : AppColors.textBlack,
-                        ),
+                  const SizedBox(height: 4),
+                  if (coinsPrices.isLoading && !hasPrice)
+                    SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: context.isDarkMode
+                            ? AppColors.textWhite
+                            : AppColors.textBlack,
                       ),
-                      TextSpan(
-                        text: selectedCurrency,
-                        style: context.textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textGrey,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    )
+                  else
+                    Text(
+                      hasPrice
+                          ? '$priceValue $currencyName'
+                          : l10n.coinDetailsPriceUnavailable,
+                      style: context.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: context.isDarkMode
+                            ? AppColors.white
+                            : AppColors.textBlack,
                       ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            Text(
-              '+${provider.priceChange} (${provider.priceChangePercent}%) ${l10n.today}',
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: AppColors.greenColor,
-                fontWeight: FontWeight.w600,
+                    ),
+                ],
               ),
             ),
           ],

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
 import '../../../../core/theme/theme.dart';
+import '../../../../providers/auth_provider.dart';
 import '../../../../widgets/common_back_button.dart';
 import '../../../../widgets/common_button.dart';
 
@@ -82,8 +85,10 @@ class _SendVerificationViewState extends State<SendVerificationView> {
 
             CommonButton(
               title: 'Verify',
-              onPressed: () {
-                // Mock verification success
+              onPressed: () async {
+                // Mock verification success — update auth so send/swap gates refresh.
+                await context.read<AuthProvider>().verifyUser();
+                if (!context.mounted) return;
                 context.pop(true);
               },
             ),

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_coin_icon.dart';
 import 'package:crypto_font_icons/crypto_font_icons.dart';
+
+import '../provider/swap_provider.dart';
 
 class CurrencyInputCard extends StatelessWidget {
   final String title;

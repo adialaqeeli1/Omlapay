@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+
 import '../../../../core/mock_data/mock_data.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
+import '../../../../providers/auth_provider.dart';
 
 class SwapProvider extends ChangeNotifier {
+  final AuthProvider authProvider;
+
   List<CoinModel> _coins = [];
   bool _isLoading = false;
 
@@ -20,12 +24,28 @@ class SwapProvider extends ChangeNotifier {
   CoinModel? get toCoin => _toCoin;
   String? get error => _error;
 
-  SwapProvider() {
+  bool get isVerified => authProvider.state.user?.isVerified ?? false;
+
+  bool get showVerificationWarning => !isVerified;
+
+  /// Same rules as send: valid amount, no errors, and verified user.
+  bool get canSwap =>
+      _error == null &&
+      fromAmountController.text.isNotEmpty &&
+      isVerified;
+
+  SwapProvider(this.authProvider) {
+    authProvider.addListener(notifyListeners);
     _loadData();
     fromAmountController.addListener(() {
       _validate();
       _calculateToAmount();
     });
+  }
+
+  Future<void> completeVerification() async {
+    await authProvider.verifyUser();
+    notifyListeners();
   }
 
   // Mock exchange rate and fee
@@ -147,9 +167,9 @@ class SwapProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Clean up
   @override
   void dispose() {
+    authProvider.removeListener(notifyListeners);
     fromAmountController.dispose();
     toAmountController.dispose();
     super.dispose();
