@@ -266,6 +266,78 @@ abstract class AppLocalizations {
   /// **'Change Phone Number'**
   String get changePhoneNumber;
 
+  /// No description provided for @stepsForChangingPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps for changing your Phone Number'**
+  String get stepsForChangingPhoneNumber;
+
+  /// No description provided for @changePhoneStepsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'To change your registered phone number we will follow these steps :'**
+  String get changePhoneStepsDescription;
+
+  /// No description provided for @changePhoneStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification code will be sent to your registered phone number.'**
+  String get changePhoneStep1;
+
+  /// No description provided for @changePhoneStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'After entering the code that was sent, enter the new phone number.'**
+  String get changePhoneStep2;
+
+  /// No description provided for @changePhoneStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification code will be sent to the new phone number entered by you.'**
+  String get changePhoneStep3;
+
+  /// No description provided for @changePhoneAfterStepsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'After following these steps, your current phone number will be changed to the new one.'**
+  String get changePhoneAfterStepsNote;
+
+  /// No description provided for @enterNewPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter new phone number'**
+  String get enterNewPhoneNumber;
+
+  /// No description provided for @verifyNewPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify new phone number'**
+  String get verifyNewPhoneNumber;
+
+  /// No description provided for @changePhoneCurrentOtpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'An 6 digit verification code has been sent via WhatsApp to {phone}.'**
+  String changePhoneCurrentOtpSent(String phone);
+
+  /// No description provided for @changePhoneNewOtpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'An 6 digit verification code has been sent via WhatsApp to {phone}.'**
+  String changePhoneNewOtpSent(String phone);
+
+  /// No description provided for @enterValidPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid phone number'**
+  String get enterValidPhoneNumber;
+
+  /// No description provided for @phoneNumberChangedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone number has been changed successfully'**
+  String get phoneNumberChangedSuccessfully;
+
   /// No description provided for @changeEmail.
   ///
   /// In en, this message translates to:

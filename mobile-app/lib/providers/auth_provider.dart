@@ -185,4 +185,41 @@ class AuthProvider extends ChangeNotifier {
       return false;
     }
   }
+
+  Future<bool> updatePhoneForCurrentUser({
+    required String countryCode,
+    required String phoneNumber,
+  }) async {
+    try {
+      final user = _state.user;
+      if (user == null || !_state.isAuthenticated) {
+        return false;
+      }
+
+      final oldKey = '${user.countryCode.trim()}'
+          '${user.mobileNumber.replaceAll(RegExp(r'[^0-9]'), '')}';
+      final normalizedCountry = countryCode.trim();
+      final normalizedPhone = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
+      final newKey = '$normalizedCountry$normalizedPhone';
+
+      final passcodeOverride = MockData.passcodeOverrides.remove(oldKey);
+      if (passcodeOverride != null) {
+        MockData.passcodeOverrides[newKey] = passcodeOverride;
+      }
+
+      final updatedUser = user.copyWith(
+        countryCode: normalizedCountry,
+        mobileNumber: normalizedPhone,
+      );
+      _state = _state.copyWith(user: updatedUser);
+      await StorageService.setString(
+        AppConstants.userKey,
+        jsonEncode(updatedUser.toJson()),
+      );
+      notifyListeners();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 }

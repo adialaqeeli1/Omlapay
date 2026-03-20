@@ -11,12 +11,14 @@ import '../providers/change_email_otp_provider.dart';
 class ChangeEmailVerifyOtpView extends StatefulWidget {
   const ChangeEmailVerifyOtpView({
     super.key,
+    required this.appBarTitle,
     required this.title,
     required this.subtitle,
     required this.stepIndex,
     required this.onVerified,
   });
 
+  final String appBarTitle;
   final String title;
   final String subtitle;
   final int stepIndex;
@@ -49,10 +51,6 @@ class _ChangeEmailVerifyOtpViewState extends State<ChangeEmailVerifyOtpView> {
     final provider = context.watch<ChangeEmailOtpProvider>();
     final l10n = context.l10n!;
     final theme = context.theme;
-    // final isDark = context.isDarkMode;
-    // final indicatorInactiveColor = theme.colorScheme.onSurface.withValues(
-    //   alpha: isDark ? 0.16 : 0.20,
-    // );
     final pinBorderColor = theme.colorScheme.onSurface;
     final subtitleColor = theme.colorScheme.onSurface.withValues(alpha: 0.6);
 
@@ -60,7 +58,7 @@ class _ChangeEmailVerifyOtpViewState extends State<ChangeEmailVerifyOtpView> {
       appBar: AppBar(
         leading: const CommonBackButton(),
         title: Text(
-          l10n.changeEmail,
+          widget.appBarTitle,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -77,29 +75,6 @@ class _ChangeEmailVerifyOtpViewState extends State<ChangeEmailVerifyOtpView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              // Row(
-              //   children: [
-              //     ...List.generate(4, (index) {
-              //       final isActive = index < widget.stepIndex;
-              //       return Padding(
-              //         padding: EdgeInsetsDirectional.only(
-              //           end: index < 3 ? 4 : 0,
-              //         ),
-              //         child: Container(
-              //           width: isActive ? 44 : 14,
-              //           height: 6,
-              //           decoration: BoxDecoration(
-              //             color: isActive
-              //                 ? AppColors.primaryColor
-              //                 : indicatorInactiveColor,
-              //             borderRadius: BorderRadius.circular(16),
-              //           ),
-              //         ),
-              //       );
-              //     }),
-              //   ],
-              // ),
-              // const SizedBox(height: 28),
               Text(
                 widget.title,
                 style: theme.textTheme.displaySmall?.copyWith(

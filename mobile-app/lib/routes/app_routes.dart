@@ -13,6 +13,11 @@ class Routes {
   static const String changeEmailEnterNew = _Paths.changeEmailEnterNew;
   static const String changeEmailVerifyNewEmail = _Paths.changeEmailVerifyNewEmail;
   static const String changeEmailSuccess = _Paths.changeEmailSuccess;
+  static const String changePhoneIntro = _Paths.changePhoneIntro;
+  static const String changePhoneVerifyCurrent = _Paths.changePhoneVerifyCurrent;
+  static const String changePhoneEnterNew = _Paths.changePhoneEnterNew;
+  static const String changePhoneVerifyNew = _Paths.changePhoneVerifyNew;
+  static const String changePhoneSuccess = _Paths.changePhoneSuccess;
   static const String home = _Paths.home;
   static const String history = _Paths.history;
   static const String profile = _Paths.profile;
@@ -56,6 +61,11 @@ abstract class _Paths {
   static const String changeEmailEnterNew = '/change-email-enter-new';
   static const String changeEmailVerifyNewEmail = '/change-email-verify-new-email';
   static const String changeEmailSuccess = '/change-email-success';
+  static const String changePhoneIntro = '/change-phone-intro';
+  static const String changePhoneVerifyCurrent = '/change-phone-verify-current';
+  static const String changePhoneEnterNew = '/change-phone-enter-new';
+  static const String changePhoneVerifyNew = '/change-phone-verify-new';
+  static const String changePhoneSuccess = '/change-phone-success';
   static const String home = '/home';
   static const String history = '/history';
   static const String profile = '/profile';

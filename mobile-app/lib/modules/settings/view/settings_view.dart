@@ -72,7 +72,7 @@ class SettingsView extends StatelessWidget {
                         label: l10n.changePhoneNumber,
                         screenWidth: screenWidth,
                         onTap: () {
-                          // TODO: Navigate to change phone number
+                          GoRouter.of(context).push(Routes.changePhoneIntro);
                         },
                       ),
                       _buildSimpleSettingOption(

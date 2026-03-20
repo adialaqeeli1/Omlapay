@@ -56,8 +56,12 @@ import '../modules/settings/view/change_email_enter_new_view.dart';
 import '../modules/settings/view/change_email_intro_view.dart';
 import '../modules/settings/view/change_email_success_view.dart';
 import '../modules/settings/view/change_email_verify_otp_view.dart';
+import '../modules/settings/view/change_phone_enter_new_view.dart';
+import '../modules/settings/view/change_phone_intro_view.dart';
+import '../modules/settings/view/change_phone_success_view.dart';
 import '../modules/settings/providers/change_email_form_provider.dart';
 import '../modules/settings/providers/change_email_otp_provider.dart';
+import '../modules/settings/providers/change_phone_form_provider.dart';
 import '../modules/notifications/notifications_view.dart';
 import '../modules/notifications/notifications_list_provider.dart';
 import '../modules/splash/splash_view.dart';
@@ -232,6 +236,7 @@ class AppRouter {
               target: '${user.countryCode}${user.mobileNumber}',
             ),
             child: ChangeEmailVerifyOtpView(
+              appBarTitle: l10n.changeEmail,
               title: l10n.verifyCurrentPhoneNumber,
               subtitle: l10n.changeEmailPhoneOtpSent(
                 '${user.countryCode}${user.mobileNumber}',
@@ -265,6 +270,7 @@ class AppRouter {
           return ChangeNotifierProvider(
             create: (_) => ChangeEmailOtpProvider(target: pendingEmail),
             child: ChangeEmailVerifyOtpView(
+              appBarTitle: l10n.changeEmail,
               title: l10n.verifyNewEmailAddress,
               subtitle: l10n.changeEmailEmailOtpSent(pendingEmail),
               stepIndex: 3,
@@ -290,6 +296,84 @@ class AppRouter {
         path: Routes.changeEmailSuccess,
         name: 'changeEmailSuccess',
         builder: (context, state) => const ChangeEmailSuccessView(),
+        redirect: AuthMiddleware.isAuthenticated,
+      ),
+      GoRoute(
+        path: Routes.changePhoneIntro,
+        name: 'changePhoneIntro',
+        builder: (context, state) => const ChangePhoneIntroView(),
+        redirect: AuthMiddleware.isAuthenticated,
+      ),
+      GoRoute(
+        path: Routes.changePhoneVerifyCurrent,
+        name: 'changePhoneVerifyCurrent',
+        builder: (context, state) {
+          final user = context.read<AuthProvider>().state.user!;
+          final l10n = AppLocalizations.of(context)!;
+          return ChangeNotifierProvider(
+            create: (_) => ChangeEmailOtpProvider(
+              target: '${user.countryCode}${user.mobileNumber}',
+            ),
+            child: ChangeEmailVerifyOtpView(
+              appBarTitle: l10n.changePhoneNumber,
+              title: l10n.verifyCurrentPhoneNumber,
+              subtitle: l10n.changePhoneCurrentOtpSent(
+                '${user.countryCode}${user.mobileNumber}',
+              ),
+              stepIndex: 1,
+              onVerified: (ctx) async {
+                ctx.push(Routes.changePhoneEnterNew);
+              },
+            ),
+          );
+        },
+        redirect: AuthMiddleware.isAuthenticated,
+      ),
+      GoRoute(
+        path: Routes.changePhoneEnterNew,
+        name: 'changePhoneEnterNew',
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => ChangePhoneFormProvider(),
+          child: const ChangePhoneEnterNewView(),
+        ),
+        redirect: AuthMiddleware.isAuthenticated,
+      ),
+      GoRoute(
+        path: Routes.changePhoneVerifyNew,
+        name: 'changePhoneVerifyNew',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final countryCode =
+              extra?[LoginProvider.extraCountryCodeKey] as String? ?? '';
+          final phoneNumber =
+              extra?[LoginProvider.extraPhoneNumberKey] as String? ?? '';
+          final l10n = AppLocalizations.of(context)!;
+          final fullPhone = '$countryCode$phoneNumber';
+          return ChangeNotifierProvider(
+            create: (_) => ChangeEmailOtpProvider(target: fullPhone),
+            child: ChangeEmailVerifyOtpView(
+              appBarTitle: l10n.changePhoneNumber,
+              title: l10n.verifyNewPhoneNumber,
+              subtitle: l10n.changePhoneNewOtpSent(fullPhone),
+              stepIndex: 3,
+              onVerified: (ctx) async {
+                final applied =
+                    await ctx.read<AuthProvider>().updatePhoneForCurrentUser(
+                          countryCode: countryCode,
+                          phoneNumber: phoneNumber,
+                        );
+                if (!ctx.mounted || !applied) return;
+                ctx.go(Routes.changePhoneSuccess);
+              },
+            ),
+          );
+        },
+        redirect: AuthMiddleware.isAuthenticated,
+      ),
+      GoRoute(
+        path: Routes.changePhoneSuccess,
+        name: 'changePhoneSuccess',
+        builder: (context, state) => const ChangePhoneSuccessView(),
         redirect: AuthMiddleware.isAuthenticated,
       ),
       ShellRoute(

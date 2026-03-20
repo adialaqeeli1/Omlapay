@@ -94,6 +94,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changePhoneNumber => 'Change Phone Number';
 
   @override
+  String get stepsForChangingPhoneNumber =>
+      'Steps for changing your Phone Number';
+
+  @override
+  String get changePhoneStepsDescription =>
+      'To change your registered phone number we will follow these steps :';
+
+  @override
+  String get changePhoneStep1 =>
+      'A verification code will be sent to your registered phone number.';
+
+  @override
+  String get changePhoneStep2 =>
+      'After entering the code that was sent, enter the new phone number.';
+
+  @override
+  String get changePhoneStep3 =>
+      'A verification code will be sent to the new phone number entered by you.';
+
+  @override
+  String get changePhoneAfterStepsNote =>
+      'After following these steps, your current phone number will be changed to the new one.';
+
+  @override
+  String get enterNewPhoneNumber => 'Enter new phone number';
+
+  @override
+  String get verifyNewPhoneNumber => 'Verify new phone number';
+
+  @override
+  String changePhoneCurrentOtpSent(String phone) {
+    return 'An 6 digit verification code has been sent via WhatsApp to $phone.';
+  }
+
+  @override
+  String changePhoneNewOtpSent(String phone) {
+    return 'An 6 digit verification code has been sent via WhatsApp to $phone.';
+  }
+
+  @override
+  String get enterValidPhoneNumber => 'Please enter a valid phone number';
+
+  @override
+  String get phoneNumberChangedSuccessfully =>
+      'Your phone number has been changed successfully';
+
+  @override
   String get changeEmail => 'Change Email';
 
   @override

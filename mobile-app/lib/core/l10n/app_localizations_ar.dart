@@ -94,6 +94,50 @@ class AppLocalizationsAr extends AppLocalizations {
   String get changePhoneNumber => 'تغيير رقم الهاتف';
 
   @override
+  String get stepsForChangingPhoneNumber => 'خطوات تغيير رقم هاتفك';
+
+  @override
+  String get changePhoneStepsDescription =>
+      'لتغيير رقم هاتفك المسجل سنتبع الخطوات التالية:';
+
+  @override
+  String get changePhoneStep1 => 'سيتم إرسال رمز تحقق إلى رقم هاتفك المسجل.';
+
+  @override
+  String get changePhoneStep2 =>
+      'بعد إدخال الرمز المُرسل، أدخل رقم الهاتف الجديد.';
+
+  @override
+  String get changePhoneStep3 =>
+      'سيتم إرسال رمز تحقق إلى رقم الهاتف الجديد الذي أدخلته.';
+
+  @override
+  String get changePhoneAfterStepsNote =>
+      'بعد اتباع هذه الخطوات، سيتم تغيير رقم هاتفك الحالي إلى الرقم الجديد.';
+
+  @override
+  String get enterNewPhoneNumber => 'أدخل رقم الهاتف الجديد';
+
+  @override
+  String get verifyNewPhoneNumber => 'تحقق من رقم الهاتف الجديد';
+
+  @override
+  String changePhoneCurrentOtpSent(String phone) {
+    return 'تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى $phone.';
+  }
+
+  @override
+  String changePhoneNewOtpSent(String phone) {
+    return 'تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى $phone.';
+  }
+
+  @override
+  String get enterValidPhoneNumber => 'يرجى إدخال رقم هاتف صالح';
+
+  @override
+  String get phoneNumberChangedSuccessfully => 'تم تغيير رقم هاتفك بنجاح';
+
+  @override
   String get changeEmail => 'تغيير البريد الإلكتروني';
 
   @override
