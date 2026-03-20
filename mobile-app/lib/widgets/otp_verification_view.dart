@@ -1,42 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:provider/provider.dart';
 
-import '../../../core/extentions/context_extensions.dart';
-import '../../../core/theme/theme.dart';
-import '../../../widgets/common_back_button.dart';
-import '../providers/change_email_otp_provider.dart';
+import '../core/extentions/context_extensions.dart';
+import '../core/theme/theme.dart';
+import 'common_back_button.dart';
 
-class ChangeEmailVerifyOtpView extends StatefulWidget {
-  const ChangeEmailVerifyOtpView({
+class OtpVerificationView extends StatefulWidget {
+  const OtpVerificationView({
     super.key,
     required this.appBarTitle,
     required this.title,
     required this.subtitle,
-    required this.stepIndex,
-    required this.onVerified,
+    required this.otpLength,
+    required this.countdownSeconds,
+    required this.canResend,
+    required this.hasError,
+    required this.onInitialRequest,
+    required this.onOtpChanged,
+    required this.onOtpCompleted,
+    required this.onResend,
+    this.showProgress = false,
+    this.totalProgressSteps = 4,
+    this.activeProgressSteps = 2,
+    this.titleStyle,
+    this.bottomSection,
   });
 
   final String appBarTitle;
   final String title;
   final String subtitle;
-  final int stepIndex;
-  final Future<void> Function(BuildContext context) onVerified;
+  final int otpLength;
+  final int countdownSeconds;
+  final bool canResend;
+  final bool hasError;
+  final Future<void> Function() onInitialRequest;
+  final void Function(String value) onOtpChanged;
+  final Future<void> Function() onOtpCompleted;
+  final Future<void> Function() onResend;
+  final bool showProgress;
+  final int totalProgressSteps;
+  final int activeProgressSteps;
+  final TextStyle? titleStyle;
+  final Widget? bottomSection;
 
   @override
-  State<ChangeEmailVerifyOtpView> createState() =>
-      _ChangeEmailVerifyOtpViewState();
+  State<OtpVerificationView> createState() => _OtpVerificationViewState();
 }
 
-class _ChangeEmailVerifyOtpViewState extends State<ChangeEmailVerifyOtpView> {
+class _OtpVerificationViewState extends State<OtpVerificationView> {
   final PinInputController _pinController = PinInputController();
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ChangeEmailOtpProvider>().requestOtp();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await widget.onInitialRequest();
     });
   }
 
@@ -48,13 +67,17 @@ class _ChangeEmailVerifyOtpViewState extends State<ChangeEmailVerifyOtpView> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<ChangeEmailOtpProvider>();
     final l10n = context.l10n!;
     final theme = context.theme;
-    final pinBorderColor = theme.colorScheme.onSurface;
+    final isDark = context.isDarkMode;
     final subtitleColor = theme.colorScheme.onSurface.withValues(alpha: 0.6);
+    final pinBorderColor = theme.colorScheme.onSurface;
+    final indicatorInactiveColor = theme.colorScheme.onSurface.withValues(
+      alpha: isDark ? 0.16 : 0.20,
+    );
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         leading: const CommonBackButton(),
         title: Text(
@@ -75,14 +98,41 @@ class _ChangeEmailVerifyOtpViewState extends State<ChangeEmailVerifyOtpView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
+              if (widget.showProgress) ...[
+                Row(
+                  children: [
+                    ...List.generate(widget.totalProgressSteps, (index) {
+                      final isActive = index < widget.activeProgressSteps;
+                      return Padding(
+                        padding: EdgeInsetsDirectional.only(
+                          end: index < widget.totalProgressSteps - 1 ? 4 : 0,
+                        ),
+                        child: Container(
+                          width: isActive ? 44 : 14,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? AppColors.primaryColor
+                                : indicatorInactiveColor,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+                const SizedBox(height: 28),
+              ],
               Text(
                 widget.title,
-                style: theme.textTheme.displaySmall?.copyWith(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w700,
-                  height: 1.24,
-                  color: theme.colorScheme.onSurface,
-                ),
+                style:
+                    widget.titleStyle ??
+                    theme.textTheme.displaySmall?.copyWith(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w700,
+                      height: 1.24,
+                      color: theme.colorScheme.onSurface,
+                    ),
               ),
               const SizedBox(height: 12),
               Text(
@@ -98,7 +148,7 @@ class _ChangeEmailVerifyOtpViewState extends State<ChangeEmailVerifyOtpView> {
                 builder: (context, constraints) {
                   const preferredCellSize = 56.0;
                   const preferredSpacing = 8.0;
-                  const cellCount = ChangeEmailOtpProvider.otpLength;
+                  final cellCount = widget.otpLength;
                   final availableWidth = constraints.maxWidth;
                   final totalPreferredWidth =
                       cellCount * preferredCellSize +
@@ -135,14 +185,18 @@ class _ChangeEmailVerifyOtpViewState extends State<ChangeEmailVerifyOtpView> {
                       ),
                       cursorColor: theme.colorScheme.onSurface,
                     ),
-                    onChanged: provider.setOtp,
-                    onCompleted: (_) => _verify(provider),
+                    onChanged: widget.onOtpChanged,
+                    onCompleted: (_) async => widget.onOtpCompleted(),
                   );
                 },
               ),
               const SizedBox(height: 16),
-              _StatusText(provider: provider),
-              if (provider.hasError) ...[
+              _OtpStatusText(
+                countdownSeconds: widget.countdownSeconds,
+                canResend: widget.canResend,
+                onResend: widget.onResend,
+              ),
+              if (widget.hasError) ...[
                 const SizedBox(height: 12),
                 Text(
                   l10n.invalidOtpTryAgain,
@@ -153,32 +207,28 @@ class _ChangeEmailVerifyOtpViewState extends State<ChangeEmailVerifyOtpView> {
                 ),
               ],
               const Spacer(),
-              Text(
-                l10n.needHelpContactSupport,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-              const SizedBox(height: 20),
+              if (widget.bottomSection != null) ...[
+                widget.bottomSection!,
+                const SizedBox(height: 20),
+              ],
             ],
           ),
         ),
       ),
     );
   }
-
-  Future<void> _verify(ChangeEmailOtpProvider provider) async {
-    final valid = await provider.verifyOtp();
-    if (!mounted || !valid) return;
-    await widget.onVerified(context);
-  }
 }
 
-class _StatusText extends StatelessWidget {
-  const _StatusText({required this.provider});
+class _OtpStatusText extends StatelessWidget {
+  const _OtpStatusText({
+    required this.countdownSeconds,
+    required this.canResend,
+    required this.onResend,
+  });
 
-  final ChangeEmailOtpProvider provider;
+  final int countdownSeconds;
+  final bool canResend;
+  final Future<void> Function() onResend;
 
   @override
   Widget build(BuildContext context) {
@@ -186,9 +236,9 @@ class _StatusText extends StatelessWidget {
     final theme = context.theme;
     final mutedColor = theme.colorScheme.onSurface.withValues(alpha: 0.6);
 
-    if (provider.countdownSeconds > 0) {
-      final full = l10n.verificationCodesInSeconds(provider.countdownSeconds);
-      final secondsStr = provider.countdownSeconds.toString();
+    if (countdownSeconds > 0) {
+      final full = l10n.verificationCodesInSeconds(countdownSeconds);
+      final secondsStr = countdownSeconds.toString();
       final secondsPart = '$secondsStr Seconds';
       final prefix = full.replaceAll(secondsPart, '').trim();
       return RichText(
@@ -230,13 +280,11 @@ class _StatusText extends StatelessWidget {
             alignment: PlaceholderAlignment.baseline,
             baseline: TextBaseline.alphabetic,
             child: GestureDetector(
-              onTap: provider.canResend ? () => provider.resendOtp() : null,
+              onTap: canResend ? () => onResend() : null,
               child: Text(
                 l10n.resendOtp,
                 style: TextStyle(
-                  color: provider.canResend
-                      ? AppColors.primaryColor
-                      : mutedColor,
+                  color: canResend ? AppColors.primaryColor : mutedColor,
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                   decoration: TextDecoration.underline,

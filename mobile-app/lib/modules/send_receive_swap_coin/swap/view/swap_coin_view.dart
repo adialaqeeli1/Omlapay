@@ -240,7 +240,7 @@ class SwapCoinView extends StatelessWidget {
                 children: [
                   const TextSpan(
                     text:
-                        'Identity verification is required to send coins. Please complete your KYC profile to enable transfers. ',
+                        'Identity verification is required to swap coins. Please complete your KYC profile to enable transfers. ',
                   ),
                   WidgetSpan(
                     child: GestureDetector(

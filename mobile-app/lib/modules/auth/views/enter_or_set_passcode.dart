@@ -89,6 +89,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                       ),
                     )
                   : _changePasscodeBackButton(context) ??
+                        _changeEmailPasscodeBackButton(context) ??
                         (context.canPop() ? CommonBackButton() : null)),
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -353,6 +354,24 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
       );
     }
     return null;
+  }
+
+  /// Back navigation for change-email passcode confirmation.
+  /// The step is entered with [context.go], so we restore the previous route.
+  Widget? _changeEmailPasscodeBackButton(BuildContext context) {
+    if (mode != LoginProvider.modeChangeEmailConfirmPasscode) {
+      return null;
+    }
+
+    return CommonBackButton(
+      onPressed: () {
+        final email = pendingEmail?.trim() ?? '';
+        context.go(
+          Routes.changeEmailVerifyNewEmail,
+          extra: {LoginProvider.extraPendingEmailKey: email},
+        );
+      },
+    );
   }
 
   bool _showForgotPasscodeLink() {

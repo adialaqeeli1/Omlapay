@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'debug_route_observer.dart';
+import '../core/extentions/string_extensions.dart';
 import '../core/l10n/app_localizations.dart';
 import '../../core/models/transaction_model/transaction_model.dart';
 import 'package:omlapay_mobile_app/core/models/coin_model/coin_model.dart';
@@ -52,13 +53,13 @@ import '../modules/wallets/view/qr_code_view.dart';
 import '../modules/scan/view/qr_scanner_view.dart';
 import '../modules/settings/view/settings_view.dart';
 import '../modules/settings/view/account_details_view.dart';
-import '../modules/settings/view/change_email_enter_new_view.dart';
-import '../modules/settings/view/change_email_intro_view.dart';
-import '../modules/settings/view/change_email_success_view.dart';
-import '../modules/settings/view/change_email_verify_otp_view.dart';
-import '../modules/settings/view/change_phone_enter_new_view.dart';
-import '../modules/settings/view/change_phone_intro_view.dart';
-import '../modules/settings/view/change_phone_success_view.dart';
+import '../modules/settings/view/change_email/change_email_enter_new_view.dart';
+import '../modules/settings/view/change_email/change_email_intro_view.dart';
+import '../modules/settings/view/change_email/change_email_success_view.dart';
+import '../modules/settings/view/change_email/change_email_verify_otp_view.dart';
+import '../modules/settings/view/change_phone_number/change_phone_enter_new_view.dart';
+import '../modules/settings/view/change_phone_number/change_phone_intro_view.dart';
+import '../modules/settings/view/change_phone_number/change_phone_success_view.dart';
 import '../modules/settings/providers/change_email_form_provider.dart';
 import '../modules/settings/providers/change_email_otp_provider.dart';
 import '../modules/settings/providers/change_phone_form_provider.dart';
@@ -149,9 +150,9 @@ class AppRouter {
           // triggers verify and redirects to home.
           final providerKey =
               mode == LoginProvider.modeConfirmPasscode ||
-                      mode == LoginProvider.modeChangePasscodeConfirm
-                  ? ValueKey('confirm_${mode}_${pendingPasscode ?? ""}')
-                  : ValueKey('passcode_${mode}_${countryCode}_$phoneNumber');
+                  mode == LoginProvider.modeChangePasscodeConfirm
+              ? ValueKey('confirm_${mode}_${pendingPasscode ?? ""}')
+              : ValueKey('passcode_${mode}_${countryCode}_$phoneNumber');
 
           return ChangeNotifierProvider(
             key: providerKey,
@@ -239,9 +240,8 @@ class AppRouter {
               appBarTitle: l10n.changeEmail,
               title: l10n.verifyCurrentPhoneNumber,
               subtitle: l10n.changeEmailPhoneOtpSent(
-                '${user.countryCode}${user.mobileNumber}',
+                maskedPhoneForDisplay(user.countryCode, user.mobileNumber),
               ),
-              stepIndex: 1,
               onVerified: (ctx) async {
                 ctx.push(Routes.changeEmailEnterNew);
               },
@@ -253,10 +253,13 @@ class AppRouter {
       GoRoute(
         path: Routes.changeEmailEnterNew,
         name: 'changeEmailEnterNew',
-        builder: (context, state) => ChangeNotifierProvider(
-          create: (_) => ChangeEmailFormProvider(),
-          child: const ChangeEmailEnterNewView(),
-        ),
+        builder: (context, state) {
+          final user = context.read<AuthProvider>().state.user!;
+          return ChangeNotifierProvider(
+            create: (_) => ChangeEmailFormProvider(currentEmail: user.email),
+            child: const ChangeEmailEnterNewView(),
+          );
+        },
         redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
@@ -273,7 +276,6 @@ class AppRouter {
               appBarTitle: l10n.changeEmail,
               title: l10n.verifyNewEmailAddress,
               subtitle: l10n.changeEmailEmailOtpSent(pendingEmail),
-              stepIndex: 3,
               onVerified: (ctx) async {
                 final user = ctx.read<AuthProvider>().state.user!;
                 ctx.go(
@@ -318,9 +320,8 @@ class AppRouter {
               appBarTitle: l10n.changePhoneNumber,
               title: l10n.verifyCurrentPhoneNumber,
               subtitle: l10n.changePhoneCurrentOtpSent(
-                '${user.countryCode}${user.mobileNumber}',
+                maskedPhoneForDisplay(user.countryCode, user.mobileNumber),
               ),
-              stepIndex: 1,
               onVerified: (ctx) async {
                 ctx.push(Routes.changePhoneEnterNew);
               },
@@ -332,10 +333,16 @@ class AppRouter {
       GoRoute(
         path: Routes.changePhoneEnterNew,
         name: 'changePhoneEnterNew',
-        builder: (context, state) => ChangeNotifierProvider(
-          create: (_) => ChangePhoneFormProvider(),
-          child: const ChangePhoneEnterNewView(),
-        ),
+        builder: (context, state) {
+          final user = context.read<AuthProvider>().state.user!;
+          return ChangeNotifierProvider(
+            create: (_) => ChangePhoneFormProvider(
+              countryCode: user.countryCode,
+              currentPhone: user.mobileNumber,
+            ),
+            child: const ChangePhoneEnterNewView(),
+          );
+        },
         redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
@@ -355,13 +362,13 @@ class AppRouter {
               appBarTitle: l10n.changePhoneNumber,
               title: l10n.verifyNewPhoneNumber,
               subtitle: l10n.changePhoneNewOtpSent(fullPhone),
-              stepIndex: 3,
               onVerified: (ctx) async {
-                final applied =
-                    await ctx.read<AuthProvider>().updatePhoneForCurrentUser(
-                          countryCode: countryCode,
-                          phoneNumber: phoneNumber,
-                        );
+                final applied = await ctx
+                    .read<AuthProvider>()
+                    .updatePhoneForCurrentUser(
+                      countryCode: countryCode,
+                      phoneNumber: phoneNumber,
+                    );
                 if (!ctx.mounted || !applied) return;
                 ctx.go(Routes.changePhoneSuccess);
               },
@@ -480,9 +487,9 @@ class AppRouter {
         name: 'sendCoin',
         builder: (context, state) => ChangeNotifierProvider(
           create: (_) => SendProvider(
-                context.read<AuthProvider>(),
-                context.read<CoinsPricesProvider>(),
-              ),
+            context.read<AuthProvider>(),
+            context.read<CoinsPricesProvider>(),
+          ),
           child: const SendCoinView(),
         ),
       ),
