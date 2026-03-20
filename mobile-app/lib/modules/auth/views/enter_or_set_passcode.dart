@@ -20,11 +20,13 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     this.isSoftLogin = false,
     this.mode,
     this.pendingPasscode,
+    this.pendingEmail,
   });
 
   final bool isSoftLogin;
   final String? mode;
   final String? pendingPasscode;
+  final String? pendingEmail;
 
   @override
   Widget build(BuildContext context) {
@@ -49,41 +51,58 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
       alpha: isDark ? 0.16 : 0.20,
     );
     final isRegisterMode = mode == LoginProvider.modeRegister;
+    final isChangePasscodeFlow =
+        mode == LoginProvider.modeChangePasscodeCurrent ||
+        mode == LoginProvider.modeChangePasscodeNew ||
+        mode == LoginProvider.modeChangePasscodeConfirm;
+    final isChangeEmailPasscodeStep =
+        mode == LoginProvider.modeChangeEmailConfirmPasscode;
 
     return Scaffold(
       appBar: AppBar(
         leading: isSoftLogin
             ? null
             : (isRegisterMode
-                ? IconButton(
-                    onPressed: () {
-                      final provider = context.read<PasscodeProvider>();
-                      context.go(
-                        Routes.registerVerification,
-                        extra: {
-                          LoginProvider.extraCountryCodeKey:
-                              provider.countryCode,
-                          LoginProvider.extraPhoneNumberKey:
-                              provider.phoneNumber,
-                        },
-                      );
-                    },
-                    icon: SvgPicture.asset(
-                      context.textDirection == TextDirection.rtl
-                          ? 'assets/icons/arrow_forward.svg'
-                          : 'assets/icons/arrow_back.svg',
-                      colorFilter: ColorFilter.mode(
-                        context.isDarkMode
-                            ? AppColors.white
-                            : AppColors.darkSurface,
-                        BlendMode.srcIn,
+                  ? IconButton(
+                      onPressed: () {
+                        final provider = context.read<PasscodeProvider>();
+                        context.go(
+                          Routes.registerVerification,
+                          extra: {
+                            LoginProvider.extraCountryCodeKey:
+                                provider.countryCode,
+                            LoginProvider.extraPhoneNumberKey:
+                                provider.phoneNumber,
+                          },
+                        );
+                      },
+                      icon: SvgPicture.asset(
+                        context.textDirection == TextDirection.rtl
+                            ? 'assets/icons/arrow_forward.svg'
+                            : 'assets/icons/arrow_back.svg',
+                        colorFilter: ColorFilter.mode(
+                          context.isDarkMode
+                              ? AppColors.white
+                              : AppColors.darkSurface,
+                          BlendMode.srcIn,
+                        ),
                       ),
-                    ),
-                  )
-                : (context.canPop() ? CommonBackButton() : null)),
+                    )
+                  : _changePasscodeBackButton(context) ??
+                        (context.canPop() ? CommonBackButton() : null)),
         elevation: 0,
         backgroundColor: Colors.transparent,
         scrolledUnderElevation: 0,
+        title: isChangePasscodeFlow
+            ? Text(
+                l10n.changePasscode,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: theme.colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+              )
+            : null,
+        centerTitle: isChangePasscodeFlow,
         bottom: isRegisterMode
             ? PreferredSize(
                 preferredSize: const Size.fromHeight(24),
@@ -92,13 +111,14 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                   child: Row(
                     children: [
                       ...List.generate(4, (index) {
-                        final isActive = index == 3;
+                        final isActive = isRegisterMode ? index == 3 : index <= 3;
+                        final isCurrent = index == 3;
                         return Padding(
                           padding: EdgeInsetsDirectional.only(
                             end: index < 3 ? 4 : 0,
                           ),
                           child: Container(
-                            width: isActive ? 44 : 14,
+                            width: isCurrent ? 44 : 14,
                             height: 6,
                             decoration: BoxDecoration(
                               color: isActive
@@ -157,14 +177,13 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: 20,
-                ).copyWith(
-                  top: isSoftLogin
-                      ? 20
-                      : (isRegisterMode ? 28 : 0),
-                ),
+                ).copyWith(top: isSoftLogin ? 20 : (isRegisterMode ? 28 : 0)),
                 child: Column(
                   children: [
-                    if (!isRegisterMode)
+                    if (isChangePasscodeFlow) const Spacer(),
+                    if (!isRegisterMode &&
+                        !isChangePasscodeFlow &&
+                        !isChangeEmailPasscodeStep)
                       Text(
                         l10n.welcomeToOmlaPay,
                         style: GoogleFonts.poppinsTextTheme().titleMedium
@@ -175,7 +194,10 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                             ),
                         textAlign: TextAlign.center,
                       ),
-                    if (!isRegisterMode) const SizedBox(height: 24),
+                    if (!isRegisterMode &&
+                        !isChangePasscodeFlow &&
+                        !isChangeEmailPasscodeStep)
+                      const SizedBox(height: 24),
                     Text(
                       _titleForMode(l10n),
                       style: GoogleFonts.poppinsTextTheme().displaySmall
@@ -219,7 +241,10 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                       height: 22,
                       child: passcodeProvider.hasError
                           ? Text(
-                              mode == LoginProvider.modeConfirmPasscode
+                              mode == LoginProvider.modeConfirmPasscode ||
+                                      mode ==
+                                          LoginProvider
+                                              .modeChangePasscodeConfirm
                                   ? l10n.passcodesMismatchTryAgain
                                   : l10n.incorrectPasscodeTryAgain,
                               style: theme.textTheme.titleMedium?.copyWith(
@@ -281,10 +306,63 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     }
   }
 
+  /// Leading control for the whole change-passcode flow. Step transitions use
+  /// [context.go], which can drop the [Routes.settings] stack entry, so the first
+  /// step must not rely on [context.canPop] alone.
+  Widget? _changePasscodeBackButton(BuildContext context) {
+    if (mode == LoginProvider.modeChangePasscodeCurrent) {
+      return CommonBackButton(
+        onPressed: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go(Routes.settings);
+          }
+        },
+      );
+    }
+    if (mode == LoginProvider.modeChangePasscodeNew) {
+      return CommonBackButton(
+        onPressed: () {
+          final provider = context.read<PasscodeProvider>();
+          context.go(
+            Routes.enterOrSetPasscode,
+            extra: {
+              LoginProvider.extraModeKey:
+                  LoginProvider.modeChangePasscodeCurrent,
+              LoginProvider.extraCountryCodeKey: provider.countryCode,
+              LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+            },
+          );
+        },
+      );
+    }
+    if (mode == LoginProvider.modeChangePasscodeConfirm) {
+      return CommonBackButton(
+        onPressed: () {
+          final provider = context.read<PasscodeProvider>();
+          context.go(
+            Routes.enterOrSetPasscode,
+            extra: {
+              LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeNew,
+              LoginProvider.extraCountryCodeKey: provider.countryCode,
+              LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+            },
+          );
+        },
+      );
+    }
+    return null;
+  }
+
   bool _showForgotPasscodeLink() {
     if (mode == LoginProvider.modeResetPasscode ||
         mode == LoginProvider.modeConfirmPasscode ||
-        mode == LoginProvider.modeRegister) {
+        mode == LoginProvider.modeRegister ||
+        mode == LoginProvider.modeChangePasscodeCurrent ||
+        mode == LoginProvider.modeChangePasscodeNew ||
+        mode == LoginProvider.modeChangePasscodeConfirm ||
+        mode == LoginProvider.modeChangeEmailConfirmPasscode) {
       return false;
     }
     return true;
@@ -293,6 +371,18 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
   String _titleForMode(dynamic l10n) {
     if (mode == LoginProvider.modeRegister) {
       return l10n.createAPasscode;
+    }
+    if (mode == LoginProvider.modeChangePasscodeCurrent) {
+      return l10n.enterYourCurrentPasscode;
+    }
+    if (mode == LoginProvider.modeChangePasscodeNew) {
+      return l10n.enterYourNewPasscode;
+    }
+    if (mode == LoginProvider.modeChangePasscodeConfirm) {
+      return l10n.confirmYourNewPasscode;
+    }
+    if (mode == LoginProvider.modeChangeEmailConfirmPasscode) {
+      return l10n.enterPasscode;
     }
     if (mode == LoginProvider.modeResetPasscode) {
       return l10n.setYourNewPasscode;
@@ -358,23 +448,86 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
       return;
     }
 
-    if (mode == LoginProvider.modeRegister) {
-      final authProvider = context.read<AuthProvider>();
+    final authProvider = context.read<AuthProvider>();
+
+    if (mode == LoginProvider.modeChangePasscodeCurrent) {
       final isValid = await provider.verify(
         verifyPasscode:
             ({
               required String phoneNumber,
               required String countryCode,
               required String passcode,
-            }) =>
-                authProvider.setPasscode(phoneNumber, countryCode, passcode),
+            }) => authProvider.verifyStoredPasscodeForCurrentUser(passcode),
+      );
+      if (!context.mounted || !isValid) {
+        return;
+      }
+      context.go(
+        Routes.enterOrSetPasscode,
+        extra: {
+          LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeNew,
+          LoginProvider.extraCountryCodeKey: provider.countryCode,
+          LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+        },
+      );
+      return;
+    }
+
+    if (mode == LoginProvider.modeChangePasscodeNew) {
+      context.go(
+        Routes.enterOrSetPasscode,
+        extra: {
+          LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeConfirm,
+          LoginProvider.extraCountryCodeKey: provider.countryCode,
+          LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+          LoginProvider.extraPendingPasscodeKey: provider.passcode,
+        },
+      );
+      return;
+    }
+
+    if (mode == LoginProvider.modeRegister) {
+      final isValid = await provider.verify(
+        verifyPasscode:
+            ({
+              required String phoneNumber,
+              required String countryCode,
+              required String passcode,
+            }) => authProvider.setPasscode(phoneNumber, countryCode, passcode),
       );
       if (!context.mounted || !isValid) return;
       context.go(Routes.home);
       return;
     }
 
-    final authProvider = context.read<AuthProvider>();
+    if (mode == LoginProvider.modeChangePasscodeConfirm) {
+      final isValid = await provider.verify(
+        verifyPasscode:
+            ({
+              required String phoneNumber,
+              required String countryCode,
+              required String passcode,
+            }) async => passcode == (pendingPasscode ?? ''),
+      );
+      if (!context.mounted || !isValid) {
+        return;
+      }
+      final newPasscode = pendingPasscode;
+      if (newPasscode == null || newPasscode.length != 6) {
+        return;
+      }
+      context.go(
+        Routes.registerVerification,
+        extra: {
+          LoginProvider.extraCountryCodeKey: provider.countryCode,
+          LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+          LoginProvider.extraPendingPasscodeKey: newPasscode,
+          LoginProvider.extraVerificationPurposeKey:
+              LoginProvider.purposeChangePasscode,
+        },
+      );
+      return;
+    }
 
     if (mode == LoginProvider.modeConfirmPasscode) {
       final isValid = await provider.verify(
@@ -394,6 +547,27 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
       );
       if (!context.mounted || !isValid) return;
       context.go(Routes.home);
+      return;
+    }
+
+    if (mode == LoginProvider.modeChangeEmailConfirmPasscode) {
+      final email = pendingEmail?.trim() ?? '';
+      if (email.isEmpty) {
+        return;
+      }
+      final isValid = await provider.verify(
+        verifyPasscode:
+            ({
+              required String phoneNumber,
+              required String countryCode,
+              required String passcode,
+            }) =>
+                authProvider.verifyStoredPasscodeForCurrentUser(passcode),
+      );
+      if (!context.mounted || !isValid) return;
+      final updated = await authProvider.updateEmailForCurrentUser(email);
+      if (!context.mounted || !updated) return;
+      context.go(Routes.changeEmailSuccess);
       return;
     }
 

@@ -7,6 +7,7 @@ import '../core/models/auth_state/auth_state.dart';
 import '../core/models/user_model/user_model.dart';
 import '../core/mock_data/mock_data.dart';
 import '../core/services/storage_helper.dart';
+import '../modules/settings/services/wallet_address_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   AuthState _state = const AuthState();
@@ -90,6 +91,28 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Returns whether [passcode] matches the stored passcode for the signed-in user
+  /// (including mock override map), without mutating auth state.
+  Future<bool> verifyStoredPasscodeForCurrentUser(String passcode) async {
+    try {
+      final user = state.user;
+      if (user == null || !state.isAuthenticated) {
+        return false;
+      }
+      final normalizedPhone = user.mobileNumber.replaceAll(
+        RegExp(r'[^0-9]'),
+        '',
+      );
+      final normalizedCountry = user.countryCode.trim();
+      final overrideKey = '$normalizedCountry$normalizedPhone';
+      final effectivePasscode =
+          MockData.passcodeOverrides[overrideKey] ?? user.password;
+      return passcode == effectivePasscode;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<bool> setPasscode(
     String phoneNumber,
     String countryCode,
@@ -146,6 +169,20 @@ class AuthProvider extends ChangeNotifier {
       );
 
       notifyListeners();
+    }
+  }
+
+  Future<bool> updateEmailForCurrentUser(String email) async {
+    try {
+      final user = _state.user;
+      if (user == null || !_state.isAuthenticated) {
+        return false;
+      }
+      await WalletAddressService.saveUserEmail(user, email);
+      notifyListeners();
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 }

@@ -7,13 +7,20 @@ import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/theme/theme.dart';
+import '../../../providers/auth_provider.dart';
 import '../providers/login_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_back_button.dart';
 import '../providers/verification_provider.dart';
 
 class VerificationScreen extends StatefulWidget {
-  const VerificationScreen({super.key});
+  const VerificationScreen({
+    super.key,
+    this.showRegistrationProgress = true,
+  });
+
+  /// When false (e.g. change passcode → SMS step), hides the 4-step registration indicator.
+  final bool showRegistrationProgress;
 
   @override
   State<VerificationScreen> createState() => _VerificationScreenState();
@@ -65,29 +72,31 @@ class _VerificationScreenState extends State<VerificationScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  ...List.generate(4, (index) {
-                    final isActive = index < 2;
-                    return Padding(
-                      padding: EdgeInsetsDirectional.only(
-                        end: index < 3 ? 4 : 0,
-                      ),
-                      child: Container(
-                        width: isActive ? 44 : 14,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? AppColors.primaryColor
-                              : indicatorInactiveColor,
-                          borderRadius: BorderRadius.circular(16),
+              if (widget.showRegistrationProgress) ...[
+                Row(
+                  children: [
+                    ...List.generate(4, (index) {
+                      final isActive = index < 2;
+                      return Padding(
+                        padding: EdgeInsetsDirectional.only(
+                          end: index < 3 ? 4 : 0,
                         ),
-                      ),
-                    );
-                  }),
-                ],
-              ),
-              const SizedBox(height: 28),
+                        child: Container(
+                          width: isActive ? 44 : 14,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? AppColors.primaryColor
+                                : indicatorInactiveColor,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+                const SizedBox(height: 28),
+              ],
               Text(
                 l10n.verifyYourAccount,
                 style: GoogleFonts.poppinsTextTheme().displaySmall?.copyWith(
@@ -169,17 +178,39 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   Future<void> _verifyOtp(VerificationProvider provider) async {
     final isValid = await provider.verifyOtp();
-    if (!mounted) return;
-    if (isValid) {
-      context.go(
-        Routes.enterOrSetPasscode,
-        extra: {
-          LoginProvider.extraModeKey: LoginProvider.modeRegister,
-          LoginProvider.extraCountryCodeKey: provider.countryCode,
-          LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
-        },
-      );
+    if (!mounted || !isValid) {
+      return;
     }
+
+    final extra = GoRouterState.of(context).extra;
+    if (extra is Map<String, dynamic> &&
+        extra[LoginProvider.extraVerificationPurposeKey] ==
+            LoginProvider.purposeChangePasscode) {
+      final newPasscode =
+          extra[LoginProvider.extraPendingPasscodeKey] as String?;
+      if (newPasscode == null || newPasscode.length != 6) {
+        return;
+      }
+      final applied = await context.read<AuthProvider>().setPasscode(
+            provider.phoneNumber,
+            provider.countryCode,
+            newPasscode,
+          );
+      if (!mounted || !applied) {
+        return;
+      }
+      context.go(Routes.changePasscodeSuccess);
+      return;
+    }
+
+    context.go(
+      Routes.enterOrSetPasscode,
+      extra: {
+        LoginProvider.extraModeKey: LoginProvider.modeRegister,
+        LoginProvider.extraCountryCodeKey: provider.countryCode,
+        LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+      },
+    );
   }
 }
 

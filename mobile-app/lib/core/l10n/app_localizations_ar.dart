@@ -97,7 +97,89 @@ class AppLocalizationsAr extends AppLocalizations {
   String get changeEmail => 'تغيير البريد الإلكتروني';
 
   @override
+  String get stepsForChangingEmail => 'خطوات تغيير بريدك الإلكتروني';
+
+  @override
+  String get changeEmailStepsDescription =>
+      'لتغيير بريدك الإلكتروني المسجل سنتبع الخطوات التالية:';
+
+  @override
+  String get step1Label => 'الخطوة 1';
+
+  @override
+  String get step2Label => 'الخطوة 2';
+
+  @override
+  String get step3Label => 'الخطوة 3';
+
+  @override
+  String get step4Label => 'الخطوة 4';
+
+  @override
+  String get changeEmailStep1 => 'سيتم إرسال رمز تحقق إلى رقم هاتفك المسجل.';
+
+  @override
+  String get changeEmailStep2 =>
+      'بعد إدخال الرمز المُرسل، أدخل البريد الإلكتروني الجديد.';
+
+  @override
+  String get changeEmailStep3 =>
+      'سيتم إرسال رمز تحقق إلى البريد الإلكتروني الجديد الذي أدخلته.';
+
+  @override
+  String get changeEmailStep4 =>
+      'تحقق من حسابك باستخدام رمز المرور لتأكيد التغييرات على حسابك.';
+
+  @override
+  String get changeEmailAfterStepsNote =>
+      'بعد اتباع هذه الخطوات، سيتم تغيير بريدك الإلكتروني الحالي إلى البريد الجديد.';
+
+  @override
+  String get verifyCurrentPhoneNumber => 'تحقق من رقم الهاتف الحالي';
+
+  @override
+  String get enterNewEmailAddress => 'أدخل البريد الإلكتروني الجديد';
+
+  @override
+  String get verifyNewEmailAddress => 'تحقق من البريد الإلكتروني الجديد';
+
+  @override
+  String changeEmailPhoneOtpSent(String phone) {
+    return 'تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى $phone.';
+  }
+
+  @override
+  String changeEmailEmailOtpSent(String email) {
+    return 'تم إرسال رمز تحقق مكون من 6 أرقام إلى $email.';
+  }
+
+  @override
+  String get enterYourNewEmailAddressToReceiveOtp =>
+      'يرجى إدخال بريدك الإلكتروني الجديد لاستلام رمز التحقق';
+
+  @override
+  String get enterEmailAddressHint => 'أدخل البريد الإلكتروني الجديد';
+
+  @override
+  String get enterValidEmailAddress => 'يرجى إدخال بريد إلكتروني صالح';
+
+  @override
+  String get continueButton => 'متابعة';
+
+  @override
+  String get invalidOtpTryAgain => 'رمز التحقق غير صالح. حاول مرة أخرى.';
+
+  @override
+  String get emailChangedSuccessfully => 'تم تغيير بريدك الإلكتروني بنجاح';
+
+  @override
   String get changePasscode => 'تغيير رمز المرور';
+
+  @override
+  String get passcodeChangedSuccessfully => 'تم تغيير رمز المرور بنجاح';
+
+  @override
+  String get backHome => 'العودة للرئيسية';
 
   @override
   String get walletsAddress => 'عنوان المحفظة';
@@ -616,6 +698,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get createAPasscode => 'إنشاء رمز مرور';
+
+  @override
+  String get enterYourCurrentPasscode => 'أدخل رمز المرور الحالي';
+
+  @override
+  String get enterYourNewPasscode => 'أدخل رمز المرور الجديد';
+
+  @override
+  String get confirmYourNewPasscode => 'أكد رمز المرور الجديد';
 
   @override
   String get confirmYourPasscode => 'تأكيد رمز المرور';

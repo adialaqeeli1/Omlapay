@@ -29,7 +29,45 @@
     "accountDetails": "Account Details",
     "changePhoneNumber": "Change Phone Number",
     "changeEmail": "Change Email",
+    "stepsForChangingEmail": "Steps for changing your Email",
+    "changeEmailStepsDescription": "To change your registered email address we will follow these steps :",
+    "step1Label": "Step 1",
+    "step2Label": "Step 2",
+    "step3Label": "Step 3",
+    "step4Label": "Step 4",
+    "changeEmailStep1": "A verification code will be sent to your registered phone number.",
+    "changeEmailStep2": "After entering the code that was sent, enter the new email address.",
+    "changeEmailStep3": "A verification code will be sent to the new email address entered by you.",
+    "changeEmailStep4": "Verify your account with a passcode to confirm changes to your account.",
+    "changeEmailAfterStepsNote": "After following these steps, your current email address will be changed to the new one.",
+    "verifyCurrentPhoneNumber": "Verify current phone number",
+    "enterNewEmailAddress": "Enter new email address",
+    "verifyNewEmailAddress": "Verify new email address",
+    "changeEmailPhoneOtpSent": "An 6 digit verification code has been sent via WhatsApp to {phone}.",
+    "@changeEmailPhoneOtpSent": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "changeEmailEmailOtpSent": "An 6 digit verification code has been sent to {email}.",
+    "@changeEmailEmailOtpSent": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "enterYourNewEmailAddressToReceiveOtp": "Please enter your new email address to receive OTP",
+    "enterEmailAddressHint": "Enter new email address",
+    "enterValidEmailAddress": "Please enter a valid email address",
+    "continueButton": "Continue",
+    "invalidOtpTryAgain": "Invalid OTP. Try again.",
+    "emailChangedSuccessfully": "Your email address has been changed successfully",
     "changePasscode": "Change Passcode",
+    "passcodeChangedSuccessfully": "Your passcode has been changed successfully",
+    "backHome": "Back Home",
     "walletsAddress": "Wallets Address",
     "evm": "EVM",
     "bitcoin": "Bitcoin",
@@ -221,6 +259,9 @@
     "needHelpContactSupport": "Need Help? Contact Support",
     "setYourNewPasscode": "Set your new passcode",
     "createAPasscode": "Create a passcode",
+    "enterYourCurrentPasscode": "Enter your current passcode",
+    "enterYourNewPasscode": "Enter your new passcode",
+    "confirmYourNewPasscode": "Confirm your new passcode",
     "confirmYourPasscode": "Confirm your passcode",
     "passcodesMismatchTryAgain": "Passcodes don't match. Try again.",
     "qrCodeScanner": "QR Code Scanner",

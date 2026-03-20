@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'debug_route_observer.dart';
+import '../core/l10n/app_localizations.dart';
 import '../../core/models/transaction_model/transaction_model.dart';
 import 'package:omlapay_mobile_app/core/models/coin_model/coin_model.dart';
 import '../core/models/wallet_model/wallet_model.dart';
@@ -12,6 +13,7 @@ import '../modules/auth/views/enter_or_set_passcode.dart';
 import '../modules/auth/views/forgot_passcode.dart';
 import '../modules/auth/views/login_or_register_screen.dart';
 import '../modules/auth/views/verification_screen.dart';
+import '../modules/auth/views/change_passcode_success_view.dart';
 import '../modules/auth/providers/verification_provider.dart';
 import '../modules/coin_details/view/coin_details_view.dart';
 import '../modules/dashboard/dashboard_view.dart';
@@ -50,6 +52,12 @@ import '../modules/wallets/view/qr_code_view.dart';
 import '../modules/scan/view/qr_scanner_view.dart';
 import '../modules/settings/view/settings_view.dart';
 import '../modules/settings/view/account_details_view.dart';
+import '../modules/settings/view/change_email_enter_new_view.dart';
+import '../modules/settings/view/change_email_intro_view.dart';
+import '../modules/settings/view/change_email_success_view.dart';
+import '../modules/settings/view/change_email_verify_otp_view.dart';
+import '../modules/settings/providers/change_email_form_provider.dart';
+import '../modules/settings/providers/change_email_otp_provider.dart';
 import '../modules/notifications/notifications_view.dart';
 import '../modules/notifications/notifications_list_provider.dart';
 import '../modules/splash/splash_view.dart';
@@ -98,7 +106,12 @@ class AppRouter {
           String countryCode;
           String phoneNumber;
 
-          if (isSoftLogin) {
+          final isChangePasscodeStep =
+              mode == LoginProvider.modeChangePasscodeCurrent ||
+              mode == LoginProvider.modeChangePasscodeNew ||
+              mode == LoginProvider.modeChangePasscodeConfirm;
+
+          if (isSoftLogin || isChangePasscodeStep) {
             final user = context.read<AuthProvider>().state.user!;
             countryCode = user.countryCode;
             phoneNumber = user.mobileNumber;
@@ -122,14 +135,19 @@ class AppRouter {
           final pendingPasscode = routePayload is Map<String, dynamic>
               ? routePayload[LoginProvider.extraPendingPasscodeKey] as String?
               : null;
+          final pendingEmail = routePayload is Map<String, dynamic>
+              ? routePayload[LoginProvider.extraPendingEmailKey] as String?
+              : null;
 
           // Use a key that changes when switching to confirm passcode so we get
           // a fresh PasscodeProvider with empty state. Otherwise the same provider
           // (with 6 digits from set passcode) is reused and the first keypress
           // triggers verify and redirects to home.
-          final providerKey = mode == LoginProvider.modeConfirmPasscode
-              ? ValueKey('confirm_${pendingPasscode ?? ""}')
-              : ValueKey('passcode_${mode}_${countryCode}_$phoneNumber');
+          final providerKey =
+              mode == LoginProvider.modeConfirmPasscode ||
+                      mode == LoginProvider.modeChangePasscodeConfirm
+                  ? ValueKey('confirm_${mode}_${pendingPasscode ?? ""}')
+                  : ValueKey('passcode_${mode}_${countryCode}_$phoneNumber');
 
           return ChangeNotifierProvider(
             key: providerKey,
@@ -141,6 +159,7 @@ class AppRouter {
               isSoftLogin: isSoftLogin,
               mode: mode,
               pendingPasscode: pendingPasscode,
+              pendingEmail: pendingEmail,
             ),
           );
         },
@@ -174,15 +193,104 @@ class AppRouter {
               extra?[LoginProvider.extraCountryCodeKey] as String? ?? '';
           final phoneNumber =
               extra?[LoginProvider.extraPhoneNumberKey] as String? ?? '';
+          final purpose =
+              extra?[LoginProvider.extraVerificationPurposeKey] as String?;
+          final showRegistrationProgress =
+              purpose != LoginProvider.purposeChangePasscode;
           return ChangeNotifierProvider(
             create: (_) => VerificationProvider(
               phoneNumber: phoneNumber,
               countryCode: countryCode,
             ),
-            child: const VerificationScreen(),
+            child: VerificationScreen(
+              showRegistrationProgress: showRegistrationProgress,
+            ),
           );
         },
         redirect: AuthMiddleware.registerVerification,
+      ),
+      GoRoute(
+        path: Routes.changePasscodeSuccess,
+        name: 'changePasscodeSuccess',
+        builder: (context, state) => const ChangePasscodeSuccessView(),
+        redirect: AuthMiddleware.isAuthenticated,
+      ),
+      GoRoute(
+        path: Routes.changeEmailIntro,
+        name: 'changeEmailIntro',
+        builder: (context, state) => const ChangeEmailIntroView(),
+        redirect: AuthMiddleware.isAuthenticated,
+      ),
+      GoRoute(
+        path: Routes.changeEmailVerifyPhone,
+        name: 'changeEmailVerifyPhone',
+        builder: (context, state) {
+          final user = context.read<AuthProvider>().state.user!;
+          final l10n = AppLocalizations.of(context)!;
+          return ChangeNotifierProvider(
+            create: (_) => ChangeEmailOtpProvider(
+              target: '${user.countryCode}${user.mobileNumber}',
+            ),
+            child: ChangeEmailVerifyOtpView(
+              title: l10n.verifyCurrentPhoneNumber,
+              subtitle: l10n.changeEmailPhoneOtpSent(
+                '${user.countryCode}${user.mobileNumber}',
+              ),
+              stepIndex: 1,
+              onVerified: (ctx) async {
+                ctx.push(Routes.changeEmailEnterNew);
+              },
+            ),
+          );
+        },
+        redirect: AuthMiddleware.isAuthenticated,
+      ),
+      GoRoute(
+        path: Routes.changeEmailEnterNew,
+        name: 'changeEmailEnterNew',
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => ChangeEmailFormProvider(),
+          child: const ChangeEmailEnterNewView(),
+        ),
+        redirect: AuthMiddleware.isAuthenticated,
+      ),
+      GoRoute(
+        path: Routes.changeEmailVerifyNewEmail,
+        name: 'changeEmailVerifyNewEmail',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final pendingEmail =
+              extra?[LoginProvider.extraPendingEmailKey] as String? ?? '';
+          final l10n = AppLocalizations.of(context)!;
+          return ChangeNotifierProvider(
+            create: (_) => ChangeEmailOtpProvider(target: pendingEmail),
+            child: ChangeEmailVerifyOtpView(
+              title: l10n.verifyNewEmailAddress,
+              subtitle: l10n.changeEmailEmailOtpSent(pendingEmail),
+              stepIndex: 3,
+              onVerified: (ctx) async {
+                final user = ctx.read<AuthProvider>().state.user!;
+                ctx.go(
+                  Routes.enterOrSetPasscode,
+                  extra: {
+                    LoginProvider.extraModeKey:
+                        LoginProvider.modeChangeEmailConfirmPasscode,
+                    LoginProvider.extraCountryCodeKey: user.countryCode,
+                    LoginProvider.extraPhoneNumberKey: user.mobileNumber,
+                    LoginProvider.extraPendingEmailKey: pendingEmail,
+                  },
+                );
+              },
+            ),
+          );
+        },
+        redirect: AuthMiddleware.isAuthenticated,
+      ),
+      GoRoute(
+        path: Routes.changeEmailSuccess,
+        name: 'changeEmailSuccess',
+        builder: (context, state) => const ChangeEmailSuccessView(),
+        redirect: AuthMiddleware.isAuthenticated,
       ),
       ShellRoute(
         builder: (context, state, child) => DashboardView(child: child),

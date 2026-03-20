@@ -29,7 +29,45 @@
     "accountDetails": "تفاصيل الحساب",
     "changePhoneNumber": "تغيير رقم الهاتف",
     "changeEmail": "تغيير البريد الإلكتروني",
+    "stepsForChangingEmail": "خطوات تغيير بريدك الإلكتروني",
+    "changeEmailStepsDescription": "لتغيير بريدك الإلكتروني المسجل سنتبع الخطوات التالية:",
+    "step1Label": "الخطوة 1",
+    "step2Label": "الخطوة 2",
+    "step3Label": "الخطوة 3",
+    "step4Label": "الخطوة 4",
+    "changeEmailStep1": "سيتم إرسال رمز تحقق إلى رقم هاتفك المسجل.",
+    "changeEmailStep2": "بعد إدخال الرمز المُرسل، أدخل البريد الإلكتروني الجديد.",
+    "changeEmailStep3": "سيتم إرسال رمز تحقق إلى البريد الإلكتروني الجديد الذي أدخلته.",
+    "changeEmailStep4": "تحقق من حسابك باستخدام رمز المرور لتأكيد التغييرات على حسابك.",
+    "changeEmailAfterStepsNote": "بعد اتباع هذه الخطوات، سيتم تغيير بريدك الإلكتروني الحالي إلى البريد الجديد.",
+    "verifyCurrentPhoneNumber": "تحقق من رقم الهاتف الحالي",
+    "enterNewEmailAddress": "أدخل البريد الإلكتروني الجديد",
+    "verifyNewEmailAddress": "تحقق من البريد الإلكتروني الجديد",
+    "changeEmailPhoneOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى {phone}.",
+    "@changeEmailPhoneOtpSent": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "changeEmailEmailOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام إلى {email}.",
+    "@changeEmailEmailOtpSent": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "enterYourNewEmailAddressToReceiveOtp": "يرجى إدخال بريدك الإلكتروني الجديد لاستلام رمز التحقق",
+    "enterEmailAddressHint": "أدخل البريد الإلكتروني الجديد",
+    "enterValidEmailAddress": "يرجى إدخال بريد إلكتروني صالح",
+    "continueButton": "متابعة",
+    "invalidOtpTryAgain": "رمز التحقق غير صالح. حاول مرة أخرى.",
+    "emailChangedSuccessfully": "تم تغيير بريدك الإلكتروني بنجاح",
     "changePasscode": "تغيير رمز المرور",
+    "passcodeChangedSuccessfully": "تم تغيير رمز المرور بنجاح",
+    "backHome": "العودة للرئيسية",
     "walletsAddress": "عنوان المحفظة",
     "evm": "EVM",
     "bitcoin": "بيتكوين",
@@ -221,6 +259,9 @@
     "needHelpContactSupport": "تحتاج مساعدة؟ تواصل مع الدعم",
     "setYourNewPasscode": "قم بتعيين رمز المرور الجديد",
     "createAPasscode": "إنشاء رمز مرور",
+    "enterYourCurrentPasscode": "أدخل رمز المرور الحالي",
+    "enterYourNewPasscode": "أدخل رمز المرور الجديد",
+    "confirmYourNewPasscode": "أكد رمز المرور الجديد",
     "confirmYourPasscode": "تأكيد رمز المرور",
     "passcodesMismatchTryAgain": "رموز المرور غير متطابقة. حاول مرة أخرى.",
     "qrCodeScanner": "ماسح رمز QR",

@@ -272,11 +272,155 @@ abstract class AppLocalizations {
   /// **'Change Email'**
   String get changeEmail;
 
+  /// No description provided for @stepsForChangingEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps for changing your Email'**
+  String get stepsForChangingEmail;
+
+  /// No description provided for @changeEmailStepsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'To change your registered email address we will follow these steps :'**
+  String get changeEmailStepsDescription;
+
+  /// No description provided for @step1Label.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 1'**
+  String get step1Label;
+
+  /// No description provided for @step2Label.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 2'**
+  String get step2Label;
+
+  /// No description provided for @step3Label.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 3'**
+  String get step3Label;
+
+  /// No description provided for @step4Label.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 4'**
+  String get step4Label;
+
+  /// No description provided for @changeEmailStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification code will be sent to your registered phone number.'**
+  String get changeEmailStep1;
+
+  /// No description provided for @changeEmailStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'After entering the code that was sent, enter the new email address.'**
+  String get changeEmailStep2;
+
+  /// No description provided for @changeEmailStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification code will be sent to the new email address entered by you.'**
+  String get changeEmailStep3;
+
+  /// No description provided for @changeEmailStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your account with a passcode to confirm changes to your account.'**
+  String get changeEmailStep4;
+
+  /// No description provided for @changeEmailAfterStepsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'After following these steps, your current email address will be changed to the new one.'**
+  String get changeEmailAfterStepsNote;
+
+  /// No description provided for @verifyCurrentPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify current phone number'**
+  String get verifyCurrentPhoneNumber;
+
+  /// No description provided for @enterNewEmailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter new email address'**
+  String get enterNewEmailAddress;
+
+  /// No description provided for @verifyNewEmailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify new email address'**
+  String get verifyNewEmailAddress;
+
+  /// No description provided for @changeEmailPhoneOtpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'An 6 digit verification code has been sent via WhatsApp to {phone}.'**
+  String changeEmailPhoneOtpSent(String phone);
+
+  /// No description provided for @changeEmailEmailOtpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'An 6 digit verification code has been sent to {email}.'**
+  String changeEmailEmailOtpSent(String email);
+
+  /// No description provided for @enterYourNewEmailAddressToReceiveOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your new email address to receive OTP'**
+  String get enterYourNewEmailAddressToReceiveOtp;
+
+  /// No description provided for @enterEmailAddressHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter new email address'**
+  String get enterEmailAddressHint;
+
+  /// No description provided for @enterValidEmailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email address'**
+  String get enterValidEmailAddress;
+
+  /// No description provided for @continueButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueButton;
+
+  /// No description provided for @invalidOtpTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid OTP. Try again.'**
+  String get invalidOtpTryAgain;
+
+  /// No description provided for @emailChangedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Your email address has been changed successfully'**
+  String get emailChangedSuccessfully;
+
   /// No description provided for @changePasscode.
   ///
   /// In en, this message translates to:
   /// **'Change Passcode'**
   String get changePasscode;
+
+  /// No description provided for @passcodeChangedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Your passcode has been changed successfully'**
+  String get passcodeChangedSuccessfully;
+
+  /// No description provided for @backHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Back Home'**
+  String get backHome;
 
   /// No description provided for @walletsAddress.
   ///
@@ -1243,6 +1387,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create a passcode'**
   String get createAPasscode;
+
+  /// No description provided for @enterYourCurrentPasscode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current passcode'**
+  String get enterYourCurrentPasscode;
+
+  /// No description provided for @enterYourNewPasscode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your new passcode'**
+  String get enterYourNewPasscode;
+
+  /// No description provided for @confirmYourNewPasscode.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your new passcode'**
+  String get confirmYourNewPasscode;
 
   /// No description provided for @confirmYourPasscode.
   ///
