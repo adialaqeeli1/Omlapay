@@ -4,6 +4,7 @@ import 'dart:convert';
 
 class WalletAddressService {
   static const String walletAddressesKey = 'user_wallet_addresses';
+  static const String userEmailsKey = 'user_emails';
 
   /// Get wallet addresses for a user
   static Map<String, String> getWalletAddresses(UserModel user) {
@@ -100,9 +101,37 @@ class WalletAddressService {
 
   /// Get email for user (mock - in real app this would come from user model or API)
   static String getUserEmail(UserModel user) {
-    // Generate a mock email based on user data
+    final userKey = '${user.countryCode}${user.mobileNumber}';
+    final data = StorageService.getString(userEmailsKey);
+    if (data != null) {
+      try {
+        final Map<String, dynamic> emailsJson = jsonDecode(data);
+        final storedEmail = emailsJson[userKey] as String?;
+        if (storedEmail != null && storedEmail.isNotEmpty) {
+          return storedEmail;
+        }
+      } catch (_) {}
+    }
+
+    // Fallback mock email based on user data.
     final email =
         '${user.firstName.toLowerCase()}.${user.lastName.toLowerCase()}@gmail.com';
     return email;
+  }
+
+  static Future<void> saveUserEmail(UserModel user, String email) async {
+    final data = StorageService.getString(userEmailsKey);
+    Map<String, dynamic> emailsJson = {};
+    if (data != null) {
+      try {
+        emailsJson = jsonDecode(data) as Map<String, dynamic>;
+      } catch (_) {
+        emailsJson = {};
+      }
+    }
+
+    final userKey = '${user.countryCode}${user.mobileNumber}';
+    emailsJson[userKey] = email.trim();
+    await StorageService.setString(userEmailsKey, jsonEncode(emailsJson));
   }
 }

@@ -9,7 +9,7 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/theme.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../widgets/common_back_button.dart';
-import '../../../widgets/theme_aware_icon.dart';
+// import '../../../widgets/theme_aware_icon.dart';
 import '../services/wallet_address_service.dart';
 
 class AccountDetailsView extends StatefulWidget {

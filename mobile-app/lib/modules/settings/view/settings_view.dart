@@ -6,7 +6,9 @@ import 'package:provider/provider.dart';
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/theme.dart';
+import '../../../modules/auth/providers/login_provider.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../routes/app_router.dart';
 import '../../../providers/locale_provider.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../providers/notification_provider.dart';
@@ -78,7 +80,7 @@ class SettingsView extends StatelessWidget {
                         label: l10n.changeEmail,
                         screenWidth: screenWidth,
                         onTap: () {
-                          // TODO: Navigate to change email
+                          GoRouter.of(context).push(Routes.changeEmailIntro);
                         },
                       ),
                       _buildSimpleSettingOption(
@@ -86,7 +88,19 @@ class SettingsView extends StatelessWidget {
                         label: l10n.changePasscode,
                         screenWidth: screenWidth,
                         onTap: () {
-                          // TODO: Navigate to change passcode
+                          final user = authProvider.state.user;
+                          if (user == null) return;
+                          GoRouter.of(context).push(
+                            Routes.enterOrSetPasscode,
+                            extra: {
+                              LoginProvider.extraModeKey:
+                                  LoginProvider.modeChangePasscodeCurrent,
+                              LoginProvider.extraCountryCodeKey:
+                                  user.countryCode,
+                              LoginProvider.extraPhoneNumberKey:
+                                  user.mobileNumber,
+                            },
+                          );
                         },
                       ),
                       _buildSimpleSettingOption(

@@ -97,7 +97,92 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changeEmail => 'Change Email';
 
   @override
+  String get stepsForChangingEmail => 'Steps for changing your Email';
+
+  @override
+  String get changeEmailStepsDescription =>
+      'To change your registered email address we will follow these steps :';
+
+  @override
+  String get step1Label => 'Step 1';
+
+  @override
+  String get step2Label => 'Step 2';
+
+  @override
+  String get step3Label => 'Step 3';
+
+  @override
+  String get step4Label => 'Step 4';
+
+  @override
+  String get changeEmailStep1 =>
+      'A verification code will be sent to your registered phone number.';
+
+  @override
+  String get changeEmailStep2 =>
+      'After entering the code that was sent, enter the new email address.';
+
+  @override
+  String get changeEmailStep3 =>
+      'A verification code will be sent to the new email address entered by you.';
+
+  @override
+  String get changeEmailStep4 =>
+      'Verify your account with a passcode to confirm changes to your account.';
+
+  @override
+  String get changeEmailAfterStepsNote =>
+      'After following these steps, your current email address will be changed to the new one.';
+
+  @override
+  String get verifyCurrentPhoneNumber => 'Verify current phone number';
+
+  @override
+  String get enterNewEmailAddress => 'Enter new email address';
+
+  @override
+  String get verifyNewEmailAddress => 'Verify new email address';
+
+  @override
+  String changeEmailPhoneOtpSent(String phone) {
+    return 'An 6 digit verification code has been sent via WhatsApp to $phone.';
+  }
+
+  @override
+  String changeEmailEmailOtpSent(String email) {
+    return 'An 6 digit verification code has been sent to $email.';
+  }
+
+  @override
+  String get enterYourNewEmailAddressToReceiveOtp =>
+      'Please enter your new email address to receive OTP';
+
+  @override
+  String get enterEmailAddressHint => 'Enter new email address';
+
+  @override
+  String get enterValidEmailAddress => 'Please enter a valid email address';
+
+  @override
+  String get continueButton => 'Continue';
+
+  @override
+  String get invalidOtpTryAgain => 'Invalid OTP. Try again.';
+
+  @override
+  String get emailChangedSuccessfully =>
+      'Your email address has been changed successfully';
+
+  @override
   String get changePasscode => 'Change Passcode';
+
+  @override
+  String get passcodeChangedSuccessfully =>
+      'Your passcode has been changed successfully';
+
+  @override
+  String get backHome => 'Back Home';
 
   @override
   String get walletsAddress => 'Wallets Address';
@@ -618,6 +703,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createAPasscode => 'Create a passcode';
+
+  @override
+  String get enterYourCurrentPasscode => 'Enter your current passcode';
+
+  @override
+  String get enterYourNewPasscode => 'Enter your new passcode';
+
+  @override
+  String get confirmYourNewPasscode => 'Confirm your new passcode';
 
   @override
   String get confirmYourPasscode => 'Confirm your passcode';

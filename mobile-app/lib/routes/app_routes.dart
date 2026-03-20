@@ -7,6 +7,12 @@ class Routes {
   static const String enterOrSetPasscode = _Paths.enterOrSetPasscode;
   static const String forgotPasscode = _Paths.forgotPasscode;
   static const String registerVerification = _Paths.registerVerification;
+  static const String changePasscodeSuccess = _Paths.changePasscodeSuccess;
+  static const String changeEmailIntro = _Paths.changeEmailIntro;
+  static const String changeEmailVerifyPhone = _Paths.changeEmailVerifyPhone;
+  static const String changeEmailEnterNew = _Paths.changeEmailEnterNew;
+  static const String changeEmailVerifyNewEmail = _Paths.changeEmailVerifyNewEmail;
+  static const String changeEmailSuccess = _Paths.changeEmailSuccess;
   static const String home = _Paths.home;
   static const String history = _Paths.history;
   static const String profile = _Paths.profile;
@@ -44,6 +50,12 @@ abstract class _Paths {
   static const String enterOrSetPasscode = '/enter-or-set-passcode';
   static const String forgotPasscode = '/forgot-passcode';
   static const String registerVerification = '/register-verification';
+  static const String changePasscodeSuccess = '/change-passcode-success';
+  static const String changeEmailIntro = '/change-email-intro';
+  static const String changeEmailVerifyPhone = '/change-email-verify-phone';
+  static const String changeEmailEnterNew = '/change-email-enter-new';
+  static const String changeEmailVerifyNewEmail = '/change-email-verify-new-email';
+  static const String changeEmailSuccess = '/change-email-success';
   static const String home = '/home';
   static const String history = '/history';
   static const String profile = '/profile';

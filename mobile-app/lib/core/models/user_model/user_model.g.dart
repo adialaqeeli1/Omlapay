@@ -12,6 +12,7 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
   password: json['password'] as String,
   firstName: json['firstName'] as String,
   lastName: json['lastName'] as String,
+  email: json['email'] as String? ?? '',
   isVerified: json['isVerified'] as bool? ?? false,
 );
 
@@ -22,5 +23,6 @@ Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
       'password': instance.password,
       'firstName': instance.firstName,
       'lastName': instance.lastName,
+      'email': instance.email,
       'isVerified': instance.isVerified,
     };
