@@ -11,6 +11,7 @@ _CoinModel _$CoinModelFromJson(Map<String, dynamic> json) => _CoinModel(
   symbol: json['symbol'] as String,
   amount: json['amount'] as String,
   valueInUsd: json['valueInUsd'] as String,
+  change24h: (json['change24h'] as num?)?.toDouble() ?? 0,
 );
 
 Map<String, dynamic> _$CoinModelToJson(_CoinModel instance) =>
@@ -19,4 +20,5 @@ Map<String, dynamic> _$CoinModelToJson(_CoinModel instance) =>
       'symbol': instance.symbol,
       'amount': instance.amount,
       'valueInUsd': instance.valueInUsd,
+      'change24h': instance.change24h,
     };

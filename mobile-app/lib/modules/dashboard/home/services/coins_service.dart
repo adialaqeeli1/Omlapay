@@ -117,6 +117,7 @@ class CoinsService {
       final String value => num.tryParse(value),
       _ => null,
     };
+    final double parsedChange24h = _parseChange24h(coin);
     final displayPrice = parsedPrice == null
         ? '--'
         : _formatPrice(parsedPrice, chainDecimals: chainDecimals);
@@ -126,6 +127,7 @@ class CoinsService {
       symbol: symbol.isEmpty ? 'N/A' : symbol,
       amount: '0.00',
       valueInUsd: displayPrice,
+      change24h: parsedChange24h,
     );
   }
 
@@ -152,8 +154,29 @@ class CoinsService {
     final formatted = formatter.format(price.toDouble());
     if (decimalDigits == 0) return formatted;
 
-    return formatted
-        .replaceFirst(RegExp(r'([.,]\d*?[1-9])0+$'), r'$1')
-        .replaceFirst(RegExp(r'[.,]0+$'), '');
+    return _trimTrailingZeros(formatted);
+  }
+
+  String _trimTrailingZeros(String value) {
+    if (!value.contains('.')) return value;
+
+    var result = value;
+    while (result.endsWith('0')) {
+      result = result.substring(0, result.length - 1);
+    }
+    if (result.endsWith('.')) {
+      result = result.substring(0, result.length - 1);
+    }
+    return result;
+  }
+
+  double _parseChange24h(Map<String, dynamic> coin) {
+    final dynamic rawChange =
+        coin['change24h'] ?? coin['change24H'] ?? coin['change_24h'];
+    return switch (rawChange) {
+      final num value => value.toDouble(),
+      final String value => double.tryParse(value.trim()) ?? 0,
+      _ => 0,
+    };
   }
 }
