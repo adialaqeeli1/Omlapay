@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../core/extentions/string_extensions.dart';
 import '../services/forgot_passcode_service.dart';
 
 class ForgotPasscodeProvider extends ChangeNotifier {
@@ -26,6 +27,10 @@ class ForgotPasscodeProvider extends ChangeNotifier {
 
   String get phoneNumber => _phoneNumber;
   String get countryCode => _countryCode;
+
+  /// Returns formatted phone for display (e.g. "+966 XXX XXX 1234").
+  String get formattedPhoneForDisplay =>
+      maskedPhoneForDisplay(_countryCode, _phoneNumber);
   String get otp => _otp;
   int get countdownSeconds => _countdownSeconds;
   bool get isResendCooldown => _countdownSeconds > 0;

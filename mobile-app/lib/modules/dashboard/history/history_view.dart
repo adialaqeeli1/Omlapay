@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/models/transaction_model/transaction_model.dart';
 import '../../../core/theme/theme.dart';
+import '../../../providers/coins_prices_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_loading_indicator.dart';
 import '../../../widgets/no_transactions_found.dart';
@@ -25,7 +26,8 @@ class HistoryView extends StatelessWidget {
     final horizontalPadding = screenWidth * 0.05;
 
     return ChangeNotifierProvider(
-      create: (_) => HistoryProvider(),
+      create: (context) =>
+          HistoryProvider(context.read<CoinsPricesProvider>()),
       child: Builder(
         builder: (providerContext) => Scaffold(
           appBar: AppBar(
@@ -72,63 +74,21 @@ class HistoryView extends StatelessWidget {
           body: SafeArea(
             child: Consumer<HistoryProvider>(
               builder: (context, provider, child) {
-                if (provider.isLoading) {
-                  return const Center(child: CommonLoadingIndicator());
-                }
-
-                if (provider.transactions.isEmpty) {
-                  return Center(child: const NoTransactionsFound());
-                }
-
-                // Group transactions by date
-                final groupedTransactions = _groupTransactionsByDate(
-                  provider.transactions,
-                );
-
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Spacing after heading
                     const SizedBox(height: 16),
-                    // Coin Filter Tabs
                     CoinFilterTabs(
                       selectedCoin: provider.selectedCoinFilter,
                       onCoinSelected: (coin) {
                         provider.setCoinFilter(coin);
                       },
                     ),
-                    // Transactions List
                     Expanded(
-                      child: ListView.builder(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: horizontalPadding,
-                        ),
-                        itemCount: groupedTransactions.length,
-                        itemBuilder: (context, index) {
-                          final group = groupedTransactions[index];
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TransactionSectionHeader(
-                                date: group['date'] as DateTime,
-                                isFirst: index == 0,
-                              ),
-                              ...(group['transactions']
-                                      as List<TransactionModel>)
-                                  .map(
-                                    (transaction) => TransactionItem(
-                                      transaction: transaction,
-                                      onTap: () {
-                                        context.push(
-                                          Routes.transactionDetail,
-                                          extra: transaction,
-                                        );
-                                      },
-                                    ),
-                                  ),
-                            ],
-                          );
-                        },
+                      child: _buildHistoryBody(
+                        context,
+                        provider: provider,
+                        horizontalPadding: horizontalPadding,
                       ),
                     ),
                   ],
@@ -138,6 +98,52 @@ class HistoryView extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildHistoryBody(
+    BuildContext context, {
+    required HistoryProvider provider,
+    required double horizontalPadding,
+  }) {
+    if (provider.isLoading) {
+      return const Center(child: CommonLoadingIndicator());
+    }
+
+    if (provider.transactions.isEmpty) {
+      return const Center(child: NoTransactionsFound());
+    }
+
+    final groupedTransactions = _groupTransactionsByDate(
+      provider.transactions,
+    );
+
+    return ListView.builder(
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      itemCount: groupedTransactions.length,
+      itemBuilder: (context, index) {
+        final group = groupedTransactions[index];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TransactionSectionHeader(
+              date: group['date'] as DateTime,
+              isFirst: index == 0,
+            ),
+            ...(group['transactions'] as List<TransactionModel>).map(
+              (transaction) => TransactionItem(
+                transaction: transaction,
+                onTap: () {
+                  context.push(
+                    Routes.transactionDetail,
+                    extra: transaction,
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
