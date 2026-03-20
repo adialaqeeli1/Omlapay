@@ -161,8 +161,8 @@ class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
               _StatusText(provider: provider),
               const Spacer(),
               Center(
-                child: GestureDetector(
-                  onTap: () => context.push(Routes.helpCenter),
+                child: TextButton(
+                  onPressed: () => context.push(Routes.helpCenter),
                   child: Text(
                     l10n.needHelpContactSupport,
                     style: theme.textTheme.bodyMedium?.copyWith(

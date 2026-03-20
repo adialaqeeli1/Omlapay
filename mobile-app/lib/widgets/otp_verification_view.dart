@@ -208,7 +208,7 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
               ],
               const Spacer(),
               if (widget.bottomSection != null) ...[
-                widget.bottomSection!,
+                Center(child: widget.bottomSection!),
                 const SizedBox(height: 20),
               ],
             ],
