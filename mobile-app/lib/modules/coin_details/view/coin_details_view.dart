@@ -16,6 +16,7 @@ import '../../../widgets/common_coin_icon.dart';
 import '../../../widgets/no_transactions_found.dart';
 import '../../../widgets/receive_send_swap_actions.dart';
 import '../../dashboard/home/widgets/currency_selection_dialog.dart';
+
 class CoinDetailsView extends StatelessWidget {
   const CoinDetailsView({super.key, required this.coinModel});
 
@@ -29,9 +30,16 @@ class CoinDetailsView extends StatelessWidget {
     final liveCoin = coinsPrices.coinForSymbol(coinModel?.symbol ?? '');
     final currencyName = l10n.currencyName(selectedCurrency.toLowerCase());
     final priceValue = liveCoin?.valueInUsd ?? coinModel?.valueInUsd;
-    final hasPrice = priceValue != null &&
-        priceValue.isNotEmpty &&
-        priceValue != '--';
+    final double change24h = liveCoin?.change24h ?? coinModel?.change24h ?? 0;
+    final hasPrice =
+        priceValue != null && priceValue.isNotEmpty && priceValue != '--';
+    final bool isChangePositive = change24h >= 0;
+    final String changeSign = isChangePositive ? '+' : '';
+    final String changePercentText =
+        '$changeSign${change24h.toStringAsFixed(2)}% ${l10n.today}';
+    final Color changeColor = isChangePositive
+        ? AppColors.greenColor
+        : AppColors.redColor;
 
     return Scaffold(
       body: SafeArea(
@@ -299,20 +307,50 @@ class CoinDetailsView extends StatelessWidget {
                       ),
                     )
                   else
-                    Text(
-                      hasPrice
-                          ? '$priceValue $currencyName'
-                          : l10n.coinDetailsPriceUnavailable,
-                      style: context.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: context.isDarkMode
-                            ? AppColors.white
-                            : AppColors.textBlack,
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: hasPrice
+                                ? '$priceValue '
+                                : l10n.coinDetailsPriceUnavailable,
+                            style: context.textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: context.isDarkMode
+                                  ? AppColors.white
+                                  : AppColors.textBlack,
+                            ),
+                          ),
+                          if (hasPrice)
+                            TextSpan(
+                              text: currencyName,
+                              style: context.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: context.isDarkMode
+                                    ? AppColors.textLightGrey
+                                    : AppColors.textGrey,
+                              ),
+                            ),
+                        ],
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                 ],
               ),
             ),
+            if (hasPrice) ...[
+              const SizedBox(width: 12),
+              Text(
+                changePercentText,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.textTheme.titleMedium?.copyWith(
+                  color: changeColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ],
         ),
       ),

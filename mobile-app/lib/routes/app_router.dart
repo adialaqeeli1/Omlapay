@@ -63,6 +63,7 @@ import '../modules/settings/view/change_phone_number/change_phone_success_view.d
 import '../modules/settings/providers/change_email_form_provider.dart';
 import '../modules/settings/providers/change_email_otp_provider.dart';
 import '../modules/settings/providers/change_phone_form_provider.dart';
+import '../modules/settings/services/wallet_address_service.dart';
 import '../modules/notifications/notifications_view.dart';
 import '../modules/notifications/notifications_list_provider.dart';
 import '../modules/splash/splash_view.dart';
@@ -256,7 +257,9 @@ class AppRouter {
         builder: (context, state) {
           final user = context.read<AuthProvider>().state.user!;
           return ChangeNotifierProvider(
-            create: (_) => ChangeEmailFormProvider(currentEmail: user.email),
+            create: (_) => ChangeEmailFormProvider(
+              currentEmail: WalletAddressService.getUserEmail(user),
+            ),
             child: const ChangeEmailEnterNewView(),
           );
         },

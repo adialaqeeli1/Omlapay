@@ -35,6 +35,7 @@ class AppColors {
   static const Color usdtColor = Color(0xFF26A17B);
   static const Color bitcoinColor = Color(0xFFF7931A);
   static const Color greenColor = Color(0xFF00C566);
+  static const Color redColor = Color(0xFFFF4D4F);
 
   //Card Colors
   static const Color darkCardColor = Color(0xFF141414);
