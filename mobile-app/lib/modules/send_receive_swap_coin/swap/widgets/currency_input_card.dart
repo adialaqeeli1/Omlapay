@@ -6,7 +6,10 @@ import 'package:crypto_font_icons/crypto_font_icons.dart';
 
 class CurrencyInputCard extends StatelessWidget {
   final String title;
+  /// Latin ticker (e.g. BTC) for icons and [CommonCoinIcon]; must stay English.
   final String coinSymbol;
+  /// Optional display label (e.g. Arabic `symbol_ar`); defaults to [coinSymbol].
+  final String? coinSymbolLabel;
   final String amount;
   final ValueChanged<String>? onAmountChanged;
   final VoidCallback? onMaxPressed;
@@ -20,6 +23,7 @@ class CurrencyInputCard extends StatelessWidget {
     super.key,
     required this.title,
     required this.coinSymbol,
+    this.coinSymbolLabel,
     this.amount = '',
     this.onAmountChanged,
     this.onMaxPressed,
@@ -36,6 +40,7 @@ class CurrencyInputCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final displaySymbol = coinSymbolLabel ?? coinSymbol;
     Color? iconBackgroundColor;
     Widget? fallbackIcon;
 
@@ -74,7 +79,7 @@ class CurrencyInputCard extends StatelessWidget {
             ),
             if (isFrom)
               Text(
-                'Available $amount $coinSymbol',
+                'Available $amount $displaySymbol',
                 style: const TextStyle(color: Colors.grey, fontSize: 13),
               ),
           ],
@@ -110,7 +115,7 @@ class CurrencyInputCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            coinSymbol,
+                            displaySymbol,
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,

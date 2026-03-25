@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_back_button.dart';
@@ -36,7 +37,7 @@ class ReviewSendView extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${provider.amountController.text} ${provider.selectedCoin?.symbol}',
+                    '${provider.amountController.text} ${provider.selectedCoin?.localizedCoinTicker(context) ?? ''}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 32,
@@ -67,7 +68,7 @@ class ReviewSendView extends StatelessWidget {
                   const Divider(color: Color(0xFF2A2D35), height: 30),
                   _buildDetailRow(
                     'Total',
-                    '${(double.tryParse(provider.amountController.text) ?? 0) + 1} ${provider.selectedCoin?.symbol}',
+                    '${(double.tryParse(provider.amountController.text) ?? 0) + 1} ${provider.selectedCoin?.localizedCoinTicker(context) ?? ''}',
                     isTotal: true,
                   ),
                 ],

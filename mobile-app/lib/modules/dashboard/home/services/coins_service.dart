@@ -40,10 +40,12 @@ class CoinsService {
       throw AppException('Invalid coins list', messageKey: 'requestFailed');
     }
 
+    final quoteCurrency = _currencyMapFromPayload(data);
+
     return coins
         .whereType<Map<String, dynamic>>()
         .where(_isCoinActive)
-        .map(_toCoinModel)
+        .map((c) => _toCoinModel(c, currency: quoteCurrency))
         .toList(growable: false);
   }
 
@@ -101,7 +103,21 @@ class CoinsService {
   /// Exposed for [CoinsPricesStreamService] to parse SSE payloads.
   bool isCoinActive(Map<String, dynamic> coin) => _isCoinActive(coin);
 
-  CoinModel _toCoinModel(Map<String, dynamic> coin) {
+  Map<String, dynamic>? _currencyMapFromPayload(Map<String, dynamic> data) {
+    final c = data['currency'];
+    return c is Map<String, dynamic> ? c : null;
+  }
+
+  String? _optionalTrimmed(dynamic value) {
+    if (value == null) return null;
+    final s = value.toString().trim();
+    return s.isEmpty ? null : s;
+  }
+
+  CoinModel _toCoinModel(
+    Map<String, dynamic> coin, {
+    Map<String, dynamic>? currency,
+  }) {
     final symbol = (coin['symbol'] as String? ?? '').trim().toUpperCase();
     final name = (coin['name'] as String? ?? '').trim();
     final rawDecimals = coin['decimals'];
@@ -122,17 +138,31 @@ class CoinsService {
         ? '--'
         : _formatPrice(parsedPrice, chainDecimals: chainDecimals);
 
+    final quoteSymbol = _optionalTrimmed(currency?['symbol']) ??
+        _optionalTrimmed(coin['quote_symbol']);
+    // Fiat quote Arabic label: only from nested `currency` (not coin `symbol_ar`).
+    final quoteSymbolAr = _optionalTrimmed(currency?['symbol_ar']);
+    // Coin-level Arabic `symbol_ar` (Arabic coin name); never used for fiat.
+    final coinSymbolAr = _optionalTrimmed(coin['symbol_ar']);
+
     return CoinModel(
       name: name.isEmpty ? symbol : name,
       symbol: symbol.isEmpty ? 'N/A' : symbol,
       amount: '0.00',
       valueInUsd: displayPrice,
       change24h: parsedChange24h,
+      quoteSymbol: quoteSymbol,
+      quoteSymbolAr: quoteSymbolAr,
+      coinSymbolAr: coinSymbolAr,
     );
   }
 
   /// Exposed for [CoinsPricesStreamService] to map API payload to [CoinModel].
-  CoinModel toCoinModel(Map<String, dynamic> coin) => _toCoinModel(coin);
+  CoinModel toCoinModel(
+    Map<String, dynamic> coin, {
+    Map<String, dynamic>? currency,
+  }) =>
+      _toCoinModel(coin, currency: currency);
 
   String _formatPrice(num price, {required int chainDecimals}) {
     final safeChainDecimals = chainDecimals.clamp(0, 8);

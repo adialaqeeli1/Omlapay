@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import '../../../../core/models/coin_model/coin_model.dart';
+import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../providers/global_provider.dart';
 import '../../../../widgets/common_coin_icon.dart';
 import 'package:crypto_font_icons/crypto_font_icons.dart';
 
@@ -47,9 +51,11 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
     setState(() {
       _filteredCoins = widget.coins.where((coin) {
         // Search filter
+        final arLabel = coin.coinSymbolAr?.toLowerCase() ?? '';
         final matchesSearch =
             coin.name.toLowerCase().contains(query) ||
-            coin.symbol.toLowerCase().contains(query);
+            coin.symbol.toLowerCase().contains(query) ||
+            (arLabel.isNotEmpty && arLabel.contains(query));
 
         // Balance filter
         if (_hideZeroBalance) {
@@ -71,6 +77,7 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedCurrency = context.watch<GlobalProvider>().selectedCurrency;
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFF1C1C1E),
@@ -202,7 +209,7 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                       fallbackIcon: fallbackIcon,
                     ),
                     title: Text(
-                      coin.symbol,
+                      coin.localizedCoinTicker(context),
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -224,7 +231,7 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                           ),
                         ),
                         Text(
-                          '\$${coin.valueInUsd}',
+                          '${coin.valueInUsd} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 12,

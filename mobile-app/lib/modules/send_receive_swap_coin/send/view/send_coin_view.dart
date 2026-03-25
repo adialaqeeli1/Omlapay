@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/utility.dart';
 import '../../../../routes/app_router.dart';
@@ -67,7 +68,7 @@ class SendCoinView extends StatelessWidget {
                         style: TextStyle(color: Colors.grey, fontSize: 12),
                       ),
                       Text(
-                        '${provider.selectedCoin?.amount ?? '0'} ${provider.selectedCoin?.symbol ?? ''}',
+                        '${provider.selectedCoin?.amount ?? '0'} ${provider.selectedCoin?.localizedCoinTicker(context) ?? ''}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -131,7 +132,7 @@ class SendCoinView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        coin.symbol,
+                        coin.localizedCoinTicker(context),
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -371,7 +372,7 @@ class SendCoinView extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${provider.amountController.text.isEmpty ? '0' : provider.amountController.text} ${provider.selectedCoin?.symbol ?? ''}',
+                      '${provider.amountController.text.isEmpty ? '0' : provider.amountController.text} ${provider.selectedCoin?.localizedCoinTicker(context) ?? ''}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 20,

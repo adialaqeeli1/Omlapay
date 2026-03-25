@@ -9,6 +9,7 @@ import '../../../core/extentions/context_extensions.dart';
 
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/models/coin_model/coin_model.dart';
+import '../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../core/theme/theme.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../routes/app_router.dart';
@@ -133,7 +134,6 @@ class HomeView extends StatelessWidget {
                 ),
                 _buildAssetsSection(
                   context,
-                  l10n,
                   selectedCurrency: selectedCurrency,
                   horizontalPadding: horizontalPadding,
                 ),
@@ -172,13 +172,10 @@ class HomeView extends StatelessWidget {
   }
 
   Widget _buildAssetsSection(
-    BuildContext context,
-    AppLocalizations l10n, {
+    BuildContext context, {
     required String selectedCurrency,
     required double horizontalPadding,
   }) {
-    final currencyName = l10n.currencyName(selectedCurrency.toLowerCase());
-
     final coinsPrices = context.watch<CoinsPricesProvider>();
     if (coinsPrices.isLoading) {
       return const Padding(
@@ -243,9 +240,11 @@ class HomeView extends StatelessWidget {
 
           return AssetCard(
             symbol: coin.symbol,
+            symbolLabel: coin.localizedCoinTicker(context),
             name: coin.name,
             amount: coin.amount,
-            valueInUsd: '${coin.valueInUsd} $currencyName',
+            valueInUsd:
+                '${coin.valueInUsd} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',
             iconBackgroundColor: iconBgColor,
             icon: iconWidget,
             onTap: () => context.push(Routes.coinDetails, extra: coin),

@@ -8,6 +8,9 @@ class AssetCard extends StatelessWidget {
   const AssetCard({
     super.key,
     required this.symbol,
+
+    /// Shown next to the icon; defaults to [symbol]. Use [CoinModel.localizedCoinTicker] for Arabic.
+    this.symbolLabel,
     required this.name,
     required this.amount,
     required this.valueInUsd,
@@ -17,6 +20,7 @@ class AssetCard extends StatelessWidget {
   });
 
   final String symbol;
+  final String? symbolLabel;
   final String name;
   final String amount;
   final String valueInUsd;
@@ -52,7 +56,7 @@ class AssetCard extends StatelessWidget {
             crossAxisAlignment: .start,
             mainAxisSize: .min,
             mainAxisAlignment: .start,
-            spacing: 16.0,
+            spacing: 12.0,
             children: [
               Row(
                 spacing: 12,
@@ -72,8 +76,9 @@ class AssetCard extends StatelessWidget {
                       mainAxisSize: .min,
                       children: [
                         Text(
-                          symbol,
-                          overflow: TextOverflow.visible,
+                          symbolLabel ?? symbol,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,
@@ -83,7 +88,8 @@ class AssetCard extends StatelessWidget {
                         ),
                         Text(
                           name,
-                          overflow: TextOverflow.visible,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: Colors.grey[400],
                             fontSize: 12,
@@ -99,25 +105,29 @@ class AssetCard extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: .start,
-                  mainAxisSize: .min,
                   mainAxisAlignment: .center,
-                  spacing: 4,
+                  mainAxisSize: .max,
+                  spacing: 2,
                   children: [
                     Text(
                       amount,
-                      overflow: TextOverflow.visible,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: context.textTheme.bodyMedium?.copyWith(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
+                        height: 1.2,
                       ),
                     ),
                     Text(
                       valueInUsd,
-                      overflow: TextOverflow.visible,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: context.textTheme.bodyMedium?.copyWith(
                         color: AppColors.textLightGrey,
                         fontSize: 14,
+                        height: 1.2,
                       ),
                     ),
                   ],

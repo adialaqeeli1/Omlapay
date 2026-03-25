@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:omlapay_mobile_app/widgets/common_back_button.dart';
 import 'package:provider/provider.dart';
 import 'package:crypto_font_icons/crypto_font_icons.dart';
+import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/common_coin_icon.dart';
 import '../../../../widgets/theme_aware_icon.dart';
@@ -69,7 +70,8 @@ class ReviewOrderView extends StatelessWidget {
                                     _buildCoinIcon(fromCoin?.symbol ?? ''),
                                     const SizedBox(width: 12),
                                     Text(
-                                      fromCoin?.symbol ?? '',
+                                      fromCoin?.localizedCoinTicker(context) ??
+                                          '',
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 18,
@@ -132,7 +134,8 @@ class ReviewOrderView extends StatelessWidget {
                                     _buildCoinIcon(toCoin?.symbol ?? ''),
                                     const SizedBox(width: 12),
                                     Text(
-                                      toCoin?.symbol ?? '',
+                                      toCoin?.localizedCoinTicker(context) ??
+                                          '',
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 18,
@@ -243,7 +246,7 @@ class ReviewOrderView extends StatelessWidget {
                   style: TextStyle(color: Colors.grey, fontSize: 14),
                 ),
                 Text(
-                  '${provider.swapFee} ${fromCoin?.symbol ?? ''}',
+                  '${provider.swapFee} ${fromCoin?.localizedCoinTicker(context) ?? ''}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14,

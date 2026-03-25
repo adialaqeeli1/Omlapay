@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/models/coin_model/coin_model.dart';
+import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../providers/coins_prices_provider.dart';
 
@@ -23,10 +25,10 @@ class CoinFilterTabs extends StatelessWidget {
     final isDarkMode = context.isDarkMode;
     final coinsPrices = context.watch<CoinsPricesProvider>();
     final seen = <String>{};
-    final coinSymbols = <String>[];
+    final tabCoins = <CoinModel>[];
     for (final c in coinsPrices.coins) {
       if (seen.add(c.symbol.toUpperCase())) {
-        coinSymbols.add(c.symbol);
+        tabCoins.add(c);
       }
     }
 
@@ -45,14 +47,14 @@ class CoinFilterTabs extends StatelessWidget {
                 textTheme: context.textTheme,
                 onTap: () => onCoinSelected(null),
               ),
-              ...coinSymbols.map(
-                (symbol) => _CoinFilterTabChip(
-                  label: symbol,
+              ...tabCoins.map(
+                (c) => _CoinFilterTabChip(
+                  label: c.localizedCoinTicker(context),
                   isSelected:
-                      selectedCoin?.toUpperCase() == symbol.toUpperCase(),
+                      selectedCoin?.toUpperCase() == c.symbol.toUpperCase(),
                   isDarkMode: isDarkMode,
                   textTheme: context.textTheme,
-                  onTap: () => onCoinSelected(symbol),
+                  onTap: () => onCoinSelected(c.symbol),
                 ),
               ),
             ],
