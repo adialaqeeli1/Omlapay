@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_back_button.dart';
@@ -61,7 +62,7 @@ class SendSuccessView extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    '${provider.amountController.text} ${provider.selectedCoin?.symbol}',
+                    '${provider.amountController.text} ${provider.selectedCoin?.localizedCoinTicker(context) ?? ''}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 28,

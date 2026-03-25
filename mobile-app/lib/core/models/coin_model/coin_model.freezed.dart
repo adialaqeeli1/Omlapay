@@ -15,7 +15,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CoinModel {
 
- String get name; String get symbol; String get amount; String get valueInUsd; double get change24h;
+ String get name; String get symbol; String get amount; String get valueInUsd; double get change24h;/// Fiat/quote currency display symbol from the API `currency.symbol` (e.g. "$", "USD").
+ String? get quoteSymbol;/// Arabic fiat/quote label from `currency.symbol_ar` (not the coin’s `symbol_ar`).
+ String? get quoteSymbolAr;/// Arabic coin name/label from the coin payload’s `symbol_ar` (icons still use [symbol]).
+@JsonKey(name: 'symbol_ar') String? get coinSymbolAr;
 /// Create a copy of CoinModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +31,16 @@ $CoinModelCopyWith<CoinModel> get copyWith => _$CoinModelCopyWithImpl<CoinModel>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CoinModel&&(identical(other.name, name) || other.name == name)&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.valueInUsd, valueInUsd) || other.valueInUsd == valueInUsd)&&(identical(other.change24h, change24h) || other.change24h == change24h));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CoinModel&&(identical(other.name, name) || other.name == name)&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.valueInUsd, valueInUsd) || other.valueInUsd == valueInUsd)&&(identical(other.change24h, change24h) || other.change24h == change24h)&&(identical(other.quoteSymbol, quoteSymbol) || other.quoteSymbol == quoteSymbol)&&(identical(other.quoteSymbolAr, quoteSymbolAr) || other.quoteSymbolAr == quoteSymbolAr)&&(identical(other.coinSymbolAr, coinSymbolAr) || other.coinSymbolAr == coinSymbolAr));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,symbol,amount,valueInUsd,change24h);
+int get hashCode => Object.hash(runtimeType,name,symbol,amount,valueInUsd,change24h,quoteSymbol,quoteSymbolAr,coinSymbolAr);
 
 @override
 String toString() {
-  return 'CoinModel(name: $name, symbol: $symbol, amount: $amount, valueInUsd: $valueInUsd, change24h: $change24h)';
+  return 'CoinModel(name: $name, symbol: $symbol, amount: $amount, valueInUsd: $valueInUsd, change24h: $change24h, quoteSymbol: $quoteSymbol, quoteSymbolAr: $quoteSymbolAr, coinSymbolAr: $coinSymbolAr)';
 }
 
 
@@ -48,7 +51,7 @@ abstract mixin class $CoinModelCopyWith<$Res>  {
   factory $CoinModelCopyWith(CoinModel value, $Res Function(CoinModel) _then) = _$CoinModelCopyWithImpl;
 @useResult
 $Res call({
- String name, String symbol, String amount, String valueInUsd, double change24h
+ String name, String symbol, String amount, String valueInUsd, double change24h, String? quoteSymbol, String? quoteSymbolAr,@JsonKey(name: 'symbol_ar') String? coinSymbolAr
 });
 
 
@@ -65,14 +68,17 @@ class _$CoinModelCopyWithImpl<$Res>
 
 /// Create a copy of CoinModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? symbol = null,Object? amount = null,Object? valueInUsd = null,Object? change24h = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? symbol = null,Object? amount = null,Object? valueInUsd = null,Object? change24h = null,Object? quoteSymbol = freezed,Object? quoteSymbolAr = freezed,Object? coinSymbolAr = freezed,}) {
   return _then(_self.copyWith(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,symbol: null == symbol ? _self.symbol : symbol // ignore: cast_nullable_to_non_nullable
 as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as String,valueInUsd: null == valueInUsd ? _self.valueInUsd : valueInUsd // ignore: cast_nullable_to_non_nullable
 as String,change24h: null == change24h ? _self.change24h : change24h // ignore: cast_nullable_to_non_nullable
-as double,
+as double,quoteSymbol: freezed == quoteSymbol ? _self.quoteSymbol : quoteSymbol // ignore: cast_nullable_to_non_nullable
+as String?,quoteSymbolAr: freezed == quoteSymbolAr ? _self.quoteSymbolAr : quoteSymbolAr // ignore: cast_nullable_to_non_nullable
+as String?,coinSymbolAr: freezed == coinSymbolAr ? _self.coinSymbolAr : coinSymbolAr // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -157,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  String symbol,  String amount,  String valueInUsd,  double change24h)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  String symbol,  String amount,  String valueInUsd,  double change24h,  String? quoteSymbol,  String? quoteSymbolAr, @JsonKey(name: 'symbol_ar')  String? coinSymbolAr)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CoinModel() when $default != null:
-return $default(_that.name,_that.symbol,_that.amount,_that.valueInUsd,_that.change24h);case _:
+return $default(_that.name,_that.symbol,_that.amount,_that.valueInUsd,_that.change24h,_that.quoteSymbol,_that.quoteSymbolAr,_that.coinSymbolAr);case _:
   return orElse();
 
 }
@@ -178,10 +184,10 @@ return $default(_that.name,_that.symbol,_that.amount,_that.valueInUsd,_that.chan
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  String symbol,  String amount,  String valueInUsd,  double change24h)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  String symbol,  String amount,  String valueInUsd,  double change24h,  String? quoteSymbol,  String? quoteSymbolAr, @JsonKey(name: 'symbol_ar')  String? coinSymbolAr)  $default,) {final _that = this;
 switch (_that) {
 case _CoinModel():
-return $default(_that.name,_that.symbol,_that.amount,_that.valueInUsd,_that.change24h);case _:
+return $default(_that.name,_that.symbol,_that.amount,_that.valueInUsd,_that.change24h,_that.quoteSymbol,_that.quoteSymbolAr,_that.coinSymbolAr);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +204,10 @@ return $default(_that.name,_that.symbol,_that.amount,_that.valueInUsd,_that.chan
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  String symbol,  String amount,  String valueInUsd,  double change24h)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  String symbol,  String amount,  String valueInUsd,  double change24h,  String? quoteSymbol,  String? quoteSymbolAr, @JsonKey(name: 'symbol_ar')  String? coinSymbolAr)?  $default,) {final _that = this;
 switch (_that) {
 case _CoinModel() when $default != null:
-return $default(_that.name,_that.symbol,_that.amount,_that.valueInUsd,_that.change24h);case _:
+return $default(_that.name,_that.symbol,_that.amount,_that.valueInUsd,_that.change24h,_that.quoteSymbol,_that.quoteSymbolAr,_that.coinSymbolAr);case _:
   return null;
 
 }
@@ -213,7 +219,7 @@ return $default(_that.name,_that.symbol,_that.amount,_that.valueInUsd,_that.chan
 @JsonSerializable()
 
 class _CoinModel implements CoinModel {
-  const _CoinModel({required this.name, required this.symbol, required this.amount, required this.valueInUsd, this.change24h = 0});
+  const _CoinModel({required this.name, required this.symbol, required this.amount, required this.valueInUsd, this.change24h = 0, this.quoteSymbol, this.quoteSymbolAr, @JsonKey(name: 'symbol_ar') this.coinSymbolAr});
   factory _CoinModel.fromJson(Map<String, dynamic> json) => _$CoinModelFromJson(json);
 
 @override final  String name;
@@ -221,6 +227,12 @@ class _CoinModel implements CoinModel {
 @override final  String amount;
 @override final  String valueInUsd;
 @override@JsonKey() final  double change24h;
+/// Fiat/quote currency display symbol from the API `currency.symbol` (e.g. "$", "USD").
+@override final  String? quoteSymbol;
+/// Arabic fiat/quote label from `currency.symbol_ar` (not the coin’s `symbol_ar`).
+@override final  String? quoteSymbolAr;
+/// Arabic coin name/label from the coin payload’s `symbol_ar` (icons still use [symbol]).
+@override@JsonKey(name: 'symbol_ar') final  String? coinSymbolAr;
 
 /// Create a copy of CoinModel
 /// with the given fields replaced by the non-null parameter values.
@@ -235,16 +247,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CoinModel&&(identical(other.name, name) || other.name == name)&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.valueInUsd, valueInUsd) || other.valueInUsd == valueInUsd)&&(identical(other.change24h, change24h) || other.change24h == change24h));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CoinModel&&(identical(other.name, name) || other.name == name)&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.valueInUsd, valueInUsd) || other.valueInUsd == valueInUsd)&&(identical(other.change24h, change24h) || other.change24h == change24h)&&(identical(other.quoteSymbol, quoteSymbol) || other.quoteSymbol == quoteSymbol)&&(identical(other.quoteSymbolAr, quoteSymbolAr) || other.quoteSymbolAr == quoteSymbolAr)&&(identical(other.coinSymbolAr, coinSymbolAr) || other.coinSymbolAr == coinSymbolAr));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,symbol,amount,valueInUsd,change24h);
+int get hashCode => Object.hash(runtimeType,name,symbol,amount,valueInUsd,change24h,quoteSymbol,quoteSymbolAr,coinSymbolAr);
 
 @override
 String toString() {
-  return 'CoinModel(name: $name, symbol: $symbol, amount: $amount, valueInUsd: $valueInUsd, change24h: $change24h)';
+  return 'CoinModel(name: $name, symbol: $symbol, amount: $amount, valueInUsd: $valueInUsd, change24h: $change24h, quoteSymbol: $quoteSymbol, quoteSymbolAr: $quoteSymbolAr, coinSymbolAr: $coinSymbolAr)';
 }
 
 
@@ -255,7 +267,7 @@ abstract mixin class _$CoinModelCopyWith<$Res> implements $CoinModelCopyWith<$Re
   factory _$CoinModelCopyWith(_CoinModel value, $Res Function(_CoinModel) _then) = __$CoinModelCopyWithImpl;
 @override @useResult
 $Res call({
- String name, String symbol, String amount, String valueInUsd, double change24h
+ String name, String symbol, String amount, String valueInUsd, double change24h, String? quoteSymbol, String? quoteSymbolAr,@JsonKey(name: 'symbol_ar') String? coinSymbolAr
 });
 
 
@@ -272,14 +284,17 @@ class __$CoinModelCopyWithImpl<$Res>
 
 /// Create a copy of CoinModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? symbol = null,Object? amount = null,Object? valueInUsd = null,Object? change24h = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? symbol = null,Object? amount = null,Object? valueInUsd = null,Object? change24h = null,Object? quoteSymbol = freezed,Object? quoteSymbolAr = freezed,Object? coinSymbolAr = freezed,}) {
   return _then(_CoinModel(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,symbol: null == symbol ? _self.symbol : symbol // ignore: cast_nullable_to_non_nullable
 as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as String,valueInUsd: null == valueInUsd ? _self.valueInUsd : valueInUsd // ignore: cast_nullable_to_non_nullable
 as String,change24h: null == change24h ? _self.change24h : change24h // ignore: cast_nullable_to_non_nullable
-as double,
+as double,quoteSymbol: freezed == quoteSymbol ? _self.quoteSymbol : quoteSymbol // ignore: cast_nullable_to_non_nullable
+as String?,quoteSymbolAr: freezed == quoteSymbolAr ? _self.quoteSymbolAr : quoteSymbolAr // ignore: cast_nullable_to_non_nullable
+as String?,coinSymbolAr: freezed == coinSymbolAr ? _self.coinSymbolAr : coinSymbolAr // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

@@ -102,24 +102,30 @@ class CoinsPricesStreamService {
   }
 
   List<CoinModel>? _extractCoinsFromPayload(Map<String, dynamic> json) {
-    dynamic data = json['data'];
-    if (data is! Map<String, dynamic>) {
-      data = json;
-    }
+    final dynamic raw = json['data'];
+    final Map<String, dynamic> dataMap = raw is Map<String, dynamic>
+        ? raw
+        : json;
+    final quoteCurrency = _currencyMapFromData(dataMap);
 
-    final coins = data['coins'];
+    final coins = dataMap['coins'];
     if (coins is! List) return null;
 
     final result = <CoinModel>[];
     for (final item in coins.whereType<Map<String, dynamic>>()) {
       if (!_coinsService.isCoinActive(item)) continue;
       try {
-        result.add(_coinsService.toCoinModel(item));
+        result.add(_coinsService.toCoinModel(item, currency: quoteCurrency));
       } catch (_) {
         // Skip invalid entries
       }
     }
     return result.isEmpty ? null : result;
+  }
+
+  Map<String, dynamic>? _currencyMapFromData(Map<String, dynamic> data) {
+    final c = data['currency'];
+    return c is Map<String, dynamic> ? c : null;
   }
 }
 

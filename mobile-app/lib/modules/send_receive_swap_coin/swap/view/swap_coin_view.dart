@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/common_back_button.dart';
 import '../provider/swap_provider.dart';
@@ -57,6 +58,8 @@ class SwapCoinView extends StatelessWidget {
                       CurrencyInputCard(
                         title: 'From',
                         coinSymbol: provider.fromCoin?.symbol ?? 'Select',
+                        coinSymbolLabel:
+                            provider.fromCoin?.localizedCoinTicker(context),
                         amount: provider.fromCoin?.amount ?? '0',
                         controller: provider.fromAmountController,
                         isFrom: true,
@@ -90,6 +93,8 @@ class SwapCoinView extends StatelessWidget {
                       CurrencyInputCard(
                         title: 'To',
                         coinSymbol: provider.toCoin?.symbol ?? 'Select',
+                        coinSymbolLabel:
+                            provider.toCoin?.localizedCoinTicker(context),
                         amount: provider.toCoin?.amount ?? '0',
                         controller: provider.toAmountController,
                         isFrom: false,
@@ -131,7 +136,7 @@ class SwapCoinView extends StatelessWidget {
                         Align(
                           alignment: Alignment.centerRight,
                           child: Text(
-                            '1 ${provider.fromCoin!.symbol} ≈ 0.00032 ${provider.toCoin!.symbol}',
+                            '1 ${provider.fromCoin!.localizedCoinTicker(context)} ≈ 0.00032 ${provider.toCoin!.localizedCoinTicker(context)}',
                             style: const TextStyle(
                               color: Colors.grey,
                               fontSize: 12,

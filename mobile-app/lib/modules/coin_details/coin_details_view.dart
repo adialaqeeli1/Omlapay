@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/extentions/context_extensions.dart';
 import '../../core/models/coin_model/coin_model.dart';
+import '../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../core/theme/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/coins_prices_provider.dart';
@@ -28,7 +29,13 @@ class CoinDetailsView extends StatelessWidget {
     final selectedCurrency = context.watch<GlobalProvider>().selectedCurrency;
     final coinsPrices = context.watch<CoinsPricesProvider>();
     final liveCoin = coinsPrices.coinForSymbol(coinModel?.symbol ?? '');
-    final currencyName = l10n.currencyName(selectedCurrency.toLowerCase());
+    final CoinModel? headerCoin = liveCoin ?? coinModel;
+    final priceQuoteLabel = liveCoin?.quoteCurrencyLabel(
+          context,
+          selectedCurrency,
+        ) ??
+        coinModel?.quoteCurrencyLabel(context, selectedCurrency) ??
+        l10n.currencyName(selectedCurrency.toLowerCase());
     final priceValue = liveCoin?.valueInUsd ?? coinModel?.valueInUsd;
     final double change24h = liveCoin?.change24h ?? coinModel?.change24h ?? 0;
     final hasPrice =
@@ -59,10 +66,10 @@ class CoinDetailsView extends StatelessWidget {
                 mainAxisAlignment: .center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CommonCoinIcon(symbol: coinModel?.symbol ?? '', radius: 16),
+                  CommonCoinIcon(symbol: headerCoin?.symbol ?? '', radius: 16),
                   Flexible(
                     child: Text(
-                      coinModel?.name ?? '',
+                      headerCoin?.localizedCoinPrimaryName(context) ?? '',
                       overflow: TextOverflow.ellipsis,
                       style: context.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w600,
@@ -323,7 +330,7 @@ class CoinDetailsView extends StatelessWidget {
                           ),
                           if (hasPrice)
                             TextSpan(
-                              text: currencyName,
+                              text: priceQuoteLabel,
                               style: context.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w500,
                                 color: context.isDarkMode
