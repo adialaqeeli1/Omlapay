@@ -290,7 +290,7 @@ class HomeView extends StatelessWidget {
                 )
                 .toList(),
             dropdownStyleData: DropdownStyleData(
-              width: 80,
+              width: 156,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 color: context.isDarkMode
@@ -303,7 +303,7 @@ class HomeView extends StatelessWidget {
               decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
             ),
             customButton: SizedBox(
-              width: 80,
+              width: 124,
               height: 40,
               child: Row(
                 mainAxisSize: .min,
@@ -311,14 +311,19 @@ class HomeView extends StatelessWidget {
                 mainAxisAlignment: .center,
                 spacing: 4,
                 children: [
-                  Text(
-                    selectedCurrency,
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: context.isDarkMode
-                          ? AppColors.textWhite
-                          : AppColors.textBlack,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16.0,
+                  Expanded(
+                    child: Text(
+                      l10n.currencyName(selectedCurrency.toLowerCase()),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.end,
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: context.isDarkMode
+                            ? AppColors.textWhite
+                            : AppColors.textBlack,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16.0,
+                      ),
                     ),
                   ),
                   Padding(
@@ -425,14 +430,19 @@ class HomeView extends StatelessWidget {
                       mainAxisAlignment: .end,
                       mainAxisSize: .min,
                       children: [
-                        Text(
-                          selectedCurrency,
-                          style: context.textTheme.titleMedium?.copyWith(
-                            color: context.isDarkMode
-                                ? AppColors.textLightGrey
-                                : AppColors.textBlack,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 96),
+                          child: Text(
+                            l10n.currencyName(selectedCurrency.toLowerCase()),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: context.textTheme.titleMedium?.copyWith(
+                              color: context.isDarkMode
+                                  ? AppColors.textLightGrey
+                                  : AppColors.textBlack,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
                         Icon(
