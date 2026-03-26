@@ -15,6 +15,9 @@ const String _logTag = 'CoinsPricesStream';
 
 /// Service that connects to the SSE prices stream and parses coin price updates.
 /// Uses [sse_channel] for spec-aligned SSE handling with automatic reconnection.
+/// The server URL is built **without** query parameters so that [SseChannel]'s
+/// internal `?sseClientId=…` append works correctly; the `currency` parameter
+/// is then added with `&`.
 class CoinsPricesStreamService {
   CoinsPricesStreamService(this._coinsService);
 
@@ -38,13 +41,20 @@ class CoinsPricesStreamService {
     }
 
     final token = StorageService.getString(AppConstants.tokenKey);
-    final client = _AuthHttpClient(token);
+    final client = _CurrencyAwareHttpClient(
+      token: token,
+      currency: normalizedCurrency,
+    );
 
-    final url =
-        '${Endpoints.baseUrl}${Endpoints.coinsPricesStream}?currency=$normalizedCurrency';
-    _log('Connecting to SSE stream', url);
+    // Pass the base URL **without** query params so that SseChannel's
+    // internal `?sseClientId=…` append uses the first `?` correctly.
+    // Our custom HTTP client intercepts the request and appends
+    // `&currency=<code>` after the `?sseClientId=…` that SseChannel adds.
+    final baseUrl =
+        '${Endpoints.baseUrl}${Endpoints.coinsPricesStream}';
+    _log('Connecting to SSE stream', '$baseUrl (currency=$normalizedCurrency)');
 
-    final channel = SseChannel.connect(Uri.parse(url), client: client);
+    final channel = SseChannel.connect(Uri.parse(baseUrl), client: client);
 
     try {
       await channel.ready;
@@ -84,7 +94,8 @@ class CoinsPricesStreamService {
 
           final coins = _extractCoinsFromPayload(json);
           if (coins != null && coins.isNotEmpty) {
-            _log('Parsed ${coins.length} coins', coins.map((c) => c.symbol).join(', '));
+            _log('Parsed ${coins.length} coins',
+                coins.map((c) => c.symbol).join(', '));
             yield coins;
           } else {
             _log('No coins extracted from payload');
@@ -103,9 +114,8 @@ class CoinsPricesStreamService {
 
   List<CoinModel>? _extractCoinsFromPayload(Map<String, dynamic> json) {
     final dynamic raw = json['data'];
-    final Map<String, dynamic> dataMap = raw is Map<String, dynamic>
-        ? raw
-        : json;
+    final Map<String, dynamic> dataMap =
+        raw is Map<String, dynamic> ? raw : json;
     final quoteCurrency = _currencyMapFromData(dataMap);
 
     final coins = dataMap['coins'];
@@ -129,11 +139,20 @@ class CoinsPricesStreamService {
   }
 }
 
-/// [http.BaseClient] that adds Authorization and Accept headers for SSE requests.
-class _AuthHttpClient extends http.BaseClient {
-  _AuthHttpClient(this._token) : _inner = http.Client();
+/// Custom [http.BaseClient] that:
+/// 1. Adds Authorization and SSE headers.
+/// 2. Appends `&currency=<code>` to the outgoing URL so that [SseChannel]'s
+///    own `?sseClientId=…` stays valid and the server receives both params.
+class _CurrencyAwareHttpClient extends http.BaseClient {
+  _CurrencyAwareHttpClient({
+    required String? token,
+    required String currency,
+  })  : _token = token,
+        _currency = currency,
+        _inner = http.Client();
 
   final String? _token;
+  final String _currency;
   final http.Client _inner;
 
   @override
@@ -141,22 +160,33 @@ class _AuthHttpClient extends http.BaseClient {
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) {
-    request.headers['Accept'] = 'text/event-stream';
-    request.headers['Cache-Control'] = 'no-cache';
+    // Append currency to the existing query parameters that SseChannel built.
+    final originalUri = request.url;
+    final updatedParams = Map<String, String>.from(originalUri.queryParameters)
+      ..['currency'] = _currency;
+    final correctedUri = originalUri.replace(queryParameters: updatedParams);
+
+    // Build a new request with the corrected URL.
+    final correctedRequest = http.Request(request.method, correctedUri)
+      ..headers.addAll(request.headers);
+
+    correctedRequest.headers['Accept'] = 'text/event-stream';
+    correctedRequest.headers['Cache-Control'] = 'no-cache';
     final token = _token;
     if (token != null) {
-      request.headers['Authorization'] = token;
+      correctedRequest.headers['Authorization'] = token;
     }
+
     if (kDebugMode) {
-      final headers = Map<String, String>.from(request.headers);
+      final headers = Map<String, String>.from(correctedRequest.headers);
       if (headers.containsKey('Authorization')) {
         headers['Authorization'] = '[present]';
       }
       debugPrint(
-        '$_logTag: Sending request | method=${request.method} url=${request.url} '
-        'headers=$headers',
+        '$_logTag: Sending request | method=${correctedRequest.method} '
+        'url=${correctedRequest.url} headers=$headers',
       );
     }
-    return _inner.send(request);
+    return _inner.send(correctedRequest);
   }
 }
