@@ -554,7 +554,10 @@ class AppRouter {
         path: Routes.swapCoin,
         name: 'swapCoin',
         builder: (context, state) => ChangeNotifierProvider(
-          create: (_) => SwapProvider(context.read<AuthProvider>()),
+          create: (_) => SwapProvider(
+            context.read<AuthProvider>(),
+            context.read<CoinsPricesProvider>(),
+          ),
           child: const SwapCoinView(),
         ),
       ),

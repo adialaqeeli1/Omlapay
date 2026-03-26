@@ -87,7 +87,7 @@ class AssetCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          name,
+                          symbolLabel ?? symbol,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

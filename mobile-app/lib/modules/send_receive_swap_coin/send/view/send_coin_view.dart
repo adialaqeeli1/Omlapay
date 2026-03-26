@@ -150,7 +150,7 @@ class SendCoinView extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        coin.name,
+                        coin.localizedCoinPrimaryName(context),
                         style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 12,
