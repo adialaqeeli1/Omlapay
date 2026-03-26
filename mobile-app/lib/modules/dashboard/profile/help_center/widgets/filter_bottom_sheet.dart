@@ -53,43 +53,50 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 
     return CommonBottomSheet(
       title: l10n.filter,
-      childrens: options.map((option) {
-        return ListTile(
-          onTap: () {
-            setState(() {
-              _selectedOption = option;
-            });
-            // You can add callback here if needed
-            // Navigator.of(context).pop();
+      childrens: [
+        RadioGroup<FilterOption>(
+          groupValue: _selectedOption,
+          onChanged: (value) {
+            if (value != null) {
+              setState(() {
+                _selectedOption = value;
+              });
+            }
           },
-          title: Text(
-            getOptionLabel(option),
-            style: TextStyle(
-              color: textColor,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: options.map((option) {
+              return ListTile(
+                onTap: () {
+                  setState(() {
+                    _selectedOption = option;
+                  });
+                  // You can add callback here if needed
+                  // Navigator.of(context).pop();
+                },
+                title: Text(
+                  getOptionLabel(option),
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                trailing: Radio<FilterOption>(
+                  value: option,
+                  activeColor: AppColors.primaryColor,
+                  fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+                    if (states.contains(WidgetState.selected)) {
+                      return AppColors.primaryColor;
+                    }
+                    return textColor.withValues(alpha: 0.3);
+                  }),
+                ),
+              );
+            }).toList(),
           ),
-          trailing: Radio<FilterOption>(
-            value: option,
-            groupValue: _selectedOption,
-            onChanged: (value) {
-              if (value != null) {
-                setState(() {
-                  _selectedOption = value;
-                });
-              }
-            },
-            activeColor: AppColors.primaryColor,
-            fillColor: WidgetStateProperty.resolveWith<Color>((states) {
-              if (states.contains(WidgetState.selected)) {
-                return AppColors.primaryColor;
-              }
-              return textColor.withOpacity(0.3);
-            }),
-          ),
-        );
-      }).toList(),
+        ),
+      ],
     );
   }
 }

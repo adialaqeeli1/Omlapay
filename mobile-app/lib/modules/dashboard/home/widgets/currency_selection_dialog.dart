@@ -127,7 +127,9 @@ class _CurrencySelectionDialogState extends State<CurrencySelectionDialog> {
                       Navigator.of(context).pop();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor.withOpacity(0.1),
+                      backgroundColor: AppColors.primaryColor.withValues(
+                        alpha: 0.1,
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -172,11 +174,7 @@ class _CurrencySelectionDialogState extends State<CurrencySelectionDialog> {
               fontWeight: FontWeight.w500,
             ),
           ),
-          Radio<String>(
-            value: value,
-            onChanged: (_) => onTap(),
-            activeColor: AppColors.primaryColor,
-          ),
+          Radio<String>(value: value, activeColor: AppColors.primaryColor),
           // Container(
           //   width: 20,
           //   height: 20,

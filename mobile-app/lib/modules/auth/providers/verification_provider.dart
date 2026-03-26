@@ -39,10 +39,12 @@ class VerificationProvider extends ChangeNotifier {
   bool _isVerifying = false;
   bool _hasError = false;
   bool _isRequestingOtp = false;
+  String? _registrationToken;
 
   String get phoneNumber => _phoneNumber;
   String get countryCode => _countryCode;
   String get otp => _otp;
+  String? get registrationToken => _registrationToken;
   int get countdownSeconds => _countdownSeconds;
   bool get isResendCooldown => _countdownSeconds > 0;
   bool get isVerifying => _isVerifying;
@@ -157,16 +159,33 @@ class VerificationProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final isValid = await ForgotPasscodeService.verifyOtp(
-        _phoneNumber,
-        _countryCode,
-        _otp,
-      );
-      _hasError = !isValid;
-      return isValid;
-    } catch (_) {
+      if (_isRegistration) {
+        final response = await AuthService.verifyRegistrationOtp(
+          countryCode: _countryCode,
+          mobileNumber: _phoneNumber,
+          otp: _otp,
+        );
+        final data = response['data'];
+        if (response['status'] == 'success' && data is Map<String, dynamic> && data['registration_token'] != null) {
+          _registrationToken = data['registration_token'] as String;
+          _hasError = false;
+          return true;
+        } else {
+          _hasError = true;
+          return false;
+        }
+      } else {
+        final isValid = await ForgotPasscodeService.verifyOtp(
+          _phoneNumber,
+          _countryCode,
+          _otp,
+        );
+        _hasError = !isValid;
+        return isValid;
+      }
+    } catch (e) {
       _hasError = true;
-      return false;
+      rethrow;
     } finally {
       _isVerifying = false;
       notifyListeners();

@@ -15,10 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CoinModel {
 
- String get name; String get symbol; String get amount; String get valueInUsd; double get change24h;/// Fiat/quote currency display symbol from the API `currency.symbol` (e.g. "$", "USD").
- String? get quoteSymbol;/// Arabic fiat/quote label from `currency.symbol_ar` (not the coin’s `symbol_ar`).
- String? get quoteSymbolAr;/// Arabic coin name/label from the coin payload’s `symbol_ar` (icons still use [symbol]).
-@JsonKey(name: 'symbol_ar') String? get coinSymbolAr;
+ String get name; String get symbol; String get amount; String get valueInUsd; double get change24h; String? get quoteSymbol; String? get quoteSymbolAr;@JsonKey(name: 'symbol_ar') String? get coinSymbolAr;
 /// Create a copy of CoinModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -227,11 +224,8 @@ class _CoinModel implements CoinModel {
 @override final  String amount;
 @override final  String valueInUsd;
 @override@JsonKey() final  double change24h;
-/// Fiat/quote currency display symbol from the API `currency.symbol` (e.g. "$", "USD").
 @override final  String? quoteSymbol;
-/// Arabic fiat/quote label from `currency.symbol_ar` (not the coin’s `symbol_ar`).
 @override final  String? quoteSymbolAr;
-/// Arabic coin name/label from the coin payload’s `symbol_ar` (icons still use [symbol]).
 @override@JsonKey(name: 'symbol_ar') final  String? coinSymbolAr;
 
 /// Create a copy of CoinModel

@@ -8,7 +8,7 @@ class SwapProvider extends ChangeNotifier {
   final AuthProvider authProvider;
 
   List<CoinModel> _coins = [];
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   CoinModel? _fromCoin;
   CoinModel? _toCoin;

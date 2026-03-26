@@ -30,7 +30,7 @@ class CommonTransparentCard extends StatelessWidget {
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: glassColor.withOpacity(opacity),
+            color: glassColor.withValues(alpha: opacity),
             borderRadius: BorderRadius.circular(borderRadius),
           ),
           child: child,

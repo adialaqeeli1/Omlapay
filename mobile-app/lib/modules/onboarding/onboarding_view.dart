@@ -109,7 +109,7 @@ class OnboardingScreen extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: isActive
                                       ? AppColors.primaryColor
-                                      : Colors.grey.withOpacity(0.3),
+                                      : Colors.grey.withValues(alpha: 0.3),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                               );

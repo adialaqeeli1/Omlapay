@@ -144,6 +144,9 @@ class AppRouter {
           final pendingEmail = routePayload is Map<String, dynamic>
               ? routePayload[LoginProvider.extraPendingEmailKey] as String?
               : null;
+          final registrationToken = routePayload is Map<String, dynamic>
+              ? routePayload[LoginProvider.extraRegistrationTokenKey] as String?
+              : null;
 
           // Use a key that changes when switching to confirm passcode so we get
           // a fresh PasscodeProvider with empty state. Otherwise the same provider
@@ -166,6 +169,7 @@ class AppRouter {
               mode: mode,
               pendingPasscode: pendingPasscode,
               pendingEmail: pendingEmail,
+              registrationToken: registrationToken,
             ),
           );
         },

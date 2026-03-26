@@ -84,9 +84,9 @@ class PasscodeProvider extends ChangeNotifier {
       );
       _hasError = !isValid;
       return isValid;
-    } catch (_) {
+    } catch (e) {
       _hasError = true;
-      return false;
+      rethrow;
     } finally {
       _isVerifying = false;
       notifyListeners();

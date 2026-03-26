@@ -22,12 +22,14 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     this.mode,
     this.pendingPasscode,
     this.pendingEmail,
+    this.registrationToken,
   });
 
   final bool isSoftLogin;
   final String? mode;
   final String? pendingPasscode;
   final String? pendingEmail;
+  final String? registrationToken;
 
   @override
   Widget build(BuildContext context) {
@@ -444,7 +446,8 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
       return;
     }
 
-    if (mode == LoginProvider.modeResetPasscode) {
+    try {
+      if (mode == LoginProvider.modeResetPasscode) {
       context.go(
         Routes.enterOrSetPasscode,
         extra: {
@@ -502,7 +505,28 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
               required String phoneNumber,
               required String countryCode,
               required String passcode,
-            }) => authProvider.setPasscode(phoneNumber, countryCode, passcode),
+            }) async {
+              if (registrationToken != null && registrationToken!.isNotEmpty) {
+                final isRegSuccess = await authProvider.setRegistrationPasscode(
+                  registrationToken: registrationToken!,
+                  passcode: passcode,
+                  confirmPasscode: passcode,
+                );
+                if (isRegSuccess) {
+                  return await authProvider.login(
+                    phoneNumber,
+                    countryCode,
+                    passcode,
+                  );
+                }
+                return false;
+              }
+              return await authProvider.setPasscode(
+                phoneNumber,
+                countryCode,
+                passcode,
+              );
+            },
       );
       if (!context.mounted || !isValid) return;
       context.go(Routes.home);
@@ -579,6 +603,20 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
       return;
     }
 
+    if (mode == LoginProvider.modeSoftLogin) {
+      final isValid = await provider.verify(
+        verifyPasscode:
+            ({
+              required String phoneNumber,
+              required String countryCode,
+              required String passcode,
+            }) => authProvider.softLogin(passcode),
+      );
+      if (!context.mounted || !isValid) return;
+      context.go(Routes.home);
+      return;
+    }
+
     final isValid = await provider.verify(
       verifyPasscode:
           ({
@@ -591,6 +629,11 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
       return;
     }
     context.go(Routes.home);
+    } catch (e) {
+      if (context.mounted) {
+        SnackbarHelper.showError(context, e.toString());
+      }
+    }
   }
 }
 
