@@ -10,6 +10,7 @@ class LoginProvider extends ChangeNotifier {
   static const String defaultCountryCode = '+966';
   static const String extraCountryCodeKey = 'countryCode';
   static const String extraPhoneNumberKey = 'phoneNumber';
+  static const String extraRegistrationTokenKey = 'registrationToken';
   static const String extraModeKey = 'mode';
   static const String modeHardLogin = 'hard_login';
   static const String modeSoftLogin = 'soft_login';
@@ -114,14 +115,76 @@ class LoginProvider extends ChangeNotifier {
         }
       }
     } else {
-      context.go(
-        Routes.enterOrSetPasscode,
-        extra: {
-          extraModeKey: modeHardLogin,
-          extraCountryCodeKey: currentPhoneCode,
-          extraPhoneNumberKey: digitsOnlyPhone,
-        },
-      );
+      try {
+        final checkResponse = await AuthService.checkUser(
+          countryCode: currentPhoneCode,
+          mobileNumber: digitsOnlyPhone,
+        );
+
+        if (checkResponse['status'] == 'success') {
+          final data = checkResponse['data'];
+          if (data != null && data['userExists'] == true) {
+            if (data['hasPasscode'] == true) {
+              if (context.mounted) {
+                context.go(
+                  Routes.enterOrSetPasscode,
+                  extra: {
+                    extraModeKey: modeHardLogin,
+                    extraCountryCodeKey: currentPhoneCode,
+                    extraPhoneNumberKey: digitsOnlyPhone,
+                  },
+                );
+              }
+            } else {
+              final registerResponse = await AuthService.registerRequest(
+                countryCode: currentPhoneCode,
+                mobileNumber: digitsOnlyPhone,
+                termsAccepted: true,
+              );
+              
+              if (registerResponse['status'] == 'success') {
+                final otpExpirySeconds = registerResponse['data']?['expires_in'] ?? 300;
+                final maskedMobile = registerResponse['data']?['mobile_number'];
+
+                if (context.mounted) {
+                  context.push(
+                    Routes.registerVerification,
+                    extra: {
+                      extraCountryCodeKey: currentPhoneCode,
+                      extraPhoneNumberKey: digitsOnlyPhone,
+                      'maskedMobile': maskedMobile,
+                      'otpExpirySeconds': otpExpirySeconds,
+                      'isRegistration': true,
+                    },
+                  );
+                }
+              } else {
+                if (context.mounted) {
+                  SnackbarHelper.showError(
+                    context, 
+                    registerResponse['message']?.toString() ?? 'Failed to send OTP',
+                  );
+                }
+              }
+            }
+          } else {
+            if (context.mounted) {
+              SnackbarHelper.showError(context, 'User not found with this mobile number.');
+            }
+          }
+        } else {
+          if (context.mounted) {
+            SnackbarHelper.showError(
+              context, 
+              checkResponse['message']?.toString() ?? 'Failed to verify user',
+            );
+          }
+        }
+      } catch (e) {
+        if (context.mounted) {
+          SnackbarHelper.showError(context, e.toString());
+        }
+      }
     }
     _isSubmitting = false;
     notifyListeners();

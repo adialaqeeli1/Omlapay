@@ -125,3 +125,4 @@ assets/.DS_Store
 ios/.DerivedData/
 macos/.DerivedData/
 .cursor/
+.agents/

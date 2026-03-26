@@ -66,10 +66,11 @@ class _VerificationScreenState extends State<VerificationScreen> {
   }
 
   Future<void> _verifyOtp(VerificationProvider provider) async {
-    final isValid = await provider.verifyOtp();
-    if (!mounted || !isValid) {
-      return;
-    }
+    try {
+      final isValid = await provider.verifyOtp();
+      if (!mounted || !isValid) {
+        return;
+      }
 
     final extra = GoRouterState.of(context).extra;
     if (extra is Map<String, dynamic> &&
@@ -98,7 +99,14 @@ class _VerificationScreenState extends State<VerificationScreen> {
         LoginProvider.extraModeKey: LoginProvider.modeRegister,
         LoginProvider.extraCountryCodeKey: provider.countryCode,
         LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+        if (provider.registrationToken != null)
+          LoginProvider.extraRegistrationTokenKey: provider.registrationToken,
       },
     );
+    } catch (e) {
+      if (mounted) {
+        SnackbarHelper.showError(context, e.toString());
+      }
+    }
   }
 }

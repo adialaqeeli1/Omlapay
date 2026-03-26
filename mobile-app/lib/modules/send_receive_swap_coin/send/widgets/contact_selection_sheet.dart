@@ -98,7 +98,7 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: CircleAvatar(
-                    backgroundColor: AppColors.tealColor.withOpacity(0.2),
+                    backgroundColor: AppColors.tealColor.withValues(alpha: 0.2),
                     child: Text(
                       contact.name[0].toUpperCase(),
                       style: const TextStyle(

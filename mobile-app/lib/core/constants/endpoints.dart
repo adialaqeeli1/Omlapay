@@ -15,6 +15,13 @@ class Endpoints {
   /// User Registration
   static String get registerRequest => '$apiVersion/user/register/request';
   static String get registerResendOtp => '$apiVersion/user/register/resend-otp';
+  static String get registerVerifyOtp => '$apiVersion/user/register/verify-otp';
+  static String get registerSetPasscode => '$apiVersion/user/register/set-passcode';
+
+  /// Auth
+  static String get login => '$apiVersion/auth/login';
+  static String get softLogin => '$apiVersion/auth/soft-login';
+  static String get checkUser => '$apiVersion/auth/check-user';
 
   /// List coins with prices; supports query param `currency` (e.g. /v1/coins?currency=usd).
   static String get coins => '$apiVersion/coins';

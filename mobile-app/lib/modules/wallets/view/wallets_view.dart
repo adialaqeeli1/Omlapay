@@ -103,8 +103,8 @@ class WalletsView extends StatelessWidget {
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                   colors: [
-                                    Colors.black.withOpacity(0.15),
-                                    Colors.black.withOpacity(0.4),
+                                    Colors.black.withValues(alpha: 0.15),
+                                    Colors.black.withValues(alpha: 0.4),
                                   ],
                                 ),
                               ),
@@ -134,10 +134,10 @@ class WalletsView extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.8),
+                    color: Colors.black.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: AppColors.tealColor.withOpacity(0.5),
+                      color: AppColors.tealColor.withValues(alpha: 0.5),
                     ),
                   ),
                   child: Row(
@@ -320,7 +320,7 @@ class WalletsView extends StatelessWidget {
       height: 32,
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: backgroundColor.withOpacity(0.15),
+        color: backgroundColor.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
       ),
       child: SvgPicture.asset(

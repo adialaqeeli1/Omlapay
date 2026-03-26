@@ -195,13 +195,13 @@ class SelectiveColorMapper extends ColorMapper {
     String attributeName,
     Color color,
   ) {
-    if (color.value == targetColor.value) {
+    if (color == targetColor) {
       // Invert the color (255 - component)
       return Color.fromARGB(
-        color.alpha,
-        255 - color.red,
-        255 - color.green,
-        255 - color.blue,
+        (color.a * 255.0).round().clamp(0, 255),
+        255 - (color.r * 255.0).round().clamp(0, 255),
+        255 - (color.g * 255.0).round().clamp(0, 255),
+        255 - (color.b * 255.0).round().clamp(0, 255),
       );
     }
     return color;
