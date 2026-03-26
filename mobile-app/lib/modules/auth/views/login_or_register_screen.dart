@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:country_picker/country_picker.dart';
 
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/theme/theme.dart';
@@ -127,31 +127,50 @@ class LoginOrRegisterScreen extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          height: 56,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: phoneGroupBackground,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SvgPicture.asset(
-                                'assets/icons/saudi-arabia-logo.svg',
-                                width: 24,
-                                height: 24,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                LoginProvider.countryCode,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: theme.colorScheme.onSurface,
+                        GestureDetector(
+                          onTap: () {
+                            showCountryPicker(
+                              context: context,
+                              showPhoneCode: true,
+                              onSelect: (Country country) {
+                                loginProvider.updateCountry(country);
+                              },
+                              countryListTheme: CountryListThemeData(
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(20),
+                                  topRight: Radius.circular(20),
                                 ),
+                                backgroundColor: theme.scaffoldBackgroundColor,
+                                textStyle: theme.textTheme.titleMedium,
+                                searchTextStyle: theme.textTheme.bodyLarge,
                               ),
-                            ],
+                            );
+                          },
+                          child: Container(
+                            height: 56,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: phoneGroupBackground,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  loginProvider.currentFlagEmoji,
+                                  style: const TextStyle(fontSize: 24),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  loginProvider.currentPhoneCode,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.colorScheme.onSurface,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),

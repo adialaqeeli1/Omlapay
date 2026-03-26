@@ -65,6 +65,7 @@ dependencies:
   mobile_scanner: ^7.2.0
   permission_handler: ^11.3.1
   sse_channel: ^0.2.2
+  country_picker: ^2.0.27
 
 dev_dependencies:
   flutter_test:

@@ -122,7 +122,7 @@ class AppRouter {
             countryCode = user.countryCode;
             phoneNumber = user.mobileNumber;
           } else {
-            countryCode = LoginProvider.countryCode;
+            countryCode = LoginProvider.defaultCountryCode;
             phoneNumber = '';
             if (routePayload is Map<String, dynamic>) {
               final payloadCountryCode =
