@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/mock_data/mock_data.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../../providers/coins_prices_provider.dart';
 
 class SwapProvider extends ChangeNotifier {
   final AuthProvider authProvider;
+  final CoinsPricesProvider _coinsPricesProvider;
 
   List<CoinModel> _coins = [];
-  final bool _isLoading = false;
+  bool _isLoading = false;
 
   CoinModel? _fromCoin;
   CoinModel? _toCoin;
@@ -34,9 +35,10 @@ class SwapProvider extends ChangeNotifier {
       fromAmountController.text.isNotEmpty &&
       isVerified;
 
-  SwapProvider(this.authProvider) {
+  SwapProvider(this.authProvider, this._coinsPricesProvider) {
     authProvider.addListener(notifyListeners);
-    _loadData();
+    _coinsPricesProvider.addListener(_onStreamedCoinsUpdated);
+    _syncCoinsFromPrices();
     fromAmountController.addListener(() {
       _validate();
       _calculateToAmount();
@@ -55,20 +57,28 @@ class SwapProvider extends ChangeNotifier {
   String _swapFee = '0';
   String get swapFee => _swapFee;
 
-  void _loadData() {
-    // Load data from global MockData (simulating user profile)
-    _coins = MockData.coins;
+  void _onStreamedCoinsUpdated() {
+    _syncCoinsFromPrices();
+  }
 
-    if (_coins.isNotEmpty) {
-      _fromCoin = _coins.firstWhere(
-        (c) => c.symbol == 'USDT',
-        orElse: () => _coins[0],
-      );
-      _toCoin = _coins.firstWhere(
-        (c) => c.symbol == 'BTC',
-        orElse: () => _coins.length > 1 ? _coins[1] : _coins[0],
-      );
+  void _syncCoinsFromPrices() {
+    final incoming = _coinsPricesProvider.coins;
+    _isLoading = _coinsPricesProvider.isLoading && incoming.isEmpty;
+    _coins = List<CoinModel>.from(incoming);
+
+    if (_coins.isEmpty) {
+      _fromCoin = null;
+      _toCoin = null;
+      _validate();
+      notifyListeners();
+      return;
     }
+
+    // Swap defaults are always driven by fetched list order.
+    _fromCoin = _coins.first;
+    _toCoin = _coins.length > 1 ? _coins[1] : _coins.first;
+    _validate();
+    _calculateToAmount();
     notifyListeners();
   }
 
@@ -169,6 +179,7 @@ class SwapProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _coinsPricesProvider.removeListener(_onStreamedCoinsUpdated);
     authProvider.removeListener(notifyListeners);
     fromAmountController.dispose();
     toAmountController.dispose();

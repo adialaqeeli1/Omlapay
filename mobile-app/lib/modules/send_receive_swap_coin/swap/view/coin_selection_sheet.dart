@@ -52,9 +52,12 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
     setState(() {
       _filteredCoins = widget.coins.where((coin) {
         // Search filter
+        final localizedPrimaryName = coin.localizedCoinPrimaryName(context)
+            .toLowerCase();
         final arLabel = coin.coinSymbolAr?.toLowerCase() ?? '';
         final matchesSearch =
             coin.name.toLowerCase().contains(query) ||
+            localizedPrimaryName.contains(query) ||
             coin.symbol.toLowerCase().contains(query) ||
             (arLabel.isNotEmpty && arLabel.contains(query));
 
@@ -218,7 +221,7 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                       ),
                     ),
                     subtitle: Text(
-                      coin.name,
+                      coin.localizedCoinPrimaryName(context),
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                     trailing: Column(
