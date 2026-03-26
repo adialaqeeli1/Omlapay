@@ -45,8 +45,9 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
       body: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
           final user = authProvider.state.user;
+          final loc = context.l10n!;
           if (user == null) {
-            return const Center(child: Text('No user data available'));
+            return Center(child: Text(loc.accountNoUserDataAvailable));
           }
 
           final email = WalletAddressService.getUserEmail(user);
@@ -204,7 +205,7 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                 Clipboard.setData(ClipboardData(text: currentAddress));
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('${l10n.copy}: $currentAddress'),
+                    content: Text(l10n.copyLabelValue(l10n.copy, currentAddress)),
                     duration: const Duration(seconds: 2),
                   ),
                 );

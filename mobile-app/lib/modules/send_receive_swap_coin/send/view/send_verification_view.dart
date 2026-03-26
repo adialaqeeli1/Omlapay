@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../widgets/common_back_button.dart';
@@ -23,12 +24,13 @@ class _SendVerificationViewState extends State<SendVerificationView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n!;
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text(
-          'Verify Account',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          l10n.sendFlowVerifyAccountTitle,
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -40,9 +42,9 @@ class _SendVerificationViewState extends State<SendVerificationView> {
         child: Column(
           children: [
             const SizedBox(height: 30),
-            const Text(
-              'Enter the code sent to +966 50 *** **67',
-              style: TextStyle(color: Colors.grey, fontSize: 16),
+            Text(
+              l10n.sendOtpInstructionsMasked('+966 50 *** **67'),
+              style: const TextStyle(color: Colors.grey, fontSize: 16),
             ),
             const SizedBox(height: 30),
 
@@ -84,7 +86,7 @@ class _SendVerificationViewState extends State<SendVerificationView> {
             const Spacer(),
 
             CommonButton(
-              title: 'Verify',
+              title: l10n.verifyAction,
               onPressed: () async {
                 // Mock verification success — update auth so send/swap gates refresh.
                 await context.read<AuthProvider>().verifyUser();

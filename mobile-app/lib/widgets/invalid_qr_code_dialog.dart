@@ -43,9 +43,8 @@ class InvalidQrCodeDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final resolvedMessage =
-        message ?? l10n?.invalidQrCode ?? 'Invalid QR code';
+    final l10n = context.l10n!;
+    final resolvedMessage = message ?? l10n.invalidQrCode;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -87,7 +86,7 @@ class InvalidQrCodeDialog extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _DialogButton(
-                      label: l10n?.cancel ?? 'Cancel',
+                      label: l10n.cancel,
                       textColor: Colors.white,
                       borderRadius: const BorderRadius.only(
                         bottomLeft: Radius.circular(_borderRadius),
@@ -101,7 +100,7 @@ class InvalidQrCodeDialog extends StatelessWidget {
                   ),
                   Expanded(
                     child: _DialogButton(
-                      label: l10n?.tryAgain ?? 'Try Again',
+                      label: l10n.tryAgain,
                       textColor: AppColors.tealColor,
                       fontWeight: FontWeight.w600,
                       borderRadius: const BorderRadius.only(

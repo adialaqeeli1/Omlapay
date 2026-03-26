@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/theme/theme.dart';
+import '../../../core/utils/snackbar_helper.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_back_button.dart';
@@ -425,10 +426,9 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
       }
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n?.networkError ?? 'Network error'),
-          ),
+        SnackbarHelper.showError(
+          context,
+          context.l10n!.networkError,
         );
       }
     }
@@ -643,12 +643,14 @@ class _KeypadGrid extends StatelessWidget {
     ];
 
     return Column(
+      textDirection: TextDirection.ltr,
       children: [
         for (final row in keypadRows)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              textDirection: TextDirection.ltr,
               children: [
                 for (var index = 0; index < row.length; index++)
                   Padding(
@@ -669,6 +671,7 @@ class _KeypadGrid extends StatelessWidget {
           ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          textDirection: TextDirection.ltr,
           children: [
             const SizedBox(width: 64, height: 64),
             const SizedBox(width: 18),

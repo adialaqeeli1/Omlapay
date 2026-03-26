@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/common_back_button.dart';
@@ -17,6 +18,7 @@ class SwapCoinView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SwapProvider>();
+    final l10n = context.l10n!;
 
     if (provider.isLoading) {
       return Scaffold(
@@ -25,7 +27,7 @@ class SwapCoinView extends StatelessWidget {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: CommonBackButton(),
-          title: const Text('Swap', style: TextStyle(color: Colors.white)),
+          title: Text(l10n.swap, style: const TextStyle(color: Colors.white)),
           centerTitle: true,
         ),
         body: const Center(child: CircularProgressIndicator()),
@@ -38,7 +40,7 @@ class SwapCoinView extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: CommonBackButton(),
-        title: const Text('Swap', style: TextStyle(color: Colors.white)),
+        title: Text(l10n.swap, style: const TextStyle(color: Colors.white)),
         centerTitle: true,
       ),
       body: CustomScrollView(
@@ -56,10 +58,11 @@ class SwapCoinView extends StatelessWidget {
                     children: [
                       // From Card
                       CurrencyInputCard(
-                        title: 'From',
-                        coinSymbol: provider.fromCoin?.symbol ?? 'Select',
+                        title: l10n.swapDirectionFrom,
+                        coinSymbol: provider.fromCoin?.symbol ?? '',
                         coinSymbolLabel:
-                            provider.fromCoin?.localizedCoinTicker(context),
+                            provider.fromCoin?.localizedCoinTicker(context) ??
+                            l10n.selectCoinPlaceholder,
                         amount: provider.fromCoin?.amount ?? '0',
                         controller: provider.fromAmountController,
                         isFrom: true,
@@ -91,10 +94,11 @@ class SwapCoinView extends StatelessWidget {
 
                       // To Card
                       CurrencyInputCard(
-                        title: 'To',
-                        coinSymbol: provider.toCoin?.symbol ?? 'Select',
+                        title: l10n.swapDirectionTo,
+                        coinSymbol: provider.toCoin?.symbol ?? '',
                         coinSymbolLabel:
-                            provider.toCoin?.localizedCoinTicker(context),
+                            provider.toCoin?.localizedCoinTicker(context) ??
+                            l10n.selectCoinPlaceholder,
                         amount: provider.toCoin?.amount ?? '0',
                         controller: provider.toAmountController,
                         isFrom: false,
@@ -114,9 +118,9 @@ class SwapCoinView extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              'Swap fees:',
-                              style: TextStyle(
+                            Text(
+                              l10n.swapFeesColon,
+                              style: const TextStyle(
                                 color: Colors.grey,
                                 fontSize: 12,
                               ),
@@ -174,9 +178,9 @@ class SwapCoinView extends StatelessWidget {
                         ),
                         elevation: 0,
                       ),
-                      child: const Text(
-                        'Confirm swap',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.confirmSwapButton,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -206,7 +210,9 @@ class SwapCoinView extends StatelessWidget {
       builder: (context) => SizedBox(
         height: MediaQuery.of(context).size.height * 0.7,
         child: CoinSelectionSheet(
-          title: isFrom ? 'From' : 'To',
+          title: isFrom
+              ? context.l10n!.swapDirectionFrom
+              : context.l10n!.swapDirectionTo,
           coins: provider.coins,
           selectedCoin: isFrom ? provider.fromCoin : provider.toCoin,
           onCoinSelected: (coin) {
@@ -222,6 +228,7 @@ class SwapCoinView extends StatelessWidget {
   }
 
   Widget _buildVerificationBanner(BuildContext context, SwapProvider provider) {
+    final l10n = context.l10n!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -243,10 +250,7 @@ class SwapCoinView extends StatelessWidget {
                   height: 1.4,
                 ),
                 children: [
-                  const TextSpan(
-                    text:
-                        'Identity verification is required to swap coins. Please complete your KYC profile to enable transfers. ',
-                  ),
+                  TextSpan(text: l10n.swapKycVerificationRequiredBody),
                   WidgetSpan(
                     child: GestureDetector(
                       onTap: () async {
@@ -258,9 +262,9 @@ class SwapCoinView extends StatelessWidget {
                           provider.completeVerification();
                         }
                       },
-                      child: const Text(
-                        'Verify Now',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.verifyNowButton,
+                        style: const TextStyle(
                           color: Colors.white,
                           decoration: TextDecoration.underline,
                           fontWeight: FontWeight.bold,

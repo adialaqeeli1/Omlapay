@@ -97,7 +97,18 @@ class ApiHelper {
       final error = response.error;
       String message = 'Request failed with status ${response.statusCode}';
       if (error is Map<String, dynamic>) {
-        message = error['message'] as String? ?? message;
+        final msgData = error['message'];
+        if (msgData is String) {
+          message = msgData;
+        } else if (msgData is List) {
+          message = msgData.map((e) => e.toString()).join('\n');
+        } else if (msgData != null) {
+          message = msgData.toString();
+        } else if (error['error'] is String) {
+          message = error['error'];
+        }
+      } else if (error is String) {
+        message = error;
       }
       throw AppException(message, messageKey: 'requestFailed');
     }
@@ -110,7 +121,18 @@ class ApiHelper {
     if (error.response?.data != null) {
       final data = error.response?.data;
       if (data is Map<String, dynamic>) {
-        message = data['message'] as String? ?? message;
+        final msgData = data['message'];
+        if (msgData is String) {
+          message = msgData;
+        } else if (msgData is List) {
+          message = msgData.map((e) => e.toString()).join('\n');
+        } else if (msgData != null) {
+          message = msgData.toString();
+        } else if (data['error'] is String) {
+          message = data['error'];
+        }
+      } else if (data is String) {
+        message = data;
       }
       messageKey = 'requestFailed';
     } else if (error.type == DioExceptionType.connectionTimeout ||

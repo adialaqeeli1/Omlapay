@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:country_picker/country_picker.dart';
 
+import '../../../core/utils/snackbar_helper.dart';
 import '../../../routes/app_router.dart';
+import '../services/auth_service.dart';
 
 class LoginProvider extends ChangeNotifier {
   static const String defaultCountryCode = '+966';
@@ -26,8 +28,6 @@ class LoginProvider extends ChangeNotifier {
   static const String extraVerificationPurposeKey = 'verificationPurpose';
   static const String purposeChangePasscode = 'change_passcode';
   static const String purposeChangeEmailPhone = 'change_email_phone';
-  static const String purposeChangeEmailNewEmail = 'change_email_new_email';
-  static const int _requiredPhoneLength = 9;
 
   String _rawPhone = '';
   bool _isSubmitting = false;
@@ -63,7 +63,7 @@ class LoginProvider extends ChangeNotifier {
   String get digitsOnlyPhone => _rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
 
   bool get canContinue =>
-      !_isSubmitting && digitsOnlyPhone.length == _requiredPhoneLength;
+      !_isSubmitting && RegExp(r'^\d{7,15}$').hasMatch(digitsOnlyPhone);
 
   void onPhoneChanged(String value) {
     if (_rawPhone == value) {
@@ -85,13 +85,34 @@ class LoginProvider extends ChangeNotifier {
     notifyListeners();
 
     if (isRegister) {
-      context.go(
-        Routes.registerVerification,
-        extra: {
-          extraCountryCodeKey: currentPhoneCode,
-          extraPhoneNumberKey: digitsOnlyPhone,
-        },
-      );
+      try {
+        final response = await AuthService.registerRequest(
+          countryCode: currentPhoneCode,
+          mobileNumber: digitsOnlyPhone,
+          termsAccepted: true,
+        );
+
+        final data = response['data'] as Map<String, dynamic>?;
+        final maskedMobile = data?['masked_mobile'] as String?;
+        final otpExpirySeconds = data?['otp_expiry_seconds'] as int? ?? 60;
+
+        if (context.mounted) {
+          context.push(
+            Routes.registerVerification,
+            extra: {
+              extraCountryCodeKey: currentPhoneCode,
+              extraPhoneNumberKey: digitsOnlyPhone,
+              'maskedMobile': maskedMobile,
+              'otpExpirySeconds': otpExpirySeconds,
+              'isRegistration': true,
+            },
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          SnackbarHelper.showError(context, e.toString());
+        }
+      }
     } else {
       context.go(
         Routes.enterOrSetPasscode,

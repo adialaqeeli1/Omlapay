@@ -96,9 +96,7 @@
     "backHome": "Back Home",
     "walletsAddress": "Wallets Address",
     "evm": "EVM",
-    "bitcoin": "Bitcoin",
     "tron": "Tron",
-    "solana": "Solana",
     "copy": "Copy",
     "preferences": "PREFERENCES",
     "appearance": "Appearance",
@@ -312,5 +310,110 @@
     "doNotAllow": "Do not allow",
     "invalidQrCode": "Invalid QR code",
     "tryAgain": "Try Again",
-    "twoFactorAuthentication": "Two Factor Authentication"
+    "twoFactorAuthentication": "Two Factor Authentication",
+    "sendFlowReviewTitle": "Review",
+    "sendFlowSendingTitle": "Sending",
+    "feeFree": "Free",
+    "accountNoUserDataAvailable": "No user data available",
+    "copyLabelValue": "{label}: {value}",
+    "@copyLabelValue": {
+        "placeholders": {
+            "label": {
+                "type": "String"
+            },
+            "value": {
+                "type": "String"
+            }
+        }
+    },
+    "shareComingSoon": "Share functionality coming soon",
+    "errorPickingFile": "Error picking file: {error}",
+    "@errorPickingFile": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "helpRequestSentSuccess": "Request sent successfully",
+    "verificationCodeResentSuccess": "Verification code resent successfully.",
+    "pasteHintLongPress": "Press and hold to paste",
+    "minAmountHint": "Min 0",
+    "searchHint": "Search",
+    "searchContactsHint": "Search name or number",
+    "sendFlowVerifyAccountTitle": "Verify Account",
+    "sendOtpInstructionsMasked": "Enter the code sent to {phoneMask}",
+    "@sendOtpInstructionsMasked": {
+        "placeholders": {
+            "phoneMask": {
+                "type": "String"
+            }
+        }
+    },
+    "verifyAction": "Verify",
+    "swapSuccessMessage": "Successfully swapped",
+    "sendSuccessMessage": "Successfully sent",
+    "successScreenTitle": "Success",
+    "confirmSecurely": "Confirm Securely",
+    "youAreSending": "You are sending",
+    "reviewOrderTitle": "Review Order",
+    "swapDirectionFrom": "From",
+    "swapDirectionTo": "To",
+    "selectCoinTitle": "Select Coin",
+    "selectCoinPlaceholder": "Select",
+    "swapFeesColon": "Swap fees:",
+    "confirmSwapButton": "Confirm swap",
+    "verifyNowButton": "Verify Now",
+    "swapNowButton": "Swap Now",
+    "sendFormCoinLabel": "Coin",
+    "sendFormPhoneOrAddressLabel": "Phone Number Or Wallet Address",
+    "sendFormAmountLabel": "Amount to be sent",
+    "availableBalanceFormatted": "Available {amount} {symbol}",
+    "@availableBalanceFormatted": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            },
+            "symbol": {
+                "type": "String"
+            }
+        }
+    },
+    "sendTransactionFeesColon": "Transaction fees:",
+    "sendSentAmountLabel": "Sent amount",
+    "walletsTitle": "Wallets",
+    "yourWalletsTitle": "Your wallets",
+    "networkFeeLabel": "Network Fee",
+    "valueNotAvailable": "N/A",
+    "amountInputHint": "0.00",
+    "qrCodeLabel": "QR Code",
+    "saveImage": "Save image",
+    "shareAction": "Share",
+    "hideZeroBalance": "Hide zero balance",
+    "contactsSheetTitle": "Contacts",
+    "sendSuccessRecipientLine": "To: {recipient}",
+    "@sendSuccessRecipientLine": {
+        "placeholders": {
+            "recipient": {
+                "type": "String"
+            }
+        }
+    },
+    "sendKycVerificationRequiredBody": "Identity verification is required to send coins. Please complete your KYC profile to enable transfers. ",
+    "swapKycVerificationRequiredBody": "Identity verification is required to swap coins. Please complete your KYC profile to enable transfers. ",
+    "receiveKycVerificationRequiredBody": "Identity verification is required to receive coins. Please complete your KYC profile to enable transfers. ",
+    "swapFeesTitle": "Swap Fees",
+    "transferToLabel": "To",
+    "addressCopiedToast": "Copied",
+    "availableShortLabel": "Available",
+    "notificationMockNewTransactionTitle": "New Transaction Completed",
+    "notificationMockNewTransactionBody": "Your payment of 0.5 BTC to [Merchant...",
+    "notificationMockSecurityTitle": "Security Alert",
+    "notificationMockSecurityBody": "New Login Detected",
+    "notificationMockPolicyTitle": "Important Policy Update",
+    "notificationMockPolicyBody": "We have updated our user agreemen...",
+    "notificationMockVerifyTitle": "Verify Your Account",
+    "notificationMockVerifyBody": "Your account verification is pending...",
+    "notificationMockWeeklyTitle": "Weekly Summary",
+    "notificationMockWeeklyBody": "Your weekly transaction summary is ready."
 }

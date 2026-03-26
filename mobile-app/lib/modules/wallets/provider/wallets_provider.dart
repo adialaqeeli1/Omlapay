@@ -5,12 +5,12 @@ import '../../../../core/models/wallet_model/wallet_model.dart';
 class WalletsProvider extends ChangeNotifier {
   List<WalletModel> _wallets = [];
   bool _isLoading = false;
-  String? _copiedMessage;
+  bool _addressCopiedVisible = false;
 
   // Getters
   List<WalletModel> get wallets => _wallets;
   bool get isLoading => _isLoading;
-  String? get copiedMessage => _copiedMessage;
+  bool get addressCopiedVisible => _addressCopiedVisible;
 
   WalletsProvider() {
     _loadWallets();
@@ -31,12 +31,12 @@ class WalletsProvider extends ChangeNotifier {
   void copyAddress(String address) {
     // In a real app, you would use Clipboard.setData
     // For now, we'll just show the copied message
-    _copiedMessage = 'Copied';
+    _addressCopiedVisible = true;
     notifyListeners();
 
     // Clear message after 2 seconds
     Future.delayed(const Duration(seconds: 2), () {
-      _copiedMessage = null;
+      _addressCopiedVisible = false;
       notifyListeners();
     });
   }

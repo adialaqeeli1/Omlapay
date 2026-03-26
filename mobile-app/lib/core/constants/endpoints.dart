@@ -12,6 +12,10 @@ class Endpoints {
   /// API version prefix used in paths.
   static String get apiVersion => '/v1';
 
+  /// User Registration
+  static String get registerRequest => '$apiVersion/user/register/request';
+  static String get registerResendOtp => '$apiVersion/user/register/resend-otp';
+
   /// List coins with prices; supports query param `currency` (e.g. /v1/coins?currency=usd).
   static String get coins => '$apiVersion/coins';
 

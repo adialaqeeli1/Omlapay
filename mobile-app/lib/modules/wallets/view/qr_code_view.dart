@@ -27,6 +27,7 @@ class _QrCodeViewState extends State<QrCodeView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n!;
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -65,9 +66,9 @@ class _QrCodeViewState extends State<QrCodeView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'QR Code',
-                    style: TextStyle(
+                  Text(
+                    l10n.qrCodeLabel,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -120,9 +121,9 @@ class _QrCodeViewState extends State<QrCodeView> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      'Save image',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.saveImage,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -134,9 +135,7 @@ class _QrCodeViewState extends State<QrCodeView> {
                   child: ElevatedButton(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Share functionality coming soon'),
-                        ),
+                        SnackBar(content: Text(l10n.shareComingSoon)),
                       );
                     },
                     style: ElevatedButton.styleFrom(
@@ -148,9 +147,9 @@ class _QrCodeViewState extends State<QrCodeView> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      'Share',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.shareAction,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),

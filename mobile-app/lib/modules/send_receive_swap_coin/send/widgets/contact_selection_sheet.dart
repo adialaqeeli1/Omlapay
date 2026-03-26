@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/mock_data/mock_data.dart';
 import '../../../../core/models/contact_model/contact_model.dart';
 import '../../../../core/theme/theme.dart';
@@ -42,6 +43,7 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n!;
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFF1E1E1E), // Dark background matching design
@@ -55,9 +57,9 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Contacts',
-                  style: TextStyle(
+                Text(
+                  l10n.contactsSheetTitle,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -76,7 +78,7 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: CommonTextField(
               controller: _searchController,
-              hintText: 'Search name or number',
+              hintText: l10n.searchContactsHint,
               prefixIcon: const Icon(Icons.search, color: Colors.grey),
               fillColor: const Color(0xFF2A2D35),
             ),

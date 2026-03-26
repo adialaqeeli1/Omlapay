@@ -47,26 +47,35 @@ class _LoggingInterceptor extends Interceptor {
     options.headers = defaultHeaders;
 
     if (kDebugMode) {
-      if (options.data != null) {
-        if (options.data is FormData) {
-          final data = {};
-          for (MapEntry<String, String> element
-              in (options.data as FormData).fields) {
-            data.addEntries([element]);
-          }
-          for (var element in (options.data as FormData).files) {
-            data[element.key] =
-                (element.value).filename ?? element.value.toString();
-          }
-          debugPrint("FormData => ${jsonEncode(data).toString()}");
-        } else {
-          debugPrint('Data => ${jsonEncode(options.data).toString()}');
+      dynamic dataToLog = options.data;
+      if (options.data is FormData) {
+        final data = {};
+        for (MapEntry<String, String> element
+            in (options.data as FormData).fields) {
+          data.addEntries([element]);
         }
+        for (var element in (options.data as FormData).files) {
+          data[element.key] =
+              (element.value).filename ?? element.value.toString();
+        }
+        dataToLog = data;
       }
+      
+      String headersStr;
+      try { headersStr = const JsonEncoder.withIndent('  ').convert(options.headers); } catch (_) { headersStr = options.headers.toString(); }
+      
+      String bodyStr;
+      try { bodyStr = dataToLog != null ? const JsonEncoder.withIndent('  ').convert(dataToLog) : 'null'; } catch (_) { bodyStr = dataToLog.toString(); }
 
-      debugPrint('URL => ${options.uri}');
-      debugPrint('Headers => ${options.headers}');
-      debugPrint('Method => ${options.method.toString()}');
+      developer.log(
+        '\n================ REQUEST =================\n'
+        'URL: ${options.uri}\n'
+        'Method: ${options.method}\n'
+        'Headers: $headersStr\n'
+        'Body: $bodyStr\n'
+        '==========================================',
+        name: 'API_REQUEST',
+      );
     }
 
     return handler.next(options);
@@ -74,6 +83,22 @@ class _LoggingInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
+    if (kDebugMode) {
+      String dataStr = 'null';
+      if (err.response?.data != null) {
+        try { dataStr = const JsonEncoder.withIndent('  ').convert(err.response?.data); } catch (_) { dataStr = err.response!.data.toString(); }
+      }
+      developer.log(
+        '\n================ ERROR ===================\n'
+        'URL: ${err.requestOptions.uri}\n'
+        'Status Code: ${err.response?.statusCode}\n'
+        'Message: ${err.message}\n'
+        'Response Data: $dataStr\n'
+        '==========================================',
+        name: 'API_ERROR',
+        error: err,
+      );
+    }
     switch (err.type) {
       case DioExceptionType.cancel:
         break;
@@ -84,17 +109,6 @@ class _LoggingInterceptor extends Interceptor {
       case DioExceptionType.receiveTimeout:
         break;
       case DioExceptionType.badResponse:
-        // if (kDebugMode) {
-        //   Dev.print(
-        //       'From OnError interceptor headers => ${err.requestOptions.headers}');
-        //   Dev.print(
-        //       'From OnError interceptor method => ${err.requestOptions.method}');
-        //   Dev.print(
-        //       'From OnError interceptor url => ${err.requestOptions.uri}');
-        //   Dev.print('From OnError interceptor error => ${err.error}');
-        //   Dev.print(
-        //       'From OnError interceptor error response => ${err.response}');
-        // }
         return handler.resolve(err.response!);
       case DioExceptionType.badCertificate:
         break;
@@ -108,6 +122,19 @@ class _LoggingInterceptor extends Interceptor {
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
+    if (kDebugMode) {
+      String dataStr;
+      try { dataStr = response.data != null ? const JsonEncoder.withIndent('  ').convert(response.data) : 'null'; } catch (_) { dataStr = response.data.toString(); }
+      
+      developer.log(
+        '\n================ RESPONSE ================\n'
+        'URL: ${response.requestOptions.uri}\n'
+        'Status Code: ${response.statusCode}\n'
+        'Data: $dataStr\n'
+        '==========================================',
+        name: 'API_RESPONSE',
+      );
+    }
     return handler.next(response);
   }
 }
