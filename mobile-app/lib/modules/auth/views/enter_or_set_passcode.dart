@@ -112,7 +112,9 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                   child: Row(
                     children: [
                       ...List.generate(4, (index) {
-                        final isActive = isRegisterMode ? index == 3 : index <= 3;
+                        final isActive = isRegisterMode
+                            ? index == 3
+                            : index <= 3;
                         final isCurrent = index == 3;
                         return Padding(
                           padding: EdgeInsetsDirectional.only(
@@ -388,28 +390,16 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
   }
 
   String _titleForMode(dynamic l10n) {
-    if (mode == LoginProvider.modeRegister) {
-      return l10n.createAPasscode;
-    }
-    if (mode == LoginProvider.modeChangePasscodeCurrent) {
-      return l10n.enterYourCurrentPasscode;
-    }
-    if (mode == LoginProvider.modeChangePasscodeNew) {
-      return l10n.enterYourNewPasscode;
-    }
-    if (mode == LoginProvider.modeChangePasscodeConfirm) {
-      return l10n.confirmYourNewPasscode;
-    }
-    if (mode == LoginProvider.modeChangeEmailConfirmPasscode) {
-      return l10n.enterPasscode;
-    }
-    if (mode == LoginProvider.modeResetPasscode) {
-      return l10n.setYourNewPasscode;
-    }
-    if (mode == LoginProvider.modeConfirmPasscode) {
-      return l10n.confirmYourPasscode;
-    }
-    return l10n.enterPasscode;
+    return switch (mode) {
+      LoginProvider.modeRegister => l10n.createAPasscode,
+      LoginProvider.modeChangePasscodeCurrent => l10n.enterYourCurrentPasscode,
+      LoginProvider.modeChangePasscodeNew => l10n.enterYourNewPasscode,
+      LoginProvider.modeChangePasscodeConfirm => l10n.confirmYourNewPasscode,
+      LoginProvider.modeChangeEmailConfirmPasscode => l10n.enterPasscode,
+      LoginProvider.modeResetPasscode => l10n.setYourNewPasscode,
+      LoginProvider.modeConfirmPasscode => l10n.confirmYourPasscode,
+      _ => l10n.enterPasscode,
+    };
   }
 
   static Future<void> _onForgotPasscode(
@@ -580,8 +570,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
               required String phoneNumber,
               required String countryCode,
               required String passcode,
-            }) =>
-                authProvider.verifyStoredPasscodeForCurrentUser(passcode),
+            }) => authProvider.verifyStoredPasscodeForCurrentUser(passcode),
       );
       if (!context.mounted || !isValid) return;
       final updated = await authProvider.updateEmailForCurrentUser(email);

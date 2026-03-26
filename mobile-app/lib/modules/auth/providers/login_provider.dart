@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:country_picker/country_picker.dart';
 
 import '../../../routes/app_router.dart';
 
 class LoginProvider extends ChangeNotifier {
-  static const String countryCode = '+966';
+  static const String defaultCountryCode = '+966';
   static const String extraCountryCodeKey = 'countryCode';
   static const String extraPhoneNumberKey = 'phoneNumber';
   static const String extraModeKey = 'mode';
@@ -30,6 +31,31 @@ class LoginProvider extends ChangeNotifier {
 
   String _rawPhone = '';
   bool _isSubmitting = false;
+  Country? _selectedCountry;
+
+  LoginProvider() {
+    _initDefaultCountry();
+  }
+
+  void _initDefaultCountry() {
+    try {
+      final localeCountryCode =
+          WidgetsBinding.instance.platformDispatcher.locale.countryCode;
+      if (localeCountryCode != null && localeCountryCode.isNotEmpty) {
+        _selectedCountry = CountryService().findByCode(localeCountryCode);
+      }
+    } catch (_) {}
+    _selectedCountry ??= CountryService().findByCode('SA');
+  }
+
+  Country get selectedCountry => _selectedCountry!;
+  String get currentPhoneCode => '+${selectedCountry.phoneCode}';
+  String get currentFlagEmoji => selectedCountry.flagEmoji;
+
+  void updateCountry(Country country) {
+    _selectedCountry = country;
+    notifyListeners();
+  }
 
   String get rawPhone => _rawPhone;
   bool get isSubmitting => _isSubmitting;
@@ -62,7 +88,7 @@ class LoginProvider extends ChangeNotifier {
       context.go(
         Routes.registerVerification,
         extra: {
-          extraCountryCodeKey: countryCode,
+          extraCountryCodeKey: currentPhoneCode,
           extraPhoneNumberKey: digitsOnlyPhone,
         },
       );
@@ -71,7 +97,7 @@ class LoginProvider extends ChangeNotifier {
         Routes.enterOrSetPasscode,
         extra: {
           extraModeKey: modeHardLogin,
-          extraCountryCodeKey: countryCode,
+          extraCountryCodeKey: currentPhoneCode,
           extraPhoneNumberKey: digitsOnlyPhone,
         },
       );

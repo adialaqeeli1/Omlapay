@@ -58,7 +58,7 @@ class _SendVerificationViewState extends State<SendVerificationView> {
                     color: const Color(0xFF1E2E2C),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: AppColors.tealColor.withOpacity(0.3),
+                      color: AppColors.tealColor.withValues(alpha: 0.3),
                     ),
                   ),
                   alignment: Alignment.center,
