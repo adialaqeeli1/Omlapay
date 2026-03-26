@@ -25,6 +25,7 @@ class LoginProvider extends ChangeNotifier {
   static const String modeChangeEmailConfirmPasscode =
       'change_email_confirm_passcode';
   static const String extraPendingPasscodeKey = 'pendingPasscode';
+  static const String extraResetTokenKey = 'resetToken';
   static const String extraPendingEmailKey = 'pendingEmail';
   static const String extraVerificationPurposeKey = 'verificationPurpose';
   static const String purposeChangePasscode = 'change_passcode';

@@ -266,13 +266,13 @@ class HomeView extends StatelessWidget {
         padding: const EdgeInsetsDirectional.only(top: 8.0),
         child: DropdownButtonHideUnderline(
           child: DropdownButton2<String>(
-            value: selectedCurrency,
+            valueListenable: ValueNotifier(selectedCurrency),
             onChanged: context.watch<GlobalProvider>().isBalanceLoading
                 ? null
                 : onCurrencyChanged,
             items: AppConstants.supportedCurrencies
                 .map(
-                  (e) => DropdownMenuItem<String>(
+                  (e) => DropdownItem<String>(
                     value: e,
                     child: Text(
                       l10n.currencyName(e.toLowerCase()),

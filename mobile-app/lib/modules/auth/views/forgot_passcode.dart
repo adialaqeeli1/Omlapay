@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/theme/theme.dart';
+import '../../../core/utils/snackbar_helper.dart';
 import '../../../modules/auth/providers/login_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_back_button.dart';
@@ -26,9 +27,22 @@ class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       final provider = context.read<ForgotPasscodeProvider>();
-      provider.requestOtp();
+
+      // Avoid duplicate OTP requests when countdown is already started
+      // from previous screen's successful forgot-passcode call.
+      if (provider.countdownSeconds > 0 || provider.isRequestingOtp) {
+        return;
+      }
+
+      try {
+        await provider.requestOtp();
+      } catch (e) {
+        if (!mounted) return;
+        SnackbarHelper.showError(context, e.toString());
+      }
     });
   }
 
@@ -184,17 +198,28 @@ class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
   }
 
   Future<void> _verifyOtp(ForgotPasscodeProvider provider) async {
-    final isValid = await provider.verifyOtp();
-    if (!mounted) return;
-    if (isValid) {
+    try {
+      final isValid = await provider.verifyOtp();
+      if (!mounted || !isValid) return;
+
+      final resetToken = provider.resetToken;
+      if (resetToken == null || resetToken.isEmpty) {
+        SnackbarHelper.showError(context, context.l10n!.unknownError);
+        return;
+      }
+
       context.go(
         Routes.enterOrSetPasscode,
         extra: {
           LoginProvider.extraModeKey: LoginProvider.modeResetPasscode,
           LoginProvider.extraCountryCodeKey: provider.countryCode,
           LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+          LoginProvider.extraResetTokenKey: resetToken,
         },
       );
+    } catch (e) {
+      if (!mounted) return;
+      SnackbarHelper.showError(context, e.toString());
     }
   }
 }
@@ -254,7 +279,22 @@ class _StatusText extends StatelessWidget {
             alignment: PlaceholderAlignment.baseline,
             baseline: TextBaseline.alphabetic,
             child: GestureDetector(
-              onTap: provider.canResend ? () => provider.resendOtp() : null,
+              onTap: provider.canResend
+                  ? () async {
+                      try {
+                        final message = await provider.resendOtp();
+                        if (!context.mounted) return;
+                        SnackbarHelper.showSuccess(
+                          context,
+                          message ??
+                              context.l10n!.verificationCodeResentSuccess,
+                        );
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        SnackbarHelper.showError(context, e.toString());
+                      }
+                    }
+                  : null,
               child: Text(
                 l10n.resendOtp,
                 style: TextStyle(

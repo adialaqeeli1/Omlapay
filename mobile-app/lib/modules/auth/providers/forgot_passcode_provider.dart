@@ -9,14 +9,15 @@ class ForgotPasscodeProvider extends ChangeNotifier {
   ForgotPasscodeProvider({
     required String phoneNumber,
     required String countryCode,
-  })  : _phoneNumber = phoneNumber.replaceAll(RegExp(r'[^0-9]'), ''),
-        _countryCode = countryCode.trim();
+    int initialCountdown = ForgotPasscodeService.defaultOtpExpirySeconds,
+  }) : _phoneNumber = phoneNumber.replaceAll(RegExp(r'[^0-9]'), ''),
+       _countryCode = countryCode.trim(),
+       _initialCountdown = initialCountdown;
 
   static const int otpLength = 6;
-  static const int countdownStartSeconds = 5;
-
   final String _phoneNumber;
   final String _countryCode;
+  final int _initialCountdown;
 
   String _otp = '';
   int _countdownSeconds = 0;
@@ -24,6 +25,7 @@ class ForgotPasscodeProvider extends ChangeNotifier {
   bool _isVerifying = false;
   bool _hasError = false;
   bool _isRequestingOtp = false;
+  String? _resetToken;
 
   String get phoneNumber => _phoneNumber;
   String get countryCode => _countryCode;
@@ -41,6 +43,7 @@ class ForgotPasscodeProvider extends ChangeNotifier {
   bool get isComplete => enteredDigitsCount == otpLength;
   bool get canEnterDigits => !_isVerifying;
   bool get canResend => _countdownSeconds <= 0 && !_isRequestingOtp;
+  String? get resetToken => _resetToken;
 
   void addDigit(String digit) {
     if (!canEnterDigits || _otp.length >= otpLength) return;
@@ -68,32 +71,63 @@ class ForgotPasscodeProvider extends ChangeNotifier {
   /// Sets OTP from full string (e.g. from single TextField). Keeps only digits.
   void setOtpFromString(String value) {
     final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
-    final truncated = digits.length > otpLength ? digits.substring(0, otpLength) : digits;
+    final truncated = digits.length > otpLength
+        ? digits.substring(0, otpLength)
+        : digits;
     if (_otp == truncated) return;
     _otp = truncated;
     _hasError = false;
     notifyListeners();
   }
 
-  Future<void> requestOtp() async {
-    if (_isRequestingOtp) return;
+  Future<String?> requestOtp() async {
+    if (_isRequestingOtp) return null;
     _isRequestingOtp = true;
     notifyListeners();
 
     try {
-      await ForgotPasscodeService.requestOtp(_phoneNumber, _countryCode);
-      _countdownSeconds = countdownStartSeconds;
+      final response = await ForgotPasscodeService.requestOtp(
+        _phoneNumber,
+        _countryCode,
+      );
+      _countdownSeconds = response.otpExpirySeconds > 0
+          ? response.otpExpirySeconds
+          : _initialCountdown;
       _countdownTimer?.cancel();
-      _countdownTimer = Timer.periodic(const Duration(seconds: 1), _onCountdownTick);
+      _countdownTimer = Timer.periodic(
+        const Duration(seconds: 1),
+        _onCountdownTick,
+      );
+      return response.message;
     } finally {
       _isRequestingOtp = false;
       notifyListeners();
     }
   }
 
-  Future<void> resendOtp() async {
-    if (!canResend) return;
-    await requestOtp();
+  Future<String?> resendOtp() async {
+    if (!canResend || _isRequestingOtp) return null;
+    _isRequestingOtp = true;
+    notifyListeners();
+
+    try {
+      final response = await ForgotPasscodeService.resendOtp(
+        _phoneNumber,
+        _countryCode,
+      );
+      _countdownSeconds = response.otpExpirySeconds > 0
+          ? response.otpExpirySeconds
+          : _initialCountdown;
+      _countdownTimer?.cancel();
+      _countdownTimer = Timer.periodic(
+        const Duration(seconds: 1),
+        _onCountdownTick,
+      );
+      return response.message;
+    } finally {
+      _isRequestingOtp = false;
+      notifyListeners();
+    }
   }
 
   void _onCountdownTick(Timer timer) {
@@ -115,16 +149,17 @@ class ForgotPasscodeProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final isValid = await ForgotPasscodeService.verifyOtp(
+      final response = await ForgotPasscodeService.verifyOtpAndGetResetToken(
         _phoneNumber,
         _countryCode,
         _otp,
       );
-      _hasError = !isValid;
-      return isValid;
+      _resetToken = response.resetToken;
+      _hasError = false;
+      return true;
     } catch (_) {
       _hasError = true;
-      return false;
+      rethrow;
     } finally {
       _isVerifying = false;
       notifyListeners();
