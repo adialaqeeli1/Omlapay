@@ -197,7 +197,7 @@ class CoinDetailsView extends StatelessWidget {
                           child: Row(
                             children: [
                               Text(
-                                selectedCurrency,
+                                l10n.currencyName(selectedCurrency.toLowerCase()),
                                 style: context.textTheme.titleMedium?.copyWith(
                                   color: AppColors.textGrey,
                                   fontWeight: FontWeight.w600,

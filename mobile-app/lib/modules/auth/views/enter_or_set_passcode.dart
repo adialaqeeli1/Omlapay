@@ -145,7 +145,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
         actions: isSoftLogin
             ? [
                 Padding(
-                  padding: const EdgeInsets.only(right: 16),
+                  padding: const EdgeInsetsDirectional.only(end: 16),
                   child: InkWell(
                     onTap: () => _showLogoutAlert(context),
                     child: Container(
@@ -220,29 +220,30 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                     const SizedBox(height: 30),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(PasscodeProvider.passcodeLength, (
-                        index,
-                      ) {
-                        final isFilled =
-                            index < passcodeProvider.enteredDigitsCount;
-                        final dotColor = passcodeProvider.hasError
-                            ? errorColor
-                            : activeDotColor;
-                        return Padding(
-                          padding: EdgeInsetsDirectional.only(
-                            end: index == PasscodeProvider.passcodeLength - 1
-                                ? 0
-                                : 12,
-                          ),
-                          child: _PasscodeDot(
-                            isFilled: isFilled,
-                            fillColor: dotColor,
-                            borderColor: isFilled
-                                ? dotColor
+                      textDirection: TextDirection.ltr,
+                      children: [
+                        for (
+                          var index = 0;
+                          index < PasscodeProvider.passcodeLength;
+                          index++
+                        ) ...[
+                          _PasscodeDot(
+                            isFilled:
+                                index < passcodeProvider.enteredDigitsCount,
+                            fillColor: passcodeProvider.hasError
+                                ? errorColor
+                                : activeDotColor,
+                            borderColor:
+                                index < passcodeProvider.enteredDigitsCount
+                                ? (passcodeProvider.hasError
+                                      ? errorColor
+                                      : activeDotColor)
                                 : emptyDotBorderColor,
                           ),
-                        );
-                      }),
+                          if (index < PasscodeProvider.passcodeLength - 1)
+                            const SizedBox(width: 12),
+                        ],
+                      ],
                     ),
                     const SizedBox(height: 14),
                     SizedBox(
@@ -707,15 +708,15 @@ class _KeypadGrid extends StatelessWidget {
       children: [
         for (final row in keypadRows)
           Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsetsDirectional.only(bottom: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               textDirection: TextDirection.ltr,
               children: [
                 for (var index = 0; index < row.length; index++)
                   Padding(
-                    padding: EdgeInsetsDirectional.only(
-                      end: index == row.length - 1 ? 0 : 18,
+                    padding: EdgeInsets.only(
+                      right: index == row.length - 1 ? 0 : 18,
                     ),
                     child: _KeypadButton(
                       label: row[index],
