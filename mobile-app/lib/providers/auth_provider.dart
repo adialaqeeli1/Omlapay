@@ -9,6 +9,7 @@ import '../core/models/auth_response/auth_response_model.dart';
 import '../core/mock_data/mock_data.dart';
 import '../core/services/storage_helper.dart';
 import '../modules/auth/services/auth_service.dart';
+import '../modules/auth/services/forgot_passcode_service.dart';
 import '../modules/settings/services/wallet_address_service.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -211,6 +212,32 @@ class AuthProvider extends ChangeNotifier {
         notifyListeners();
         throw Exception(errorMsg);
       }
+    } catch (e) {
+      _state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<bool> resetForgotPasscodeAndLogin({
+    required String phoneNumber,
+    required String countryCode,
+    required String resetToken,
+    required String newPasscode,
+    required String confirmPasscode,
+  }) async {
+    try {
+      _state = state.copyWith(isLoading: true, errorMessage: null);
+      notifyListeners();
+
+      await ForgotPasscodeService.resetPasscode(
+        resetToken: resetToken,
+        newPasscode: newPasscode,
+        confirmPasscode: confirmPasscode,
+      );
+
+      final loggedIn = await login(phoneNumber, countryCode, newPasscode);
+      return loggedIn;
     } catch (e) {
       _state = state.copyWith(isLoading: false, errorMessage: e.toString());
       notifyListeners();

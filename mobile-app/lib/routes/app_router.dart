@@ -147,6 +147,9 @@ class AppRouter {
           final registrationToken = routePayload is Map<String, dynamic>
               ? routePayload[LoginProvider.extraRegistrationTokenKey] as String?
               : null;
+          final resetToken = routePayload is Map<String, dynamic>
+              ? routePayload[LoginProvider.extraResetTokenKey] as String?
+              : null;
 
           // Use a key that changes when switching to confirm passcode so we get
           // a fresh PasscodeProvider with empty state. Otherwise the same provider
@@ -155,7 +158,9 @@ class AppRouter {
           final providerKey =
               mode == LoginProvider.modeConfirmPasscode ||
                   mode == LoginProvider.modeChangePasscodeConfirm
-              ? ValueKey('confirm_${mode}_${pendingPasscode ?? ""}')
+              ? ValueKey(
+                  'confirm_${mode}_${pendingPasscode ?? ""}_${resetToken ?? ""}',
+                )
               : ValueKey('passcode_${mode}_${countryCode}_$phoneNumber');
 
           return ChangeNotifierProvider(
@@ -168,6 +173,7 @@ class AppRouter {
               isSoftLogin: isSoftLogin,
               mode: mode,
               pendingPasscode: pendingPasscode,
+              resetToken: resetToken,
               pendingEmail: pendingEmail,
               registrationToken: registrationToken,
             ),
@@ -184,10 +190,12 @@ class AppRouter {
               extra?[LoginProvider.extraCountryCodeKey] as String? ?? '';
           final phoneNumber =
               extra?[LoginProvider.extraPhoneNumberKey] as String? ?? '';
+          final otpExpirySeconds = extra?['otpExpirySeconds'] as int? ?? 60;
           return ChangeNotifierProvider(
             create: (_) => ForgotPasscodeProvider(
               phoneNumber: phoneNumber,
               countryCode: countryCode,
+              initialCountdown: otpExpirySeconds,
             ),
             child: const ForgotPasscodeScreen(),
           );

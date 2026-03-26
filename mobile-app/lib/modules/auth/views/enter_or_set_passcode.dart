@@ -21,6 +21,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     this.isSoftLogin = false,
     this.mode,
     this.pendingPasscode,
+    this.resetToken,
     this.pendingEmail,
     this.registrationToken,
   });
@@ -28,6 +29,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
   final bool isSoftLogin;
   final String? mode;
   final String? pendingPasscode;
+  final String? resetToken;
   final String? pendingEmail;
   final String? registrationToken;
 
@@ -413,7 +415,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     if (!passcodeProvider.hasPhoneContext) return;
     passcodeProvider.clearPasscode();
     try {
-      await ForgotPasscodeService.requestOtp(
+      final response = await ForgotPasscodeService.requestOtp(
         passcodeProvider.phoneNumber,
         passcodeProvider.countryCode,
       );
@@ -423,15 +425,13 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
           extra: {
             LoginProvider.extraCountryCodeKey: passcodeProvider.countryCode,
             LoginProvider.extraPhoneNumberKey: passcodeProvider.phoneNumber,
+            'otpExpirySeconds': response.otpExpirySeconds,
           },
         );
       }
-    } catch (_) {
+    } catch (e) {
       if (context.mounted) {
-        SnackbarHelper.showError(
-          context,
-          context.l10n!.networkError,
-        );
+        SnackbarHelper.showError(context, e.toString());
       }
     }
   }
@@ -448,187 +448,204 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
 
     try {
       if (mode == LoginProvider.modeResetPasscode) {
-      context.go(
-        Routes.enterOrSetPasscode,
-        extra: {
-          LoginProvider.extraModeKey: LoginProvider.modeConfirmPasscode,
-          LoginProvider.extraCountryCodeKey: provider.countryCode,
-          LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
-          LoginProvider.extraPendingPasscodeKey: provider.passcode,
-        },
-      );
-      return;
-    }
-
-    final authProvider = context.read<AuthProvider>();
-
-    if (mode == LoginProvider.modeChangePasscodeCurrent) {
-      final isValid = await provider.verify(
-        verifyPasscode:
-            ({
-              required String phoneNumber,
-              required String countryCode,
-              required String passcode,
-            }) => authProvider.verifyStoredPasscodeForCurrentUser(passcode),
-      );
-      if (!context.mounted || !isValid) {
+        if (resetToken == null || resetToken!.isEmpty) {
+          SnackbarHelper.showError(context, context.l10n!.unknownError);
+          return;
+        }
+        context.go(
+          Routes.enterOrSetPasscode,
+          extra: {
+            LoginProvider.extraModeKey: LoginProvider.modeConfirmPasscode,
+            LoginProvider.extraCountryCodeKey: provider.countryCode,
+            LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+            LoginProvider.extraPendingPasscodeKey: provider.passcode,
+            LoginProvider.extraResetTokenKey: resetToken,
+          },
+        );
         return;
       }
-      context.go(
-        Routes.enterOrSetPasscode,
-        extra: {
-          LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeNew,
-          LoginProvider.extraCountryCodeKey: provider.countryCode,
-          LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
-        },
-      );
-      return;
-    }
 
-    if (mode == LoginProvider.modeChangePasscodeNew) {
-      context.go(
-        Routes.enterOrSetPasscode,
-        extra: {
-          LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeConfirm,
-          LoginProvider.extraCountryCodeKey: provider.countryCode,
-          LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
-          LoginProvider.extraPendingPasscodeKey: provider.passcode,
-        },
-      );
-      return;
-    }
+      final authProvider = context.read<AuthProvider>();
 
-    if (mode == LoginProvider.modeRegister) {
-      final isValid = await provider.verify(
-        verifyPasscode:
-            ({
-              required String phoneNumber,
-              required String countryCode,
-              required String passcode,
-            }) async {
-              if (registrationToken != null && registrationToken!.isNotEmpty) {
-                final isRegSuccess = await authProvider.setRegistrationPasscode(
-                  registrationToken: registrationToken!,
-                  passcode: passcode,
-                  confirmPasscode: passcode,
+      if (mode == LoginProvider.modeChangePasscodeCurrent) {
+        final isValid = await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) => authProvider.verifyStoredPasscodeForCurrentUser(passcode),
+        );
+        if (!context.mounted || !isValid) {
+          return;
+        }
+        context.go(
+          Routes.enterOrSetPasscode,
+          extra: {
+            LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeNew,
+            LoginProvider.extraCountryCodeKey: provider.countryCode,
+            LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+          },
+        );
+        return;
+      }
+
+      if (mode == LoginProvider.modeChangePasscodeNew) {
+        context.go(
+          Routes.enterOrSetPasscode,
+          extra: {
+            LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeConfirm,
+            LoginProvider.extraCountryCodeKey: provider.countryCode,
+            LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+            LoginProvider.extraPendingPasscodeKey: provider.passcode,
+          },
+        );
+        return;
+      }
+
+      if (mode == LoginProvider.modeRegister) {
+        final isValid = await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) async {
+                if (registrationToken != null &&
+                    registrationToken!.isNotEmpty) {
+                  final isRegSuccess = await authProvider
+                      .setRegistrationPasscode(
+                        registrationToken: registrationToken!,
+                        passcode: passcode,
+                        confirmPasscode: passcode,
+                      );
+                  if (isRegSuccess) {
+                    return await authProvider.login(
+                      phoneNumber,
+                      countryCode,
+                      passcode,
+                    );
+                  }
+                  return false;
+                }
+                return await authProvider.setPasscode(
+                  phoneNumber,
+                  countryCode,
+                  passcode,
                 );
-                if (isRegSuccess) {
-                  return await authProvider.login(
-                    phoneNumber,
-                    countryCode,
-                    passcode,
+              },
+        );
+        if (!context.mounted || !isValid) return;
+        context.go(Routes.home);
+        return;
+      }
+
+      if (mode == LoginProvider.modeChangePasscodeConfirm) {
+        final isValid = await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) async => passcode == (pendingPasscode ?? ''),
+        );
+        if (!context.mounted || !isValid) {
+          return;
+        }
+        final newPasscode = pendingPasscode;
+        if (newPasscode == null || newPasscode.length != 6) {
+          return;
+        }
+        context.go(
+          Routes.registerVerification,
+          extra: {
+            LoginProvider.extraCountryCodeKey: provider.countryCode,
+            LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+            LoginProvider.extraPendingPasscodeKey: newPasscode,
+            LoginProvider.extraVerificationPurposeKey:
+                LoginProvider.purposeChangePasscode,
+          },
+        );
+        return;
+      }
+
+      if (mode == LoginProvider.modeConfirmPasscode) {
+        final isForgotResetFlow = resetToken != null && resetToken!.isNotEmpty;
+        final isValid = await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) async {
+                if (passcode != (pendingPasscode ?? '')) return false;
+                if (isForgotResetFlow) {
+                  return await authProvider.resetForgotPasscodeAndLogin(
+                    phoneNumber: phoneNumber,
+                    countryCode: countryCode,
+                    resetToken: resetToken!,
+                    newPasscode: passcode,
+                    confirmPasscode: passcode,
                   );
                 }
-                return false;
-              }
-              return await authProvider.setPasscode(
-                phoneNumber,
-                countryCode,
-                passcode,
-              );
-            },
-      );
-      if (!context.mounted || !isValid) return;
-      context.go(Routes.home);
-      return;
-    }
+                return await authProvider.setPasscode(
+                  phoneNumber,
+                  countryCode,
+                  passcode,
+                );
+              },
+        );
+        if (!context.mounted || !isValid) return;
+        context.go(Routes.home);
+        return;
+      }
 
-    if (mode == LoginProvider.modeChangePasscodeConfirm) {
+      if (mode == LoginProvider.modeChangeEmailConfirmPasscode) {
+        final email = pendingEmail?.trim() ?? '';
+        if (email.isEmpty) {
+          return;
+        }
+        final isValid = await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) => authProvider.verifyStoredPasscodeForCurrentUser(passcode),
+        );
+        if (!context.mounted || !isValid) return;
+        final updated = await authProvider.updateEmailForCurrentUser(email);
+        if (!context.mounted || !updated) return;
+        context.go(Routes.changeEmailSuccess);
+        return;
+      }
+
+      if (mode == LoginProvider.modeSoftLogin) {
+        final isValid = await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) => authProvider.softLogin(passcode),
+        );
+        if (!context.mounted || !isValid) return;
+        context.go(Routes.home);
+        return;
+      }
+
       final isValid = await provider.verify(
         verifyPasscode:
             ({
               required String phoneNumber,
               required String countryCode,
               required String passcode,
-            }) async => passcode == (pendingPasscode ?? ''),
+            }) => authProvider.login(phoneNumber, countryCode, passcode),
       );
       if (!context.mounted || !isValid) {
         return;
       }
-      final newPasscode = pendingPasscode;
-      if (newPasscode == null || newPasscode.length != 6) {
-        return;
-      }
-      context.go(
-        Routes.registerVerification,
-        extra: {
-          LoginProvider.extraCountryCodeKey: provider.countryCode,
-          LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
-          LoginProvider.extraPendingPasscodeKey: newPasscode,
-          LoginProvider.extraVerificationPurposeKey:
-              LoginProvider.purposeChangePasscode,
-        },
-      );
-      return;
-    }
-
-    if (mode == LoginProvider.modeConfirmPasscode) {
-      final isValid = await provider.verify(
-        verifyPasscode:
-            ({
-              required String phoneNumber,
-              required String countryCode,
-              required String passcode,
-            }) async {
-              if (passcode != (pendingPasscode ?? '')) return false;
-              return await authProvider.setPasscode(
-                phoneNumber,
-                countryCode,
-                passcode,
-              );
-            },
-      );
-      if (!context.mounted || !isValid) return;
       context.go(Routes.home);
-      return;
-    }
-
-    if (mode == LoginProvider.modeChangeEmailConfirmPasscode) {
-      final email = pendingEmail?.trim() ?? '';
-      if (email.isEmpty) {
-        return;
-      }
-      final isValid = await provider.verify(
-        verifyPasscode:
-            ({
-              required String phoneNumber,
-              required String countryCode,
-              required String passcode,
-            }) => authProvider.verifyStoredPasscodeForCurrentUser(passcode),
-      );
-      if (!context.mounted || !isValid) return;
-      final updated = await authProvider.updateEmailForCurrentUser(email);
-      if (!context.mounted || !updated) return;
-      context.go(Routes.changeEmailSuccess);
-      return;
-    }
-
-    if (mode == LoginProvider.modeSoftLogin) {
-      final isValid = await provider.verify(
-        verifyPasscode:
-            ({
-              required String phoneNumber,
-              required String countryCode,
-              required String passcode,
-            }) => authProvider.softLogin(passcode),
-      );
-      if (!context.mounted || !isValid) return;
-      context.go(Routes.home);
-      return;
-    }
-
-    final isValid = await provider.verify(
-      verifyPasscode:
-          ({
-            required String phoneNumber,
-            required String countryCode,
-            required String passcode,
-          }) => authProvider.login(phoneNumber, countryCode, passcode),
-    );
-    if (!context.mounted || !isValid) {
-      return;
-    }
-    context.go(Routes.home);
     } catch (e) {
       if (context.mounted) {
         SnackbarHelper.showError(context, e.toString());
