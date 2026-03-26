@@ -49,13 +49,15 @@ class CoinsPricesProvider extends ChangeNotifier {
     if (selectedCurrency == _activeCurrency) return;
 
     _activeCurrency = selectedCurrency;
+    _coins = [];
     _isLoading = true;
     _notifySafely();
     _connectPricesStream();
   }
 
-  void _connectPricesStream() {
-    _pricesSubscription?.cancel();
+  Future<void> _connectPricesStream() async {
+    await _pricesSubscription?.cancel();
+    _pricesSubscription = null;
     final currency = _activeCurrency ?? 'USD';
     if (_isDisposed) return;
 
