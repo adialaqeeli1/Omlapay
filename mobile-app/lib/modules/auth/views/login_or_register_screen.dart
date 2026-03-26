@@ -193,11 +193,11 @@ class LoginOrRegisterScreen extends StatelessWidget {
                                   FocusScope.of(context).unfocus(),
                               keyboardType: TextInputType.phone,
                               textInputAction: TextInputAction.done,
-                              maxLength: 9,
+                              maxLength: 15,
                               onChanged: loginProvider.onPhoneChanged,
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(9),
+                                LengthLimitingTextInputFormatter(15),
                               ],
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontSize: 25 / 1.35,

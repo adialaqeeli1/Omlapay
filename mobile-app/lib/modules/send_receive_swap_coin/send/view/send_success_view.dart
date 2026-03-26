@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../routes/app_router.dart';
@@ -14,13 +15,14 @@ class SendSuccessView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<SendProvider>();
+    final l10n = context.l10n!;
 
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text(
-          'Success',
-          style: TextStyle(color: Colors.transparent),
+        title: Text(
+          l10n.successScreenTitle,
+          style: const TextStyle(color: Colors.transparent),
         ), // Hiding title for cleaner look
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -56,9 +58,9 @@ class SendSuccessView extends StatelessWidget {
                     height: 80,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Successfully sent',
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
+                  Text(
+                    l10n.sendSuccessMessage,
+                    style: const TextStyle(color: Colors.grey, fontSize: 14),
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -80,7 +82,10 @@ class SendSuccessView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      'To: ${provider.selectedContact?.name ?? provider.recipientController.text}',
+                      l10n.sendSuccessRecipientLine(
+                        provider.selectedContact?.name ??
+                            provider.recipientController.text,
+                      ),
                       style: const TextStyle(
                         color: AppColors.tealColor,
                         fontSize: 14,
@@ -108,9 +113,9 @@ class SendSuccessView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: const Text(
-                  'Back Home',
-                  style: TextStyle(
+                child: Text(
+                  l10n.backHome,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

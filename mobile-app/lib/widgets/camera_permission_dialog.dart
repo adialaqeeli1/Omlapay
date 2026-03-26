@@ -50,13 +50,12 @@ class CameraPermissionDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final appName = l10n?.appTitle ?? 'OmlaPay';
-    final resolvedTitle = title ??
-        (l10n != null ? l10n.cameraPermissionDialogTitle(appName) : 'OmlaPay wants to access the camera');
-    final resolvedMessage = message ??
-        l10n?.cameraPermissionDialogMessage ??
-        'We need your permission to access the camera to be able to scan the codes';
+    final l10n = context.l10n!;
+    final appName = l10n.appTitle;
+    final resolvedTitle =
+        title ?? l10n.cameraPermissionDialogTitle(appName);
+    final resolvedMessage =
+        message ?? l10n.cameraPermissionDialogMessage;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -111,7 +110,7 @@ class CameraPermissionDialog extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _DialogButton(
-                      label: l10n?.doNotAllow ?? 'Do not allow',
+                      label: l10n.doNotAllow,
                       textColor: Colors.white,
                       borderRadius: const BorderRadius.only(
                         bottomLeft: Radius.circular(_borderRadius),
@@ -126,8 +125,8 @@ class CameraPermissionDialog extends StatelessWidget {
                   Expanded(
                     child: _DialogButton(
                       label: _useOpenSettings
-                          ? (l10n?.openSettings ?? 'Open Settings')
-                          : (l10n?.allowCamera ?? 'Allow'),
+                          ? l10n.openSettings
+                          : l10n.allowCamera,
                       textColor: AppColors.tealColor,
                       fontWeight: FontWeight.w600,
                       borderRadius: const BorderRadius.only(

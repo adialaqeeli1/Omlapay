@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
@@ -77,6 +78,7 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n!;
     final selectedCurrency = context.watch<GlobalProvider>().selectedCurrency;
     return Container(
       decoration: const BoxDecoration(
@@ -117,7 +119,7 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
               controller: _searchController,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: 'Search',
+                hintText: l10n.searchHint,
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
                 filled: true,
@@ -152,9 +154,9 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                     },
                   ),
                 ),
-                const Text(
-                  'Hide zero balance',
-                  style: TextStyle(color: Colors.white, fontSize: 13),
+                Text(
+                  l10n.hideZeroBalance,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
                 ),
               ],
             ),

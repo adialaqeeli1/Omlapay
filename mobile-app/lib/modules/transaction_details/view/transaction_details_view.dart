@@ -98,7 +98,10 @@ class TransactionDetailsView extends StatelessWidget {
                     height: 30,
                     thickness: 0.5,
                   ),
-                  _buildDetailRow(l10n.sender, transaction.fromAddress ?? 'N/A'),
+                  _buildDetailRow(
+                    l10n.sender,
+                    transaction.fromAddress ?? l10n.valueNotAvailable,
+                  ),
                   const Divider(
                     color: AppColors.divider,
                     height: 30,
@@ -106,7 +109,9 @@ class TransactionDetailsView extends StatelessWidget {
                   ),
                   _buildDetailRow(
                     l10n.address,
-                    transaction.toAddress ?? transaction.fromAddress ?? 'N/A',
+                    transaction.toAddress ??
+                        transaction.fromAddress ??
+                        l10n.valueNotAvailable,
                     isMultiLine: true,
                   ),
                   const Divider(

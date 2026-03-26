@@ -3,6 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/utility.dart';
@@ -20,11 +22,15 @@ class SendCoinView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SendProvider>();
+    final l10n = context.l10n!;
 
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Sending', style: TextStyle(color: Colors.white)),
+        title: Text(
+          l10n.sendFlowSendingTitle,
+          style: const TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const CommonBackButton(),
@@ -39,22 +45,22 @@ class SendCoinView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildLabel('Coin'),
+                  _buildLabel(l10n.sendFormCoinLabel),
                   const SizedBox(height: 8),
                   _buildCoinSelector(context, provider),
                   const SizedBox(height: 20),
 
-                  _buildLabel('Network'),
+                  _buildLabel(l10n.network),
                   const SizedBox(height: 8),
                   _buildNetworkField(provider),
                   const SizedBox(height: 20),
 
-                  _buildLabel('Phone Number Or Wallet Address'),
+                  _buildLabel(l10n.sendFormPhoneOrAddressLabel),
                   const SizedBox(height: 8),
                   _buildRecipientField(context, provider),
                   const SizedBox(height: 20),
 
-                  _buildLabel('Amount to be sent'),
+                  _buildLabel(l10n.sendFormAmountLabel),
                   const SizedBox(height: 8),
                   _buildAmountField(context, provider),
 
@@ -63,9 +69,12 @@ class SendCoinView extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Available',
-                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                      Text(
+                        l10n.availableShortLabel,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
                       ),
                       Text(
                         '${provider.selectedCoin?.amount ?? '0'} ${provider.selectedCoin?.localizedCoinTicker(context) ?? ''}',
@@ -80,7 +89,7 @@ class SendCoinView extends StatelessWidget {
                   // Verification Warning
                   if (provider.showVerificationWarning) ...[
                     const SizedBox(height: 30),
-                    _buildVerificationBanner(context, provider),
+                    _buildVerificationBanner(context, provider, l10n),
                   ],
                 ],
               ),
@@ -88,7 +97,7 @@ class SendCoinView extends StatelessWidget {
           ),
 
           // Bottom Footer
-          _buildFooter(context, provider),
+          _buildFooter(context, provider, l10n),
         ],
       ),
     );
@@ -106,6 +115,7 @@ class SendCoinView extends StatelessWidget {
   }
 
   Widget _buildCoinSelector(BuildContext context, SendProvider provider) {
+    final l10n = context.l10n!;
     final coin = provider.selectedCoin;
     return GestureDetector(
       onTap: () => _showCoinSelection(context, provider),
@@ -149,9 +159,9 @@ class SendCoinView extends StatelessWidget {
                     ],
                   ),
                 ] else
-                  const Text(
-                    'Select Coin',
-                    style: TextStyle(color: Colors.white),
+                  Text(
+                    l10n.selectCoinTitle,
+                    style: const TextStyle(color: Colors.white),
                   ),
               ],
             ),
@@ -183,6 +193,7 @@ class SendCoinView extends StatelessWidget {
   }
 
   Widget _buildRecipientField(BuildContext context, SendProvider provider) {
+    final l10n = context.l10n!;
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF131416),
@@ -196,10 +207,10 @@ class SendCoinView extends StatelessWidget {
               controller: provider.recipientController,
               style: const TextStyle(color: Colors.white),
               onTapOutside: (event) => FocusScope.of(context).unfocus(),
-              decoration: const InputDecoration(
-                hintText: 'Press and hold to paste',
-                hintStyle: TextStyle(color: Color(0xFF6B7280)),
-                contentPadding: EdgeInsets.symmetric(
+              decoration: InputDecoration(
+                hintText: l10n.pasteHintLongPress,
+                hintStyle: const TextStyle(color: Color(0xFF6B7280)),
+                contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 16,
                 ),
@@ -256,6 +267,7 @@ class SendCoinView extends StatelessWidget {
   }
 
   Widget _buildAmountField(BuildContext context, SendProvider provider) {
+    final l10n = context.l10n!;
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF131416),
@@ -267,17 +279,24 @@ class SendCoinView extends StatelessWidget {
         style: const TextStyle(color: Colors.white),
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         onTapOutside: (event) => FocusScope.of(context).unfocus(),
-        decoration: const InputDecoration(
-          hintText: 'Min 0',
-          hintStyle: TextStyle(color: Color(0xFF6B7280)),
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: InputDecoration(
+          hintText: l10n.minAmountHint,
+          hintStyle: const TextStyle(color: Color(0xFF6B7280)),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
           border: InputBorder.none,
         ),
       ),
     );
   }
 
-  Widget _buildVerificationBanner(BuildContext context, SendProvider provider) {
+  Widget _buildVerificationBanner(
+    BuildContext context,
+    SendProvider provider,
+    AppLocalizations l10n,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -299,10 +318,7 @@ class SendCoinView extends StatelessWidget {
                   height: 1.4,
                 ),
                 children: [
-                  const TextSpan(
-                    text:
-                        'Identity verification is required to send coins. Please complete your KYC profile to enable transfers. ',
-                  ),
+                  TextSpan(text: l10n.sendKycVerificationRequiredBody),
                   WidgetSpan(
                     child: GestureDetector(
                       onTap: () async {
@@ -314,9 +330,9 @@ class SendCoinView extends StatelessWidget {
                           provider.completeVerification();
                         }
                       },
-                      child: const Text(
-                        'Verify Now',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.verifyNowButton,
+                        style: const TextStyle(
                           color: Colors.white,
                           decoration: TextDecoration.underline,
                           fontWeight: FontWeight.bold,
@@ -334,7 +350,11 @@ class SendCoinView extends StatelessWidget {
     );
   }
 
-  Widget _buildFooter(BuildContext context, SendProvider provider) {
+  Widget _buildFooter(
+    BuildContext context,
+    SendProvider provider,
+    AppLocalizations l10n,
+  ) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
       decoration: const BoxDecoration(
@@ -344,14 +364,17 @@ class SendCoinView extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Transaction Fees Row - Full Width
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Transaction fees:',
-                style: TextStyle(color: Colors.grey, fontSize: 12),
+                l10n.sendTransactionFeesColon,
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
               ),
-              Text('Free', style: TextStyle(color: Colors.white, fontSize: 12)),
+              Text(
+                l10n.feeFree,
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -366,9 +389,9 @@ class SendCoinView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'Sent amount',
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    Text(
+                      l10n.sendSentAmountLabel,
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -402,7 +425,7 @@ class SendCoinView extends StatelessWidget {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text('Send', style: TextStyle(fontSize: 16)),
+                  child: Text(l10n.send, style: const TextStyle(fontSize: 16)),
                 ),
               ),
             ],
@@ -413,6 +436,7 @@ class SendCoinView extends StatelessWidget {
   }
 
   void _showCoinSelection(BuildContext context, SendProvider provider) {
+    final l10n = context.l10n!;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -420,7 +444,7 @@ class SendCoinView extends StatelessWidget {
       builder: (context) => SizedBox(
         height: MediaQuery.of(context).size.height * 0.7,
         child: CoinSelectionSheet(
-          title: 'Select Coin',
+          title: l10n.selectCoinTitle,
           coins: provider.coins,
           selectedCoin: provider.selectedCoin,
           onCoinSelected: (coin) {

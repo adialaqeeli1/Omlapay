@@ -15,6 +15,7 @@ class AppTheme {
       brightness: Brightness.light,
       surface: AppColors.lightSurface,
       onSurface: AppColors.onSurfaceBlack,
+      error: AppColors.redColor,
     ),
     scaffoldBackgroundColor: AppColors.lightBackground,
     appBarTheme: AppBarTheme(
@@ -48,6 +49,7 @@ class AppTheme {
       brightness: Brightness.dark,
       surface: AppColors.darkSurface,
       onSurface: AppColors.onSurfaceWhite,
+      error: AppColors.redColor,
     ),
     scaffoldBackgroundColor: AppColors.darkBackground,
     appBarTheme: AppBarTheme(

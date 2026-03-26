@@ -96,9 +96,7 @@
     "backHome": "العودة للرئيسية",
     "walletsAddress": "عنوان المحفظة",
     "evm": "EVM",
-    "bitcoin": "بيتكوين",
     "tron": "ترون",
-    "solana": "سولانا",
     "copy": "نسخ",
     "preferences": "التفضيلات",
     "appearance": "المظهر",
@@ -312,5 +310,110 @@
     "doNotAllow": "عدم السماح",
     "invalidQrCode": "رمز QR غير صالح",
     "tryAgain": "حاول مرة أخرى",
-    "twoFactorAuthentication": "المصادقة الثنائية"
+    "twoFactorAuthentication": "المصادقة الثنائية",
+    "sendFlowReviewTitle": "مراجعة",
+    "sendFlowSendingTitle": "جاري الإرسال",
+    "feeFree": "مجاناً",
+    "accountNoUserDataAvailable": "لا توجد بيانات مستخدم",
+    "copyLabelValue": "{label}: {value}",
+    "@copyLabelValue": {
+        "placeholders": {
+            "label": {
+                "type": "String"
+            },
+            "value": {
+                "type": "String"
+            }
+        }
+    },
+    "shareComingSoon": "ميزة المشاركة قريباً",
+    "errorPickingFile": "خطأ في اختيار الملف: {error}",
+    "@errorPickingFile": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "helpRequestSentSuccess": "تم إرسال الطلب بنجاح",
+    "verificationCodeResentSuccess": "تم إعادة إرسال رمز التحقق بنجاح.",
+    "pasteHintLongPress": "اضغط مع الاستمرار للصق",
+    "minAmountHint": "الحد الأدنى 0",
+    "searchHint": "بحث",
+    "searchContactsHint": "ابحث بالاسم أو الرقم",
+    "sendFlowVerifyAccountTitle": "التحقق من الحساب",
+    "sendOtpInstructionsMasked": "أدخل الرمز المرسل إلى {phoneMask}",
+    "@sendOtpInstructionsMasked": {
+        "placeholders": {
+            "phoneMask": {
+                "type": "String"
+            }
+        }
+    },
+    "verifyAction": "تحقق",
+    "swapSuccessMessage": "تمت المبادلة بنجاح",
+    "sendSuccessMessage": "تم الإرسال بنجاح",
+    "successScreenTitle": "نجاح",
+    "confirmSecurely": "تأكيد بأمان",
+    "youAreSending": "أنت ترسل",
+    "reviewOrderTitle": "مراجعة الطلب",
+    "swapDirectionFrom": "من",
+    "swapDirectionTo": "إلى",
+    "selectCoinTitle": "اختر العملة",
+    "selectCoinPlaceholder": "اختر",
+    "swapFeesColon": "رسوم المبادلة:",
+    "confirmSwapButton": "تأكيد المبادلة",
+    "verifyNowButton": "تحقق الآن",
+    "swapNowButton": "ابدأ المبادلة",
+    "sendFormCoinLabel": "العملة",
+    "sendFormPhoneOrAddressLabel": "رقم الهاتف أو عنوان المحفظة",
+    "sendFormAmountLabel": "المبلغ المراد إرساله",
+    "availableBalanceFormatted": "المتاح {amount} {symbol}",
+    "@availableBalanceFormatted": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            },
+            "symbol": {
+                "type": "String"
+            }
+        }
+    },
+    "sendTransactionFeesColon": "رسوم المعاملة:",
+    "sendSentAmountLabel": "المبلغ المرسل",
+    "walletsTitle": "المحافظ",
+    "yourWalletsTitle": "محافظك",
+    "networkFeeLabel": "رسوم الشبكة",
+    "valueNotAvailable": "غير متوفر",
+    "amountInputHint": "0.00",
+    "qrCodeLabel": "رمز QR",
+    "saveImage": "حفظ الصورة",
+    "shareAction": "مشاركة",
+    "hideZeroBalance": "إخفاء الرصيد الصفري",
+    "contactsSheetTitle": "جهات الاتصال",
+    "sendSuccessRecipientLine": "إلى: {recipient}",
+    "@sendSuccessRecipientLine": {
+        "placeholders": {
+            "recipient": {
+                "type": "String"
+            }
+        }
+    },
+    "sendKycVerificationRequiredBody": "التحقق من الهوية مطلوب لإرسال العملات. يُرجى إكمال ملف التحقق من الهوية (KYC) لتفعيل التحويلات. ",
+    "swapKycVerificationRequiredBody": "التحقق من الهوية مطلوب لمبادلة العملات. يُرجى إكمال ملف التحقق من الهوية (KYC) لتفعيل التحويلات. ",
+    "receiveKycVerificationRequiredBody": "التحقق من الهوية مطلوب لاستلام العملات. يُرجى إكمال ملف التحقق من الهوية (KYC) لتفعيل التحويلات. ",
+    "swapFeesTitle": "رسوم المبادلة",
+    "transferToLabel": "إلى",
+    "addressCopiedToast": "تم النسخ",
+    "availableShortLabel": "المتاح",
+    "notificationMockNewTransactionTitle": "اكتملت معاملة جديدة",
+    "notificationMockNewTransactionBody": "دفعتك بمقدار 0.5 BTC إلى [التاجر...",
+    "notificationMockSecurityTitle": "تنبيه أمني",
+    "notificationMockSecurityBody": "تم اكتشاف تسجيل دخول جديد",
+    "notificationMockPolicyTitle": "تحديث مهم للسياسة",
+    "notificationMockPolicyBody": "لقد قمنا بتحديث اتفاقية المستخدم...",
+    "notificationMockVerifyTitle": "تحقق من حسابك",
+    "notificationMockVerifyBody": "التحقق من حسابك قيد الانتظار...",
+    "notificationMockWeeklyTitle": "ملخص أسبوعي",
+    "notificationMockWeeklyBody": "ملخص معاملاتك الأسبوعي جاهز."
 }

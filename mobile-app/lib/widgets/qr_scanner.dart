@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart' as ph;
 
 import '../core/extentions/context_extensions.dart';
-import '../core/l10n/app_localizations.dart';
 import '../core/theme/theme.dart';
 import '../modules/scan/provider/qr_scanner_provider.dart';
 import 'camera_permission_dialog.dart';
@@ -255,9 +254,9 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final l10n = context.l10n!;
     final colorScheme = Theme.of(context).colorScheme;
-    final title = widget.title ?? l10n?.scanAQrCode ?? l10n?.qrCodeScanner ?? 'Scan a QR Code';
+    final title = widget.title ?? l10n.scanAQrCode;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -275,11 +274,11 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
         centerTitle: true,
       ),
       extendBodyBehindAppBar: true,
-      body: _buildBody(colorScheme, l10n),
+      body: _buildBody(colorScheme),
     );
   }
 
-  Widget _buildBody(ColorScheme colorScheme, AppLocalizations? l10n) {
+  Widget _buildBody(ColorScheme colorScheme) {
     if (_isCheckingPermission) {
       return const SizedBox.shrink();
     }
@@ -386,7 +385,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
     ColorScheme colorScheme,
     MobileScannerException error,
   ) {
-    final l10n = context.l10n;
+    final l10n = context.l10n!;
 
     return Container(
       color: Colors.black,
@@ -399,7 +398,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
               Icon(Icons.error_outline, size: 64, color: colorScheme.error),
               const SizedBox(height: 24),
               Text(
-                l10n?.cameraError ?? 'Camera error',
+                l10n.cameraError,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -409,8 +408,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
               ),
               const SizedBox(height: 12),
               Text(
-                l10n?.cameraErrorMessage ??
-                    'Unable to access the camera. Please try again.',
+                l10n.cameraErrorMessage,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 14,

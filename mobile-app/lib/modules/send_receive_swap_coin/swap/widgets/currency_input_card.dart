@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/common_coin_icon.dart';
 import 'package:crypto_font_icons/crypto_font_icons.dart';
@@ -40,6 +41,7 @@ class CurrencyInputCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n!;
     final displaySymbol = coinSymbolLabel ?? coinSymbol;
     Color? iconBackgroundColor;
     Widget? fallbackIcon;
@@ -79,7 +81,7 @@ class CurrencyInputCard extends StatelessWidget {
             ),
             if (isFrom)
               Text(
-                'Available $amount $displaySymbol',
+                l10n.availableBalanceFormatted(amount, displaySymbol),
                 style: const TextStyle(color: Colors.grey, fontSize: 13),
               ),
           ],
@@ -149,7 +151,7 @@ class CurrencyInputCard extends StatelessWidget {
                       ),
                       decoration: InputDecoration(
                         border: InputBorder.none,
-                        hintText: '0.00',
+                        hintText: l10n.amountInputHint,
                         hintStyle: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 24,

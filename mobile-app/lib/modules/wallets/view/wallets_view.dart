@@ -6,9 +6,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/extentions/context_extensions.dart';
 import '../../../core/theme/theme.dart';
 import '../../../routes/app_router.dart';
-import '../../../core/l10n/app_localizations.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../widgets/common_back_button.dart';
 import '../provider/wallets_provider.dart';
@@ -22,8 +22,8 @@ class WalletsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<WalletsProvider>();
     final authProvider = context.watch<AuthProvider>();
-    final l10n = AppLocalizations.of(context)!;
-    final title = fromReceive ? l10n.receive : 'Wallets';
+    final l10n = context.l10n!;
+    final title = fromReceive ? l10n.receive : l10n.walletsTitle;
     final showVerificationBanner = authProvider.state.user?.isVerified != true;
 
     return Scaffold(
@@ -51,11 +51,11 @@ class WalletsView extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 10, 20, 20),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
                 child: Text(
-                  'Your wallets',
-                  style: TextStyle(
+                  l10n.yourWalletsTitle,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -122,7 +122,7 @@ class WalletsView extends StatelessWidget {
           ),
 
           // Copied message overlay
-          if (provider.copiedMessage != null)
+          if (provider.addressCopiedVisible)
             Positioned(
               bottom: 30,
               left: 0,
@@ -150,7 +150,7 @@ class WalletsView extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        provider.copiedMessage!,
+                        l10n.addressCopiedToast,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 14,
@@ -170,6 +170,7 @@ class WalletsView extends StatelessWidget {
     BuildContext context,
     AuthProvider authProvider,
   ) {
+    final loc = context.l10n!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -191,10 +192,7 @@ class WalletsView extends StatelessWidget {
                   height: 1.4,
                 ),
                 children: [
-                  const TextSpan(
-                    text:
-                        'Identity verification is required to receive coins. Please complete your KYC profile to enable transfers. ',
-                  ),
+                  TextSpan(text: loc.receiveKycVerificationRequiredBody),
                   WidgetSpan(
                     child: GestureDetector(
                       // onTap: () async {
@@ -206,9 +204,9 @@ class WalletsView extends StatelessWidget {
                       //     await authProvider.verifyUser();
                       //   }
                       // },
-                      child: const Text(
-                        'Verify Now',
-                        style: TextStyle(
+                      child: Text(
+                        loc.verifyNowButton,
+                        style: const TextStyle(
                           color: Colors.white,
                           decoration: TextDecoration.underline,
                           fontWeight: FontWeight.bold,

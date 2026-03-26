@@ -203,10 +203,16 @@ class AppRouter {
               extra?[LoginProvider.extraVerificationPurposeKey] as String?;
           final showRegistrationProgress =
               purpose != LoginProvider.purposeChangePasscode;
+          final isRegistration = extra?['isRegistration'] as bool? ?? false;
+          final maskedMobile = extra?['maskedMobile'] as String?;
+          final otpExpirySeconds = extra?['otpExpirySeconds'] as int? ?? VerificationProvider.countdownStartSeconds;
           return ChangeNotifierProvider(
             create: (_) => VerificationProvider(
               phoneNumber: phoneNumber,
               countryCode: countryCode,
+              isRegistration: isRegistration,
+              maskedMobile: maskedMobile,
+              initialCountdown: otpExpirySeconds,
             ),
             child: VerificationScreen(
               showRegistrationProgress: showRegistrationProgress,
@@ -416,7 +422,8 @@ class AppRouter {
         path: Routes.notifications,
         name: 'notifications',
         builder: (context, state) => ChangeNotifierProvider(
-          create: (_) => NotificationsListProvider(),
+          create: (_) =>
+              NotificationsListProvider(AppLocalizations.of(context)!),
           child: const NotificationsView(),
         ),
       ),

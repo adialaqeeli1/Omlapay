@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../routes/app_router.dart';
@@ -13,11 +14,15 @@ class ReviewSendView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SendProvider>();
+    final l10n = context.l10n!;
 
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Review', style: TextStyle(color: Colors.white)),
+        title: Text(
+          l10n.sendFlowReviewTitle,
+          style: const TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const CommonBackButton(),
@@ -31,9 +36,9 @@ class ReviewSendView extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  const Text(
-                    'You are sending',
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
+                  Text(
+                    l10n.youAreSending,
+                    style: const TextStyle(color: Colors.grey, fontSize: 14),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -57,17 +62,17 @@ class ReviewSendView extends StatelessWidget {
               child: Column(
                 children: [
                   _buildDetailRow(
-                    'To',
+                    l10n.transferToLabel,
                     provider.selectedContact?.name ??
                         provider.recipientController.text,
                   ),
                   const Divider(color: Color(0xFF2A2D35), height: 30),
-                  _buildDetailRow('Network', 'TRC20'), // Mock
+                  _buildDetailRow(l10n.network, 'TRC20'), // Mock
                   const Divider(color: Color(0xFF2A2D35), height: 30),
-                  _buildDetailRow('Network Fee', '1.00 USDT'), // Mock fee
+                  _buildDetailRow(l10n.networkFeeLabel, '1.00 USDT'), // Mock fee
                   const Divider(color: Color(0xFF2A2D35), height: 30),
                   _buildDetailRow(
-                    'Total',
+                    l10n.total,
                     '${(double.tryParse(provider.amountController.text) ?? 0) + 1} ${provider.selectedCoin?.localizedCoinTicker(context) ?? ''}',
                     isTotal: true,
                   ),
@@ -88,9 +93,9 @@ class ReviewSendView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: const Text(
-                  'Confirm Securely',
-                  style: TextStyle(
+                child: Text(
+                  l10n.confirmSecurely,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

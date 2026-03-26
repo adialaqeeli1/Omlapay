@@ -506,23 +506,11 @@ abstract class AppLocalizations {
   /// **'EVM'**
   String get evm;
 
-  /// No description provided for @bitcoin.
-  ///
-  /// In en, this message translates to:
-  /// **'Bitcoin'**
-  String get bitcoin;
-
   /// No description provided for @tron.
   ///
   /// In en, this message translates to:
   /// **'Tron'**
   String get tron;
-
-  /// No description provided for @solana.
-  ///
-  /// In en, this message translates to:
-  /// **'Solana'**
-  String get solana;
 
   /// No description provided for @copy.
   ///
@@ -1100,6 +1088,12 @@ abstract class AppLocalizations {
   /// **'Ethereum'**
   String get ethereum;
 
+  /// No description provided for @bitcoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Bitcoin'**
+  String get bitcoin;
+
   /// No description provided for @currency.
   ///
   /// In en, this message translates to:
@@ -1333,6 +1327,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sol'**
   String get sol;
+
+  /// No description provided for @solana.
+  ///
+  /// In en, this message translates to:
+  /// **'Solana'**
+  String get solana;
 
   /// No description provided for @sendTo.
   ///
@@ -1585,6 +1585,390 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Two Factor Authentication'**
   String get twoFactorAuthentication;
+
+  /// No description provided for @sendFlowReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get sendFlowReviewTitle;
+
+  /// No description provided for @sendFlowSendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending'**
+  String get sendFlowSendingTitle;
+
+  /// No description provided for @feeFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get feeFree;
+
+  /// No description provided for @accountNoUserDataAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No user data available'**
+  String get accountNoUserDataAvailable;
+
+  /// No description provided for @copyLabelValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}: {value}'**
+  String copyLabelValue(String label, String value);
+
+  /// No description provided for @shareComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Share functionality coming soon'**
+  String get shareComingSoon;
+
+  /// No description provided for @errorPickingFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Error picking file: {error}'**
+  String errorPickingFile(String error);
+
+  /// No description provided for @helpRequestSentSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent successfully'**
+  String get helpRequestSentSuccess;
+
+  /// No description provided for @verificationCodeResentSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code resent successfully.'**
+  String get verificationCodeResentSuccess;
+
+  /// No description provided for @pasteHintLongPress.
+  ///
+  /// In en, this message translates to:
+  /// **'Press and hold to paste'**
+  String get pasteHintLongPress;
+
+  /// No description provided for @minAmountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Min 0'**
+  String get minAmountHint;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get searchHint;
+
+  /// No description provided for @searchContactsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search name or number'**
+  String get searchContactsHint;
+
+  /// No description provided for @sendFlowVerifyAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Account'**
+  String get sendFlowVerifyAccountTitle;
+
+  /// No description provided for @sendOtpInstructionsMasked.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the code sent to {phoneMask}'**
+  String sendOtpInstructionsMasked(String phoneMask);
+
+  /// No description provided for @verifyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get verifyAction;
+
+  /// No description provided for @swapSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully swapped'**
+  String get swapSuccessMessage;
+
+  /// No description provided for @sendSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully sent'**
+  String get sendSuccessMessage;
+
+  /// No description provided for @successScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Success'**
+  String get successScreenTitle;
+
+  /// No description provided for @confirmSecurely.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Securely'**
+  String get confirmSecurely;
+
+  /// No description provided for @youAreSending.
+  ///
+  /// In en, this message translates to:
+  /// **'You are sending'**
+  String get youAreSending;
+
+  /// No description provided for @reviewOrderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review Order'**
+  String get reviewOrderTitle;
+
+  /// No description provided for @swapDirectionFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get swapDirectionFrom;
+
+  /// No description provided for @swapDirectionTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get swapDirectionTo;
+
+  /// No description provided for @selectCoinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Coin'**
+  String get selectCoinTitle;
+
+  /// No description provided for @selectCoinPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get selectCoinPlaceholder;
+
+  /// No description provided for @swapFeesColon.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap fees:'**
+  String get swapFeesColon;
+
+  /// No description provided for @confirmSwapButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm swap'**
+  String get confirmSwapButton;
+
+  /// No description provided for @verifyNowButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Now'**
+  String get verifyNowButton;
+
+  /// No description provided for @swapNowButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap Now'**
+  String get swapNowButton;
+
+  /// No description provided for @sendFormCoinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Coin'**
+  String get sendFormCoinLabel;
+
+  /// No description provided for @sendFormPhoneOrAddressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number Or Wallet Address'**
+  String get sendFormPhoneOrAddressLabel;
+
+  /// No description provided for @sendFormAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount to be sent'**
+  String get sendFormAmountLabel;
+
+  /// No description provided for @availableBalanceFormatted.
+  ///
+  /// In en, this message translates to:
+  /// **'Available {amount} {symbol}'**
+  String availableBalanceFormatted(String amount, String symbol);
+
+  /// No description provided for @sendTransactionFeesColon.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction fees:'**
+  String get sendTransactionFeesColon;
+
+  /// No description provided for @sendSentAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent amount'**
+  String get sendSentAmountLabel;
+
+  /// No description provided for @walletsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallets'**
+  String get walletsTitle;
+
+  /// No description provided for @yourWalletsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your wallets'**
+  String get yourWalletsTitle;
+
+  /// No description provided for @networkFeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Network Fee'**
+  String get networkFeeLabel;
+
+  /// No description provided for @valueNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'N/A'**
+  String get valueNotAvailable;
+
+  /// No description provided for @amountInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'0.00'**
+  String get amountInputHint;
+
+  /// No description provided for @qrCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'QR Code'**
+  String get qrCodeLabel;
+
+  /// No description provided for @saveImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Save image'**
+  String get saveImage;
+
+  /// No description provided for @shareAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get shareAction;
+
+  /// No description provided for @hideZeroBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide zero balance'**
+  String get hideZeroBalance;
+
+  /// No description provided for @contactsSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Contacts'**
+  String get contactsSheetTitle;
+
+  /// No description provided for @sendSuccessRecipientLine.
+  ///
+  /// In en, this message translates to:
+  /// **'To: {recipient}'**
+  String sendSuccessRecipientLine(String recipient);
+
+  /// No description provided for @sendKycVerificationRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verification is required to send coins. Please complete your KYC profile to enable transfers. '**
+  String get sendKycVerificationRequiredBody;
+
+  /// No description provided for @swapKycVerificationRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verification is required to swap coins. Please complete your KYC profile to enable transfers. '**
+  String get swapKycVerificationRequiredBody;
+
+  /// No description provided for @receiveKycVerificationRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verification is required to receive coins. Please complete your KYC profile to enable transfers. '**
+  String get receiveKycVerificationRequiredBody;
+
+  /// No description provided for @swapFeesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap Fees'**
+  String get swapFeesTitle;
+
+  /// No description provided for @transferToLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get transferToLabel;
+
+  /// No description provided for @addressCopiedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get addressCopiedToast;
+
+  /// No description provided for @availableShortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get availableShortLabel;
+
+  /// No description provided for @notificationMockNewTransactionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New Transaction Completed'**
+  String get notificationMockNewTransactionTitle;
+
+  /// No description provided for @notificationMockNewTransactionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your payment of 0.5 BTC to [Merchant...'**
+  String get notificationMockNewTransactionBody;
+
+  /// No description provided for @notificationMockSecurityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Security Alert'**
+  String get notificationMockSecurityTitle;
+
+  /// No description provided for @notificationMockSecurityBody.
+  ///
+  /// In en, this message translates to:
+  /// **'New Login Detected'**
+  String get notificationMockSecurityBody;
+
+  /// No description provided for @notificationMockPolicyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Important Policy Update'**
+  String get notificationMockPolicyTitle;
+
+  /// No description provided for @notificationMockPolicyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We have updated our user agreemen...'**
+  String get notificationMockPolicyBody;
+
+  /// No description provided for @notificationMockVerifyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Your Account'**
+  String get notificationMockVerifyTitle;
+
+  /// No description provided for @notificationMockVerifyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account verification is pending...'**
+  String get notificationMockVerifyBody;
+
+  /// No description provided for @notificationMockWeeklyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Summary'**
+  String get notificationMockWeeklyTitle;
+
+  /// No description provided for @notificationMockWeeklyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your weekly transaction summary is ready.'**
+  String get notificationMockWeeklyBody;
 }
 
 class _AppLocalizationsDelegate

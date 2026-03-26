@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../core/utils/snackbar_helper.dart';
 import '../../../providers/auth_provider.dart';
 import '../providers/login_provider.dart';
 import '../../../routes/app_router.dart';
@@ -39,7 +40,19 @@ class _VerificationScreenState extends State<VerificationScreen> {
       onInitialRequest: provider.requestOtp,
       onOtpChanged: provider.setOtpFromString,
       onOtpCompleted: () => _verifyOtp(provider),
-      onResend: provider.resendOtp,
+      onResend: () async {
+        try {
+          final message = await provider.resendOtp();
+          if (!context.mounted) return;
+          SnackbarHelper.showSuccess(
+            context,
+            message ?? l10n.verificationCodeResentSuccess,
+          );
+        } catch (e) {
+          if (!context.mounted) return;
+          SnackbarHelper.showError(context, e.toString());
+        }
+      },
       showProgress: widget.showRegistrationProgress,
       totalProgressSteps: 4,
       activeProgressSteps: 2,

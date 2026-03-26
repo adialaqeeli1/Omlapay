@@ -58,7 +58,7 @@ class MyApp extends StatelessWidget {
         builder: (context, localeProvider, themeProvider, child) =>
             MaterialApp.router(
               onGenerateTitle: (context) =>
-                  AppLocalizations.of(context)?.appTitle ?? 'OmlaPay',
+                  AppLocalizations.of(context)!.appTitle,
               theme: AppTheme.lightTheme,
               darkTheme: AppTheme.darkTheme,
               themeMode: themeProvider.themeMode,

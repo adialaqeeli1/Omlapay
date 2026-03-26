@@ -238,13 +238,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get evm => 'EVM';
 
   @override
-  String get bitcoin => 'Bitcoin';
-
-  @override
   String get tron => 'Tron';
-
-  @override
-  String get solana => 'Solana';
 
   @override
   String get copy => 'Copy';
@@ -548,6 +542,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ethereum => 'Ethereum';
 
   @override
+  String get bitcoin => 'Bitcoin';
+
+  @override
   String get currency => 'Currency';
 
   @override
@@ -678,6 +675,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sol => 'Sol';
+
+  @override
+  String get solana => 'Solana';
 
   @override
   String get sendTo => 'Send To';
@@ -819,4 +819,214 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get twoFactorAuthentication => 'Two Factor Authentication';
+
+  @override
+  String get sendFlowReviewTitle => 'Review';
+
+  @override
+  String get sendFlowSendingTitle => 'Sending';
+
+  @override
+  String get feeFree => 'Free';
+
+  @override
+  String get accountNoUserDataAvailable => 'No user data available';
+
+  @override
+  String copyLabelValue(String label, String value) {
+    return '$label: $value';
+  }
+
+  @override
+  String get shareComingSoon => 'Share functionality coming soon';
+
+  @override
+  String errorPickingFile(String error) {
+    return 'Error picking file: $error';
+  }
+
+  @override
+  String get helpRequestSentSuccess => 'Request sent successfully';
+
+  @override
+  String get verificationCodeResentSuccess =>
+      'Verification code resent successfully.';
+
+  @override
+  String get pasteHintLongPress => 'Press and hold to paste';
+
+  @override
+  String get minAmountHint => 'Min 0';
+
+  @override
+  String get searchHint => 'Search';
+
+  @override
+  String get searchContactsHint => 'Search name or number';
+
+  @override
+  String get sendFlowVerifyAccountTitle => 'Verify Account';
+
+  @override
+  String sendOtpInstructionsMasked(String phoneMask) {
+    return 'Enter the code sent to $phoneMask';
+  }
+
+  @override
+  String get verifyAction => 'Verify';
+
+  @override
+  String get swapSuccessMessage => 'Successfully swapped';
+
+  @override
+  String get sendSuccessMessage => 'Successfully sent';
+
+  @override
+  String get successScreenTitle => 'Success';
+
+  @override
+  String get confirmSecurely => 'Confirm Securely';
+
+  @override
+  String get youAreSending => 'You are sending';
+
+  @override
+  String get reviewOrderTitle => 'Review Order';
+
+  @override
+  String get swapDirectionFrom => 'From';
+
+  @override
+  String get swapDirectionTo => 'To';
+
+  @override
+  String get selectCoinTitle => 'Select Coin';
+
+  @override
+  String get selectCoinPlaceholder => 'Select';
+
+  @override
+  String get swapFeesColon => 'Swap fees:';
+
+  @override
+  String get confirmSwapButton => 'Confirm swap';
+
+  @override
+  String get verifyNowButton => 'Verify Now';
+
+  @override
+  String get swapNowButton => 'Swap Now';
+
+  @override
+  String get sendFormCoinLabel => 'Coin';
+
+  @override
+  String get sendFormPhoneOrAddressLabel => 'Phone Number Or Wallet Address';
+
+  @override
+  String get sendFormAmountLabel => 'Amount to be sent';
+
+  @override
+  String availableBalanceFormatted(String amount, String symbol) {
+    return 'Available $amount $symbol';
+  }
+
+  @override
+  String get sendTransactionFeesColon => 'Transaction fees:';
+
+  @override
+  String get sendSentAmountLabel => 'Sent amount';
+
+  @override
+  String get walletsTitle => 'Wallets';
+
+  @override
+  String get yourWalletsTitle => 'Your wallets';
+
+  @override
+  String get networkFeeLabel => 'Network Fee';
+
+  @override
+  String get valueNotAvailable => 'N/A';
+
+  @override
+  String get amountInputHint => '0.00';
+
+  @override
+  String get qrCodeLabel => 'QR Code';
+
+  @override
+  String get saveImage => 'Save image';
+
+  @override
+  String get shareAction => 'Share';
+
+  @override
+  String get hideZeroBalance => 'Hide zero balance';
+
+  @override
+  String get contactsSheetTitle => 'Contacts';
+
+  @override
+  String sendSuccessRecipientLine(String recipient) {
+    return 'To: $recipient';
+  }
+
+  @override
+  String get sendKycVerificationRequiredBody =>
+      'Identity verification is required to send coins. Please complete your KYC profile to enable transfers. ';
+
+  @override
+  String get swapKycVerificationRequiredBody =>
+      'Identity verification is required to swap coins. Please complete your KYC profile to enable transfers. ';
+
+  @override
+  String get receiveKycVerificationRequiredBody =>
+      'Identity verification is required to receive coins. Please complete your KYC profile to enable transfers. ';
+
+  @override
+  String get swapFeesTitle => 'Swap Fees';
+
+  @override
+  String get transferToLabel => 'To';
+
+  @override
+  String get addressCopiedToast => 'Copied';
+
+  @override
+  String get availableShortLabel => 'Available';
+
+  @override
+  String get notificationMockNewTransactionTitle => 'New Transaction Completed';
+
+  @override
+  String get notificationMockNewTransactionBody =>
+      'Your payment of 0.5 BTC to [Merchant...';
+
+  @override
+  String get notificationMockSecurityTitle => 'Security Alert';
+
+  @override
+  String get notificationMockSecurityBody => 'New Login Detected';
+
+  @override
+  String get notificationMockPolicyTitle => 'Important Policy Update';
+
+  @override
+  String get notificationMockPolicyBody =>
+      'We have updated our user agreemen...';
+
+  @override
+  String get notificationMockVerifyTitle => 'Verify Your Account';
+
+  @override
+  String get notificationMockVerifyBody =>
+      'Your account verification is pending...';
+
+  @override
+  String get notificationMockWeeklyTitle => 'Weekly Summary';
+
+  @override
+  String get notificationMockWeeklyBody =>
+      'Your weekly transaction summary is ready.';
 }

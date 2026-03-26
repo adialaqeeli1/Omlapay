@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../routes/app_router.dart';
 import '../../../../core/theme/theme.dart';
@@ -14,6 +15,7 @@ class SwapSuccessView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<SwapProvider>();
+    final l10n = context.l10n!;
     final toCoin = provider.toCoin;
     // We display the To amount as the result
     final toAmount = provider.toAmountController.text;
@@ -60,9 +62,9 @@ class SwapSuccessView extends StatelessWidget {
                     height: 80,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Successfully swapped',
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
+                  Text(
+                    l10n.swapSuccessMessage,
+                    style: const TextStyle(color: Colors.grey, fontSize: 14),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -89,9 +91,9 @@ class SwapSuccessView extends StatelessWidget {
                           ), // Dark green tint for value?
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Text(
-                          '0,282 USD', // Mock value matching screenshot style
-                          style: TextStyle(
+                        child: Text(
+                          '0,282 ${l10n.usd}', // Mock value matching screenshot style
+                          style: const TextStyle(
                             color: AppColors.tealColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
@@ -122,9 +124,9 @@ class SwapSuccessView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: const Text(
-                  'Back Home',
-                  style: TextStyle(
+                child: Text(
+                  l10n.backHome,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:omlapay_mobile_app/core/extentions/context_extensions.dart';
 import 'package:omlapay_mobile_app/widgets/common_back_button.dart';
 import 'package:provider/provider.dart';
 import 'package:crypto_font_icons/crypto_font_icons.dart';
@@ -18,6 +19,7 @@ class ReviewOrderView extends StatelessWidget {
     final provider = context.watch<SwapProvider>();
     final fromCoin = provider.fromCoin;
     final toCoin = provider.toCoin;
+    final l10n = context.l10n!;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -25,9 +27,12 @@ class ReviewOrderView extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: CommonBackButton(),
-        title: const Text(
-          'Review Order',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        title: Text(
+          l10n.reviewOrderTitle,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         centerTitle: true,
       ),
@@ -53,9 +58,9 @@ class ReviewOrderView extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'From',
-                              style: TextStyle(
+                            Text(
+                              l10n.swapDirectionFrom,
+                              style: const TextStyle(
                                 color: Colors.grey,
                                 fontSize: 13,
                               ),
@@ -96,7 +101,7 @@ class ReviewOrderView extends StatelessWidget {
                             Align(
                               alignment: Alignment.centerRight,
                               child: Text(
-                                '≈100,15 USD', // TODO: Calculate real USD value
+                                '≈100,15 ${l10n.usd}', // TODO: Calculate real USD value
                                 style: TextStyle(
                                   color: Colors.grey[600],
                                   fontSize: 12,
@@ -117,9 +122,9 @@ class ReviewOrderView extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'To',
-                              style: TextStyle(
+                            Text(
+                              l10n.swapDirectionTo,
+                              style: const TextStyle(
                                 color: Colors.grey,
                                 fontSize: 13,
                               ),
@@ -160,7 +165,7 @@ class ReviewOrderView extends StatelessWidget {
                             Align(
                               alignment: Alignment.centerRight,
                               child: Text(
-                                '≈2,15 USD', // TODO: Calculate real USD value
+                                '≈2,15 ${l10n.usd}', // TODO: Calculate real USD value
                                 style: TextStyle(
                                   color: Colors.grey[600],
                                   fontSize: 12,
@@ -207,9 +212,9 @@ class ReviewOrderView extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Network',
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                Text(
+                  l10n.network,
+                  style: const TextStyle(color: Colors.grey, fontSize: 14),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -241,9 +246,9 @@ class ReviewOrderView extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Swap Fees',
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                Text(
+                  l10n.swapFeesTitle,
+                  style: const TextStyle(color: Colors.grey, fontSize: 14),
                 ),
                 Text(
                   '${provider.swapFee} ${fromCoin?.localizedCoinTicker(context) ?? ''}',
@@ -272,9 +277,9 @@ class ReviewOrderView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: const Text(
-                  'Swap Now',
-                  style: TextStyle(
+                child: Text(
+                  l10n.swapNowButton,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

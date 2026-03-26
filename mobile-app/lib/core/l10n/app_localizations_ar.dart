@@ -232,13 +232,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get evm => 'EVM';
 
   @override
-  String get bitcoin => 'بيتكوين';
-
-  @override
   String get tron => 'ترون';
-
-  @override
-  String get solana => 'سولانا';
 
   @override
   String get copy => 'نسخ';
@@ -540,6 +534,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get ethereum => 'إيثيريوم';
 
   @override
+  String get bitcoin => 'بيتكوين';
+
+  @override
   String get currency => 'العملة';
 
   @override
@@ -670,6 +667,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sol => 'سول';
+
+  @override
+  String get solana => 'سولانا';
 
   @override
   String get sendTo => 'إرسال إلى';
@@ -812,4 +812,212 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get twoFactorAuthentication => 'المصادقة الثنائية';
+
+  @override
+  String get sendFlowReviewTitle => 'مراجعة';
+
+  @override
+  String get sendFlowSendingTitle => 'جاري الإرسال';
+
+  @override
+  String get feeFree => 'مجاناً';
+
+  @override
+  String get accountNoUserDataAvailable => 'لا توجد بيانات مستخدم';
+
+  @override
+  String copyLabelValue(String label, String value) {
+    return '$label: $value';
+  }
+
+  @override
+  String get shareComingSoon => 'ميزة المشاركة قريباً';
+
+  @override
+  String errorPickingFile(String error) {
+    return 'خطأ في اختيار الملف: $error';
+  }
+
+  @override
+  String get helpRequestSentSuccess => 'تم إرسال الطلب بنجاح';
+
+  @override
+  String get verificationCodeResentSuccess =>
+      'تم إعادة إرسال رمز التحقق بنجاح.';
+
+  @override
+  String get pasteHintLongPress => 'اضغط مع الاستمرار للصق';
+
+  @override
+  String get minAmountHint => 'الحد الأدنى 0';
+
+  @override
+  String get searchHint => 'بحث';
+
+  @override
+  String get searchContactsHint => 'ابحث بالاسم أو الرقم';
+
+  @override
+  String get sendFlowVerifyAccountTitle => 'التحقق من الحساب';
+
+  @override
+  String sendOtpInstructionsMasked(String phoneMask) {
+    return 'أدخل الرمز المرسل إلى $phoneMask';
+  }
+
+  @override
+  String get verifyAction => 'تحقق';
+
+  @override
+  String get swapSuccessMessage => 'تمت المبادلة بنجاح';
+
+  @override
+  String get sendSuccessMessage => 'تم الإرسال بنجاح';
+
+  @override
+  String get successScreenTitle => 'نجاح';
+
+  @override
+  String get confirmSecurely => 'تأكيد بأمان';
+
+  @override
+  String get youAreSending => 'أنت ترسل';
+
+  @override
+  String get reviewOrderTitle => 'مراجعة الطلب';
+
+  @override
+  String get swapDirectionFrom => 'من';
+
+  @override
+  String get swapDirectionTo => 'إلى';
+
+  @override
+  String get selectCoinTitle => 'اختر العملة';
+
+  @override
+  String get selectCoinPlaceholder => 'اختر';
+
+  @override
+  String get swapFeesColon => 'رسوم المبادلة:';
+
+  @override
+  String get confirmSwapButton => 'تأكيد المبادلة';
+
+  @override
+  String get verifyNowButton => 'تحقق الآن';
+
+  @override
+  String get swapNowButton => 'ابدأ المبادلة';
+
+  @override
+  String get sendFormCoinLabel => 'العملة';
+
+  @override
+  String get sendFormPhoneOrAddressLabel => 'رقم الهاتف أو عنوان المحفظة';
+
+  @override
+  String get sendFormAmountLabel => 'المبلغ المراد إرساله';
+
+  @override
+  String availableBalanceFormatted(String amount, String symbol) {
+    return 'المتاح $amount $symbol';
+  }
+
+  @override
+  String get sendTransactionFeesColon => 'رسوم المعاملة:';
+
+  @override
+  String get sendSentAmountLabel => 'المبلغ المرسل';
+
+  @override
+  String get walletsTitle => 'المحافظ';
+
+  @override
+  String get yourWalletsTitle => 'محافظك';
+
+  @override
+  String get networkFeeLabel => 'رسوم الشبكة';
+
+  @override
+  String get valueNotAvailable => 'غير متوفر';
+
+  @override
+  String get amountInputHint => '0.00';
+
+  @override
+  String get qrCodeLabel => 'رمز QR';
+
+  @override
+  String get saveImage => 'حفظ الصورة';
+
+  @override
+  String get shareAction => 'مشاركة';
+
+  @override
+  String get hideZeroBalance => 'إخفاء الرصيد الصفري';
+
+  @override
+  String get contactsSheetTitle => 'جهات الاتصال';
+
+  @override
+  String sendSuccessRecipientLine(String recipient) {
+    return 'إلى: $recipient';
+  }
+
+  @override
+  String get sendKycVerificationRequiredBody =>
+      'التحقق من الهوية مطلوب لإرسال العملات. يُرجى إكمال ملف التحقق من الهوية (KYC) لتفعيل التحويلات. ';
+
+  @override
+  String get swapKycVerificationRequiredBody =>
+      'التحقق من الهوية مطلوب لمبادلة العملات. يُرجى إكمال ملف التحقق من الهوية (KYC) لتفعيل التحويلات. ';
+
+  @override
+  String get receiveKycVerificationRequiredBody =>
+      'التحقق من الهوية مطلوب لاستلام العملات. يُرجى إكمال ملف التحقق من الهوية (KYC) لتفعيل التحويلات. ';
+
+  @override
+  String get swapFeesTitle => 'رسوم المبادلة';
+
+  @override
+  String get transferToLabel => 'إلى';
+
+  @override
+  String get addressCopiedToast => 'تم النسخ';
+
+  @override
+  String get availableShortLabel => 'المتاح';
+
+  @override
+  String get notificationMockNewTransactionTitle => 'اكتملت معاملة جديدة';
+
+  @override
+  String get notificationMockNewTransactionBody =>
+      'دفعتك بمقدار 0.5 BTC إلى [التاجر...';
+
+  @override
+  String get notificationMockSecurityTitle => 'تنبيه أمني';
+
+  @override
+  String get notificationMockSecurityBody => 'تم اكتشاف تسجيل دخول جديد';
+
+  @override
+  String get notificationMockPolicyTitle => 'تحديث مهم للسياسة';
+
+  @override
+  String get notificationMockPolicyBody =>
+      'لقد قمنا بتحديث اتفاقية المستخدم...';
+
+  @override
+  String get notificationMockVerifyTitle => 'تحقق من حسابك';
+
+  @override
+  String get notificationMockVerifyBody => 'التحقق من حسابك قيد الانتظار...';
+
+  @override
+  String get notificationMockWeeklyTitle => 'ملخص أسبوعي';
+
+  @override
+  String get notificationMockWeeklyBody => 'ملخص معاملاتك الأسبوعي جاهز.';
 }

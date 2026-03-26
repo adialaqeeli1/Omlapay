@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/app_localizations.dart';
+
 /// In-memory notification item. State is not persisted; reset each time screen opens.
 class NotificationItem {
   final String id;
@@ -29,16 +31,16 @@ class NotificationsListProvider extends ChangeNotifier {
 
   int get unreadCount => _items.where((e) => !e.isRead).length;
 
-  NotificationsListProvider() {
-    _items = _createDummyNotifications();
+  NotificationsListProvider(AppLocalizations l10n) {
+    _items = _createDummyNotifications(l10n);
   }
 
-  static List<NotificationItem> _createDummyNotifications() {
+  static List<NotificationItem> _createDummyNotifications(AppLocalizations l10n) {
     return [
       NotificationItem(
         id: '1',
-        title: 'New Transaction Completed',
-        description: 'Your payment of 0.5 BTC to [Merchant...',
+        title: l10n.notificationMockNewTransactionTitle,
+        description: l10n.notificationMockNewTransactionBody,
         date: '8 Aug',
         iconBgColor: const Color(0xFF2196F3),
         icon: Icons.swap_horiz,
@@ -46,8 +48,8 @@ class NotificationsListProvider extends ChangeNotifier {
       ),
       NotificationItem(
         id: '2',
-        title: 'Security Alert',
-        description: 'New Login Detected',
+        title: l10n.notificationMockSecurityTitle,
+        description: l10n.notificationMockSecurityBody,
         date: '3 July',
         iconBgColor: const Color(0xFFE53935),
         icon: Icons.security,
@@ -55,8 +57,8 @@ class NotificationsListProvider extends ChangeNotifier {
       ),
       NotificationItem(
         id: '3',
-        title: 'Important Policy Update',
-        description: 'We have updated our user agreemen...',
+        title: l10n.notificationMockPolicyTitle,
+        description: l10n.notificationMockPolicyBody,
         date: '22 Jun',
         iconBgColor: const Color(0xFF26A69A),
         icon: Icons.description,
@@ -64,8 +66,8 @@ class NotificationsListProvider extends ChangeNotifier {
       ),
       NotificationItem(
         id: '4',
-        title: 'Verify Your Account',
-        description: 'Your account verification is pending...',
+        title: l10n.notificationMockVerifyTitle,
+        description: l10n.notificationMockVerifyBody,
         date: '20 Jun',
         iconBgColor: const Color(0xFFFF9800),
         icon: Icons.person_outline,
@@ -73,8 +75,8 @@ class NotificationsListProvider extends ChangeNotifier {
       ),
       NotificationItem(
         id: '5',
-        title: 'Weekly Summary',
-        description: 'Your weekly transaction summary is ready.',
+        title: l10n.notificationMockWeeklyTitle,
+        description: l10n.notificationMockWeeklyBody,
         date: '15 Jun',
         iconBgColor: const Color(0xFF9C27B0),
         icon: Icons.summarize,
