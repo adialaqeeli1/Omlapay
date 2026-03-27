@@ -113,10 +113,7 @@ class WalletAddressService {
       } catch (_) {}
     }
 
-    // Fallback mock email based on user data.
-    final email =
-        '${user.firstName.toLowerCase()}.${user.lastName.toLowerCase()}@gmail.com';
-    return email;
+    return '';
   }
 
   static Future<void> saveUserEmail(UserModel user, String email) async {
