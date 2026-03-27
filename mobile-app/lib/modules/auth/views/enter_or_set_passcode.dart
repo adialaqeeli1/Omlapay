@@ -10,12 +10,17 @@ import '../../../core/utils/snackbar_helper.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_back_button.dart';
+import '../../../widgets/common_loading_indicator.dart';
 import '../../../widgets/logout_alert_dialog.dart';
 import '../providers/login_provider.dart';
 import '../providers/passcode_provider.dart';
 import '../services/forgot_passcode_service.dart';
 
 class EnterOrSetPasscodeScreen extends StatelessWidget {
+  /// Prevents overlapping forgot-passcode OTP requests before the loading overlay
+  /// blocks further taps.
+  static bool _forgotPasscodeOtpInFlight = false;
+
   const EnterOrSetPasscodeScreen({
     super.key,
     this.isSoftLogin = false,
@@ -268,11 +273,8 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                     const SizedBox(height: 4),
                     if (_showForgotPasscodeLink())
                       GestureDetector(
-                        onTap: () => _onForgotPasscode(
-                          context,
-                          isSoftLogin,
-                          passcodeProvider,
-                        ),
+                        onTap: () =>
+                            _onForgotPasscode(context, passcodeProvider),
                         child: Text(
                           l10n.forgotPasscode,
                           style: theme.textTheme.titleMedium?.copyWith(
@@ -410,30 +412,89 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
 
   static Future<void> _onForgotPasscode(
     BuildContext context,
-    bool isSoftLogin,
     PasscodeProvider passcodeProvider,
   ) async {
-    if (!passcodeProvider.hasPhoneContext) return;
-    passcodeProvider.clearPasscode();
-    try {
-      final response = await ForgotPasscodeService.requestOtp(
-        passcodeProvider.phoneNumber,
-        passcodeProvider.countryCode,
-      );
+    if (!passcodeProvider.hasPhoneContext) {
       if (context.mounted) {
-        context.push(
-          Routes.forgotPasscode,
-          extra: {
-            LoginProvider.extraCountryCodeKey: passcodeProvider.countryCode,
-            LoginProvider.extraPhoneNumberKey: passcodeProvider.phoneNumber,
-            'otpExpirySeconds': response.otpExpirySeconds,
-          },
+        SnackbarHelper.showError(
+          context,
+          context.l10n!.forgotPasscodePhoneMissing,
         );
       }
-    } catch (e) {
-      if (context.mounted) {
-        SnackbarHelper.showError(context, e.toString());
+      return;
+    }
+    if (_forgotPasscodeOtpInFlight) {
+      return;
+    }
+    _forgotPasscodeOtpInFlight = true;
+    try {
+      passcodeProvider.clearPasscode();
+
+      final navigator = Navigator.of(context, rootNavigator: true);
+      final barrierColor = Theme.of(
+        context,
+      ).colorScheme.scrim.withValues(alpha: 0.45);
+
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: barrierColor,
+        useRootNavigator: true,
+        builder: (dialogContext) {
+          return PopScope(
+            canPop: false,
+            child: Center(
+              child: Material(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: SizedBox.square(
+                  dimension: 60,
+                  child: const CommonLoadingIndicator(),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+      // Let the dialog route mount before the async API gap so [Navigator.pop]
+      // reliably dismisses the loading overlay.
+      await Future<void>.delayed(Duration.zero);
+      if (!context.mounted) {
+        if (navigator.mounted) {
+          navigator.pop();
+        }
+        return;
       }
+
+      try {
+        final response = await ForgotPasscodeService.requestOtp(
+          passcodeProvider.phoneNumber,
+          passcodeProvider.countryCode,
+        );
+        if (navigator.mounted) {
+          navigator.pop();
+        }
+        if (context.mounted) {
+          context.push(
+            Routes.forgotPasscode,
+            extra: {
+              LoginProvider.extraCountryCodeKey: passcodeProvider.countryCode,
+              LoginProvider.extraPhoneNumberKey: passcodeProvider.phoneNumber,
+              'otpExpirySeconds': response.otpExpirySeconds,
+            },
+          );
+        }
+      } catch (e) {
+        if (navigator.mounted) {
+          navigator.pop();
+        }
+        if (context.mounted) {
+          SnackbarHelper.showError(context, e.toString());
+        }
+      }
+    } finally {
+      _forgotPasscodeOtpInFlight = false;
     }
   }
 

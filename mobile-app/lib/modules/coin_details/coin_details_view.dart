@@ -14,6 +14,7 @@ import '../../providers/global_provider.dart';
 import '../../routes/app_router.dart';
 import '../../widgets/common_back_button.dart';
 import '../../widgets/common_coin_icon.dart';
+import '../../widgets/common_loading_indicator.dart';
 import '../../widgets/no_transactions_found.dart';
 import '../../widgets/receive_send_swap_actions.dart';
 import '../dashboard/home/widgets/currency_selection_dialog.dart';
@@ -29,11 +30,14 @@ class CoinDetailsView extends StatelessWidget {
     final selectedCurrency = context.watch<GlobalProvider>().selectedCurrency;
     final coinsPrices = context.watch<CoinsPricesProvider>();
     final liveCoin = coinsPrices.coinForSymbol(coinModel?.symbol ?? '');
+
+    /// SSE clears coins and sets loading when currency changes; avoid showing
+    /// stale [coinModel] price/% until the new stream payload arrives.
+    final bool showPriceQuoteLoading =
+        coinsPrices.isLoading && liveCoin == null;
     final CoinModel? headerCoin = liveCoin ?? coinModel;
-    final priceQuoteLabel = liveCoin?.quoteCurrencyLabel(
-          context,
-          selectedCurrency,
-        ) ??
+    final priceQuoteLabel =
+        liveCoin?.quoteCurrencyLabel(context, selectedCurrency) ??
         coinModel?.quoteCurrencyLabel(context, selectedCurrency) ??
         l10n.currencyName(selectedCurrency.toLowerCase());
     final priceValue = liveCoin?.valueInUsd ?? coinModel?.valueInUsd;
@@ -197,7 +201,9 @@ class CoinDetailsView extends StatelessWidget {
                           child: Row(
                             children: [
                               Text(
-                                l10n.currencyName(selectedCurrency.toLowerCase()),
+                                l10n.currencyName(
+                                  selectedCurrency.toLowerCase(),
+                                ),
                                 style: context.textTheme.titleMedium?.copyWith(
                                   color: AppColors.textGrey,
                                   fontWeight: FontWeight.w600,
@@ -302,16 +308,11 @@ class CoinDetailsView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  if (coinsPrices.isLoading && !hasPrice)
-                    SizedBox(
+                  if (showPriceQuoteLoading)
+                    const SizedBox(
                       width: 28,
                       height: 28,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: context.isDarkMode
-                            ? AppColors.textWhite
-                            : AppColors.textBlack,
-                      ),
+                      child: CommonLoadingIndicator(),
                     )
                   else
                     RichText(
@@ -346,7 +347,7 @@ class CoinDetailsView extends StatelessWidget {
                 ],
               ),
             ),
-            if (hasPrice) ...[
+            if (!showPriceQuoteLoading && hasPrice) ...[
               const SizedBox(width: 12),
               Text(
                 changePercentText,

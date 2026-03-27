@@ -722,6 +722,12 @@ abstract class AppLocalizations {
   /// **'Forgot passcode'**
   String get forgotPasscode;
 
+  /// No description provided for @forgotPasscodePhoneMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load your phone number. Log out and sign in again, or contact support.'**
+  String get forgotPasscodePhoneMissing;
+
   /// No description provided for @dontHaveAccountSignUp.
   ///
   /// In en, this message translates to:

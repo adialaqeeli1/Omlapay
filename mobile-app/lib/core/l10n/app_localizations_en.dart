@@ -349,6 +349,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get forgotPasscode => 'Forgot passcode';
 
   @override
+  String get forgotPasscodePhoneMissing =>
+      'We couldn\'t load your phone number. Log out and sign in again, or contact support.';
+
+  @override
   String get dontHaveAccountSignUp => 'Don\'t have account? Sign Up';
 
   @override

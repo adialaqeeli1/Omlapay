@@ -132,6 +132,7 @@
     "phoneNumberPlaceholder": "000 000 0000",
     "phoneNumberMustBe9Digits": "Phone number must be 9 digits",
     "forgotPasscode": "Forgot passcode",
+    "forgotPasscodePhoneMissing": "We couldn't load your phone number. Log out and sign in again, or contact support.",
     "dontHaveAccountSignUp": "Don't have account? Sign Up",
     "welcomeToOmlapayLetsGetStarted": "Welcome to Omlapay, Let's get started!",
     "pleaseEnterYourDataToReceiveVerificationCodes": "Please enter your data to receive verification codes",

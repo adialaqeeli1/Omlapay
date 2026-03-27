@@ -343,6 +343,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get forgotPasscode => 'نسيت كلمة المرور';
 
   @override
+  String get forgotPasscodePhoneMissing =>
+      'تعذر تحميل رقم هاتفك. سجّل الخروج ثم أعد تسجيل الدخول، أو تواصل مع الدعم.';
+
+  @override
   String get dontHaveAccountSignUp => 'ليس لديك حساب؟ سجل';
 
   @override

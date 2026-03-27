@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'debug_route_observer.dart';
 import '../core/extentions/string_extensions.dart';
 import '../core/l10n/app_localizations.dart';
+import '../core/utils/user_auth_phone.dart';
 import '../../core/models/transaction_model/transaction_model.dart';
 import 'package:omlapay_mobile_app/core/models/coin_model/coin_model.dart';
 import '../core/models/wallet_model/wallet_model.dart';
@@ -119,8 +120,9 @@ class AppRouter {
 
           if (isSoftLogin || isChangePasscodeStep) {
             final user = context.read<AuthProvider>().state.user!;
-            countryCode = user.countryCode;
-            phoneNumber = user.mobileNumber;
+            final parts = authPhonePartsForUser(user);
+            countryCode = parts.countryCode;
+            phoneNumber = parts.mobileNumber;
           } else {
             countryCode = LoginProvider.defaultCountryCode;
             phoneNumber = '';
