@@ -219,7 +219,9 @@ class AppRouter {
               purpose != LoginProvider.purposeChangePasscode;
           final isRegistration = extra?['isRegistration'] as bool? ?? false;
           final maskedMobile = extra?['maskedMobile'] as String?;
-          final otpExpirySeconds = extra?['otpExpirySeconds'] as int? ?? VerificationProvider.countdownStartSeconds;
+          final otpExpirySeconds =
+              extra?['otpExpirySeconds'] as int? ??
+              VerificationProvider.countdownStartSeconds;
           return ChangeNotifierProvider(
             create: (_) => VerificationProvider(
               phoneNumber: phoneNumber,
@@ -440,6 +442,7 @@ class AppRouter {
               NotificationsListProvider(AppLocalizations.of(context)!),
           child: const NotificationsView(),
         ),
+        redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
         path: Routes.accountDetails,
@@ -543,6 +546,7 @@ class AppRouter {
             child: const SendSuccessView(),
           );
         },
+        redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
         path: Routes.receiveCoin,
@@ -551,6 +555,7 @@ class AppRouter {
           create: (_) => ReceiveCoinProvider(),
           child: const ReceiveCoinView(),
         ),
+        redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
         path: Routes.swapCoin,
@@ -562,6 +567,7 @@ class AppRouter {
           ),
           child: const SwapCoinView(),
         ),
+        redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
         path: Routes.swapReview,
@@ -573,6 +579,7 @@ class AppRouter {
             child: const ReviewOrderView(),
           );
         },
+        redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
         path: Routes.swapSuccess,
@@ -584,6 +591,7 @@ class AppRouter {
             child: const SwapSuccessView(),
           );
         },
+        redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
         path: Routes.transactionDetails,
@@ -596,6 +604,7 @@ class AppRouter {
             child: TransactionDetailsView(),
           );
         },
+        redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
         path: Routes.wallets,
@@ -607,6 +616,7 @@ class AppRouter {
             child: WalletsView(fromReceive: fromReceive),
           );
         },
+        redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
         path: Routes.qrCode,
@@ -615,11 +625,13 @@ class AppRouter {
           final wallet = state.extra as WalletModel;
           return QrCodeView(wallet: wallet);
         },
+        redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
         path: Routes.qrScanner,
         name: 'qrScanner',
         builder: (context, state) => QrScannerView(extra: state.extra),
+        redirect: AuthMiddleware.isAuthenticated,
       ),
     ],
   );

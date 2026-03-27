@@ -205,7 +205,9 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                 Clipboard.setData(ClipboardData(text: currentAddress));
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(l10n.copyLabelValue(l10n.copy, currentAddress)),
+                    content: Text(
+                      l10n.copyLabelValue(l10n.copy, currentAddress),
+                    ),
                     duration: const Duration(seconds: 2),
                   ),
                 );
