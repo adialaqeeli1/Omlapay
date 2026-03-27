@@ -132,6 +132,7 @@
     "phoneNumberPlaceholder": "000 000 0000",
     "phoneNumberMustBe9Digits": "يجب أن يكون رقم الهاتف 9 أرقام",
     "forgotPasscode": "نسيت كلمة المرور",
+    "forgotPasscodePhoneMissing": "تعذر تحميل رقم هاتفك. سجّل الخروج ثم أعد تسجيل الدخول، أو تواصل مع الدعم.",
     "dontHaveAccountSignUp": "ليس لديك حساب؟ سجل",
     "welcomeToOmlapayLetsGetStarted": "مرحبًا بك في أوملاباي، لنبدأ!",
     "pleaseEnterYourDataToReceiveVerificationCodes": "يرجى إدخال بياناتك لاستلام رموز التحقق",
