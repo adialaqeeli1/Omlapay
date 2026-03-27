@@ -18,10 +18,16 @@ class ApiHelper {
     );
   }
 
-  static Future<Map<String, dynamic>> get(String endpoint) async {
+  static Future<Map<String, dynamic>> get(
+    String endpoint, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
     try {
       final client = _getClient();
-      final response = await client.get(url: endpoint);
+      final response = await client.get(
+        url: endpoint,
+        queryParameters: queryParameters,
+      );
       return _handleNetworkResponse(response);
     } on DioException catch (e) {
       throw _handleDioException(e);

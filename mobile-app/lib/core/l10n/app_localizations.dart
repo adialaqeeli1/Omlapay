@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'OmlaPay'**
+  /// **'Omlapay'**
   String get appTitle;
 
   /// No description provided for @login.
@@ -143,7 +143,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcomeToOmlaPay.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to OmlaPay'**
+  /// **'Welcome to Omlapay'**
   String get welcomeToOmlaPay;
 
   /// No description provided for @email.
@@ -1111,6 +1111,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get cancel;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
 
   /// No description provided for @readyToLogOut.
   ///
