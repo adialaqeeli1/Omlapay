@@ -31,6 +31,13 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
+    final authState = context.watch<AuthProvider>().state;
+    final currentUser = authState.user;
+    final userPhone = _resolveDisplayPhone(
+      countryCode: currentUser?.countryCode ?? '',
+      mobileNumber: currentUser?.mobileNumber ?? '',
+      fullMobileNumber: currentUser?.fullMobileNumber,
+    );
 
     final screenWidth = context.width;
 
@@ -54,16 +61,52 @@ class HomeView extends StatelessWidget {
     final String selectedCurrency = context
         .watch<GlobalProvider>()
         .selectedCurrency;
-    final bool isAuthenticated = context
-        .watch<AuthProvider>()
-        .state
-        .isAuthenticated;
+    final bool isAuthenticated = authState.isAuthenticated;
 
     return CommonGridBgWrapper(
       headerTitle: l10n.seamlessCryptoPayments,
       headerSubTitle: l10n.instantSecureAnytime,
       horizontalPadding: horizontalPadding,
       applyHorizontalPaddingToHeaderButtonsOnly: true,
+      appBarLeading: Padding(
+        padding: EdgeInsetsDirectional.only(start: horizontalPadding),
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l10n.welcomeBack,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: context.isDarkMode
+                      ? AppColors.textGrey
+                      : AppColors.textLightGrey,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
+              if (isAuthenticated && userPhone.isNotEmpty)
+                Text(
+                  userPhone,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.textTheme.titleMedium?.copyWith(
+                    color: context.isDarkMode
+                        ? AppColors.textWhite
+                        : AppColors.textBlack,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+      appBarLeadingWidth: screenWidth * 0.62,
       appBarButtons: [
         // Notifications Icon
         CommonIconButton(
@@ -358,7 +401,7 @@ class HomeView extends StatelessWidget {
         textDirection: context.textDirection,
         start: 0,
         end: 0,
-        top: 0,
+        top: 16,
         child: Column(
           mainAxisSize: .min,
           crossAxisAlignment: .center,
@@ -465,7 +508,7 @@ class HomeView extends StatelessWidget {
       Positioned.directional(
         textDirection: context.textDirection,
         end: 16,
-        bottom: 0,
+        bottom: -10,
         child: IconButton(
           onPressed: () {
             if (isAuthenticated) {
@@ -492,4 +535,26 @@ class HomeView extends StatelessWidget {
       ),
     ],
   );
+
+  String _resolveDisplayPhone({
+    required String countryCode,
+    required String mobileNumber,
+    String? fullMobileNumber,
+  }) {
+    final fullPhone = (fullMobileNumber ?? '').trim();
+    if (fullPhone.isNotEmpty) {
+      return fullPhone.startsWith('+') ? fullPhone : '+$fullPhone';
+    }
+
+    final normalizedCountry = countryCode.trim();
+    final normalizedMobile = mobileNumber.trim();
+    if (normalizedCountry.isEmpty && normalizedMobile.isEmpty) {
+      return '';
+    }
+
+    final countryWithPlus = normalizedCountry.startsWith('+')
+        ? normalizedCountry
+        : '+$normalizedCountry';
+    return '$countryWithPlus $normalizedMobile'.trim();
+  }
 }

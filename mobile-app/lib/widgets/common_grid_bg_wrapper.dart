@@ -18,6 +18,8 @@ class CommonGridBgWrapper extends StatelessWidget {
     this.headerChild,
     this.bottomWidget,
     this.appBarButtons,
+    this.appBarLeading,
+    this.appBarLeadingWidth,
     this.applyHorizontalPaddingToHeaderButtonsOnly = false,
   });
 
@@ -28,6 +30,8 @@ class CommonGridBgWrapper extends StatelessWidget {
   final Widget? headerChild;
   final Widget? bottomWidget;
   final List<Widget>? appBarButtons;
+  final Widget? appBarLeading;
+  final double? appBarLeadingWidth;
   final bool applyHorizontalPaddingToHeaderButtonsOnly;
 
   @override
@@ -43,7 +47,8 @@ class CommonGridBgWrapper extends StatelessWidget {
             SliverOffstage(
               offstage: (appBarButtons ?? []).isNotEmpty == false,
               sliver: SliverAppBar(
-                leading: null,
+                leading: appBarLeading,
+                leadingWidth: appBarLeadingWidth,
                 automaticallyImplyLeading: false,
                 actions: appBarButtons,
                 iconTheme: context.theme.iconTheme,
@@ -204,7 +209,8 @@ class _CommonGridBgWrapperDelegate extends SliverPersistentHeaderDelegate {
                               onTap: () => context.push(
                                 Routes.loginOrRegister,
                                 extra: <String, String>{
-                                  LoginProvider.extraModeKey: LoginProvider.modeHardLogin,
+                                  LoginProvider.extraModeKey:
+                                      LoginProvider.modeHardLogin,
                                 },
                               ),
                             ),
@@ -217,7 +223,8 @@ class _CommonGridBgWrapperDelegate extends SliverPersistentHeaderDelegate {
                               onTap: () => context.push(
                                 Routes.loginOrRegister,
                                 extra: <String, String>{
-                                  LoginProvider.extraModeKey: LoginProvider.modeRegister,
+                                  LoginProvider.extraModeKey:
+                                      LoginProvider.modeRegister,
                                 },
                               ),
                             ),

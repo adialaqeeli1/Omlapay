@@ -1036,4 +1036,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get notificationMockWeeklyBody =>
       'Your weekly transaction summary is ready.';
+
+  @override
+  String get welcomeBack => 'Welcome Back';
 }

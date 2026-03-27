@@ -417,5 +417,6 @@
     "notificationMockVerifyTitle": "تحقق من حسابك",
     "notificationMockVerifyBody": "التحقق من حسابك قيد الانتظار...",
     "notificationMockWeeklyTitle": "ملخص أسبوعي",
-    "notificationMockWeeklyBody": "ملخص معاملاتك الأسبوعي جاهز."
+    "notificationMockWeeklyBody": "ملخص معاملاتك الأسبوعي جاهز.",
+    "welcomeBack": "مرحبًا بعودتك"
 }

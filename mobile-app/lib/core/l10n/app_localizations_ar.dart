@@ -1027,4 +1027,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get notificationMockWeeklyBody => 'ملخص معاملاتك الأسبوعي جاهز.';
+
+  @override
+  String get welcomeBack => 'مرحبًا بعودتك';
 }
