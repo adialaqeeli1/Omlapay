@@ -417,5 +417,6 @@
     "notificationMockVerifyTitle": "Verify Your Account",
     "notificationMockVerifyBody": "Your account verification is pending...",
     "notificationMockWeeklyTitle": "Weekly Summary",
-    "notificationMockWeeklyBody": "Your weekly transaction summary is ready."
+    "notificationMockWeeklyBody": "Your weekly transaction summary is ready.",
+    "welcomeBack": "Welcome Back"
 }
