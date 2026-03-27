@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -6,10 +7,13 @@ import 'package:provider/provider.dart';
 import 'package:country_picker/country_picker.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/theme.dart';
 import '../providers/login_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_back_button.dart';
+import '../../../widgets/privacy_policy_dialog.dart';
+import '../../../widgets/terms_of_services_dialog.dart';
 
 class LoginOrRegisterScreen extends StatelessWidget {
   const LoginOrRegisterScreen({super.key});
@@ -283,40 +287,10 @@ class LoginOrRegisterScreen extends StatelessWidget {
                     Center(
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 16),
-                        child: RichText(
-                          textAlign: TextAlign.center,
-
-                          text: TextSpan(
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              color: mutedTextColor,
-                              height: 1.4,
-                            ),
-                            children: [
-                              TextSpan(
-                                text:
-                                    '${l10n.byCreatingAnAccountIAgreeToMushafars} ',
-                              ),
-                              TextSpan(
-                                text: l10n.termsOfService,
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.primaryColor,
-                                ),
-                              ),
-                              TextSpan(text: ' ${l10n.andWord} '),
-                              TextSpan(
-                                text: l10n.privacyPolicy,
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.primaryColor,
-                                ),
-                              ),
-                            ],
-                          ),
+                        child: _LoginFooterAgreementText(
+                          l10n: l10n,
+                          theme: theme,
+                          mutedTextColor: mutedTextColor,
                         ),
                       ),
                     ),
@@ -326,6 +300,85 @@ class LoginOrRegisterScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _LoginFooterAgreementText extends StatefulWidget {
+  const _LoginFooterAgreementText({
+    required this.l10n,
+    required this.theme,
+    required this.mutedTextColor,
+  });
+
+  final AppLocalizations l10n;
+  final ThemeData theme;
+  final Color mutedTextColor;
+
+  @override
+  State<_LoginFooterAgreementText> createState() =>
+      _LoginFooterAgreementTextState();
+}
+
+class _LoginFooterAgreementTextState extends State<_LoginFooterAgreementText> {
+  late final TapGestureRecognizer _termsTap;
+  late final TapGestureRecognizer _privacyTap;
+
+  @override
+  void initState() {
+    super.initState();
+    _termsTap = TapGestureRecognizer();
+    _privacyTap = TapGestureRecognizer();
+  }
+
+  @override
+  void dispose() {
+    _termsTap.dispose();
+    _privacyTap.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = widget.l10n;
+    final theme = widget.theme;
+    _termsTap.onTap = () => showTermsOfServicesDialog(context);
+    _privacyTap.onTap = () => showPrivacyPolicyDialog(context);
+
+    return RichText(
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        style: theme.textTheme.bodyLarge?.copyWith(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: widget.mutedTextColor,
+          height: 1.4,
+        ),
+        children: [
+          TextSpan(
+            text: '${l10n.byCreatingAnAccountIAgreeToMushafars} ',
+          ),
+          TextSpan(
+            text: l10n.termsOfService,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primaryColor,
+            ),
+            recognizer: _termsTap,
+          ),
+          TextSpan(text: ' ${l10n.andWord} '),
+          TextSpan(
+            text: l10n.privacyPolicy,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primaryColor,
+            ),
+            recognizer: _privacyTap,
+          ),
+        ],
       ),
     );
   }

@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'OmlaPay';
+  String get appTitle => 'Omlapay';
 
   @override
   String get login => 'Login';
@@ -30,7 +30,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profile => 'Profile';
 
   @override
-  String get welcomeToOmlaPay => 'Welcome to OmlaPay';
+  String get welcomeToOmlaPay => 'Welcome to Omlapay';
 
   @override
   String get email => 'Email';
@@ -553,6 +553,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancel => 'Cancel';
+
+  @override
+  String get close => 'Close';
 
   @override
   String get readyToLogOut => 'Ready to log out?';
