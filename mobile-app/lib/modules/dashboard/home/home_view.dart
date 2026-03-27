@@ -68,44 +68,45 @@ class HomeView extends StatelessWidget {
       headerSubTitle: l10n.instantSecureAnytime,
       horizontalPadding: horizontalPadding,
       applyHorizontalPaddingToHeaderButtonsOnly: true,
-      appBarLeading: Padding(
-        padding: EdgeInsetsDirectional.only(start: horizontalPadding),
-        child: Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                l10n.welcomeBack,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: context.textTheme.bodySmall?.copyWith(
-                  color: context.isDarkMode
-                      ? AppColors.textGrey
-                      : AppColors.textLightGrey,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
+      appBarLeading: isAuthenticated && userPhone.isNotEmpty
+          ? Padding(
+              padding: EdgeInsetsDirectional.only(start: horizontalPadding),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      l10n.welcomeBack,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: context.isDarkMode
+                            ? AppColors.textGrey
+                            : AppColors.textLightGrey,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      userPhone,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.textTheme.titleMedium?.copyWith(
+                        color: context.isDarkMode
+                            ? AppColors.textWhite
+                            : AppColors.textBlack,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              if (isAuthenticated && userPhone.isNotEmpty)
-                Text(
-                  userPhone,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.textTheme.titleMedium?.copyWith(
-                    color: context.isDarkMode
-                        ? AppColors.textWhite
-                        : AppColors.textBlack,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
+            )
+          : null,
       appBarLeadingWidth: screenWidth * 0.62,
       appBarButtons: [
         // Notifications Icon
