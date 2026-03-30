@@ -103,14 +103,14 @@ class SettingsView extends StatelessWidget {
                           );
                         },
                       ),
-                      // _buildSimpleSettingOption(
-                      //   context: context,
-                      //   label: l10n.twoFactorAuthentication,
-                      //   screenWidth: screenWidth,
-                      //   onTap: () {
-                      //     // TODO: Navigate to change passcode
-                      //   },
-                      // ),
+                      _buildSimpleSettingOption(
+                        context: context,
+                        label: l10n.twoFactorAuthentication,
+                        screenWidth: screenWidth,
+                        onTap: () {
+                          // TODO: Navigate to change passcode
+                        },
+                      ),
                     ],
                   ),
                 ],
