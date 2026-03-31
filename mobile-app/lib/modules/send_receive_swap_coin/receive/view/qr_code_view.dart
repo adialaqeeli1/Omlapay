@@ -7,14 +7,14 @@ import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-import '../../../core/extentions/context_extensions.dart';
-import '../../../core/theme/theme.dart';
-import '../../../widgets/common_back_button.dart';
-import '../../../core/models/wallet_model/wallet_model.dart';
-import '../../dashboard/history/widgets/image_save_as_bottom_sheet.dart';
+import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/theme/theme.dart';
+import '../../../../widgets/common_back_button.dart';
+import '../../../../core/models/wallet_model/wallet_model.dart';
+import '../../../dashboard/history/widgets/image_save_as_bottom_sheet.dart';
 
 class QrCodeView extends StatefulWidget {
-  final WalletModel wallet;
+  final WalletCoinModel wallet;
 
   const QrCodeView({super.key, required this.wallet});
 
@@ -85,7 +85,7 @@ class _QrCodeViewState extends State<QrCodeView> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: QrImageView(
-                          data: widget.wallet.address,
+                          data: widget.wallet.address ?? '',
                           version: QrVersions.auto,
                           size: 280,
                           backgroundColor: Colors.white,
@@ -169,15 +169,15 @@ class _QrCodeViewState extends State<QrCodeView> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ImageSaveAsBottomSheet(
-        onSave: (format) => _saveImage(format),
-      ),
+      builder: (context) =>
+          ImageSaveAsBottomSheet(onSave: (format) => _saveImage(format)),
     );
   }
 
   Future<void> _saveImage(ImageSaveFormat format) async {
-    final boundary = _qrBoundaryKey.currentContext?.findRenderObject()
-        as RenderRepaintBoundary?;
+    final boundary =
+        _qrBoundaryKey.currentContext?.findRenderObject()
+            as RenderRepaintBoundary?;
     if (boundary == null || !mounted) return;
 
     final l10n = context.l10n!;
@@ -204,9 +204,9 @@ class _QrCodeViewState extends State<QrCodeView> {
     await file.writeAsBytes(bytes);
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.imageSavedSuccessfully)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.imageSavedSuccessfully)));
   }
 
   String _getIconLetter(String symbol) {

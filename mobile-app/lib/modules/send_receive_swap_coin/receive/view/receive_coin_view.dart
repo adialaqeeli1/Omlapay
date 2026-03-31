@@ -1,230 +1,383 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
-import 'package:crypto_font_icons/crypto_font_icons.dart';
-import '../../../../core/l10n/app_localizations.dart';
+
+import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/theme/theme.dart';
-import '../../../../widgets/common_coin_icon.dart';
-import '../../../../widgets/no_transactions_found.dart';
-import '../../../../core/models/transaction_model/transaction_model.dart';
-import '../../../../widgets/theme_aware_icon.dart';
+import '../../../../providers/auth_provider.dart';
+import '../../../../routes/app_router.dart';
+import '../../../../widgets/common_loading_indicator.dart';
+import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
+import '../../../../widgets/common_back_button.dart';
+import '../../../../widgets/kyc_verification_required_banner.dart';
+import '../../../../core/models/wallet_model/wallet_model.dart';
 import '../provider/receive_coin_provider.dart';
 
 class ReceiveCoinView extends StatelessWidget {
-  const ReceiveCoinView({super.key});
+  const ReceiveCoinView({super.key, this.fromReceive = false});
+
+  final bool fromReceive;
+  static const String _maskedAddress = 'XXXX XXXX XXXX';
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final provider = context.watch<ReceiveCoinProvider>();
-    final tabs = provider.uniqueCoinSymbols;
+    final provider = context.watch<ReciveCoinProvider>();
+    final authProvider = context.watch<AuthProvider>();
+    final l10n = context.l10n!;
+    final title = fromReceive ? l10n.receive : l10n.walletsTitle;
+    final showVerificationBanner =
+        provider.kycRequired || authProvider.state.user?.isVerified != true;
 
-    if (provider.isLoading) {
-      return Scaffold(
-        appBar: AppBar(title: Text(l10n.receive), centerTitle: true),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    return DefaultTabController(
-      length: tabs.length,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(l10n.receive),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: ThemeAwareIcon(
-                assetPath: "assets/icons/notifications-icon.svg",
-                width: 24,
-                height: 24,
-              ),
-              onPressed: () => context.pushNamed('notifications'),
-              constraints: BoxConstraints.loose(const Size(24, 24)),
-              padding: EdgeInsets.zero,
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text(title, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: const CommonBackButton(),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.history_rounded,
+              color: Colors.white,
+              size: 24,
             ),
-          ],
-          bottom: TabBar(
-            isScrollable: tabs.length > 4,
-            tabAlignment: tabs.length > 4
-                ? TabAlignment.start
-                : TabAlignment.fill,
-            indicatorWeight: 0.1,
-            indicatorPadding: const EdgeInsets.symmetric(horizontal: 4),
-            indicatorAnimation: TabIndicatorAnimation.linear,
-            automaticIndicatorColorAdjustment: true,
-            indicatorColor: const Color(0xFF00CFA5),
-            indicatorSize: TabBarIndicatorSize.tab,
-            labelColor: const Color(0xFF00CFA5),
-            unselectedLabelColor: Colors.grey,
-            labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-            dividerColor: Colors.transparent,
-            tabs: tabs.map((e) => Tab(text: e)).toList(),
+            onPressed: () => context.push(Routes.receiveCoinsHistory),
+            tooltip: l10n.history,
           ),
-        ),
-        body: TabBarView(
-          physics: const NeverScrollableScrollPhysics(),
-          children: tabs.map((e) => _TransactionList(coinSymbol: e)).toList(),
-        ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                child: Text(
+                  l10n.yourWalletsTitle,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: provider.isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.tealColor,
+                        ),
+                      )
+                    : Stack(
+                        children: [
+                          ClipRect(
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(
+                                sigmaX: showVerificationBanner ? 5 : 0,
+                                sigmaY: showVerificationBanner ? 5 : 0,
+                              ),
+                              child: Opacity(
+                                opacity: showVerificationBanner ? 0.55 : 1,
+                                child: ListView.separated(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
+                                  itemCount: provider.wallets.length,
+                                  separatorBuilder: (context, index) =>
+                                      const SizedBox(height: 12),
+                                  itemBuilder: (context, index) {
+                                    final wallet = provider.wallets[index];
+                                    return _buildWalletItem(
+                                      context,
+                                      wallet,
+                                      provider,
+                                      showVerificationBanner,
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Dark overlay so list feels partially hidden
+                          IgnorePointer(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.black.withValues(alpha: 0.15),
+                                    Colors.black.withValues(alpha: 0.4),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+              if (showVerificationBanner)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                  child: KycVerificationRequiredBanner(
+                    messageBody: l10n.receiveKycVerificationRequiredBody,
+                    entrySource: KycVerificationEntrySource.receive,
+                  ),
+                ),
+            ],
+          ),
+
+          // Copied message overlay
+          if (provider.addressCopiedVisible)
+            Positioned(
+              bottom: 30,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.tealColor.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.check_circle,
+                        color: AppColors.tealColor,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.addressCopiedToast,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
-}
 
-class _TransactionList extends StatelessWidget {
-  final String coinSymbol;
-
-  const _TransactionList({required this.coinSymbol});
-
-  @override
-  Widget build(BuildContext context) {
-    final provider = context.watch<ReceiveCoinProvider>();
-    // Note: getTransactionsForCoin is not reactive if we don't watch the list,
-    // but we watched the provider globally in parent.
-    // However, clean logic is to watch here or select data.
-    // Provider notifyListeners() rebuilds consumers.
-    // Since we are inside Consumer (via watch above), it rebuilds this widget.
-
-    final List<TransactionModel> transactions = provider.getTransactionsForCoin(
-      coinSymbol,
-    );
-
-    if (transactions.isEmpty) {
-      return const Center(child: NoTransactionsFound());
-    }
-
-    final l10n = AppLocalizations.of(context)!;
-    final grouped = _groupTransactions(transactions, l10n);
-
-    return CustomScrollView(
-      physics: const AlwaysScrollableScrollPhysics(
-        parent: ClampingScrollPhysics(),
-      ),
-      slivers: grouped.entries.expand((entry) {
-        return [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                entry.key,
-                style: const TextStyle(color: Colors.grey, fontSize: 14),
-              ),
-            ),
-          ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              final tx = entry.value[index];
-              return _TransactionItem(transaction: tx);
-            }, childCount: entry.value.length),
-          ),
-        ];
-      }).toList(),
-    );
-  }
-
-  Map<String, List<TransactionModel>> _groupTransactions(
-    List<TransactionModel> transactions,
-    AppLocalizations l10n,
+  Widget _buildWalletItem(
+    BuildContext context,
+    WalletNetworkModel wallet,
+    ReciveCoinProvider provider,
+    bool showVerificationBanner,
   ) {
-    final grouped = <String, List<TransactionModel>>{};
-    for (var tx in transactions) {
-      final key = _getDateLabel(tx.date, l10n);
-      grouped.putIfAbsent(key, () => []).add(tx);
-    }
-    return grouped;
+    final primaryCoin = _primaryCoin(wallet);
+    final primaryAddress = primaryCoin?.address;
+    final hasAddress = _hasValidAddress(primaryAddress);
+    final canUseActions = !showVerificationBanner && hasAddress;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        border: Border.all(color: const Color(0xFF2C2C2E), width: 1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          // Wallet Icon
+          _buildWalletIcon(wallet),
+          const SizedBox(width: 12),
+
+          // Wallet info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  wallet.networkDisplayName.isNotEmpty
+                      ? wallet.networkDisplayName
+                      : wallet.network,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _displayAddress(primaryAddress),
+                  style: const TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // QR Code button
+          _buildIconButton(
+            assetPath: 'assets/icons/qr-icon.svg',
+            onTap: canUseActions
+                ? () {
+                    context.push(Routes.qrCode, extra: primaryCoin);
+                  }
+                : null,
+          ),
+          const SizedBox(width: 8),
+
+          // Copy button
+          _buildIconButton(
+            icon: Icons.copy_rounded,
+            onTap: canUseActions
+                ? () {
+                    final address = (primaryAddress ?? '').trim();
+                    Clipboard.setData(ClipboardData(text: address));
+                    provider.copyAddress(address);
+                  }
+                : null,
+          ),
+        ],
+      ),
+    );
   }
 
-  String _getDateLabel(DateTime date, AppLocalizations l10n) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final txDate = DateTime(date.year, date.month, date.day);
+  Widget _buildWalletIcon(WalletNetworkModel wallet) {
+    String assetPath;
+    const backgroundColor = Color(0xFF26A69A);
+    final network = wallet.network.trim().toUpperCase();
+    final iconUrl = wallet.networkIconUrl.trim();
 
-    if (txDate.isAtSameMomentAs(today)) {
-      return l10n.recently;
+    switch (network) {
+      case 'TRX':
+        assetPath = 'assets/icons/tron.svg';
+        break;
+      case 'BTC':
+        assetPath = 'assets/icons/bitcoin.svg';
+        break;
+      case 'ETH':
+        assetPath = 'assets/icons/evm.svg';
+        break;
+      case 'BNB':
+        assetPath = 'assets/icons/evm.svg';
+        break;
+      case 'SOL':
+        assetPath = 'assets/icons/solana.svg';
+        break;
+      default:
+        assetPath = 'assets/icons/bitcoin.svg';
     }
 
-    // Check if it's this month? Or just Month Year.
-    // Design "July, 2024"
-    return DateFormat('MMMM, yyyy', l10n.localeName).format(date);
+    return Container(
+      width: 32,
+      height: 32,
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: backgroundColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: iconUrl.isNotEmpty
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                iconUrl,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(child: CommonLoadingIndicator());
+                },
+                errorBuilder: (_, _, _) => SvgPicture.asset(
+                  assetPath,
+                  colorFilter: const ColorFilter.mode(
+                    backgroundColor,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+            )
+          : SvgPicture.asset(
+              assetPath,
+              colorFilter: const ColorFilter.mode(
+                backgroundColor,
+                BlendMode.srcIn,
+              ),
+            ),
+    );
   }
-}
 
-class _TransactionItem extends StatelessWidget {
-  final TransactionModel transaction;
-
-  const _TransactionItem({required this.transaction});
-
-  @override
-  Widget build(BuildContext context) {
-    Color? iconBackgroundColor;
-    Widget? fallbackIcon;
-
-    if (transaction.coinSymbol == 'USDT') {
-      iconBackgroundColor = AppColors.usdtColor;
-      fallbackIcon = DecoratedBox(
-        decoration: const BoxDecoration(
-          color: AppColors.usdtColor,
-          shape: BoxShape.circle,
+  Widget _buildIconButton({
+    IconData? icon,
+    String? assetPath,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: const Color(0xFF2C2C2E),
+          borderRadius: BorderRadius.circular(8),
         ),
-        child: const Padding(
-          padding: EdgeInsets.all(8),
-          child: Icon(CryptoFontIcons.USDT, color: Colors.white, size: 24),
-        ),
-      );
-    } else if (transaction.coinSymbol == 'ETH') {
-      iconBackgroundColor = AppColors.textWhite;
-      fallbackIcon = DecoratedBox(
-        decoration: const BoxDecoration(
-          color: AppColors.textWhite,
-          shape: BoxShape.circle,
-        ),
-        child: const Padding(
-          padding: EdgeInsets.all(8),
-          child: Icon(CryptoFontIcons.ETH, color: Colors.black, size: 24),
-        ),
-      );
-    } else if (transaction.coinSymbol == 'BTC') {
-      iconBackgroundColor = AppColors.bitcoinColor;
-      fallbackIcon = DecoratedBox(
-        decoration: const BoxDecoration(
-          color: AppColors.bitcoinColor,
-          shape: BoxShape.circle,
-        ),
-        child: const Padding(
-          padding: EdgeInsets.all(8),
-          child: Icon(CryptoFontIcons.BTC, color: Colors.white, size: 24),
-        ),
-      );
-    }
-
-    return ListTile(
-      onTap: () {
-        context.pushNamed('transactionDetails', extra: transaction);
-      },
-      leading: CommonCoinIcon(
-        symbol: transaction.coinSymbol,
-        iconBackgroundColor: iconBackgroundColor,
-        fallbackIcon: fallbackIcon,
-      ),
-      title: Text(
-        transaction.coinSymbol,
-        style: const TextStyle(fontWeight: FontWeight.bold),
-      ),
-      subtitle: Text(
-        DateFormat(
-          'yyyy-MM-dd HH:mm:ss',
-          AppLocalizations.of(context)!.localeName,
-        ).format(transaction.date),
-        style: const TextStyle(color: Colors.grey, fontSize: 12),
-      ),
-      trailing: Text(
-        '+${double.parse(transaction.amount).toStringAsFixed(2)} ${transaction.coinSymbol}',
-        style: const TextStyle(
-          color: Color(0xFF00CFA5), // Green color
-          fontWeight: FontWeight.bold,
+        child: Center(
+          child: icon != null
+              ? Icon(icon, color: Colors.white, size: 18)
+              : SvgPicture.asset(
+                  assetPath!,
+                  width: 18,
+                  height: 18,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
+                ),
         ),
       ),
     );
+  }
+
+  String _displayAddress(String? address) {
+    if (!_hasValidAddress(address)) return _maskedAddress;
+    return _truncateAddress(address!.trim());
+  }
+
+  bool _hasValidAddress(String? address) {
+    if (address == null) return false;
+    final normalized = address.trim().toLowerCase();
+    return normalized.isNotEmpty &&
+        normalized != 'null' &&
+        normalized != 'undefined';
+  }
+
+  String _truncateAddress(String address) {
+    if (address.length <= 20) return address;
+    return '${address.substring(0, 12)}...${address.substring(address.length - 6)}';
+  }
+
+  WalletCoinModel? _primaryCoin(WalletNetworkModel wallet) {
+    for (final coin in wallet.coins) {
+      if (_hasValidAddress(coin.address)) {
+        return coin;
+      }
+    }
+    if (wallet.coins.isEmpty) {
+      return null;
+    }
+    return wallet.coins.first;
   }
 }

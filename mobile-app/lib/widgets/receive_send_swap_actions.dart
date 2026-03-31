@@ -23,7 +23,7 @@ class ReceiveSendSwapActions extends StatelessWidget {
             context,
             icon: 'assets/icons/Receive.svg',
             label: l10n.receive,
-            onTap: () => context.push(Routes.wallets, extra: true),
+            onTap: () => context.push(Routes.recieveCoins, extra: true),
           ),
         ),
         Flexible(

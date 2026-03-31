@@ -260,7 +260,7 @@ class LoginOrRegisterScreen extends StatelessWidget {
                     Center(
                       child: GestureDetector(
                         onTap: () {
-                          context.go(
+                          context.push(
                             Routes.loginOrRegister,
                             extra: <String, String>{
                               LoginProvider.extraModeKey: isRegister
@@ -356,9 +356,7 @@ class _LoginFooterAgreementTextState extends State<_LoginFooterAgreementText> {
           height: 1.4,
         ),
         children: [
-          TextSpan(
-            text: '${l10n.byCreatingAnAccountIAgreeToMushafars} ',
-          ),
+          TextSpan(text: '${l10n.byCreatingAnAccountIAgreeToMushafars} '),
           TextSpan(
             text: l10n.termsOfService,
             style: theme.textTheme.bodyLarge?.copyWith(

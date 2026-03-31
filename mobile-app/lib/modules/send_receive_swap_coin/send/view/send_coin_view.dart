@@ -9,9 +9,11 @@ import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/utility.dart';
 import '../../../../routes/app_router.dart';
+import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../../../scan/view/qr_scanner_view.dart';
 import '../../../../widgets/common_back_button.dart';
 import '../../../../widgets/common_coin_icon.dart';
+import '../../../../widgets/kyc_verification_required_banner.dart';
 import '../../swap/view/coin_selection_sheet.dart';
 import '../provider/send_provider.dart';
 import '../widgets/contact_selection_sheet.dart';
@@ -89,7 +91,10 @@ class SendCoinView extends StatelessWidget {
                   // Verification Warning
                   if (provider.showVerificationWarning) ...[
                     const SizedBox(height: 30),
-                    _buildVerificationBanner(context, provider, l10n),
+                    KycVerificationRequiredBanner(
+                      messageBody: l10n.sendKycVerificationRequiredBody,
+                      entrySource: KycVerificationEntrySource.send,
+                    ),
                   ],
                 ],
               ),
@@ -288,64 +293,6 @@ class SendCoinView extends StatelessWidget {
           ),
           border: InputBorder.none,
         ),
-      ),
-    );
-  }
-
-  Widget _buildVerificationBanner(
-    BuildContext context,
-    SendProvider provider,
-    AppLocalizations l10n,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF3F1519), // Dark Red background
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF8B252C)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.error_outline, color: Colors.white, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: RichText(
-              text: TextSpan(
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  height: 1.4,
-                ),
-                children: [
-                  TextSpan(text: l10n.sendKycVerificationRequiredBody),
-                  WidgetSpan(
-                    child: GestureDetector(
-                      onTap: () async {
-                        final result = await context.push(
-                          Routes.sendVerification,
-                        );
-                        if (result == true) {
-                          // ignore: use_build_context_synchronously
-                          provider.completeVerification();
-                        }
-                      },
-                      child: Text(
-                        l10n.verifyNowButton,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          decoration: TextDecoration.underline,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

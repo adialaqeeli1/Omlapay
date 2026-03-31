@@ -94,6 +94,7 @@ class HomeView extends StatelessWidget {
                       userPhone,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                      textDirection: TextDirection.ltr,
                       style: context.textTheme.titleMedium?.copyWith(
                         color: context.isDarkMode
                             ? AppColors.textWhite

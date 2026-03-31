@@ -7,6 +7,7 @@ import '../../../core/extentions/context_extensions.dart';
 import '../../../core/theme/theme.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../routes/app_router.dart';
+import '../../kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../../../widgets/common_grid_bg_wrapper.dart';
 import '../../../widgets/theme_aware_icon.dart';
 
@@ -162,7 +163,10 @@ class ProfileView extends StatelessWidget {
     final textColor = theme.textTheme.bodyMedium?.color ?? Colors.black;
 
     return ListTile(
-      onTap: () => GoRouter.of(context).push(Routes.kycVerification),
+      onTap: () => context.push(
+        Routes.kycVerification,
+        extra: KycVerificationEntrySource.profile,
+      ),
       mouseCursor: SystemMouseCursors.click,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       splashColor: AppColors.primaryColor.withAlpha(40),
@@ -287,6 +291,7 @@ class ProfileView extends StatelessWidget {
         Expanded(
           child: Text(
             phoneNumber,
+            textDirection: TextDirection.ltr,
             style: context.textTheme.headlineLarge?.copyWith(
               color: context.isDarkMode ? AppColors.white : AppColors.textBlack,
               fontWeight: FontWeight.bold,

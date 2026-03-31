@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../modules/send_receive_swap_coin/receive/provider/receive_coin_provider.dart';
+import '../modules/send_receive_swap_coin/receive/view/receive_coins_history_view.dart';
 import 'debug_route_observer.dart';
 import '../core/extentions/string_extensions.dart';
 import '../core/l10n/app_localizations.dart';
@@ -27,7 +29,7 @@ import '../modules/dashboard/profile/about/faqs_view.dart';
 import '../modules/dashboard/profile/about/privacy_policy_view.dart';
 import '../modules/dashboard/profile/about/terms_conditions_view.dart';
 import '../modules/dashboard/profile/help_center/help_center_view.dart';
-import '../modules/dashboard/profile/kyc_verification_view.dart';
+import '../modules/kyc_verification/view/kyc_verification_view.dart';
 import '../modules/dashboard/profile/help_center/past_requests_view.dart';
 import '../modules/dashboard/profile/help_center/send_request_view.dart';
 import '../modules/dashboard/profile/profile_view.dart';
@@ -35,12 +37,11 @@ import '../modules/onboarding/onboarding_view.dart';
 import 'package:provider/provider.dart';
 
 import '../modules/onboarding/provider/onboarding_provider.dart';
-import '../modules/send_receive_swap_coin/receive/provider/receive_coin_provider.dart';
+import '../modules/send_receive_swap_coin/receive/provider/receive_coins_history_provider.dart';
 import '../modules/send_receive_swap_coin/receive/view/receive_coin_view.dart';
 import '../modules/send_receive_swap_coin/send/view/send_coin_view.dart';
 import '../modules/send_receive_swap_coin/send/view/review_send_view.dart';
 import '../modules/send_receive_swap_coin/send/view/send_success_view.dart';
-import '../modules/send_receive_swap_coin/send/view/send_verification_view.dart';
 import '../modules/send_receive_swap_coin/send/provider/send_provider.dart';
 import '../modules/send_receive_swap_coin/swap/view/swap_coin_view.dart';
 import '../modules/send_receive_swap_coin/swap/provider/swap_provider.dart';
@@ -48,9 +49,7 @@ import '../modules/send_receive_swap_coin/swap/view/review_order_view.dart';
 import '../modules/send_receive_swap_coin/swap/view/swap_success_view.dart';
 import '../modules/transaction_details/provider/transaction_details_provider.dart';
 import '../modules/transaction_details/view/transaction_details_view.dart';
-import '../modules/wallets/provider/wallets_provider.dart';
-import '../modules/wallets/view/wallets_view.dart';
-import '../modules/wallets/view/qr_code_view.dart';
+import '../modules/send_receive_swap_coin/receive/view/qr_code_view.dart';
 import '../modules/scan/view/qr_scanner_view.dart';
 import '../modules/settings/view/settings_view.dart';
 import '../modules/settings/view/account_details_view.dart';
@@ -71,6 +70,7 @@ import '../modules/splash/splash_view.dart';
 import '../providers/auth_provider.dart';
 import '../providers/coins_prices_provider.dart';
 import 'middlewares/auth_middleware.dart';
+import '../modules/kyc_verification/utils/kyc_verification_entry_source.dart';
 
 part 'app_routes.dart';
 
@@ -474,11 +474,14 @@ class AppRouter {
         path: Routes.helpCenter,
         name: 'helpCenter',
         builder: (context, state) => const HelpCenterView(),
+        redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
         path: Routes.kycVerification,
         name: 'kycVerification',
-        builder: (context, state) => const KycVerificationView(),
+        builder: (context, state) => KycVerificationView(
+          entrySource: KycVerificationEntrySource.fromExtra(state.extra),
+        ),
       ),
       GoRoute(
         path: Routes.sendRequest,
@@ -531,11 +534,11 @@ class AppRouter {
           );
         },
       ),
-      GoRoute(
-        path: Routes.sendVerification,
-        name: 'sendVerification',
-        builder: (context, state) => const SendVerificationView(),
-      ),
+      // GoRoute(
+      //   path: Routes.sendVerification,
+      //   name: 'sendVerification',
+      //   builder: (context, state) => const SendVerificationView(),
+      // ),
       GoRoute(
         path: Routes.sendSuccess,
         name: 'sendSuccess',
@@ -549,11 +552,24 @@ class AppRouter {
         redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
-        path: Routes.receiveCoin,
-        name: 'receiveCoin',
+        path: Routes.recieveCoins,
+        name: 'recieveCoins',
+        builder: (context, state) {
+          final fromReceive = state.extra == true;
+          return ChangeNotifierProvider(
+            create: (_) => ReciveCoinProvider(),
+            child: ReceiveCoinView(fromReceive: fromReceive),
+          );
+        },
+        redirect: AuthMiddleware.isAuthenticated,
+      ),
+      GoRoute(
+        path: Routes.receiveCoinsHistory,
+        name: 'receiveCoinsHistory',
         builder: (context, state) => ChangeNotifierProvider(
-          create: (_) => ReceiveCoinProvider(),
-          child: const ReceiveCoinView(),
+          create: (_) =>
+              ReceiveCoinsHistoryProvider(context.read<AuthProvider>()),
+          child: const ReceiveCoinsHistoryView(),
         ),
         redirect: AuthMiddleware.isAuthenticated,
       ),
@@ -606,23 +622,12 @@ class AppRouter {
         },
         redirect: AuthMiddleware.isAuthenticated,
       ),
-      GoRoute(
-        path: Routes.wallets,
-        name: 'wallets',
-        builder: (context, state) {
-          final fromReceive = state.extra == true;
-          return ChangeNotifierProvider(
-            create: (_) => WalletsProvider(),
-            child: WalletsView(fromReceive: fromReceive),
-          );
-        },
-        redirect: AuthMiddleware.isAuthenticated,
-      ),
+
       GoRoute(
         path: Routes.qrCode,
         name: 'qrCode',
         builder: (context, state) {
-          final wallet = state.extra as WalletModel;
+          final wallet = state.extra as WalletCoinModel;
           return QrCodeView(wallet: wallet);
         },
         redirect: AuthMiddleware.isAuthenticated,

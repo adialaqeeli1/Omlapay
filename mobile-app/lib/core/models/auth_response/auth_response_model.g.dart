@@ -10,6 +10,7 @@ _AuthResponseModel _$AuthResponseModelFromJson(Map<String, dynamic> json) =>
     _AuthResponseModel(
       status: json['status'] as String,
       message: json['message'] as String,
+      messageAr: json['message_ar'] as String,
       data: json['data'] == null
           ? null
           : AuthResponseData.fromJson(json['data'] as Map<String, dynamic>),
@@ -19,6 +20,7 @@ Map<String, dynamic> _$AuthResponseModelToJson(_AuthResponseModel instance) =>
     <String, dynamic>{
       'status': instance.status,
       'message': instance.message,
+      'message_ar': instance.messageAr,
       'data': instance.data,
     };
 

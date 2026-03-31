@@ -9,6 +9,7 @@ abstract class AuthResponseModel with _$AuthResponseModel {
   const factory AuthResponseModel({
     required String status,
     required String message,
+    @JsonKey(name: 'message_ar') required String messageAr,
     AuthResponseData? data,
   }) = _AuthResponseModel;
 

@@ -64,7 +64,7 @@ class SettingsView extends StatelessWidget {
                         label: l10n.accountDetails,
                         screenWidth: screenWidth,
                         onTap: () {
-                          GoRouter.of(context).pushNamed('accountDetails');
+                          GoRouter.of(context).push(Routes.accountDetails);
                         },
                       ),
                       _buildSimpleSettingOption(

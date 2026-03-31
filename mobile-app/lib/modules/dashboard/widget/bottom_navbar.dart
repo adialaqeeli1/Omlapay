@@ -113,7 +113,7 @@ class _NavItem extends StatelessWidget {
         return;
       }
     }
-    GoRouter.of(context).go(route);
+    GoRouter.of(context).push(route);
   }
 
   void _showLoginDialog(BuildContext context) {
@@ -157,7 +157,7 @@ class _NavItem extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                GoRouter.of(context).go(Routes.loginOrRegister);
+                context.push(Routes.loginOrRegister);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryColor,
