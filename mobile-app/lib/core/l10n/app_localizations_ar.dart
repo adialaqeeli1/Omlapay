@@ -98,22 +98,25 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get changePhoneStepsDescription =>
-      'لتغيير رقم هاتفك المسجل سنتبع الخطوات التالية:';
+      'لتغيير رقم هاتفك المسجل، اتبع الخطوات التالية:';
 
   @override
-  String get changePhoneStep1 => 'سيتم إرسال رمز تحقق إلى رقم هاتفك المسجل.';
+  String get changePhoneStep1 =>
+      'أدخل رقم الهاتف الجديد الذي تريد استخدامه في حسابك.';
 
   @override
-  String get changePhoneStep2 =>
-      'بعد إدخال الرمز المُرسل، أدخل رقم الهاتف الجديد.';
+  String get changePhoneStep2 => 'سنرسل رمز تحقق إلى ذلك الرقم.';
 
   @override
-  String get changePhoneStep3 =>
-      'سيتم إرسال رمز تحقق إلى رقم الهاتف الجديد الذي أدخلته.';
+  String get changePhoneStep3 => 'أدخل الرمز للتأكيد وإتمام التحديث.';
 
   @override
   String get changePhoneAfterStepsNote =>
-      'بعد اتباع هذه الخطوات، سيتم تغيير رقم هاتفك الحالي إلى الرقم الجديد.';
+      'بعد التحقق من الرمز، سيصبح رقم هاتف حسابك هو الرقم الجديد.';
+
+  @override
+  String get changePhoneEnterNewSubtitle =>
+      'بعد أن تضغط متابعة، سنرسل رمز تحقق إلى هذا الرقم.';
 
   @override
   String get enterNewPhoneNumber => 'أدخل رقم الهاتف الجديد';
@@ -128,7 +131,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String changePhoneNewOtpSent(String phone) {
-    return 'تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى $phone.';
+    return 'تم إرسال رمز تحقق مكون من 6 أرقام إلى $phone.';
   }
 
   @override
@@ -294,6 +297,18 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get requestFailed => 'فشل الطلب';
+
+  @override
+  String get invalidServerResponse => 'استجابة غير صالحة من الخادم';
+
+  @override
+  String get softLoginFailed => 'فشل تسجيل الدخول السريع';
+
+  @override
+  String get registrationFailed => 'فشل التسجيل';
+
+  @override
+  String get unableToChangePasscode => 'تعذر تغيير رمز المرور';
 
   @override
   String get unknownError => 'حدث خطأ غير معروف';
@@ -1030,4 +1045,43 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get welcomeBack => 'مرحبًا بعودتك';
+
+  @override
+  String get kycFirstNameLabel => 'الاسم الأول';
+
+  @override
+  String get kycLastNameLabel => 'اسم العائلة';
+
+  @override
+  String get kycDateOfBirthLabel => 'تاريخ الميلاد';
+
+  @override
+  String get kycResidentialCountryLabel => 'بلد الإقامة';
+
+  @override
+  String get kycDocumentCountryLabel => 'بلد الوثيقة';
+
+  @override
+  String get kycCityLabel => 'المدينة';
+
+  @override
+  String get kycAddressLabel => 'العنوان';
+
+  @override
+  String get kycCountryCodeHint => 'مثال: GBR، USA، IND';
+
+  @override
+  String get kycSelectDateHint => 'MM/DD/YYYY';
+
+  @override
+  String get kycRequiredFieldError => 'هذا الحقل مطلوب';
+
+  @override
+  String get kycSubmitButton => 'إرسال';
+
+  @override
+  String get kycInvalidDateError => 'يرجى اختيار تاريخ صالح';
+
+  @override
+  String get kycStartedSuccess => 'تم بدء عملية التحقق من الهوية بنجاح.';
 }

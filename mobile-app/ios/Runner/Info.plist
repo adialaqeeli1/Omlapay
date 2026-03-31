@@ -31,9 +31,11 @@
 	<key>NSCameraUsageDescription</key>
 	<string>OmlaPay needs camera access to scan QR codes for wallet addresses and payments.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This app does not require access to the microphone.</string>
+	<string>OmlaPay needs microphone access when recording verification videos during identity checks.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>OmlaPay needs your location during verification to help confirm your current location.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app requires access to the photo library.</string>
+	<string>OmlaPay needs photo library access to upload identity document images during verification.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

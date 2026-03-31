@@ -99,23 +99,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get changePhoneStepsDescription =>
-      'To change your registered phone number we will follow these steps :';
+      'To change your registered phone number, follow these steps:';
 
   @override
   String get changePhoneStep1 =>
-      'A verification code will be sent to your registered phone number.';
+      'Enter your new phone number (the one you want to use for your account).';
 
   @override
   String get changePhoneStep2 =>
-      'After entering the code that was sent, enter the new phone number.';
+      'We will send a verification code to that number.';
 
   @override
   String get changePhoneStep3 =>
-      'A verification code will be sent to the new phone number entered by you.';
+      'Enter the code to confirm and complete the update.';
 
   @override
   String get changePhoneAfterStepsNote =>
-      'After following these steps, your current phone number will be changed to the new one.';
+      'After you verify the code, your account will use the new phone number.';
+
+  @override
+  String get changePhoneEnterNewSubtitle =>
+      'After you continue, we will send a verification code to this number.';
 
   @override
   String get enterNewPhoneNumber => 'Enter new phone number';
@@ -130,7 +134,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String changePhoneNewOtpSent(String phone) {
-    return 'An 6 digit verification code has been sent via WhatsApp to $phone.';
+    return 'A 6-digit verification code was sent to $phone.';
   }
 
   @override
@@ -300,6 +304,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get requestFailed => 'Request failed';
+
+  @override
+  String get invalidServerResponse => 'Invalid response from server';
+
+  @override
+  String get softLoginFailed => 'Soft login failed';
+
+  @override
+  String get registrationFailed => 'Registration failed';
+
+  @override
+  String get unableToChangePasscode => 'Unable to change passcode';
 
   @override
   String get unknownError => 'An unknown error occurred';
@@ -1039,4 +1055,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get welcomeBack => 'Welcome Back';
+
+  @override
+  String get kycFirstNameLabel => 'First Name';
+
+  @override
+  String get kycLastNameLabel => 'Last Name';
+
+  @override
+  String get kycDateOfBirthLabel => 'Date of Birth';
+
+  @override
+  String get kycResidentialCountryLabel => 'Residential Country';
+
+  @override
+  String get kycDocumentCountryLabel => 'Document Country';
+
+  @override
+  String get kycCityLabel => 'City';
+
+  @override
+  String get kycAddressLabel => 'Address';
+
+  @override
+  String get kycCountryCodeHint => 'e.g., GBR, USA, IND';
+
+  @override
+  String get kycSelectDateHint => 'MM/DD/YYYY';
+
+  @override
+  String get kycRequiredFieldError => 'This field is required';
+
+  @override
+  String get kycSubmitButton => 'Submit';
+
+  @override
+  String get kycInvalidDateError => 'Please select a valid date';
+
+  @override
+  String get kycStartedSuccess => 'KYC process started successfully.';
 }

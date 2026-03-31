@@ -133,4 +133,27 @@ class AuthMiddleware {
     }
     return null;
   }
+
+  /// Change phone → verify OTP: require navigation extra from enter-new screen.
+  static String? changePhoneVerifyNew(
+    BuildContext context,
+    GoRouterState state,
+  ) {
+    final extra = state.extra;
+    if (extra is! Map<String, dynamic>) {
+      return Routes.changePhoneEnterNew;
+    }
+    final countryCode =
+        extra[LoginProvider.extraCountryCodeKey] as String? ?? '';
+    final phoneNumber =
+        extra[LoginProvider.extraPhoneNumberKey] as String? ?? '';
+    final maskedMobile =
+        extra[LoginProvider.extraMaskedMobileKey] as String? ?? '';
+    if (countryCode.isEmpty ||
+        phoneNumber.isEmpty ||
+        maskedMobile.isEmpty) {
+      return Routes.changePhoneEnterNew;
+    }
+    return null;
+  }
 }

@@ -27,8 +27,15 @@ class LoginProvider extends ChangeNotifier {
   static const String modeChangeEmailConfirmPasscode =
       'change_email_confirm_passcode';
   static const String extraPendingPasscodeKey = 'pendingPasscode';
+  static const String extraCurrentPasscodeKey = 'currentPasscode';
   static const String extraResetTokenKey = 'resetToken';
   static const String extraPendingEmailKey = 'pendingEmail';
+
+  /// Settings → change phone verify route: server-masked destination (e.g. +91 ******6660).
+  static const String extraMaskedMobileKey = 'maskedMobile';
+
+  /// OTP resend window from `change-phone/request` (`otp_expiry_seconds`).
+  static const String extraOtpExpirySecondsKey = 'otpExpirySeconds';
   static const String extraVerificationPurposeKey = 'verificationPurpose';
   static const String purposeChangePasscode = 'change_passcode';
   static const String purposeChangeEmailPhone = 'change_email_phone';

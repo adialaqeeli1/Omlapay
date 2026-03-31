@@ -39,15 +39,34 @@ class _SplashViewState extends State<SplashView>
   }
 
   /// Navigates to the appropriate screen based on onboarding completion and auth status
-  void _navigateToNextScreen() {
+  Future<void> _navigateToNextScreen() async {
     final bool isOnboardingCompleted =
         StorageService.getBool(AppConstants.onboardingCompletedKey) ?? false;
+
+    if (!mounted) {
+      return;
+    }
 
     if (!isOnboardingCompleted) {
       GoRouter.of(context).go(Routes.onboarding);
     } else {
-      final isLoggedIn = context.read<AuthProvider>().state.isAuthenticated;
+      final authProvider = context.read<AuthProvider>();
+      final isLoggedIn = authProvider.state.isAuthenticated;
       if (isLoggedIn) {
+        final isSessionValid = await authProvider.validateSession();
+        if (!mounted) {
+          return;
+        }
+
+        if (!isSessionValid) {
+          await authProvider.logout();
+          if (!mounted) {
+            return;
+          }
+          GoRouter.of(context).go(Routes.loginOrRegister);
+          return;
+        }
+
         GoRouter.of(context).go(
           Routes.enterOrSetPasscode,
           extra: {LoginProvider.extraModeKey: LoginProvider.modeSoftLogin},

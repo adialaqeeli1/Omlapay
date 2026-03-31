@@ -29,11 +29,12 @@
     "accountDetails": "تفاصيل الحساب",
     "changePhoneNumber": "تغيير رقم الهاتف",
     "stepsForChangingPhoneNumber": "خطوات تغيير رقم هاتفك",
-    "changePhoneStepsDescription": "لتغيير رقم هاتفك المسجل سنتبع الخطوات التالية:",
-    "changePhoneStep1": "سيتم إرسال رمز تحقق إلى رقم هاتفك المسجل.",
-    "changePhoneStep2": "بعد إدخال الرمز المُرسل، أدخل رقم الهاتف الجديد.",
-    "changePhoneStep3": "سيتم إرسال رمز تحقق إلى رقم الهاتف الجديد الذي أدخلته.",
-    "changePhoneAfterStepsNote": "بعد اتباع هذه الخطوات، سيتم تغيير رقم هاتفك الحالي إلى الرقم الجديد.",
+    "changePhoneStepsDescription": "لتغيير رقم هاتفك المسجل، اتبع الخطوات التالية:",
+    "changePhoneStep1": "أدخل رقم الهاتف الجديد الذي تريد استخدامه في حسابك.",
+    "changePhoneStep2": "سنرسل رمز تحقق إلى ذلك الرقم.",
+    "changePhoneStep3": "أدخل الرمز للتأكيد وإتمام التحديث.",
+    "changePhoneAfterStepsNote": "بعد التحقق من الرمز، سيصبح رقم هاتف حسابك هو الرقم الجديد.",
+    "changePhoneEnterNewSubtitle": "بعد أن تضغط متابعة، سنرسل رمز تحقق إلى هذا الرقم.",
     "enterNewPhoneNumber": "أدخل رقم الهاتف الجديد",
     "verifyNewPhoneNumber": "تحقق من رقم الهاتف الجديد",
     "changePhoneCurrentOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى {phone}.",
@@ -44,7 +45,7 @@
             }
         }
     },
-    "changePhoneNewOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى {phone}.",
+    "changePhoneNewOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام إلى {phone}.",
     "@changePhoneNewOtpSent": {
         "placeholders": {
             "phone": {
@@ -117,6 +118,10 @@
     "continueAction": "متابعة",
     "networkError": "خطأ في الشبكة، يرجى التحقق من اتصالك",
     "requestFailed": "فشل الطلب",
+    "invalidServerResponse": "استجابة غير صالحة من الخادم",
+    "softLoginFailed": "فشل تسجيل الدخول السريع",
+    "registrationFailed": "فشل التسجيل",
+    "unableToChangePasscode": "تعذر تغيير رمز المرور",
     "unknownError": "حدث خطأ غير معروف",
     "skip": "تخطي",
     "welcomeToOmlaPayNote": "مدفوعات فورية بالعملات المشفرة",
@@ -418,5 +423,18 @@
     "notificationMockVerifyBody": "التحقق من حسابك قيد الانتظار...",
     "notificationMockWeeklyTitle": "ملخص أسبوعي",
     "notificationMockWeeklyBody": "ملخص معاملاتك الأسبوعي جاهز.",
-    "welcomeBack": "مرحبًا بعودتك"
+    "welcomeBack": "مرحبًا بعودتك",
+    "kycFirstNameLabel": "الاسم الأول",
+    "kycLastNameLabel": "اسم العائلة",
+    "kycDateOfBirthLabel": "تاريخ الميلاد",
+    "kycResidentialCountryLabel": "بلد الإقامة",
+    "kycDocumentCountryLabel": "بلد الوثيقة",
+    "kycCityLabel": "المدينة",
+    "kycAddressLabel": "العنوان",
+    "kycCountryCodeHint": "مثال: GBR، USA، IND",
+    "kycSelectDateHint": "MM/DD/YYYY",
+    "kycRequiredFieldError": "هذا الحقل مطلوب",
+    "kycSubmitButton": "إرسال",
+    "kycInvalidDateError": "يرجى اختيار تاريخ صالح",
+    "kycStartedSuccess": "تم بدء عملية التحقق من الهوية بنجاح."
 }

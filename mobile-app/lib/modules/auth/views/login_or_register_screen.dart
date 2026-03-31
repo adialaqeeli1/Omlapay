@@ -56,7 +56,16 @@ class LoginOrRegisterScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: context.canPop() ? CommonBackButton() : null,
+        // leading: context.canPop() ? CommonBackButton() : null,
+        leading: CommonBackButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(Routes.home);
+            }
+          },
+        ),
         elevation: 0,
         backgroundColor: Colors.transparent,
         scrolledUnderElevation: 0,
