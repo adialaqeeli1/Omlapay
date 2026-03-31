@@ -38,6 +38,12 @@ class Endpoints {
   static String get changePhoneVerify =>
       '$apiVersion/user/settings/change-phone/verify';
 
+  /// Settings → change email: send OTP to new address, then verify.
+  static String get changeEmailRequest =>
+      '$apiVersion/user/settings/change-email/request';
+  static String get changeEmailVerify =>
+      '$apiVersion/user/settings/change-email/verify';
+
   /// List coins with prices; supports query param `currency` (e.g. /v1/coins?currency=usd).
   static String get coins => '$apiVersion/coins';
 

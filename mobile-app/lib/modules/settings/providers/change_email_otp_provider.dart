@@ -2,15 +2,48 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../../../core/utils/app_exception.dart';
 import '../../auth/services/forgot_passcode_service.dart';
+import '../services/change_email_service.dart';
 
 class ChangeEmailOtpProvider extends ChangeNotifier {
-  ChangeEmailOtpProvider({required this.target});
+  ChangeEmailOtpProvider._({
+    String? newEmail,
+    String? phoneCountryCode,
+    String? phoneMobileNumber,
+  }) : _newEmail = newEmail,
+       _phoneCountryCode = phoneCountryCode,
+       _phoneMobileNumber = phoneMobileNumber;
+
+  factory ChangeEmailOtpProvider.forNewEmail(String email) {
+    final trimmed = email.trim();
+    if (trimmed.isEmpty) {
+      throw ArgumentError.value(email, 'email', 'must not be empty');
+    }
+    return ChangeEmailOtpProvider._(newEmail: trimmed);
+  }
+
+  factory ChangeEmailOtpProvider.forPhone({
+    required String countryCode,
+    required String mobileNumber,
+  }) {
+    return ChangeEmailOtpProvider._(
+      phoneCountryCode: countryCode.trim(),
+      phoneMobileNumber: mobileNumber.replaceAll(RegExp(r'[^0-9]'), ''),
+    );
+  }
 
   static const int otpLength = 6;
   static const int countdownStartSeconds = 5;
 
-  final String target;
+  final String? _newEmail;
+  final String? _phoneCountryCode;
+  final String? _phoneMobileNumber;
+
+  bool get _isNewEmailFlow {
+    final e = _newEmail;
+    return e != null && e.isNotEmpty;
+  }
 
   String _otp = '';
   int _countdownSeconds = 0;
@@ -18,6 +51,7 @@ class ChangeEmailOtpProvider extends ChangeNotifier {
   bool _isRequestingOtp = false;
   bool _isVerifying = false;
   bool _hasError = false;
+  bool _phoneOtpEverRequested = false;
 
   String get otp => _otp;
   int get countdownSeconds => _countdownSeconds;
@@ -42,9 +76,19 @@ class ChangeEmailOtpProvider extends ChangeNotifier {
     _isRequestingOtp = true;
     notifyListeners();
     try {
-      // Reuse existing mock OTP service; for email we pass target as identifier.
-      await ForgotPasscodeService.requestOtp(target, '');
-      _countdownSeconds = countdownStartSeconds;
+      if (_isNewEmailFlow) {
+        final email = _newEmail!;
+        final expiry = await ChangeEmailService.requestChange(newEmail: email);
+        _countdownSeconds =
+            expiry > 0 ? expiry : countdownStartSeconds;
+      } else {
+        await ForgotPasscodeService.requestOtp(
+          _phoneMobileNumber!,
+          _phoneCountryCode!,
+        );
+        _phoneOtpEverRequested = true;
+        _countdownSeconds = countdownStartSeconds;
+      }
       _timer?.cancel();
       _timer = Timer.periodic(const Duration(seconds: 1), _tick);
     } finally {
@@ -55,21 +99,63 @@ class ChangeEmailOtpProvider extends ChangeNotifier {
 
   Future<void> resendOtp() async {
     if (!canResend) return;
-    await requestOtp();
+    _isRequestingOtp = true;
+    notifyListeners();
+    try {
+      if (_isNewEmailFlow) {
+        final email = _newEmail!;
+        final expiry = await ChangeEmailService.requestChange(newEmail: email);
+        _countdownSeconds =
+            expiry > 0 ? expiry : countdownStartSeconds;
+      } else if (_phoneOtpEverRequested) {
+        await ForgotPasscodeService.resendOtp(
+          _phoneMobileNumber!,
+          _phoneCountryCode!,
+        );
+        _countdownSeconds = countdownStartSeconds;
+      } else {
+        await ForgotPasscodeService.requestOtp(
+          _phoneMobileNumber!,
+          _phoneCountryCode!,
+        );
+        _phoneOtpEverRequested = true;
+        _countdownSeconds = countdownStartSeconds;
+      }
+      _timer?.cancel();
+      _timer = Timer.periodic(const Duration(seconds: 1), _tick);
+    } finally {
+      _isRequestingOtp = false;
+      notifyListeners();
+    }
   }
 
+  /// Returns true on success. Throws [AppException] with a localized API
+  /// message on failure. Forgot-passcode verify returns false when the server
+  /// rejects OTP without throwing.
   Future<bool> verifyOtp() async {
     if (!isComplete || _isVerifying) return false;
     _isVerifying = true;
     _hasError = false;
     notifyListeners();
     try {
-      final isValid = await ForgotPasscodeService.verifyOtp(target, '', _otp);
+      if (_isNewEmailFlow) {
+        await ChangeEmailService.verifyChange(
+          newEmail: _newEmail!,
+          otp: _otp,
+        );
+        _hasError = false;
+        return true;
+      }
+      final isValid = await ForgotPasscodeService.verifyOtp(
+        _phoneMobileNumber!,
+        _phoneCountryCode!,
+        _otp,
+        requireResetToken: false,
+      );
       _hasError = !isValid;
       return isValid;
-    } catch (_) {
-      _hasError = true;
-      return false;
+    } on AppException {
+      rethrow;
     } finally {
       _isVerifying = false;
       notifyListeners();
