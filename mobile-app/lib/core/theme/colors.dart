@@ -54,4 +54,8 @@ class AppColors {
 
   /// Destructive action (Logout confirm) - reddish-pink/coral
   static const Color logoutDestructiveColor = Color(0xFFE57373);
+
+  /// Inline KYC / verification-required banner (send, swap, receive flows)
+  static const Color kycVerificationBannerBackground = Color(0xFF3F1519);
+  static const Color kycVerificationBannerBorder = Color(0xFF8B252C);
 }

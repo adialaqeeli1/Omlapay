@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AuthResponseModel {
 
- String get status; String get message; AuthResponseData? get data;
+ String get status; String get message;@JsonKey(name: 'message_ar') String get messageAr; AuthResponseData? get data;
 /// Create a copy of AuthResponseModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $AuthResponseModelCopyWith<AuthResponseModel> get copyWith => _$AuthResponseMode
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthResponseModel&&(identical(other.status, status) || other.status == status)&&(identical(other.message, message) || other.message == message)&&(identical(other.data, data) || other.data == data));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthResponseModel&&(identical(other.status, status) || other.status == status)&&(identical(other.message, message) || other.message == message)&&(identical(other.messageAr, messageAr) || other.messageAr == messageAr)&&(identical(other.data, data) || other.data == data));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,status,message,data);
+int get hashCode => Object.hash(runtimeType,status,message,messageAr,data);
 
 @override
 String toString() {
-  return 'AuthResponseModel(status: $status, message: $message, data: $data)';
+  return 'AuthResponseModel(status: $status, message: $message, messageAr: $messageAr, data: $data)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $AuthResponseModelCopyWith<$Res>  {
   factory $AuthResponseModelCopyWith(AuthResponseModel value, $Res Function(AuthResponseModel) _then) = _$AuthResponseModelCopyWithImpl;
 @useResult
 $Res call({
- String status, String message, AuthResponseData? data
+ String status, String message,@JsonKey(name: 'message_ar') String messageAr, AuthResponseData? data
 });
 
 
@@ -65,10 +65,11 @@ class _$AuthResponseModelCopyWithImpl<$Res>
 
 /// Create a copy of AuthResponseModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? message = null,Object? data = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? message = null,Object? messageAr = null,Object? data = freezed,}) {
   return _then(_self.copyWith(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,messageAr: null == messageAr ? _self.messageAr : messageAr // ignore: cast_nullable_to_non_nullable
 as String,data: freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as AuthResponseData?,
   ));
@@ -167,10 +168,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String status,  String message,  AuthResponseData? data)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String status,  String message, @JsonKey(name: 'message_ar')  String messageAr,  AuthResponseData? data)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AuthResponseModel() when $default != null:
-return $default(_that.status,_that.message,_that.data);case _:
+return $default(_that.status,_that.message,_that.messageAr,_that.data);case _:
   return orElse();
 
 }
@@ -188,10 +189,10 @@ return $default(_that.status,_that.message,_that.data);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String status,  String message,  AuthResponseData? data)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String status,  String message, @JsonKey(name: 'message_ar')  String messageAr,  AuthResponseData? data)  $default,) {final _that = this;
 switch (_that) {
 case _AuthResponseModel():
-return $default(_that.status,_that.message,_that.data);case _:
+return $default(_that.status,_that.message,_that.messageAr,_that.data);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -208,10 +209,10 @@ return $default(_that.status,_that.message,_that.data);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String status,  String message,  AuthResponseData? data)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String status,  String message, @JsonKey(name: 'message_ar')  String messageAr,  AuthResponseData? data)?  $default,) {final _that = this;
 switch (_that) {
 case _AuthResponseModel() when $default != null:
-return $default(_that.status,_that.message,_that.data);case _:
+return $default(_that.status,_that.message,_that.messageAr,_that.data);case _:
   return null;
 
 }
@@ -223,11 +224,12 @@ return $default(_that.status,_that.message,_that.data);case _:
 @JsonSerializable()
 
 class _AuthResponseModel implements AuthResponseModel {
-  const _AuthResponseModel({required this.status, required this.message, this.data});
+  const _AuthResponseModel({required this.status, required this.message, @JsonKey(name: 'message_ar') required this.messageAr, this.data});
   factory _AuthResponseModel.fromJson(Map<String, dynamic> json) => _$AuthResponseModelFromJson(json);
 
 @override final  String status;
 @override final  String message;
+@override@JsonKey(name: 'message_ar') final  String messageAr;
 @override final  AuthResponseData? data;
 
 /// Create a copy of AuthResponseModel
@@ -243,16 +245,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthResponseModel&&(identical(other.status, status) || other.status == status)&&(identical(other.message, message) || other.message == message)&&(identical(other.data, data) || other.data == data));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthResponseModel&&(identical(other.status, status) || other.status == status)&&(identical(other.message, message) || other.message == message)&&(identical(other.messageAr, messageAr) || other.messageAr == messageAr)&&(identical(other.data, data) || other.data == data));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,status,message,data);
+int get hashCode => Object.hash(runtimeType,status,message,messageAr,data);
 
 @override
 String toString() {
-  return 'AuthResponseModel(status: $status, message: $message, data: $data)';
+  return 'AuthResponseModel(status: $status, message: $message, messageAr: $messageAr, data: $data)';
 }
 
 
@@ -263,7 +265,7 @@ abstract mixin class _$AuthResponseModelCopyWith<$Res> implements $AuthResponseM
   factory _$AuthResponseModelCopyWith(_AuthResponseModel value, $Res Function(_AuthResponseModel) _then) = __$AuthResponseModelCopyWithImpl;
 @override @useResult
 $Res call({
- String status, String message, AuthResponseData? data
+ String status, String message,@JsonKey(name: 'message_ar') String messageAr, AuthResponseData? data
 });
 
 
@@ -280,10 +282,11 @@ class __$AuthResponseModelCopyWithImpl<$Res>
 
 /// Create a copy of AuthResponseModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? message = null,Object? data = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? message = null,Object? messageAr = null,Object? data = freezed,}) {
   return _then(_AuthResponseModel(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,messageAr: null == messageAr ? _self.messageAr : messageAr // ignore: cast_nullable_to_non_nullable
 as String,data: freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as AuthResponseData?,
   ));

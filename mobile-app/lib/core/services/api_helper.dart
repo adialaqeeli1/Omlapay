@@ -10,6 +10,8 @@ import 'storage_helper.dart';
 
 class ApiHelper {
   static String? get _token => StorageService.getString(AppConstants.tokenKey);
+  static bool get _isArabicLocale =>
+      StorageService.getString(AppConstants.localeKey) == 'ar';
 
   static NetworkClient _getClient() {
     return NetworkClient(
@@ -96,26 +98,13 @@ class ApiHelper {
     if (response.isSuccess) {
       final data = response.data;
       if (data is Map<String, dynamic>) {
-        return data;
+        return _normalizeLocalizedMessages(data);
       }
       return {};
     } else {
       final error = response.error;
-      String message = 'Request failed with status ${response.statusCode}';
-      if (error is Map<String, dynamic>) {
-        final msgData = error['message'];
-        if (msgData is String) {
-          message = msgData;
-        } else if (msgData is List) {
-          message = msgData.map((e) => e.toString()).join('\n');
-        } else if (msgData != null) {
-          message = msgData.toString();
-        } else if (error['error'] is String) {
-          message = error['error'];
-        }
-      } else if (error is String) {
-        message = error;
-      }
+      String message = _extractApiMessage(error) ??
+          'Request failed with status ${response.statusCode}';
       throw AppException(message, messageKey: 'requestFailed');
     }
   }
@@ -126,19 +115,9 @@ class ApiHelper {
 
     if (error.response?.data != null) {
       final data = error.response?.data;
-      if (data is Map<String, dynamic>) {
-        final msgData = data['message'];
-        if (msgData is String) {
-          message = msgData;
-        } else if (msgData is List) {
-          message = msgData.map((e) => e.toString()).join('\n');
-        } else if (msgData != null) {
-          message = msgData.toString();
-        } else if (data['error'] is String) {
-          message = data['error'];
-        }
-      } else if (data is String) {
-        message = data;
+      final extractedMessage = _extractApiMessage(data);
+      if (extractedMessage != null && extractedMessage.trim().isNotEmpty) {
+        message = extractedMessage;
       }
       messageKey = 'requestFailed';
     } else if (error.type == DioExceptionType.connectionTimeout ||
@@ -150,5 +129,95 @@ class ApiHelper {
     }
 
     return AppException(message, messageKey: messageKey);
+  }
+
+  static String? _extractApiMessage(dynamic data) {
+    if (data is String && data.trim().isNotEmpty) {
+      return data;
+    }
+
+    if (data is! Map<String, dynamic>) {
+      return null;
+    }
+
+    final String preferredMessageKey = _isArabicLocale ? 'message_ar' : 'message';
+    final String fallbackMessageKey = _isArabicLocale ? 'message' : 'message_ar';
+
+    final dynamic preferredMessage = data[preferredMessageKey];
+    final String? normalizedPreferred = _normalizeApiMessage(preferredMessage);
+    if (normalizedPreferred != null) {
+      return normalizedPreferred;
+    }
+
+    final dynamic fallbackMessage = data[fallbackMessageKey];
+    final String? normalizedFallback = _normalizeApiMessage(fallbackMessage);
+    if (normalizedFallback != null) {
+      return normalizedFallback;
+    }
+
+    return _normalizeApiMessage(data['error']);
+  }
+
+  static String? _normalizeApiMessage(dynamic value) {
+    if (value == null) {
+      return null;
+    }
+
+    if (value is String) {
+      final String trimmed = value.trim();
+      return trimmed.isEmpty ? null : trimmed;
+    }
+
+    if (value is List) {
+      final String joined = value
+          .map((e) => e?.toString().trim() ?? '')
+          .where((element) => element.isNotEmpty)
+          .join('\n');
+      return joined.isEmpty ? null : joined;
+    }
+
+    final String asString = value.toString().trim();
+    return asString.isEmpty ? null : asString;
+  }
+
+  /// Normalizes API `message`/`message_ar` keys for consistent localized usage.
+  ///
+  /// - Preserves original values in `message_en` / `message_ar` when available.
+  /// - Exposes selected locale text in `localized_message`.
+  /// - Rewrites `message` to the selected locale to keep legacy callers working.
+  /// - Applies to top-level payload and common nested `data` map.
+  static Map<String, dynamic> _normalizeLocalizedMessages(
+    Map<String, dynamic> payload,
+  ) {
+    _normalizeMessageFieldsOnMap(payload);
+
+    final nestedData = payload['data'];
+    if (nestedData is Map<String, dynamic>) {
+      _normalizeMessageFieldsOnMap(nestedData);
+    }
+
+    return payload;
+  }
+
+  static void _normalizeMessageFieldsOnMap(Map<String, dynamic> map) {
+    final originalMessage = _normalizeApiMessage(map['message']);
+    final originalMessageAr = _normalizeApiMessage(map['message_ar']);
+
+    // Keep a stable English slot where available.
+    if (originalMessage != null) {
+      map['message_en'] = originalMessage;
+    }
+    if (originalMessageAr != null) {
+      map['message_ar'] = originalMessageAr;
+    }
+
+    final preferred = _isArabicLocale ? originalMessageAr : originalMessage;
+    final fallback = _isArabicLocale ? originalMessage : originalMessageAr;
+    final localized = preferred ?? fallback;
+
+    if (localized != null) {
+      map['localized_message'] = localized;
+      map['message'] = localized;
+    }
   }
 }

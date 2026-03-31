@@ -5,9 +5,9 @@ import 'package:flutter/foundation.dart';
 import '../core/constants/constants.dart';
 import '../core/models/auth_state/auth_state.dart';
 import '../core/models/user_model/user_model.dart';
-import '../core/models/auth_response/auth_response_model.dart';
 import '../core/mock_data/mock_data.dart';
 import '../core/services/storage_helper.dart';
+import '../core/utils/api_message_helper.dart';
 import '../modules/auth/services/auth_service.dart';
 import '../modules/auth/services/forgot_passcode_service.dart';
 import '../modules/settings/services/wallet_address_service.dart';
@@ -15,6 +15,32 @@ import '../modules/settings/services/wallet_address_service.dart';
 class AuthProvider extends ChangeNotifier {
   AuthState _state = const AuthState();
   AuthState get state => _state;
+
+  bool _isApiSuccess(Map<String, dynamic> response) {
+    final statusCode = response['statusCode'];
+    if (statusCode is int && statusCode >= 200 && statusCode < 300) {
+      return true;
+    }
+
+    final status = response['status']?.toString();
+    if (status == 'success') {
+      return true;
+    }
+
+    final data = response['data'];
+    if (data is Map<String, dynamic>) {
+      return data['status']?.toString() == 'success';
+    }
+
+    return false;
+  }
+
+  String _localizedMessageFromRawResponse(
+    Map<String, dynamic> response, {
+    required String fallback,
+  }) {
+    return ApiMessageHelper.localizedFromResponse(response, fallback: fallback);
+  }
 
   AuthProvider() {
     _checkAuthStatus();
@@ -53,34 +79,52 @@ class AuthProvider extends ChangeNotifier {
         passcode: password,
       );
 
-      final response = AuthResponseModel.fromJson(rawResponse);
+      final int? statusCode = rawResponse['statusCode'] as int?;
+      final bool isSuccess =
+          (statusCode != null && statusCode >= 200 && statusCode < 300) ||
+          rawResponse['status']?.toString() == 'success';
+      final Map<String, dynamic>? data =
+          rawResponse['data'] is Map<String, dynamic>
+          ? rawResponse['data'] as Map<String, dynamic>
+          : null;
+      final String? accessToken = data?['access_token']?.toString();
+      final String? refreshToken = data?['refresh_token']?.toString();
+      final dynamic userData = data?['user'];
+      final Map<String, dynamic>? userJson = userData is Map<String, dynamic>
+          ? userData
+          : null;
+      final UserModel? user = userJson != null
+          ? UserModel.fromJson(userJson)
+          : null;
 
-      if (response.status == 'success' && response.data != null) {
-         final data = response.data!;
-         final user = data.user;
-         final accessToken = data.accessToken;
-         final refreshToken = data.refreshToken;
-         
-         if (user != null && accessToken != null) {
-            _state = state.copyWith(
-              authStatus: AuthStatus.authorized,
-              user: user,
-              isLoading: false,
-              errorMessage: null,
-            );
-            
-            await StorageService.setString(AppConstants.tokenKey, accessToken);
-            if (refreshToken != null) {
-               await StorageService.setString('refresh_token', refreshToken);
-            }
-            await StorageService.setString(AppConstants.userKey, jsonEncode(user.toJson()));
-            
-            notifyListeners();
-            return true;
-         }
+      if (isSuccess &&
+          user != null &&
+          accessToken != null &&
+          accessToken.isNotEmpty) {
+        _state = state.copyWith(
+          authStatus: AuthStatus.authorized,
+          user: user,
+          isLoading: false,
+          errorMessage: null,
+        );
+
+        await StorageService.setString(AppConstants.tokenKey, accessToken);
+        if (refreshToken != null && refreshToken.isNotEmpty) {
+          await StorageService.setString('refresh_token', refreshToken);
+        }
+        await StorageService.setString(
+          AppConstants.userKey,
+          jsonEncode(user.toJson()),
+        );
+
+        notifyListeners();
+        return true;
       }
 
-      final errorMsg = response.message;
+      final errorMsg = _localizedMessageFromRawResponse(
+        rawResponse,
+        fallback: 'Login failed',
+      );
       _state = state.copyWith(isLoading: false, errorMessage: errorMsg);
       notifyListeners();
       return false;
@@ -97,15 +141,24 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
 
       final rawResponse = await AuthService.softLogin(passcode: passcode);
-      final response = AuthResponseModel.fromJson(rawResponse);
+      final int? statusCode = rawResponse['statusCode'] as int?;
+      final dynamic data = rawResponse['data'];
+      final String? userId = data is Map<String, dynamic>
+          ? data['user_id']?.toString()
+          : null;
+      final bool isSuccess =
+          statusCode == 200 && userId != null && userId.isNotEmpty;
 
-      if (response.status == 'success') {
-         _state = state.copyWith(isLoading: false, errorMessage: null);
-         notifyListeners();
-         return true;
+      if (isSuccess) {
+        _state = state.copyWith(isLoading: false, errorMessage: null);
+        notifyListeners();
+        return true;
       }
-      
-      final errorMsg = response.message;
+
+      final errorMsg = _localizedMessageFromRawResponse(
+        rawResponse,
+        fallback: 'Soft login failed',
+      );
       _state = state.copyWith(isLoading: false, errorMessage: errorMsg);
       notifyListeners();
       return false;
@@ -202,15 +255,18 @@ class AuthProvider extends ChangeNotifier {
         confirmPasscode: confirmPasscode,
       );
 
-      if (response['status'] == 'success') {
-         _state = state.copyWith(isLoading: false, errorMessage: null);
-         notifyListeners();
-         return true;
+      if (_isApiSuccess(response)) {
+        _state = state.copyWith(isLoading: false, errorMessage: null);
+        notifyListeners();
+        return true;
       } else {
-        final errorMsg = response['message']?.toString() ?? 'Registration failed';
+        final errorMsg = _localizedMessageFromRawResponse(
+          response,
+          fallback: 'Registration failed',
+        );
         _state = state.copyWith(isLoading: false, errorMessage: errorMsg);
         notifyListeners();
-        throw Exception(errorMsg);
+        return false;
       }
     } catch (e) {
       _state = state.copyWith(isLoading: false, errorMessage: e.toString());
@@ -287,7 +343,8 @@ class AuthProvider extends ChangeNotifier {
         return false;
       }
 
-      final oldKey = '${user.countryCode.trim()}'
+      final oldKey =
+          '${user.countryCode.trim()}'
           '${user.mobileNumber.replaceAll(RegExp(r'[^0-9]'), '')}';
       final normalizedCountry = countryCode.trim();
       final normalizedPhone = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');

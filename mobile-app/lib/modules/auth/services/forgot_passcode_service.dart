@@ -1,5 +1,6 @@
 import '../../../core/constants/endpoints.dart';
 import '../../../core/services/api_helper.dart';
+import '../../../core/utils/api_message_helper.dart';
 
 class ForgotPasscodeOtpResponse {
   const ForgotPasscodeOtpResponse({
@@ -61,8 +62,10 @@ class ForgotPasscodeService {
       "mobile_otp": otp,
     });
 
-    final resetToken = response['reset_token']?.toString() ?? '';
-    final status = response['status']?.toString() ?? '';
+    final data = response['data'];
+    final dataMap = data is Map<String, dynamic> ? data : null;
+    final resetToken = dataMap?['reset_token']?.toString() ?? '';
+    final status = dataMap?['status']?.toString() ?? '';
     return status == 'success' && resetToken.isNotEmpty;
   }
 
@@ -76,13 +79,23 @@ class ForgotPasscodeService {
       "mobile_number": phoneNumber,
       "mobile_otp": otp,
     });
-    final resetToken = response['reset_token']?.toString() ?? '';
-    final status = response['status']?.toString() ?? '';
+    final data = response['data'];
+    final dataMap = data is Map<String, dynamic> ? data : null;
+    final resetToken = dataMap?['reset_token']?.toString() ?? '';
+    final status = dataMap?['status']?.toString() ?? '';
     if (status != 'success' || resetToken.isEmpty) {
-      throw Exception(response['message']?.toString() ?? 'OTP verification failed');
+      throw Exception(
+        _extractLocalizedMessage(
+          response,
+          fallback: 'OTP verification failed',
+        ),
+      );
     }
     return ForgotPasscodeVerifyResponse(
-      message: response['message']?.toString() ?? '',
+      message: _extractLocalizedMessage(
+        response,
+        fallback: 'OTP verification successful.',
+      ),
       resetToken: resetToken,
     );
   }
@@ -110,11 +123,34 @@ class ForgotPasscodeService {
         : int.tryParse(rawExpiry?.toString() ?? '') ?? defaultOtpExpirySeconds;
 
     return ForgotPasscodeOtpResponse(
-      message: response['message']?.toString() ?? '',
+      message: _extractLocalizedMessage(
+        response,
+        fallback: '',
+      ),
       otpExpirySeconds: otpExpirySeconds > 0
           ? otpExpirySeconds
           : defaultOtpExpirySeconds,
       maskedMobile: dataMap?['masked_mobile']?.toString(),
     );
+  }
+
+  static String _extractLocalizedMessage(
+    Map<String, dynamic> response, {
+    required String fallback,
+  }) {
+    final data = response['data'];
+    final dataMap = data is Map<String, dynamic> ? data : null;
+
+    if (dataMap != null) {
+      final nestedMessage = ApiMessageHelper.localizedFromResponse(
+        dataMap,
+        fallback: '',
+      );
+      if (nestedMessage.trim().isNotEmpty) {
+        return nestedMessage;
+      }
+    }
+
+    return ApiMessageHelper.localizedFromResponse(response, fallback: fallback);
   }
 }

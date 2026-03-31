@@ -34,7 +34,7 @@ class Routes {
   static const String coinDetails = _Paths.coinDetails;
   static const String transactionDetail = _Paths.transactionDetail;
   static const String sendCoin = _Paths.sendCoin;
-  static const String receiveCoin = _Paths.receiveCoin;
+  static const String receiveCoinsHistory = _Paths.receiveCoinsHistory;
   static const String sendReview = _Paths.sendReview;
   static const String sendVerification = _Paths.sendVerification;
   static const String sendSuccess = _Paths.sendSuccess;
@@ -42,7 +42,7 @@ class Routes {
   static const String swapReview = _Paths.swapReview;
   static const String swapSuccess = _Paths.swapSuccess;
   static const String transactionDetails = _Paths.transactionDetails;
-  static const String wallets = _Paths.wallets;
+  static const String recieveCoins = _Paths.recieveCoins;
   static const String qrCode = _Paths.qrCode;
   static const String qrScanner = _Paths.qrScanner;
   static const String accountDetails = _Paths.accountDetails;
@@ -83,7 +83,8 @@ abstract class _Paths {
   static const String coinDetails = '/coin-details';
   static const String transactionDetail = '/transaction-detail';
   static const String sendCoin = '/send-coin';
-  static const String receiveCoin = '/receive-coin';
+  static const String recieveCoins = '/recieveCoins';
+  static const String receiveCoinsHistory = '/receive-coins-history';
   static const String sendReview = '/send-review';
   static const String sendVerification = '/send-verification';
   static const String sendSuccess = '/send-success';
@@ -91,7 +92,7 @@ abstract class _Paths {
   static const String swapReview = '/swap-review';
   static const String swapSuccess = '/swap-success';
   static const String transactionDetails = '/transaction-details';
-  static const String wallets = '/wallets';
+
   static const String qrCode = '/qr-code';
   static const String qrScanner = '/qr-scanner';
   static const String accountDetails = '/account-details';

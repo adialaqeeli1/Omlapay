@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:country_picker/country_picker.dart';
 
+import '../../../core/extentions/context_extensions.dart';
+import '../../../core/utils/api_message_helper.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../routes/app_router.dart';
 import '../services/auth_service.dart';
@@ -67,6 +69,28 @@ class LoginProvider extends ChangeNotifier {
   bool get canContinue =>
       !_isSubmitting && RegExp(r'^\d{7,15}$').hasMatch(digitsOnlyPhone);
 
+  static bool _isApiSuccess(Map<String, dynamic> response) {
+    final statusCode = response['statusCode'];
+    if (statusCode is int && statusCode >= 200 && statusCode < 300) {
+      return true;
+    }
+    return response['status']?.toString() == 'success';
+  }
+
+  static Map<String, dynamic>? _asJsonMap(dynamic value) {
+    if (value is Map<String, dynamic>) return value;
+    return null;
+  }
+
+  static bool _readBool(dynamic value) {
+    if (value is bool) return value;
+    if (value is String) {
+      final v = value.toLowerCase().trim();
+      return v == 'true' || v == '1';
+    }
+    return false;
+  }
+
   void onPhoneChanged(String value) {
     if (_rawPhone == value) {
       return;
@@ -94,25 +118,40 @@ class LoginProvider extends ChangeNotifier {
           termsAccepted: true,
         );
 
-        final data = response['data'] as Map<String, dynamic>?;
-        final maskedMobile = data?['masked_mobile'] as String?;
-        final otpExpirySeconds = data?['otp_expiry_seconds'] as int? ?? 60;
-
         if (context.mounted) {
-          context.push(
-            Routes.registerVerification,
-            extra: {
-              extraCountryCodeKey: currentPhoneCode,
-              extraPhoneNumberKey: digitsOnlyPhone,
-              'maskedMobile': maskedMobile,
-              'otpExpirySeconds': otpExpirySeconds,
-              'isRegistration': true,
-            },
-          );
+          final l10n = context.l10n!;
+          if (!_isApiSuccess(response)) {
+            SnackbarHelper.showError(
+              context,
+              ApiMessageHelper.localizedFromResponse(
+                response,
+                fallback: l10n.requestFailed,
+                context: context,
+              ),
+            );
+          } else {
+            final data = _asJsonMap(response['data']);
+            final maskedMobile = data?['masked_mobile']?.toString();
+            final otpExpirySeconds =
+                data?['otp_expiry_seconds'] as int? ??
+                data?['expires_in'] as int? ??
+                60;
+
+            context.push(
+              Routes.registerVerification,
+              extra: {
+                extraCountryCodeKey: currentPhoneCode,
+                extraPhoneNumberKey: digitsOnlyPhone,
+                'maskedMobile': maskedMobile,
+                'otpExpirySeconds': otpExpirySeconds,
+                'isRegistration': true,
+              },
+            );
+          }
         }
       } catch (e) {
         if (context.mounted) {
-          SnackbarHelper.showError(context, e.toString());
+          SnackbarHelper.showError(context, context.l10n!.unknownError);
         }
       }
     } else {
@@ -122,68 +161,94 @@ class LoginProvider extends ChangeNotifier {
           mobileNumber: digitsOnlyPhone,
         );
 
-        if (checkResponse['status'] == 'success') {
-          final data = checkResponse['data'];
-          if (data != null && data['userExists'] == true) {
-            if (data['hasPasscode'] == true) {
-              if (context.mounted) {
-                context.go(
-                  Routes.enterOrSetPasscode,
-                  extra: {
-                    extraModeKey: modeHardLogin,
-                    extraCountryCodeKey: currentPhoneCode,
-                    extraPhoneNumberKey: digitsOnlyPhone,
-                  },
-                );
-              }
-            } else {
-              final registerResponse = await AuthService.registerRequest(
-                countryCode: currentPhoneCode,
-                mobileNumber: digitsOnlyPhone,
-                termsAccepted: true,
-              );
-              
-              if (registerResponse['status'] == 'success') {
-                final otpExpirySeconds = registerResponse['data']?['expires_in'] ?? 300;
-                final maskedMobile = registerResponse['data']?['mobile_number'];
+        if (!context.mounted) {
+          _isSubmitting = false;
+          notifyListeners();
+          return;
+        }
 
-                if (context.mounted) {
-                  context.push(
-                    Routes.registerVerification,
-                    extra: {
-                      extraCountryCodeKey: currentPhoneCode,
-                      extraPhoneNumberKey: digitsOnlyPhone,
-                      'maskedMobile': maskedMobile,
-                      'otpExpirySeconds': otpExpirySeconds,
-                      'isRegistration': true,
-                    },
-                  );
-                }
-              } else {
-                if (context.mounted) {
-                  SnackbarHelper.showError(
-                    context, 
-                    registerResponse['message']?.toString() ?? 'Failed to send OTP',
-                  );
-                }
-              }
-            }
+        final l10n = context.l10n!;
+
+        if (!_isApiSuccess(checkResponse)) {
+          SnackbarHelper.showError(
+            context,
+            ApiMessageHelper.localizedFromResponse(
+              checkResponse,
+              fallback: l10n.requestFailed,
+              context: context,
+            ),
+          );
+          _isSubmitting = false;
+          notifyListeners();
+          return;
+        }
+
+        final checkData = _asJsonMap(checkResponse['data']);
+        final userExists =
+            checkData != null && _readBool(checkData['userExists']);
+        final hasPasscode =
+            checkData != null && _readBool(checkData['hasPasscode']);
+
+        if (userExists) {
+          if (hasPasscode) {
+            context.go(
+              Routes.enterOrSetPasscode,
+              extra: {
+                extraModeKey: modeHardLogin,
+                extraCountryCodeKey: currentPhoneCode,
+                extraPhoneNumberKey: digitsOnlyPhone,
+              },
+            );
           } else {
-            if (context.mounted) {
-              SnackbarHelper.showError(context, 'User not found with this mobile number.');
+            final registerResponse = await AuthService.registerRequest(
+              countryCode: currentPhoneCode,
+              mobileNumber: digitsOnlyPhone,
+              termsAccepted: true,
+            );
+
+            if (!context.mounted) {
+              _isSubmitting = false;
+              notifyListeners();
+              return;
+            }
+
+            if (!_isApiSuccess(registerResponse)) {
+              SnackbarHelper.showError(
+                context,
+                ApiMessageHelper.localizedFromResponse(
+                  registerResponse,
+                  fallback: l10n.requestFailed,
+                  context: context,
+                ),
+              );
+            } else {
+              final regData = _asJsonMap(registerResponse['data']);
+              final otpExpirySeconds =
+                  regData?['otp_expiry_seconds'] as int? ??
+                  regData?['expires_in'] as int? ??
+                  300;
+              final maskedMobile =
+                  regData?['masked_mobile']?.toString() ??
+                  regData?['mobile_number']?.toString();
+
+              context.push(
+                Routes.registerVerification,
+                extra: {
+                  extraCountryCodeKey: currentPhoneCode,
+                  extraPhoneNumberKey: digitsOnlyPhone,
+                  'maskedMobile': maskedMobile,
+                  'otpExpirySeconds': otpExpirySeconds,
+                  'isRegistration': true,
+                },
+              );
             }
           }
         } else {
-          if (context.mounted) {
-            SnackbarHelper.showError(
-              context, 
-              checkResponse['message']?.toString() ?? 'Failed to verify user',
-            );
-          }
+          SnackbarHelper.showError(context, l10n.userNotFound);
         }
       } catch (e) {
         if (context.mounted) {
-          SnackbarHelper.showError(context, e.toString());
+          SnackbarHelper.showError(context, context.l10n!.unknownError);
         }
       }
     }

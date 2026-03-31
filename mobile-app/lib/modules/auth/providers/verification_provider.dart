@@ -27,6 +27,14 @@ class VerificationProvider extends ChangeNotifier {
   static const int otpLength = 6;
   static const int countdownStartSeconds = 5;
 
+  static bool _isApiSuccess(Map<String, dynamic> response) {
+    final statusCode = response['statusCode'];
+    if (statusCode is int && statusCode >= 200 && statusCode < 300) {
+      return true;
+    }
+    return response['status']?.toString() == 'success';
+  }
+
   final String _phoneNumber;
   final String _countryCode;
   final bool _isRegistration;
@@ -166,7 +174,9 @@ class VerificationProvider extends ChangeNotifier {
           otp: _otp,
         );
         final data = response['data'];
-        if (response['status'] == 'success' && data is Map<String, dynamic> && data['registration_token'] != null) {
+        if (_isApiSuccess(response) &&
+            data is Map<String, dynamic> &&
+            data['registration_token'] != null) {
           _registrationToken = data['registration_token'] as String;
           _hasError = false;
           return true;

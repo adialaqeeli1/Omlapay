@@ -7,6 +7,7 @@ import '../../../core/models/transaction_model/transaction_model.dart';
 import '../../../core/theme/theme.dart';
 import '../../../providers/coins_prices_provider.dart';
 import '../../../routes/app_router.dart';
+import '../../../widgets/common_back_button.dart';
 import '../../../widgets/common_loading_indicator.dart';
 import '../../../widgets/no_transactions_found.dart';
 import 'providers/history_provider.dart';
@@ -26,12 +27,12 @@ class HistoryView extends StatelessWidget {
     final horizontalPadding = screenWidth * 0.05;
 
     return ChangeNotifierProvider(
-      create: (context) =>
-          HistoryProvider(context.read<CoinsPricesProvider>()),
+      create: (context) => HistoryProvider(context.read<CoinsPricesProvider>()),
       child: Builder(
         builder: (providerContext) => Scaffold(
           appBar: AppBar(
             scrolledUnderElevation: 0,
+            leading: const CommonBackButton(),
             title: Text(
               l10n.transactionHistory,
               style: theme.textTheme.titleLarge?.copyWith(
@@ -114,9 +115,7 @@ class HistoryView extends StatelessWidget {
       return const Center(child: NoTransactionsFound());
     }
 
-    final groupedTransactions = _groupTransactionsByDate(
-      provider.transactions,
-    );
+    final groupedTransactions = _groupTransactionsByDate(provider.transactions);
 
     return ListView.builder(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
@@ -134,10 +133,7 @@ class HistoryView extends StatelessWidget {
               (transaction) => TransactionItem(
                 transaction: transaction,
                 onTap: () {
-                  context.push(
-                    Routes.transactionDetail,
-                    extra: transaction,
-                  );
+                  context.push(Routes.transactionDetail, extra: transaction);
                 },
               ),
             ),

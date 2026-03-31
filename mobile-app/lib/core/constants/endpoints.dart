@@ -39,6 +39,9 @@ class Endpoints {
   /// SSE stream for real-time coin price updates; supports query param `currency`.
   static String get coinsPricesStream => '$coins/prices/stream';
 
+  /// Receive wallets grouped by network and coin addresses.
+  static String get receiveWallets => '$apiVersion/receive/wallets';
+
   /// Legal documents; supports query param `language` (e.g. en, ar).
   static String get legalPrivacy => '$apiVersion/legal/privacy';
   static String get legalTerms => '$apiVersion/legal/terms';

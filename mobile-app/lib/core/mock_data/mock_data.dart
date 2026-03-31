@@ -67,34 +67,34 @@ class MockData {
     ),
   ];
 
-  static final List<WalletModel> wallets = [
-    WalletModel(
-      id: 'w1',
+  static final List<WalletCoinModel> wallets = [
+    WalletCoinModel(
       name: 'Tron',
       symbol: 'TRX',
       address: 'TG7gaA4MeqeAsWjdaMe5ubh3SadfjqMsDbc',
       network: 'TRC20',
+      networkDisplayName: 'Tron (TRC20)',
     ),
-    WalletModel(
-      id: 'w2',
+    WalletCoinModel(
       name: 'Bitcoin',
       symbol: 'BTC',
       address: '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2',
       network: 'Bitcoin',
+      networkDisplayName: 'Bitcoin',
     ),
-    WalletModel(
-      id: 'w3',
+    WalletCoinModel(
       name: 'EVM',
       symbol: 'ETH',
       address: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEba',
       network: 'ERC20',
+      networkDisplayName: 'Ethereum (ERC20)',
     ),
-    WalletModel(
-      id: 'w4',
+    WalletCoinModel(
       name: 'Solana',
       symbol: 'SOL',
       address: 'DxLHgh7N76vSaSddAY7qPb2dgx8b45hBQ8fYzz7YdQba',
       network: 'Solana',
+      networkDisplayName: 'Solana',
     ),
   ];
 
