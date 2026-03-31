@@ -15,8 +15,6 @@ class Routes {
       _Paths.changeEmailVerifyNewEmail;
   static const String changeEmailSuccess = _Paths.changeEmailSuccess;
   static const String changePhoneIntro = _Paths.changePhoneIntro;
-  static const String changePhoneVerifyCurrent =
-      _Paths.changePhoneVerifyCurrent;
   static const String changePhoneEnterNew = _Paths.changePhoneEnterNew;
   static const String changePhoneVerifyNew = _Paths.changePhoneVerifyNew;
   static const String changePhoneSuccess = _Paths.changePhoneSuccess;
@@ -65,7 +63,6 @@ abstract class _Paths {
       '/change-email-verify-new-email';
   static const String changeEmailSuccess = '/change-email-success';
   static const String changePhoneIntro = '/change-phone-intro';
-  static const String changePhoneVerifyCurrent = '/change-phone-verify-current';
   static const String changePhoneEnterNew = '/change-phone-enter-new';
   static const String changePhoneVerifyNew = '/change-phone-verify-new';
   static const String changePhoneSuccess = '/change-phone-success';

@@ -51,11 +51,15 @@ class ForgotPasscodeService {
     return _parseOtpResponse(response);
   }
 
+  /// [requireResetToken] is true for the forgot-password reset flow (needs
+  /// [reset_token] to call [resetPasscode]). For settings → change passcode,
+  /// the same verify endpoint may return success without a token; use false.
   static Future<bool> verifyOtp(
     String phoneNumber,
     String countryCode,
-    String otp,
-  ) async {
+    String otp, {
+    bool requireResetToken = true,
+  }) async {
     final response = await ApiHelper.post(Endpoints.forgotPasscodeVerifyOtp, {
       "country_code": countryCode,
       "mobile_number": phoneNumber,
@@ -66,6 +70,9 @@ class ForgotPasscodeService {
     final dataMap = data is Map<String, dynamic> ? data : null;
     final resetToken = dataMap?['reset_token']?.toString() ?? '';
     final status = dataMap?['status']?.toString() ?? '';
+    if (!requireResetToken) {
+      return status == 'success';
+    }
     return status == 'success' && resetToken.isNotEmpty;
   }
 

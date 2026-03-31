@@ -5,6 +5,7 @@ import '../modules/send_receive_swap_coin/receive/provider/receive_coin_provider
 import '../modules/send_receive_swap_coin/receive/view/receive_coins_history_view.dart';
 import 'debug_route_observer.dart';
 import '../core/extentions/string_extensions.dart';
+import '../core/utils/snackbar_helper.dart';
 import '../core/l10n/app_localizations.dart';
 import '../core/utils/user_auth_phone.dart';
 import '../../core/models/transaction_model/transaction_model.dart';
@@ -30,6 +31,7 @@ import '../modules/dashboard/profile/about/privacy_policy_view.dart';
 import '../modules/dashboard/profile/about/terms_conditions_view.dart';
 import '../modules/dashboard/profile/help_center/help_center_view.dart';
 import '../modules/kyc_verification/view/kyc_verification_view.dart';
+import '../modules/kyc_verification/providers/kyc_verification_provider.dart';
 import '../modules/dashboard/profile/help_center/past_requests_view.dart';
 import '../modules/dashboard/profile/help_center/send_request_view.dart';
 import '../modules/dashboard/profile/profile_view.dart';
@@ -60,9 +62,11 @@ import '../modules/settings/view/change_email/change_email_verify_otp_view.dart'
 import '../modules/settings/view/change_phone_number/change_phone_enter_new_view.dart';
 import '../modules/settings/view/change_phone_number/change_phone_intro_view.dart';
 import '../modules/settings/view/change_phone_number/change_phone_success_view.dart';
+import '../modules/settings/view/change_phone_number/change_phone_verify_otp_view.dart';
 import '../modules/settings/providers/change_email_form_provider.dart';
 import '../modules/settings/providers/change_email_otp_provider.dart';
 import '../modules/settings/providers/change_phone_form_provider.dart';
+import '../modules/settings/providers/change_phone_otp_provider.dart';
 import '../modules/settings/services/wallet_address_service.dart';
 import '../modules/notifications/notifications_view.dart';
 import '../modules/notifications/notifications_list_provider.dart';
@@ -143,6 +147,9 @@ class AppRouter {
           final pendingPasscode = routePayload is Map<String, dynamic>
               ? routePayload[LoginProvider.extraPendingPasscodeKey] as String?
               : null;
+          final currentPasscode = routePayload is Map<String, dynamic>
+              ? routePayload[LoginProvider.extraCurrentPasscodeKey] as String?
+              : null;
           final pendingEmail = routePayload is Map<String, dynamic>
               ? routePayload[LoginProvider.extraPendingEmailKey] as String?
               : null;
@@ -161,7 +168,7 @@ class AppRouter {
               mode == LoginProvider.modeConfirmPasscode ||
                   mode == LoginProvider.modeChangePasscodeConfirm
               ? ValueKey(
-                  'confirm_${mode}_${pendingPasscode ?? ""}_${resetToken ?? ""}',
+                  'confirm_${mode}_${currentPasscode ?? ""}_${pendingPasscode ?? ""}_${resetToken ?? ""}',
                 )
               : ValueKey('passcode_${mode}_${countryCode}_$phoneNumber');
 
@@ -174,6 +181,7 @@ class AppRouter {
             child: EnterOrSetPasscodeScreen(
               isSoftLogin: isSoftLogin,
               mode: mode,
+              currentPasscode: currentPasscode,
               pendingPasscode: pendingPasscode,
               resetToken: resetToken,
               pendingEmail: pendingEmail,
@@ -229,6 +237,11 @@ class AppRouter {
               isRegistration: isRegistration,
               maskedMobile: maskedMobile,
               initialCountdown: otpExpirySeconds,
+              verificationPurpose: purpose,
+              changePasscodeCurrent:
+                  extra?[LoginProvider.extraCurrentPasscodeKey] as String?,
+              changePasscodeNew:
+                  extra?[LoginProvider.extraPendingPasscodeKey] as String?,
             ),
             child: VerificationScreen(
               showRegistrationProgress: showRegistrationProgress,
@@ -332,38 +345,16 @@ class AppRouter {
         redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
-        path: Routes.changePhoneVerifyCurrent,
-        name: 'changePhoneVerifyCurrent',
-        builder: (context, state) {
-          final user = context.read<AuthProvider>().state.user!;
-          final l10n = AppLocalizations.of(context)!;
-          return ChangeNotifierProvider(
-            create: (_) => ChangeEmailOtpProvider(
-              target: '${user.countryCode}${user.mobileNumber}',
-            ),
-            child: ChangeEmailVerifyOtpView(
-              appBarTitle: l10n.changePhoneNumber,
-              title: l10n.verifyCurrentPhoneNumber,
-              subtitle: l10n.changePhoneCurrentOtpSent(
-                maskedPhoneForDisplay(user.countryCode, user.mobileNumber),
-              ),
-              onVerified: (ctx) async {
-                ctx.push(Routes.changePhoneEnterNew);
-              },
-            ),
-          );
-        },
-        redirect: AuthMiddleware.isAuthenticated,
-      ),
-      GoRoute(
         path: Routes.changePhoneEnterNew,
         name: 'changePhoneEnterNew',
         builder: (context, state) {
           final user = context.read<AuthProvider>().state.user!;
           return ChangeNotifierProvider(
             create: (_) => ChangePhoneFormProvider(
-              countryCode: user.countryCode,
               currentPhone: user.mobileNumber,
+              accountCountryDialCode: user.countryCode.trim().isNotEmpty
+                  ? user.countryCode.trim()
+                  : LoginProvider.defaultCountryCode,
             ),
             child: const ChangePhoneEnterNewView(),
           );
@@ -379,28 +370,46 @@ class AppRouter {
               extra?[LoginProvider.extraCountryCodeKey] as String? ?? '';
           final phoneNumber =
               extra?[LoginProvider.extraPhoneNumberKey] as String? ?? '';
+          final maskedMobile =
+              extra?[LoginProvider.extraMaskedMobileKey] as String? ?? '';
+          final otpExpiry =
+              extra?[LoginProvider.extraOtpExpirySecondsKey] as int?;
           final l10n = AppLocalizations.of(context)!;
-          final fullPhone = '$countryCode$phoneNumber';
           return ChangeNotifierProvider(
-            create: (_) => ChangeEmailOtpProvider(target: fullPhone),
-            child: ChangeEmailVerifyOtpView(
+            create: (_) => ChangePhoneOtpProvider(
+              countryCode: countryCode,
+              newMobileNumber: phoneNumber,
+              maskedMobile: maskedMobile,
+              initialOtpExpirySeconds: otpExpiry,
+            ),
+            child: ChangePhoneVerifyOtpView(
               appBarTitle: l10n.changePhoneNumber,
               title: l10n.verifyNewPhoneNumber,
-              subtitle: l10n.changePhoneNewOtpSent(fullPhone),
+              subtitle: l10n.changePhoneNewOtpSent(maskedMobile),
               onVerified: (ctx) async {
+                final l10n = AppLocalizations.of(ctx)!;
                 final applied = await ctx
                     .read<AuthProvider>()
-                    .updatePhoneForCurrentUser(
+                    .completePhoneChangeAndRefreshSession(
                       countryCode: countryCode,
                       phoneNumber: phoneNumber,
                     );
-                if (!ctx.mounted || !applied) return;
+                if (!ctx.mounted) return;
+                if (!applied) {
+                  SnackbarHelper.showError(ctx, l10n.loginFailed);
+                  ctx.go(Routes.loginOrRegister);
+                  return;
+                }
                 ctx.go(Routes.changePhoneSuccess);
               },
             ),
           );
         },
-        redirect: AuthMiddleware.isAuthenticated,
+        redirect: (context, state) {
+          final authRedirect = AuthMiddleware.isAuthenticated(context, state);
+          if (authRedirect != null) return authRedirect;
+          return AuthMiddleware.changePhoneVerifyNew(context, state);
+        },
       ),
       GoRoute(
         path: Routes.changePhoneSuccess,
@@ -479,8 +488,11 @@ class AppRouter {
       GoRoute(
         path: Routes.kycVerification,
         name: 'kycVerification',
-        builder: (context, state) => KycVerificationView(
-          entrySource: KycVerificationEntrySource.fromExtra(state.extra),
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => KycVerificationProvider(),
+          child: KycVerificationView(
+            entrySource: KycVerificationEntrySource.fromExtra(state.extra),
+          ),
         ),
       ),
       GoRoute(

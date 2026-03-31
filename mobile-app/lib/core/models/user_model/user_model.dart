@@ -3,6 +3,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
+/// Supports both API snake_case (`country_code`) and stored camelCase (`countryCode`).
+Object? _readCountryCode(Map<dynamic, dynamic> json, String key) =>
+    json['country_code'] ?? json['countryCode'];
+
 @freezed
 abstract class UserModel with _$UserModel {
   const UserModel._();
@@ -13,7 +17,7 @@ abstract class UserModel with _$UserModel {
     String? status,
     
     @Default('') String mobileNumber,
-    @Default('') String countryCode,
+    @Default('') @JsonKey(readValue: _readCountryCode) String countryCode,
     @Default('') String password, // 6 digit numeric
     @Default('') String firstName,
     @Default('') String lastName,

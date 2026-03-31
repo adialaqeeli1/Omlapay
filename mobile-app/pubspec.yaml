@@ -67,6 +67,9 @@ dependencies:
   sse_channel: ^0.2.2
   country_picker: ^2.0.27
   flutter_markdown: ^0.7.7+1
+  reactive_forms: ^18.2.2
+  country_codes: ^3.3.0
+  flutter_idensic_mobile_sdk_plugin: ^1.41.2
 
 dev_dependencies:
   flutter_test:

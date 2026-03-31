@@ -29,11 +29,12 @@
     "accountDetails": "Account Details",
     "changePhoneNumber": "Change Phone Number",
     "stepsForChangingPhoneNumber": "Steps for changing your Phone Number",
-    "changePhoneStepsDescription": "To change your registered phone number we will follow these steps :",
-    "changePhoneStep1": "A verification code will be sent to your registered phone number.",
-    "changePhoneStep2": "After entering the code that was sent, enter the new phone number.",
-    "changePhoneStep3": "A verification code will be sent to the new phone number entered by you.",
-    "changePhoneAfterStepsNote": "After following these steps, your current phone number will be changed to the new one.",
+    "changePhoneStepsDescription": "To change your registered phone number, follow these steps:",
+    "changePhoneStep1": "Enter your new phone number (the one you want to use for your account).",
+    "changePhoneStep2": "We will send a verification code to that number.",
+    "changePhoneStep3": "Enter the code to confirm and complete the update.",
+    "changePhoneAfterStepsNote": "After you verify the code, your account will use the new phone number.",
+    "changePhoneEnterNewSubtitle": "After you continue, we will send a verification code to this number.",
     "enterNewPhoneNumber": "Enter new phone number",
     "verifyNewPhoneNumber": "Verify new phone number",
     "changePhoneCurrentOtpSent": "An 6 digit verification code has been sent via WhatsApp to {phone}.",
@@ -44,7 +45,7 @@
             }
         }
     },
-    "changePhoneNewOtpSent": "An 6 digit verification code has been sent via WhatsApp to {phone}.",
+    "changePhoneNewOtpSent": "A 6-digit verification code was sent to {phone}.",
     "@changePhoneNewOtpSent": {
         "placeholders": {
             "phone": {
@@ -117,6 +118,10 @@
     "continueAction": "Continue",
     "networkError": "Network error, please check your connection",
     "requestFailed": "Request failed",
+    "invalidServerResponse": "Invalid response from server",
+    "softLoginFailed": "Soft login failed",
+    "registrationFailed": "Registration failed",
+    "unableToChangePasscode": "Unable to change passcode",
     "unknownError": "An unknown error occurred",
     "skip": "Skip",
     "welcomeToOmlaPayNote": "Instant Cryptocurrency Payments",
@@ -418,5 +423,18 @@
     "notificationMockVerifyBody": "Your account verification is pending...",
     "notificationMockWeeklyTitle": "Weekly Summary",
     "notificationMockWeeklyBody": "Your weekly transaction summary is ready.",
-    "welcomeBack": "Welcome Back"
+    "welcomeBack": "Welcome Back",
+    "kycFirstNameLabel": "First Name",
+    "kycLastNameLabel": "Last Name",
+    "kycDateOfBirthLabel": "Date of Birth",
+    "kycResidentialCountryLabel": "Residential Country",
+    "kycDocumentCountryLabel": "Document Country",
+    "kycCityLabel": "City",
+    "kycAddressLabel": "Address",
+    "kycCountryCodeHint": "e.g., GBR, USA, IND",
+    "kycSelectDateHint": "MM/DD/YYYY",
+    "kycRequiredFieldError": "This field is required",
+    "kycSubmitButton": "Submit",
+    "kycInvalidDateError": "Please select a valid date",
+    "kycStartedSuccess": "KYC process started successfully."
 }

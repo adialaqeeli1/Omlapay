@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../core/extentions/string_extensions.dart';
+import 'login_provider.dart';
 import '../services/auth_service.dart';
 import '../services/forgot_passcode_service.dart';
 
@@ -13,11 +14,17 @@ class VerificationProvider extends ChangeNotifier {
     bool isRegistration = false,
     String? maskedMobile,
     int initialCountdown = countdownStartSeconds,
+    String? verificationPurpose,
+    String? changePasscodeCurrent,
+    String? changePasscodeNew,
   })  : _phoneNumber = phoneNumber.replaceAll(RegExp(r'[^0-9]'), ''),
         _countryCode = countryCode.trim(),
         _isRegistration = isRegistration,
         _maskedMobile = maskedMobile,
-        _initialCountdown = initialCountdown {
+        _initialCountdown = initialCountdown,
+        _verificationPurpose = verificationPurpose,
+        _changePasscodeCurrent = changePasscodeCurrent,
+        _changePasscodeNew = changePasscodeNew {
           if (_isRegistration && _initialCountdown > 0) {
             _countdownSeconds = _initialCountdown;
             _startCountdown();
@@ -40,6 +47,27 @@ class VerificationProvider extends ChangeNotifier {
   final bool _isRegistration;
   final String? _maskedMobile;
   final int _initialCountdown;
+  final String? _verificationPurpose;
+  final String? _changePasscodeCurrent;
+  final String? _changePasscodeNew;
+
+  String? get verificationPurpose => _verificationPurpose;
+
+  String? get changePasscodeCurrent => _changePasscodeCurrent;
+
+  String? get changePasscodeNew => _changePasscodeNew;
+
+  bool get hasChangePasscodePayload {
+    final c = _changePasscodeCurrent;
+    final n = _changePasscodeNew;
+    return c != null &&
+        c.length == otpLength &&
+        n != null &&
+        n.length == otpLength;
+  }
+
+  bool get _isChangePasscodeVerification =>
+      _verificationPurpose == LoginProvider.purposeChangePasscode;
 
   String _otp = '';
   int _countdownSeconds = 0;
@@ -189,6 +217,7 @@ class VerificationProvider extends ChangeNotifier {
           _phoneNumber,
           _countryCode,
           _otp,
+          requireResetToken: !_isChangePasscodeVerification,
         );
         _hasError = !isValid;
         return isValid;

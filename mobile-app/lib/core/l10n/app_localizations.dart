@@ -275,32 +275,38 @@ abstract class AppLocalizations {
   /// No description provided for @changePhoneStepsDescription.
   ///
   /// In en, this message translates to:
-  /// **'To change your registered phone number we will follow these steps :'**
+  /// **'To change your registered phone number, follow these steps:'**
   String get changePhoneStepsDescription;
 
   /// No description provided for @changePhoneStep1.
   ///
   /// In en, this message translates to:
-  /// **'A verification code will be sent to your registered phone number.'**
+  /// **'Enter your new phone number (the one you want to use for your account).'**
   String get changePhoneStep1;
 
   /// No description provided for @changePhoneStep2.
   ///
   /// In en, this message translates to:
-  /// **'After entering the code that was sent, enter the new phone number.'**
+  /// **'We will send a verification code to that number.'**
   String get changePhoneStep2;
 
   /// No description provided for @changePhoneStep3.
   ///
   /// In en, this message translates to:
-  /// **'A verification code will be sent to the new phone number entered by you.'**
+  /// **'Enter the code to confirm and complete the update.'**
   String get changePhoneStep3;
 
   /// No description provided for @changePhoneAfterStepsNote.
   ///
   /// In en, this message translates to:
-  /// **'After following these steps, your current phone number will be changed to the new one.'**
+  /// **'After you verify the code, your account will use the new phone number.'**
   String get changePhoneAfterStepsNote;
+
+  /// No description provided for @changePhoneEnterNewSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'After you continue, we will send a verification code to this number.'**
+  String get changePhoneEnterNewSubtitle;
 
   /// No description provided for @enterNewPhoneNumber.
   ///
@@ -323,7 +329,7 @@ abstract class AppLocalizations {
   /// No description provided for @changePhoneNewOtpSent.
   ///
   /// In en, this message translates to:
-  /// **'An 6 digit verification code has been sent via WhatsApp to {phone}.'**
+  /// **'A 6-digit verification code was sent to {phone}.'**
   String changePhoneNewOtpSent(String phone);
 
   /// No description provided for @enterValidPhoneNumber.
@@ -631,6 +637,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Request failed'**
   String get requestFailed;
+
+  /// No description provided for @invalidServerResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid response from server'**
+  String get invalidServerResponse;
+
+  /// No description provided for @softLoginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Soft login failed'**
+  String get softLoginFailed;
+
+  /// No description provided for @registrationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration failed'**
+  String get registrationFailed;
+
+  /// No description provided for @unableToChangePasscode.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to change passcode'**
+  String get unableToChangePasscode;
 
   /// No description provided for @unknownError.
   ///
@@ -1987,6 +2017,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Welcome Back'**
   String get welcomeBack;
+
+  /// No description provided for @kycFirstNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'First Name'**
+  String get kycFirstNameLabel;
+
+  /// No description provided for @kycLastNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Name'**
+  String get kycLastNameLabel;
+
+  /// No description provided for @kycDateOfBirthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of Birth'**
+  String get kycDateOfBirthLabel;
+
+  /// No description provided for @kycResidentialCountryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Residential Country'**
+  String get kycResidentialCountryLabel;
+
+  /// No description provided for @kycDocumentCountryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Document Country'**
+  String get kycDocumentCountryLabel;
+
+  /// No description provided for @kycCityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get kycCityLabel;
+
+  /// No description provided for @kycAddressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get kycAddressLabel;
+
+  /// No description provided for @kycCountryCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., GBR, USA, IND'**
+  String get kycCountryCodeHint;
+
+  /// No description provided for @kycSelectDateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'MM/DD/YYYY'**
+  String get kycSelectDateHint;
+
+  /// No description provided for @kycRequiredFieldError.
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required'**
+  String get kycRequiredFieldError;
+
+  /// No description provided for @kycSubmitButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get kycSubmitButton;
+
+  /// No description provided for @kycInvalidDateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a valid date'**
+  String get kycInvalidDateError;
+
+  /// No description provided for @kycStartedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'KYC process started successfully.'**
+  String get kycStartedSuccess;
 }
 
 class _AppLocalizationsDelegate

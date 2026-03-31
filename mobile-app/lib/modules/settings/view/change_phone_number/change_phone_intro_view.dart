@@ -22,7 +22,7 @@ class ChangePhoneIntroView extends StatelessWidget {
       ],
       afterStepsNote: l10n.changePhoneAfterStepsNote,
       continueLabel: l10n.continueButton,
-      onContinue: () => context.push(Routes.changePhoneVerifyCurrent),
+      onContinue: () => context.push(Routes.changePhoneEnterNew),
     );
   }
 }

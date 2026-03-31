@@ -64,6 +64,22 @@ class AuthService {
     return response;
   }
 
+  static Future<Map<String, dynamic>> changePasscode({
+    required String currentPasscode,
+    required String newPasscode,
+    required String confirmPasscode,
+  }) async {
+    final response = await ApiHelper.post(
+      Endpoints.changePasscode,
+      {
+        "current_passcode": currentPasscode,
+        "new_passcode": newPasscode,
+        "confirm_passcode": confirmPasscode,
+      },
+    );
+    return response;
+  }
+
   static Future<Map<String, dynamic>> login({
     required String countryCode,
     required String mobileNumber,
@@ -103,6 +119,11 @@ class AuthService {
         "mobile_number": mobileNumber,
       },
     );
+    return response;
+  }
+
+  static Future<Map<String, dynamic>> sessionStatus() async {
+    final response = await ApiHelper.get(Endpoints.sessionStatus);
     return response;
   }
 }

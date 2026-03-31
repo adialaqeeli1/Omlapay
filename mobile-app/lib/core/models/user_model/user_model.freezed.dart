@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UserModel {
 
- String? get id;@JsonKey(name: 'mobile_number') String? get fullMobileNumber; String? get status; String get mobileNumber; String get countryCode; String get password;// 6 digit numeric
+ String? get id;@JsonKey(name: 'mobile_number') String? get fullMobileNumber; String? get status; String get mobileNumber;@JsonKey(readValue: _readCountryCode) String get countryCode; String get password;// 6 digit numeric
  String get firstName; String get lastName; bool get isVerified;
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
@@ -49,7 +49,7 @@ abstract mixin class $UserModelCopyWith<$Res>  {
   factory $UserModelCopyWith(UserModel value, $Res Function(UserModel) _then) = _$UserModelCopyWithImpl;
 @useResult
 $Res call({
- String? id,@JsonKey(name: 'mobile_number') String? fullMobileNumber, String? status, String mobileNumber, String countryCode, String password, String firstName, String lastName, bool isVerified
+ String? id,@JsonKey(name: 'mobile_number') String? fullMobileNumber, String? status, String mobileNumber,@JsonKey(readValue: _readCountryCode) String countryCode, String password, String firstName, String lastName, bool isVerified
 });
 
 
@@ -162,7 +162,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id, @JsonKey(name: 'mobile_number')  String? fullMobileNumber,  String? status,  String mobileNumber,  String countryCode,  String password,  String firstName,  String lastName,  bool isVerified)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id, @JsonKey(name: 'mobile_number')  String? fullMobileNumber,  String? status,  String mobileNumber, @JsonKey(readValue: _readCountryCode)  String countryCode,  String password,  String firstName,  String lastName,  bool isVerified)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserModel() when $default != null:
 return $default(_that.id,_that.fullMobileNumber,_that.status,_that.mobileNumber,_that.countryCode,_that.password,_that.firstName,_that.lastName,_that.isVerified);case _:
@@ -183,7 +183,7 @@ return $default(_that.id,_that.fullMobileNumber,_that.status,_that.mobileNumber,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id, @JsonKey(name: 'mobile_number')  String? fullMobileNumber,  String? status,  String mobileNumber,  String countryCode,  String password,  String firstName,  String lastName,  bool isVerified)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id, @JsonKey(name: 'mobile_number')  String? fullMobileNumber,  String? status,  String mobileNumber, @JsonKey(readValue: _readCountryCode)  String countryCode,  String password,  String firstName,  String lastName,  bool isVerified)  $default,) {final _that = this;
 switch (_that) {
 case _UserModel():
 return $default(_that.id,_that.fullMobileNumber,_that.status,_that.mobileNumber,_that.countryCode,_that.password,_that.firstName,_that.lastName,_that.isVerified);case _:
@@ -203,7 +203,7 @@ return $default(_that.id,_that.fullMobileNumber,_that.status,_that.mobileNumber,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id, @JsonKey(name: 'mobile_number')  String? fullMobileNumber,  String? status,  String mobileNumber,  String countryCode,  String password,  String firstName,  String lastName,  bool isVerified)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id, @JsonKey(name: 'mobile_number')  String? fullMobileNumber,  String? status,  String mobileNumber, @JsonKey(readValue: _readCountryCode)  String countryCode,  String password,  String firstName,  String lastName,  bool isVerified)?  $default,) {final _that = this;
 switch (_that) {
 case _UserModel() when $default != null:
 return $default(_that.id,_that.fullMobileNumber,_that.status,_that.mobileNumber,_that.countryCode,_that.password,_that.firstName,_that.lastName,_that.isVerified);case _:
@@ -218,14 +218,14 @@ return $default(_that.id,_that.fullMobileNumber,_that.status,_that.mobileNumber,
 @JsonSerializable()
 
 class _UserModel extends UserModel {
-  const _UserModel({this.id, @JsonKey(name: 'mobile_number') this.fullMobileNumber, this.status, this.mobileNumber = '', this.countryCode = '', this.password = '', this.firstName = '', this.lastName = '', this.isVerified = false}): super._();
+  const _UserModel({this.id, @JsonKey(name: 'mobile_number') this.fullMobileNumber, this.status, this.mobileNumber = '', @JsonKey(readValue: _readCountryCode) this.countryCode = '', this.password = '', this.firstName = '', this.lastName = '', this.isVerified = false}): super._();
   factory _UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
 
 @override final  String? id;
 @override@JsonKey(name: 'mobile_number') final  String? fullMobileNumber;
 @override final  String? status;
 @override@JsonKey() final  String mobileNumber;
-@override@JsonKey() final  String countryCode;
+@override@JsonKey(readValue: _readCountryCode) final  String countryCode;
 @override@JsonKey() final  String password;
 // 6 digit numeric
 @override@JsonKey() final  String firstName;
@@ -265,7 +265,7 @@ abstract mixin class _$UserModelCopyWith<$Res> implements $UserModelCopyWith<$Re
   factory _$UserModelCopyWith(_UserModel value, $Res Function(_UserModel) _then) = __$UserModelCopyWithImpl;
 @override @useResult
 $Res call({
- String? id,@JsonKey(name: 'mobile_number') String? fullMobileNumber, String? status, String mobileNumber, String countryCode, String password, String firstName, String lastName, bool isVerified
+ String? id,@JsonKey(name: 'mobile_number') String? fullMobileNumber, String? status, String mobileNumber,@JsonKey(readValue: _readCountryCode) String countryCode, String password, String firstName, String lastName, bool isVerified
 });
 
 

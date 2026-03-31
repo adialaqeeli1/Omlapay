@@ -67,42 +67,50 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   Future<void> _verifyOtp(VerificationProvider provider) async {
     try {
+      final l10n = context.l10n!;
       final isValid = await provider.verifyOtp();
       if (!mounted || !isValid) {
         return;
       }
 
-    final extra = GoRouterState.of(context).extra;
-    if (extra is Map<String, dynamic> &&
-        extra[LoginProvider.extraVerificationPurposeKey] ==
-            LoginProvider.purposeChangePasscode) {
-      final newPasscode =
-          extra[LoginProvider.extraPendingPasscodeKey] as String?;
-      if (newPasscode == null || newPasscode.length != 6) {
-        return;
-      }
-      final applied = await context.read<AuthProvider>().setPasscode(
-        provider.phoneNumber,
-        provider.countryCode,
-        newPasscode,
-      );
-      if (!mounted || !applied) {
-        return;
-      }
-      context.go(Routes.changePasscodeSuccess);
-      return;
-    }
+      final isChangePasscodePurpose =
+          provider.verificationPurpose ==
+          LoginProvider.purposeChangePasscode;
+      final hasPasscodePayload = provider.hasChangePasscodePayload;
+      final isChangePasscodeFlow =
+          isChangePasscodePurpose || hasPasscodePayload;
 
-    context.go(
-      Routes.enterOrSetPasscode,
-      extra: {
-        LoginProvider.extraModeKey: LoginProvider.modeRegister,
-        LoginProvider.extraCountryCodeKey: provider.countryCode,
-        LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
-        if (provider.registrationToken != null)
-          LoginProvider.extraRegistrationTokenKey: provider.registrationToken,
-      },
-    );
+      if (isChangePasscodeFlow) {
+        if (!hasPasscodePayload) {
+          SnackbarHelper.showError(context, l10n.unknownError);
+          return;
+        }
+        final current = provider.changePasscodeCurrent!;
+        final next = provider.changePasscodeNew!;
+        await context.read<AuthProvider>().changePasscodeAndRefreshSession(
+          currentPasscode: current,
+          newPasscode: next,
+          confirmPasscode: next,
+          countryCode: provider.countryCode,
+          mobileNumber: provider.phoneNumber,
+        );
+        if (!mounted) {
+          return;
+        }
+        context.go(Routes.changePasscodeSuccess);
+        return;
+      }
+
+      context.go(
+        Routes.enterOrSetPasscode,
+        extra: {
+          LoginProvider.extraModeKey: LoginProvider.modeRegister,
+          LoginProvider.extraCountryCodeKey: provider.countryCode,
+          LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+          if (provider.registrationToken != null)
+            LoginProvider.extraRegistrationTokenKey: provider.registrationToken,
+        },
+      );
     } catch (e) {
       if (mounted) {
         SnackbarHelper.showError(context, e.toString());

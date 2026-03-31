@@ -13,6 +13,7 @@ class ChangeDetailEnterNewView extends StatelessWidget {
     required this.continueLabel,
     required this.onContinue,
     this.validationErrorText,
+    this.isContinueLoading = false,
   });
 
   final String appBarTitle;
@@ -22,6 +23,7 @@ class ChangeDetailEnterNewView extends StatelessWidget {
   final String continueLabel;
   final VoidCallback onContinue;
   final String? validationErrorText;
+  final bool isContinueLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +80,7 @@ class ChangeDetailEnterNewView extends StatelessWidget {
               ],
               const Spacer(),
               FilledButton(
-                onPressed: onContinue,
+                onPressed: isContinueLoading ? null : onContinue,
                 style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
                   backgroundColor: AppColors.primaryColor,
@@ -86,13 +88,22 @@ class ChangeDetailEnterNewView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(
-                  continueLabel,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: AppColors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: isContinueLoading
+                    ? SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: theme.colorScheme.onPrimary,
+                        ),
+                      )
+                    : Text(
+                        continueLabel,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
               const SizedBox(height: 24),
             ],

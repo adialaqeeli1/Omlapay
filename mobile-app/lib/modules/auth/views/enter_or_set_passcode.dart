@@ -21,10 +21,14 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
   /// blocks further taps.
   static bool _forgotPasscodeOtpInFlight = false;
 
+  /// Settings → change passcode: avoids double-submit while change-passcode API runs.
+  static bool _changePasscodeSubmitInFlight = false;
+
   const EnterOrSetPasscodeScreen({
     super.key,
     this.isSoftLogin = false,
     this.mode,
+    this.currentPasscode,
     this.pendingPasscode,
     this.resetToken,
     this.pendingEmail,
@@ -33,6 +37,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
 
   final bool isSoftLogin;
   final String? mode;
+  final String? currentPasscode;
   final String? pendingPasscode;
   final String? resetToken;
   final String? pendingEmail;
@@ -358,6 +363,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
               LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeNew,
               LoginProvider.extraCountryCodeKey: provider.countryCode,
               LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+              LoginProvider.extraCurrentPasscodeKey: currentPasscode,
             },
           );
         },
@@ -547,6 +553,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
             LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeNew,
             LoginProvider.extraCountryCodeKey: provider.countryCode,
             LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+            LoginProvider.extraCurrentPasscodeKey: provider.passcode,
           },
         );
         return;
@@ -559,6 +566,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
             LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeConfirm,
             LoginProvider.extraCountryCodeKey: provider.countryCode,
             LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+            LoginProvider.extraCurrentPasscodeKey: currentPasscode,
             LoginProvider.extraPendingPasscodeKey: provider.passcode,
           },
         );
@@ -615,19 +623,84 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
           return;
         }
         final newPasscode = pendingPasscode;
-        if (newPasscode == null || newPasscode.length != 6) {
+        final oldPasscode = currentPasscode;
+        if (newPasscode == null ||
+            newPasscode.length != PasscodeProvider.passcodeLength ||
+            oldPasscode == null ||
+            oldPasscode.length != PasscodeProvider.passcodeLength) {
+          if (context.mounted) {
+            SnackbarHelper.showError(context, context.l10n!.unknownError);
+          }
           return;
         }
-        context.go(
-          Routes.registerVerification,
-          extra: {
-            LoginProvider.extraCountryCodeKey: provider.countryCode,
-            LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
-            LoginProvider.extraPendingPasscodeKey: newPasscode,
-            LoginProvider.extraVerificationPurposeKey:
-                LoginProvider.purposeChangePasscode,
+
+        if (_changePasscodeSubmitInFlight) {
+          return;
+        }
+        _changePasscodeSubmitInFlight = true;
+        provider.clearPasscode();
+
+        final navigator = Navigator.of(context, rootNavigator: true);
+        final barrierColor = Theme.of(
+          context,
+        ).colorScheme.scrim.withValues(alpha: 0.45);
+
+        showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          barrierColor: barrierColor,
+          useRootNavigator: true,
+          builder: (dialogContext) {
+            return PopScope(
+              canPop: false,
+              child: Center(
+                child: Material(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: SizedBox.square(
+                    dimension: 60,
+                    child: const CommonLoadingIndicator(),
+                  ),
+                ),
+              ),
+            );
           },
         );
+        await Future<void>.delayed(Duration.zero);
+        if (!context.mounted) {
+          _changePasscodeSubmitInFlight = false;
+          if (navigator.mounted) {
+            navigator.pop();
+          }
+          return;
+        }
+
+        try {
+          await authProvider.changePasscodeAndRefreshSession(
+            currentPasscode: oldPasscode,
+            newPasscode: newPasscode,
+            confirmPasscode: newPasscode,
+            countryCode: provider.countryCode,
+            mobileNumber: provider.phoneNumber,
+          );
+          if (navigator.mounted) {
+            navigator.pop();
+          }
+          if (!context.mounted) {
+            return;
+          }
+          context.go(Routes.changePasscodeSuccess);
+        } catch (e) {
+          if (navigator.mounted) {
+            navigator.pop();
+          }
+          if (context.mounted) {
+            SnackbarHelper.showError(context, e.toString());
+          }
+        } finally {
+          _changePasscodeSubmitInFlight = false;
+        }
         return;
       }
 

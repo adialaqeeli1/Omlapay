@@ -11,7 +11,7 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
   fullMobileNumber: json['mobile_number'] as String?,
   status: json['status'] as String?,
   mobileNumber: json['mobileNumber'] as String? ?? '',
-  countryCode: json['countryCode'] as String? ?? '',
+  countryCode: _readCountryCode(json, 'countryCode') as String? ?? '',
   password: json['password'] as String? ?? '',
   firstName: json['firstName'] as String? ?? '',
   lastName: json['lastName'] as String? ?? '',
