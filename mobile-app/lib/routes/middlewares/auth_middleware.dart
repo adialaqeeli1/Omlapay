@@ -134,6 +134,22 @@ class AuthMiddleware {
     return null;
   }
 
+  /// Change email → verify new-address OTP: require non-empty pending email.
+  static String? changeEmailVerifyNewEmail(
+    BuildContext context,
+    GoRouterState state,
+  ) {
+    final authRedirect = isAuthenticated(context, state);
+    if (authRedirect != null) return authRedirect;
+    final extra = state.extra as Map<String, dynamic>?;
+    final email =
+        extra?[LoginProvider.extraPendingEmailKey] as String? ?? '';
+    if (email.trim().isEmpty) {
+      return Routes.changeEmailEnterNew;
+    }
+    return null;
+  }
+
   /// Change phone → verify OTP: require navigation extra from enter-new screen.
   static String? changePhoneVerifyNew(
     BuildContext context,

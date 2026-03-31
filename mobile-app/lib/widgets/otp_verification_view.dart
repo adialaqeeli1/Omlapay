@@ -4,6 +4,8 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 
 import '../core/extentions/context_extensions.dart';
 import '../core/theme/theme.dart';
+import '../core/utils/app_exception.dart';
+import '../core/utils/snackbar_helper.dart';
 import 'common_back_button.dart';
 
 class OtpVerificationView extends StatefulWidget {
@@ -55,7 +57,13 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await widget.onInitialRequest();
+      try {
+        await widget.onInitialRequest();
+      } catch (e) {
+        if (!mounted) return;
+        final message = e is AppException ? e.message : e.toString();
+        SnackbarHelper.showError(context, message);
+      }
     });
   }
 

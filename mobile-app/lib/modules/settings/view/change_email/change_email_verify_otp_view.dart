@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/utils/app_exception.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../widgets/otp_verification_view.dart';
 import '../../providers/change_email_otp_provider.dart';
 
@@ -35,7 +37,7 @@ class ChangeEmailVerifyOtpView extends StatelessWidget {
       onInitialRequest: provider.requestOtp,
       onOtpChanged: provider.setOtp,
       onOtpCompleted: () => _verify(context, provider),
-      onResend: provider.resendOtp,
+      onResend: () => _resend(context, provider),
       bottomSection: Text(
         l10n.needHelpContactSupport,
         style: theme.textTheme.bodyMedium?.copyWith(
@@ -50,8 +52,28 @@ class ChangeEmailVerifyOtpView extends StatelessWidget {
     BuildContext context,
     ChangeEmailOtpProvider provider,
   ) async {
-    final valid = await provider.verifyOtp();
-    if (!context.mounted || !valid) return;
-    await onVerified(context);
+    try {
+      final valid = await provider.verifyOtp();
+      if (!context.mounted) return;
+      if (!valid) return;
+      await onVerified(context);
+    } on AppException catch (e) {
+      if (context.mounted) {
+        SnackbarHelper.showError(context, e.message);
+      }
+    }
+  }
+
+  Future<void> _resend(
+    BuildContext context,
+    ChangeEmailOtpProvider provider,
+  ) async {
+    try {
+      await provider.resendOtp();
+    } on AppException catch (e) {
+      if (context.mounted) {
+        SnackbarHelper.showError(context, e.message);
+      }
+    }
   }
 }

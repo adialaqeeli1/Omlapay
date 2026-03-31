@@ -269,8 +269,9 @@ class AppRouter {
           final user = context.read<AuthProvider>().state.user!;
           final l10n = AppLocalizations.of(context)!;
           return ChangeNotifierProvider(
-            create: (_) => ChangeEmailOtpProvider(
-              target: '${user.countryCode}${user.mobileNumber}',
+            create: (_) => ChangeEmailOtpProvider.forPhone(
+              countryCode: user.countryCode,
+              mobileNumber: user.mobileNumber,
             ),
             child: ChangeEmailVerifyOtpView(
               appBarTitle: l10n.changeEmail,
@@ -309,7 +310,7 @@ class AppRouter {
               extra?[LoginProvider.extraPendingEmailKey] as String? ?? '';
           final l10n = AppLocalizations.of(context)!;
           return ChangeNotifierProvider(
-            create: (_) => ChangeEmailOtpProvider(target: pendingEmail),
+            create: (_) => ChangeEmailOtpProvider.forNewEmail(pendingEmail),
             child: ChangeEmailVerifyOtpView(
               appBarTitle: l10n.changeEmail,
               title: l10n.verifyNewEmailAddress,
@@ -330,7 +331,7 @@ class AppRouter {
             ),
           );
         },
-        redirect: AuthMiddleware.isAuthenticated,
+        redirect: AuthMiddleware.changeEmailVerifyNewEmail,
       ),
       GoRoute(
         path: Routes.changeEmailSuccess,
