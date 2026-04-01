@@ -42,6 +42,8 @@ class SettingsView extends StatelessWidget {
       body: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
           final bool isLoggedIn = authProvider.state.isAuthenticated;
+          final bool isKycVerified =
+              authProvider.state.user?.isVerified == true;
 
           return SingleChildScrollView(
             physics: AlwaysScrollableScrollPhysics(
@@ -75,14 +77,16 @@ class SettingsView extends StatelessWidget {
                           GoRouter.of(context).push(Routes.changePhoneIntro);
                         },
                       ),
-                      _buildSimpleSettingOption(
-                        context: context,
-                        label: l10n.changeEmail,
-                        screenWidth: screenWidth,
-                        onTap: () {
-                          GoRouter.of(context).push(Routes.changeEmailIntro);
-                        },
-                      ),
+
+                      if (isKycVerified)
+                        _buildSimpleSettingOption(
+                          context: context,
+                          label: l10n.changeEmail,
+                          screenWidth: screenWidth,
+                          onTap: () {
+                            GoRouter.of(context).push(Routes.changeEmailIntro);
+                          },
+                        ),
                       _buildSimpleSettingOption(
                         context: context,
                         label: l10n.changePasscode,
@@ -103,14 +107,14 @@ class SettingsView extends StatelessWidget {
                           );
                         },
                       ),
-                      _buildSimpleSettingOption(
-                        context: context,
-                        label: l10n.twoFactorAuthentication,
-                        screenWidth: screenWidth,
-                        onTap: () {
-                          // TODO: Navigate to change passcode
-                        },
-                      ),
+                      // _buildSimpleSettingOption(
+                      //   context: context,
+                      //   label: l10n.twoFactorAuthentication,
+                      //   screenWidth: screenWidth,
+                      //   onTap: () {
+                      //     // TODO: Navigate to change passcode
+                      //   },
+                      // ),
                     ],
                   ),
                 ],

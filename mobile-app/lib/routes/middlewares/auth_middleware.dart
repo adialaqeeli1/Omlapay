@@ -104,24 +104,26 @@ class AuthMiddleware {
     }
 
     final authProvider = context.read<AuthProvider>();
-    final purpose =
-        extra[LoginProvider.extraVerificationPurposeKey] as String?;
+    final purpose = extra[LoginProvider.extraVerificationPurposeKey] as String?;
     if (purpose == LoginProvider.purposeChangePasscode) {
       if (!authProvider.state.isAuthenticated ||
           authProvider.state.user == null) {
         return Routes.loginOrRegister;
       }
       final user = authProvider.state.user!;
-      final normalizedExtraPhone =
-          phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
-      final normalizedUserPhone =
-          user.mobileNumber.replaceAll(RegExp(r'[^0-9]'), '');
+      final normalizedExtraPhone = phoneNumber.replaceAll(
+        RegExp(r'[^0-9]'),
+        '',
+      );
+      final normalizedUserPhone = user.mobileNumber.replaceAll(
+        RegExp(r'[^0-9]'),
+        '',
+      );
       if (countryCode.trim() != user.countryCode.trim() ||
           normalizedExtraPhone != normalizedUserPhone) {
         return Routes.home;
       }
-      final pending =
-          extra[LoginProvider.extraPendingPasscodeKey] as String?;
+      final pending = extra[LoginProvider.extraPendingPasscodeKey] as String?;
       if (pending == null || pending.length != 6) {
         return Routes.settings;
       }
@@ -142,8 +144,7 @@ class AuthMiddleware {
     final authRedirect = isAuthenticated(context, state);
     if (authRedirect != null) return authRedirect;
     final extra = state.extra as Map<String, dynamic>?;
-    final email =
-        extra?[LoginProvider.extraPendingEmailKey] as String? ?? '';
+    final email = extra?[LoginProvider.extraPendingEmailKey] as String? ?? '';
     if (email.trim().isEmpty) {
       return Routes.changeEmailEnterNew;
     }
@@ -165,9 +166,7 @@ class AuthMiddleware {
         extra[LoginProvider.extraPhoneNumberKey] as String? ?? '';
     final maskedMobile =
         extra[LoginProvider.extraMaskedMobileKey] as String? ?? '';
-    if (countryCode.isEmpty ||
-        phoneNumber.isEmpty ||
-        maskedMobile.isEmpty) {
+    if (countryCode.isEmpty || phoneNumber.isEmpty || maskedMobile.isEmpty) {
       return Routes.changePhoneEnterNew;
     }
     return null;
