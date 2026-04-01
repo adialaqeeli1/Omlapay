@@ -21,28 +21,27 @@ class SwapCoinView extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<SwapProvider>();
     final l10n = context.l10n!;
+    final colorScheme = Theme.of(context).colorScheme;
 
     if (provider.isLoading) {
       return Scaffold(
-        backgroundColor: Colors.black,
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
           elevation: 0,
           leading: CommonBackButton(),
-          title: Text(l10n.swap, style: const TextStyle(color: Colors.white)),
+          title: Text(l10n.swap),
           centerTitle: true,
         ),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: CircularProgressIndicator(color: colorScheme.primary),
+        ),
       );
     }
 
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: CommonBackButton(),
-        title: Text(l10n.swap, style: const TextStyle(color: Colors.white)),
+        title: Text(l10n.swap),
         centerTitle: true,
       ),
       body: CustomScrollView(
@@ -81,9 +80,11 @@ class SwapCoinView extends StatelessWidget {
                           onTap: provider.swapCoins,
                           child: Container(
                             padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.black,
+                              color: context.isDarkMode
+                                  ? colorScheme.surfaceContainerLow
+                                  : Colors.transparent,
                             ),
                             child: const ThemeAwareIcon(
                               assetPath: 'assets/icons/swap.svg',
@@ -122,15 +123,15 @@ class SwapCoinView extends StatelessWidget {
                           children: [
                             Text(
                               l10n.swapFeesColon,
-                              style: const TextStyle(
-                                color: Colors.grey,
+                              style: TextStyle(
+                                color: colorScheme.onSurfaceVariant,
                                 fontSize: 12,
                               ),
                             ),
                             Text(
                               '1.3 USDT', // Mock value
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: colorScheme.onSurface,
                                 fontSize: 12,
                               ),
                             ),
@@ -143,8 +144,8 @@ class SwapCoinView extends StatelessWidget {
                           alignment: Alignment.centerRight,
                           child: Text(
                             '1 ${provider.fromCoin!.localizedCoinTicker(context)} ≈ 0.00032 ${provider.toCoin!.localizedCoinTicker(context)}',
-                            style: const TextStyle(
-                              color: Colors.grey,
+                            style: TextStyle(
+                              color: colorScheme.onSurfaceVariant,
                               fontSize: 12,
                             ),
                           ),
@@ -175,9 +176,15 @@ class SwapCoinView extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: provider.canSwap
                             ? AppColors.tealColor
-                            : const Color(0xFF1A2221),
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: const Color(0xFF1A2221),
+                            : colorScheme.surfaceContainerHighest,
+                        foregroundColor: provider.canSwap
+                            ? AppColors.white
+                            : colorScheme.onSurface.withValues(alpha: 0.38),
+                        disabledBackgroundColor:
+                            colorScheme.surfaceContainerHighest,
+                        disabledForegroundColor: colorScheme.onSurface.withValues(
+                          alpha: 0.38,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -186,7 +193,6 @@ class SwapCoinView extends StatelessWidget {
                       child: Text(
                         l10n.confirmSwapButton,
                         style: const TextStyle(
-                          color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),

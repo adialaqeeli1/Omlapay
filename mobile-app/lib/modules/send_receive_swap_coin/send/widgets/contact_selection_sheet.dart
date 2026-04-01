@@ -44,10 +44,11 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1E1E1E), // Dark background matching design
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         children: [
@@ -59,14 +60,14 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
               children: [
                 Text(
                   l10n.contactsSheetTitle,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
+                  icon: Icon(Icons.close, color: colorScheme.onSurface),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -79,8 +80,11 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
             child: CommonTextField(
               controller: _searchController,
               hintText: l10n.searchContactsHint,
-              prefixIcon: const Icon(Icons.search, color: Colors.grey),
-              fillColor: const Color(0xFF2A2D35),
+              prefixIcon: Icon(
+                Icons.search,
+                color: colorScheme.onSurfaceVariant,
+              ),
+              fillColor: colorScheme.surfaceContainerHighest,
             ),
           ),
 
@@ -91,8 +95,10 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: _filteredContacts.length,
-              separatorBuilder: (context, index) =>
-                  const Divider(color: Color(0xFF2A2D35), height: 1),
+              separatorBuilder: (context, index) => Divider(
+                color: colorScheme.outlineVariant,
+                height: 1,
+              ),
               itemBuilder: (context, index) {
                 final contact = _filteredContacts[index];
                 return ListTile(
@@ -109,15 +115,18 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
                   ),
                   title: Text(
                     contact.name,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: colorScheme.onSurface,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   subtitle: Text(
                     contact.phoneNumber,
-                    style: const TextStyle(color: Colors.grey, fontSize: 14),
+                    style: TextStyle(
+                      color: colorScheme.onSurfaceVariant,
+                      fontSize: 14,
+                    ),
                   ),
                   trailing: contact.isVerified
                       ? const Icon(

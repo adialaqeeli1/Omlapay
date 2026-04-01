@@ -82,11 +82,12 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
+    final colorScheme = Theme.of(context).colorScheme;
     final selectedCurrency = context.watch<GlobalProvider>().selectedCurrency;
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1C1C1E),
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
         ),
@@ -101,14 +102,17 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: Icon(
+                      Icons.close,
+                      color: colorScheme.onSurface,
+                    ),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ),
                 Text(
                   widget.title,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -120,13 +124,16 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: TextField(
               controller: _searchController,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: colorScheme.onSurface),
               decoration: InputDecoration(
                 hintText: l10n.searchHint,
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: colorScheme.onSurfaceVariant,
+                ),
                 filled: true,
-                fillColor: const Color(0xFF2C2C2C),
+                fillColor: colorScheme.surfaceContainerHighest,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -145,7 +152,7 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                     value: _hideZeroBalance,
                     activeColor: AppColors.tealColor,
                     checkColor: Colors.white,
-                    side: const BorderSide(color: Colors.grey),
+                    side: BorderSide(color: colorScheme.outline),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4),
                     ),
@@ -159,7 +166,10 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                 ),
                 Text(
                   l10n.hideZeroBalance,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                    fontSize: 13,
+                  ),
                 ),
               ],
             ),
@@ -173,6 +183,7 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
               itemBuilder: (context, index) {
                 final coin = _filteredCoins[index];
                 final isSelected = coin == widget.selectedCoin;
+                final itemColorScheme = Theme.of(context).colorScheme;
                 Color? iconBackgroundColor;
                 Widget? fallbackIcon;
 
@@ -215,14 +226,16 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                     ),
                     title: Text(
                       coin.localizedCoinTicker(context),
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: itemColorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     subtitle: Text(
                       coin.localizedCoinPrimaryName(context),
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: TextStyle(
+                        color: itemColorScheme.onSurfaceVariant,
+                      ),
                     ),
                     trailing: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -230,15 +243,15 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                       children: [
                         Text(
                           coin.amount,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: itemColorScheme.onSurface,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
                           '${coin.valueInUsd} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',
                           style: TextStyle(
-                            color: Colors.grey[600],
+                            color: itemColorScheme.onSurfaceVariant,
                             fontSize: 12,
                           ),
                         ),

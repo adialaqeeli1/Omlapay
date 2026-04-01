@@ -21,6 +21,7 @@ class ReceiveCoinsHistoryView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     final provider = context.watch<ReceiveCoinsHistoryProvider>();
     final tabs = provider.uniqueCoinSymbols;
 
@@ -63,10 +64,10 @@ class ReceiveCoinsHistoryView extends StatelessWidget {
             indicatorPadding: const EdgeInsets.symmetric(horizontal: 4),
             indicatorAnimation: TabIndicatorAnimation.linear,
             automaticIndicatorColorAdjustment: true,
-            indicatorColor: const Color(0xFF00CFA5),
+            indicatorColor: colorScheme.primary,
             indicatorSize: TabBarIndicatorSize.tab,
-            labelColor: const Color(0xFF00CFA5),
-            unselectedLabelColor: Colors.grey,
+            labelColor: colorScheme.primary,
+            unselectedLabelColor: colorScheme.onSurfaceVariant,
             labelStyle: const TextStyle(fontWeight: FontWeight.bold),
             dividerColor: Colors.transparent,
             tabs: tabs.map((e) => Tab(text: e)).toList(),
@@ -122,6 +123,8 @@ class _TransactionList extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final grouped = _groupTransactions(transactions, l10n);
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return CustomScrollView(
       physics: const AlwaysScrollableScrollPhysics(
         parent: ClampingScrollPhysics(),
@@ -133,7 +136,10 @@ class _TransactionList extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Text(
                 entry.key,
-                style: const TextStyle(color: Colors.grey, fontSize: 14),
+                style: TextStyle(
+                  color: colorScheme.onSurfaceVariant,
+                  fontSize: 14,
+                ),
               ),
             ),
           ),
@@ -182,6 +188,7 @@ class _TransactionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     Color? iconBackgroundColor;
     Widget? fallbackIcon;
 
@@ -234,19 +241,25 @@ class _TransactionItem extends StatelessWidget {
       ),
       title: Text(
         transaction.coinSymbol,
-        style: const TextStyle(fontWeight: FontWeight.bold),
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: colorScheme.onSurface,
+        ),
       ),
       subtitle: Text(
         DateFormat(
           'yyyy-MM-dd HH:mm:ss',
           AppLocalizations.of(context)!.localeName,
         ).format(transaction.date),
-        style: const TextStyle(color: Colors.grey, fontSize: 12),
+        style: TextStyle(
+          color: colorScheme.onSurfaceVariant,
+          fontSize: 12,
+        ),
       ),
       trailing: Text(
         '+${double.parse(transaction.amount).toStringAsFixed(2)} ${transaction.coinSymbol}',
-        style: const TextStyle(
-          color: Color(0xFF00CFA5), // Green color
+        style: TextStyle(
+          color: AppColors.greenColor,
           fontWeight: FontWeight.bold,
         ),
       ),

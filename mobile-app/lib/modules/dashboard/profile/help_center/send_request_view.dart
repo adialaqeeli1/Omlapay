@@ -44,9 +44,9 @@ class _SendRequestViewState extends State<SendRequestView> {
     } catch (e) {
       if (mounted) {
         final loc = context.l10n!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(loc.errorPickingFile('$e'))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(loc.errorPickingFile('$e'))));
       }
     }
   }
@@ -55,9 +55,9 @@ class _SendRequestViewState extends State<SendRequestView> {
     if (_formKey.currentState!.validate()) {
       // TODO: Implement send request logic
       final loc = context.l10n!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.helpRequestSentSuccess)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(loc.helpRequestSentSuccess)));
     }
   }
 

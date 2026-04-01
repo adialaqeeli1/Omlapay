@@ -28,25 +28,20 @@ class ReceiveCoinView extends StatelessWidget {
     final provider = context.watch<ReciveCoinProvider>();
     final authProvider = context.watch<AuthProvider>();
     final l10n = context.l10n!;
+    final colorScheme = Theme.of(context).colorScheme;
     final title = fromReceive ? l10n.receive : l10n.walletsTitle;
     final showVerificationBanner =
         provider.kycRequired || authProvider.state.user?.isVerified != true;
 
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(title, style: const TextStyle(color: Colors.white)),
-        backgroundColor: Colors.transparent,
+        title: Text(title),
         elevation: 0,
         leading: const CommonBackButton(),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(
-              Icons.history_rounded,
-              color: Colors.white,
-              size: 24,
-            ),
+            icon: const Icon(Icons.history_rounded, size: 24),
             onPressed: () => context.push(Routes.receiveCoinsHistory),
             tooltip: l10n.history,
           ),
@@ -61,66 +56,23 @@ class ReceiveCoinView extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
                 child: Text(
                   l10n.yourWalletsTitle,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
               Expanded(
                 child: provider.isLoading
-                    ? const Center(
+                    ? Center(
                         child: CircularProgressIndicator(
-                          color: AppColors.tealColor,
+                          color: colorScheme.primary,
                         ),
                       )
-                    : Stack(
-                        children: [
-                          ClipRect(
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(
-                                sigmaX: showVerificationBanner ? 5 : 0,
-                                sigmaY: showVerificationBanner ? 5 : 0,
-                              ),
-                              child: Opacity(
-                                opacity: showVerificationBanner ? 0.55 : 1,
-                                child: ListView.separated(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                  ),
-                                  itemCount: provider.wallets.length,
-                                  separatorBuilder: (context, index) =>
-                                      const SizedBox(height: 12),
-                                  itemBuilder: (context, index) {
-                                    final wallet = provider.wallets[index];
-                                    return _buildWalletItem(
-                                      context,
-                                      wallet,
-                                      provider,
-                                      showVerificationBanner,
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                          // Dark overlay so list feels partially hidden
-                          IgnorePointer(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.black.withValues(alpha: 0.15),
-                                    Colors.black.withValues(alpha: 0.4),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                    : _buildWalletsList(
+                        context,
+                        provider,
+                        showVerificationBanner,
                       ),
               ),
               if (showVerificationBanner)
@@ -147,7 +99,7 @@ class ReceiveCoinView extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.8),
+                    color: colorScheme.inverseSurface,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: AppColors.tealColor.withValues(alpha: 0.5),
@@ -156,16 +108,16 @@ class ReceiveCoinView extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.check_circle,
-                        color: AppColors.tealColor,
+                        color: colorScheme.primary,
                         size: 20,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         l10n.addressCopiedToast,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onInverseSurface,
                           fontSize: 14,
                         ),
                       ),
@@ -175,6 +127,49 @@ class ReceiveCoinView extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  /// [BackdropFilter] requires a non-trivial blur on some Flutter versions; when
+  /// KYC is not required, skip it and show the list normally.
+  Widget _buildWalletsList(
+    BuildContext context,
+    ReciveCoinProvider provider,
+    bool showVerificationBanner,
+  ) {
+    final listView = ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(
+        parent: ClampingScrollPhysics(),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      itemCount: provider.wallets.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final wallet = provider.wallets[index];
+        return _buildWalletItem(
+          context,
+          wallet,
+          provider,
+          showVerificationBanner,
+        );
+      },
+    );
+
+    if (!showVerificationBanner) {
+      return listView;
+    }
+
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(
+          sigmaX: showVerificationBanner ? 5 : 0,
+          sigmaY: showVerificationBanner ? 5 : 0,
+        ),
+        child: Opacity(
+          opacity: showVerificationBanner ? 0.55 : 1,
+          child: listView,
+        ),
       ),
     );
   }
@@ -190,11 +185,14 @@ class ReceiveCoinView extends StatelessWidget {
     final hasAddress = _hasValidAddress(primaryAddress);
     final canUseActions = !showVerificationBanner && hasAddress;
 
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.transparent,
-        border: Border.all(color: const Color(0xFF2C2C2E), width: 1),
+        border: Border.all(color: colorScheme.outlineVariant, width: 1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -212,17 +210,16 @@ class ReceiveCoinView extends StatelessWidget {
                   wallet.networkDisplayName.isNotEmpty
                       ? wallet.networkDisplayName
                       : wallet.network,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
+                  style: textTheme.titleSmall?.copyWith(
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   _displayAddress(primaryAddress),
-                  style: const TextStyle(
-                    color: Color(0xFF6B7280),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
                     fontSize: 12,
                   ),
                 ),
@@ -232,6 +229,7 @@ class ReceiveCoinView extends StatelessWidget {
 
           // QR Code button
           _buildIconButton(
+            context,
             assetPath: 'assets/icons/qr-icon.svg',
             onTap: canUseActions
                 ? () {
@@ -243,6 +241,7 @@ class ReceiveCoinView extends StatelessWidget {
 
           // Copy button
           _buildIconButton(
+            context,
             icon: Icons.copy_rounded,
             onTap: canUseActions
                 ? () {
@@ -259,7 +258,7 @@ class ReceiveCoinView extends StatelessWidget {
 
   Widget _buildWalletIcon(WalletNetworkModel wallet) {
     String assetPath;
-    const backgroundColor = Color(0xFF26A69A);
+    const backgroundColor = AppColors.tealColor;
     final network = wallet.network.trim().toUpperCase();
     final iconUrl = wallet.networkIconUrl.trim();
 
@@ -320,31 +319,32 @@ class ReceiveCoinView extends StatelessWidget {
     );
   }
 
-  Widget _buildIconButton({
+  Widget _buildIconButton(
+    BuildContext context, {
     IconData? icon,
     String? assetPath,
     VoidCallback? onTap,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final iconColor = colorScheme.onSurface;
+
     return InkWell(
       onTap: onTap,
       child: Container(
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: const Color(0xFF2C2C2E),
+          color: colorScheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Center(
           child: icon != null
-              ? Icon(icon, color: Colors.white, size: 18)
+              ? Icon(icon, color: iconColor, size: 18)
               : SvgPicture.asset(
                   assetPath!,
                   width: 18,
                   height: 18,
-                  colorFilter: const ColorFilter.mode(
-                    Colors.white,
-                    BlendMode.srcIn,
-                  ),
+                  colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
                 ),
         ),
       ),

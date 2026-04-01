@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/theme.dart';
-import '../../../widgets/theme_aware_icon.dart';
+import '../../../../widgets/common_back_button.dart';
 import '../provider/transaction_details_provider.dart';
 
 class TransactionDetailsView extends StatelessWidget {
@@ -12,34 +15,35 @@ class TransactionDetailsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     final provider = context.watch<TransactionDetailsProvider>();
     final transaction = provider.transaction;
+    final isDark = context.isDarkMode;
 
     if (provider.isLoading) {
       return Scaffold(
-        backgroundColor: AppColors.darkBackground,
-        appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
-        body: const Center(child: CircularProgressIndicator()),
+        appBar: AppBar(
+          title: Text(l10n.receive),
+          centerTitle: true,
+          leading: const CommonBackButton(),
+        ),
+        body: Center(
+          child: CircularProgressIndicator(color: colorScheme.primary),
+        ),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppColors.darkBackground, // Dark theme background
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          l10n.receive, // Or just "Receive" as per screenshot?
-          style: const TextStyle(color: AppColors.white),
-        ),
+        leading: const CommonBackButton(),
+        title: Text(l10n.receive),
         centerTitle: true,
       ),
       body: CustomScrollView(
-        physics: AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: ClampingScrollPhysics(),
+        ),
         slivers: [
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -48,36 +52,47 @@ class TransactionDetailsView extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-                  // Amount Card
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 40),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          AppColors.balanceCardGradientStart,
-                          AppColors.balanceCardGradientEnd,
-                        ],
-                        stops: [0.3091, 2.402],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+                    decoration: isDark
+                        ? BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                AppColors.balanceCardGradientStart,
+                                AppColors.balanceCardGradientEnd,
+                              ],
+                              stops: [0.3091, 1.0],
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                          )
+                        : BoxDecoration(
+                            color: AppColors.lightCardColor,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: colorScheme.outlineVariant,
+                            ),
+                          ),
                     child: Column(
                       children: [
                         Text(
                           l10n.total,
-                          style: const TextStyle(
-                            color: Colors.grey,
+                          style: TextStyle(
+                            color: isDark
+                                ? AppColors.textLightGrey
+                                : colorScheme.onSurfaceVariant,
                             fontSize: 16,
                           ),
                         ),
                         const SizedBox(height: 10),
                         Text(
                           '+${double.parse(transaction.amount).toStringAsFixed(3).replaceAll(RegExp(r"([.]*0+)(?!.*\d)"), "")} ${transaction.coinSymbol}',
-                          style: const TextStyle(
-                            color: AppColors.white,
+                          style: TextStyle(
+                            color: isDark
+                                ? AppColors.white
+                                : colorScheme.onSurface,
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
                           ),
@@ -86,47 +101,49 @@ class TransactionDetailsView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 30),
-                  // details
                   _buildDetailRow(
+                    context,
                     l10n.date,
                     DateFormat(
-                      'yyyy-MM-dd hh:mm a',
-                    ).format(transaction.date).toLowerCase(),
+                      'yyyy-MM-dd HH:mm:ss',
+                      l10n.localeName,
+                    ).format(transaction.date),
                   ),
-                  const Divider(
-                    color: AppColors.divider,
+                  Divider(
+                    color: colorScheme.outlineVariant,
                     height: 30,
                     thickness: 0.5,
                   ),
                   _buildDetailRow(
+                    context,
                     l10n.sender,
                     transaction.fromAddress ?? l10n.valueNotAvailable,
                   ),
-                  const Divider(
-                    color: AppColors.divider,
+                  Divider(
+                    color: colorScheme.outlineVariant,
                     height: 30,
                     thickness: 0.5,
                   ),
                   _buildDetailRow(
+                    context,
                     l10n.address,
                     transaction.toAddress ??
                         transaction.fromAddress ??
                         l10n.valueNotAvailable,
                     isMultiLine: true,
                   ),
-                  const Divider(
-                    color: AppColors.divider,
+                  Divider(
+                    color: colorScheme.outlineVariant,
                     height: 30,
                     thickness: 0.5,
                   ),
-                  _buildNetworkRow(l10n.network, 'TRC20'),
+                  _buildNetworkRow(
+                    context,
+                    l10n.network,
+                    l10n.sendDefaultNetworkCode,
+                  ),
 
                   const Spacer(),
-                  // Save As Button
-                  // Assuming the icon button in bottom left is for sharing or something separate
-                  // If "Save As" is the main action, maybe the icon button on left is "Share"?
-                  // The screenshot shows an icon button on left and a large "Save As" button.
-                  // Structure for bottom buttons:
                   Row(
                     children: [
                       Container(
@@ -137,8 +154,14 @@ class TransactionDetailsView extends StatelessWidget {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: IconButton(
-                          icon: ThemeAwareIcon(
-                            assetPath: 'assets/icons/share.svg',
+                          icon: SvgPicture.asset(
+                            'assets/icons/share.svg',
+                            width: 22,
+                            height: 22,
+                            colorFilter: const ColorFilter.mode(
+                              AppColors.white,
+                              BlendMode.srcIn,
+                            ),
                           ),
                           onPressed: () {},
                         ),
@@ -151,6 +174,8 @@ class TransactionDetailsView extends StatelessWidget {
                             onPressed: provider.saveAs,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.tealColor,
+                              foregroundColor: AppColors.white,
+                              elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
@@ -158,7 +183,6 @@ class TransactionDetailsView extends StatelessWidget {
                             child: Text(
                               l10n.saveAs,
                               style: const TextStyle(
-                                color: AppColors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -180,27 +204,32 @@ class TransactionDetailsView extends StatelessWidget {
   }
 
   Widget _buildDetailRow(
+    BuildContext context,
     String label,
     String value, {
     bool isMultiLine = false,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
-      crossAxisAlignment: .center,
-      mainAxisAlignment: .spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+        Text(
+          label,
+          style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14),
+        ),
         Expanded(
           child: Align(
-            alignment: Alignment.centerRight,
+            alignment: AlignmentDirectional.centerEnd,
             child: Text(
               value,
-              textAlign: TextAlign.right,
-              style: const TextStyle(
-                color: AppColors.white,
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                color: colorScheme.onSurface,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
-              maxLines: isMultiLine ? 2 : 1,
+              maxLines: isMultiLine ? 4 : 1,
               overflow: isMultiLine
                   ? TextOverflow.visible
                   : TextOverflow.ellipsis,
@@ -211,14 +240,18 @@ class TransactionDetailsView extends StatelessWidget {
     );
   }
 
-  Widget _buildNetworkRow(String label, String value) {
+  Widget _buildNetworkRow(BuildContext context, String label, String value) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 20.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+          Text(
+            label,
+            style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14),
+          ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(

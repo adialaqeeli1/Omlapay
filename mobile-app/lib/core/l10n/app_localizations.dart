@@ -791,7 +791,7 @@ abstract class AppLocalizations {
   /// No description provided for @byCreatingAnAccountIAgreeToMushafars.
   ///
   /// In en, this message translates to:
-  /// **'By creating an account I agree to Mushafar\'s'**
+  /// **'By creating an account I agree'**
   String get byCreatingAnAccountIAgreeToMushafars;
 
   /// No description provided for @termsOfService.
@@ -1772,6 +1772,12 @@ abstract class AppLocalizations {
   /// **'To'**
   String get swapDirectionTo;
 
+  /// No description provided for @swapMaxAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Max'**
+  String get swapMaxAction;
+
   /// No description provided for @selectCoinTitle.
   ///
   /// In en, this message translates to:
@@ -1825,6 +1831,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Amount to be sent'**
   String get sendFormAmountLabel;
+
+  /// No description provided for @sendValidationInvalidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid amount'**
+  String get sendValidationInvalidAmount;
+
+  /// No description provided for @sendValidationInsufficientBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient balance'**
+  String get sendValidationInsufficientBalance;
+
+  /// No description provided for @sendDefaultNetworkCode.
+  ///
+  /// In en, this message translates to:
+  /// **'TRC20'**
+  String get sendDefaultNetworkCode;
 
   /// No description provided for @availableBalanceFormatted.
   ///

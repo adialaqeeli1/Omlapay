@@ -25,14 +25,10 @@ class _SendVerificationViewState extends State<SendVerificationView> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(
-          l10n.sendFlowVerifyAccountTitle,
-          style: const TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.transparent,
+        title: Text(l10n.sendFlowVerifyAccountTitle),
         elevation: 0,
         leading: const CommonBackButton(),
         centerTitle: true,
@@ -44,7 +40,10 @@ class _SendVerificationViewState extends State<SendVerificationView> {
             const SizedBox(height: 30),
             Text(
               l10n.sendOtpInstructionsMasked('+966 50 *** **67'),
-              style: const TextStyle(color: Colors.grey, fontSize: 16),
+              style: TextStyle(
+                color: colorScheme.onSurfaceVariant,
+                fontSize: 16,
+              ),
             ),
             const SizedBox(height: 30),
 
@@ -57,7 +56,7 @@ class _SendVerificationViewState extends State<SendVerificationView> {
                   width: 45,
                   height: 55,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E2E2C),
+                    color: colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: AppColors.tealColor.withValues(alpha: 0.3),
@@ -67,7 +66,10 @@ class _SendVerificationViewState extends State<SendVerificationView> {
                   child: TextField(
                     controller: _controllers[index],
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white, fontSize: 24),
+                    style: TextStyle(
+                      color: colorScheme.onSurface,
+                      fontSize: 24,
+                    ),
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(border: InputBorder.none),
                     onChanged: (value) {

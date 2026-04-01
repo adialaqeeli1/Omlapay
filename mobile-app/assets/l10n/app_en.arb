@@ -143,7 +143,7 @@
     "pleaseEnterYourDataToReceiveVerificationCodes": "Please enter your data to receive verification codes",
     "alreadyHaveAccountLogin": "Already have an account? Login",
     "continueAsGuest": "Continue as a guest",
-    "byCreatingAnAccountIAgreeToMushafars": "By creating an account I agree to Mushafar's",
+    "byCreatingAnAccountIAgreeToMushafars": "By creating an account I agree",
     "termsOfService": "Terms of Service",
     "andWord": "and",
     "privacyPolicy": "Privacy Policy",
@@ -366,6 +366,7 @@
     "reviewOrderTitle": "Review Order",
     "swapDirectionFrom": "From",
     "swapDirectionTo": "To",
+    "swapMaxAction": "Max",
     "selectCoinTitle": "Select Coin",
     "selectCoinPlaceholder": "Select",
     "swapFeesColon": "Swap fees:",
@@ -375,6 +376,9 @@
     "sendFormCoinLabel": "Coin",
     "sendFormPhoneOrAddressLabel": "Phone Number Or Wallet Address",
     "sendFormAmountLabel": "Amount to be sent",
+    "sendValidationInvalidAmount": "Invalid amount",
+    "sendValidationInsufficientBalance": "Insufficient balance",
+    "sendDefaultNetworkCode": "TRC20",
     "availableBalanceFormatted": "Available {amount} {symbol}",
     "@availableBalanceFormatted": {
         "placeholders": {
