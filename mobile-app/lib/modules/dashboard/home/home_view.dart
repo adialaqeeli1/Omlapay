@@ -463,7 +463,7 @@ class HomeView extends StatelessWidget {
                             ),
                           );
                         }
-                      : null,
+                      : () => context.push(Routes.loginOrRegister),
                   child: Padding(
                     padding: const EdgeInsetsDirectional.only(
                       bottom: 4.0,
