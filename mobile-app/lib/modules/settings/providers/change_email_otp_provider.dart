@@ -63,8 +63,9 @@ class ChangeEmailOtpProvider extends ChangeNotifier {
 
   void setOtp(String value) {
     final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
-    final truncated =
-        digits.length > otpLength ? digits.substring(0, otpLength) : digits;
+    final truncated = digits.length > otpLength
+        ? digits.substring(0, otpLength)
+        : digits;
     if (_otp == truncated) return;
     _otp = truncated;
     _hasError = false;
@@ -79,8 +80,7 @@ class ChangeEmailOtpProvider extends ChangeNotifier {
       if (_isNewEmailFlow) {
         final email = _newEmail!;
         final expiry = await ChangeEmailService.requestChange(newEmail: email);
-        _countdownSeconds =
-            expiry > 0 ? expiry : countdownStartSeconds;
+        _countdownSeconds = expiry > 0 ? expiry : countdownStartSeconds;
       } else {
         await ForgotPasscodeService.requestOtp(
           _phoneMobileNumber!,
@@ -105,8 +105,7 @@ class ChangeEmailOtpProvider extends ChangeNotifier {
       if (_isNewEmailFlow) {
         final email = _newEmail!;
         final expiry = await ChangeEmailService.requestChange(newEmail: email);
-        _countdownSeconds =
-            expiry > 0 ? expiry : countdownStartSeconds;
+        _countdownSeconds = expiry > 0 ? expiry : countdownStartSeconds;
       } else if (_phoneOtpEverRequested) {
         await ForgotPasscodeService.resendOtp(
           _phoneMobileNumber!,
@@ -139,10 +138,7 @@ class ChangeEmailOtpProvider extends ChangeNotifier {
     notifyListeners();
     try {
       if (_isNewEmailFlow) {
-        await ChangeEmailService.verifyChange(
-          newEmail: _newEmail!,
-          otp: _otp,
-        );
+        await ChangeEmailService.verifyChange(newEmail: _newEmail!, otp: _otp);
         _hasError = false;
         return true;
       }

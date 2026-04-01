@@ -13,8 +13,7 @@ class ChangeEmailService {
       'new_email': newEmail.trim(),
     });
     final data = response['data'];
-    final invalidMsg =
-        appLocalizationsFromStoredLocale().invalidServerResponse;
+    final invalidMsg = appLocalizationsFromStoredLocale().invalidServerResponse;
     if (data is! Map<String, dynamic>) {
       throw AppException(invalidMsg, messageKey: 'requestFailed');
     }
