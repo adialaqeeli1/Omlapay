@@ -7,8 +7,10 @@ import 'package:crypto_font_icons/crypto_font_icons.dart';
 
 class CurrencyInputCard extends StatelessWidget {
   final String title;
+
   /// Latin ticker (e.g. BTC) for icons and [CommonCoinIcon]; must stay English.
   final String coinSymbol;
+
   /// Optional display label (e.g. Arabic `symbol_ar`); defaults to [coinSymbol].
   final String? coinSymbolLabel;
   final String amount;
@@ -39,10 +41,26 @@ class CurrencyInputCard extends StatelessWidget {
 
   final bool readOnly;
 
+  static const double _cardRadius = 12;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final displaySymbol = coinSymbolLabel ?? coinSymbol;
+
+    final fieldFill = isDark
+        ? colorScheme.surfaceContainerHighest
+        : AppColors.swapFieldFillLight;
+
+    final Border? fieldBorder = errorText != null
+        ? Border.all(color: colorScheme.error, width: 1)
+        : hasBorder
+        ? Border.all(color: AppColors.tealColor, width: 1)
+        : isDark
+        ? Border.all(color: colorScheme.outlineVariant, width: 1)
+        : null;
     Color? iconBackgroundColor;
     Widget? fallbackIcon;
 
@@ -77,12 +95,18 @@ class CurrencyInputCard extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(color: Colors.grey, fontSize: 13),
+              style: TextStyle(
+                color: colorScheme.onSurfaceVariant,
+                fontSize: 13,
+              ),
             ),
             if (isFrom)
               Text(
                 l10n.availableBalanceFormatted(amount, displaySymbol),
-                style: const TextStyle(color: Colors.grey, fontSize: 13),
+                style: TextStyle(
+                  color: colorScheme.onSurfaceVariant,
+                  fontSize: 13,
+                ),
               ),
           ],
         ),
@@ -90,13 +114,9 @@ class CurrencyInputCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E2025),
-            borderRadius: BorderRadius.circular(16),
-            border: hasBorder
-                ? Border.all(color: AppColors.tealColor, width: 1)
-                : errorText != null
-                ? Border.all(color: Colors.red, width: 1)
-                : null,
+            color: fieldFill,
+            borderRadius: BorderRadius.circular(_cardRadius),
+            border: fieldBorder,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,16 +138,16 @@ class CurrencyInputCard extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             displaySymbol,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: colorScheme.onSurface,
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
                           ),
                           const SizedBox(width: 4),
-                          const Icon(
+                          Icon(
                             Icons.keyboard_arrow_down,
-                            color: Colors.grey,
+                            color: colorScheme.onSurfaceVariant,
                             size: 16,
                           ),
                         ],
@@ -140,12 +160,15 @@ class CurrencyInputCard extends StatelessWidget {
                       controller: controller,
                       onChanged: onAmountChanged,
                       readOnly: readOnly,
+                      cursorColor: AppColors.tealColor,
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       textAlign: TextAlign.right,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: readOnly && !isDark
+                            ? AppColors.textGrey
+                            : colorScheme.onSurface,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
@@ -153,7 +176,7 @@ class CurrencyInputCard extends StatelessWidget {
                         border: InputBorder.none,
                         hintText: l10n.amountInputHint,
                         hintStyle: TextStyle(
-                          color: Colors.grey[600],
+                          color: colorScheme.onSurfaceVariant,
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
@@ -167,21 +190,28 @@ class CurrencyInputCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // if (isFrom && onMaxPressed != null)
-                  //   Padding(
-                  //     padding: const EdgeInsets.only(left: 8.0),
-                  //     child: GestureDetector(
-                  //       onTap: onMaxPressed,
-                  //       child: const Text(
-                  //         'Max',
-                  //         style: TextStyle(
-                  //           color: AppColors.tealColor,
-                  //           fontWeight: FontWeight.bold,
-                  //           fontSize: 16,
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ),
+                  if (isFrom && onMaxPressed != null) ...[
+                    Container(
+                      margin: const EdgeInsetsDirectional.only(start: 8),
+                      width: 1,
+                      height: 28,
+                      color: colorScheme.outlineVariant,
+                    ),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(start: 8),
+                      child: GestureDetector(
+                        onTap: onMaxPressed,
+                        child: Text(
+                          l10n.swapMaxAction,
+                          style: const TextStyle(
+                            color: AppColors.tealColor,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ],
@@ -189,10 +219,10 @@ class CurrencyInputCard extends StatelessWidget {
         ),
         if (errorText != null)
           Padding(
-            padding: const EdgeInsets.only(top: .0),
+            padding: const EdgeInsets.only(top: 4),
             child: Text(
               errorText!,
-              style: const TextStyle(color: Colors.red, fontSize: 12),
+              style: TextStyle(color: colorScheme.error, fontSize: 12),
             ),
           ),
       ],

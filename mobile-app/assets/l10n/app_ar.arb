@@ -143,7 +143,7 @@
     "pleaseEnterYourDataToReceiveVerificationCodes": "يرجى إدخال بياناتك لاستلام رموز التحقق",
     "alreadyHaveAccountLogin": "لديك حساب بالفعل؟ تسجيل الدخول",
     "continueAsGuest": "المتابعة كضيف",
-    "byCreatingAnAccountIAgreeToMushafars": "بإنشاء حساب، أوافق على",
+    "byCreatingAnAccountIAgreeToMushafars": "بإنشاء حساب، أوافق",
     "termsOfService": "شروط الخدمة",
     "andWord": "و",
     "privacyPolicy": "سياسة الخصوصية",
@@ -366,6 +366,7 @@
     "reviewOrderTitle": "مراجعة الطلب",
     "swapDirectionFrom": "من",
     "swapDirectionTo": "إلى",
+    "swapMaxAction": "الحد الأقصى",
     "selectCoinTitle": "اختر العملة",
     "selectCoinPlaceholder": "اختر",
     "swapFeesColon": "رسوم المبادلة:",
@@ -375,6 +376,9 @@
     "sendFormCoinLabel": "العملة",
     "sendFormPhoneOrAddressLabel": "رقم الهاتف أو عنوان المحفظة",
     "sendFormAmountLabel": "المبلغ المراد إرساله",
+    "sendValidationInvalidAmount": "مبلغ غير صالح",
+    "sendValidationInsufficientBalance": "الرصيد غير كافٍ",
+    "sendDefaultNetworkCode": "TRC20",
     "availableBalanceFormatted": "المتاح {amount} {symbol}",
     "@availableBalanceFormatted": {
         "placeholders": {

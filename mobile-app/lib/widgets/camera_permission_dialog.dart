@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import '../core/extentions/context_extensions.dart';
 import '../core/theme/theme.dart';
 
-/// A custom dark-themed permission dialog matching the OmlaPay design.
+/// Custom camera-permission rationale dialog; follows app light/dark theme.
 ///
-/// Displays a rationale for camera access with "Do not allow" and "Allow"
-/// actions. Use as a pre-request or replacement for the system permission UI.
+/// Displays rationale with "Do not allow" and "Allow" (or "Open settings"
+/// when permanently denied). Shown before or around the system permission flow.
 class CameraPermissionDialog extends StatelessWidget {
   const CameraPermissionDialog({
     super.key,
@@ -28,11 +28,13 @@ class CameraPermissionDialog extends StatelessWidget {
 
   bool get _useOpenSettings => onOpenSettings != null;
 
-  static const Color _dialogBackground = Color(0xFF1A1A1A);
   static const double _borderRadius = 24;
   static const double _horizontalPadding = 24;
   static const double _verticalPadding = 20;
   static const double _buttonHeight = 52;
+
+  /// Dark card fill when [Brightness.dark] (matches prior OmlaPay scanner UI).
+  static const Color _darkDialogBackground = Color(0xFF1A1A1A);
 
   /// Shows the camera permission dialog with Allow action.
   static Future<bool?> show(BuildContext context, {String? title, String? message}) {
@@ -51,19 +53,33 @@ class CameraPermissionDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     final appName = l10n.appTitle;
     final resolvedTitle =
         title ?? l10n.cameraPermissionDialogTitle(appName);
     final resolvedMessage =
         message ?? l10n.cameraPermissionDialogMessage;
 
+    final backgroundColor =
+        isDark ? _darkDialogBackground : colorScheme.surface;
+    final dividerColor = colorScheme.outlineVariant;
+    final titleColor = colorScheme.onSurface;
+    final messageColor = colorScheme.onSurfaceVariant;
+    final secondaryActionColor = colorScheme.onSurface;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 32),
       child: Container(
         decoration: BoxDecoration(
-          color: _dialogBackground,
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(_borderRadius),
+          border: isDark
+              ? null
+              : Border.all(color: dividerColor),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -79,8 +95,8 @@ class CameraPermissionDialog extends StatelessWidget {
                 children: [
                   Text(
                     resolvedTitle,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: titleColor,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -89,8 +105,8 @@ class CameraPermissionDialog extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(
                     resolvedMessage,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.9),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: messageColor,
                       fontSize: 15,
                       fontWeight: FontWeight.w400,
                       height: 1.4,
@@ -103,7 +119,7 @@ class CameraPermissionDialog extends StatelessWidget {
             Divider(
               height: 1,
               thickness: 1,
-              color: Colors.white.withValues(alpha: 0.12),
+              color: dividerColor,
             ),
             IntrinsicHeight(
               child: Row(
@@ -111,16 +127,16 @@ class CameraPermissionDialog extends StatelessWidget {
                   Expanded(
                     child: _DialogButton(
                       label: l10n.doNotAllow,
-                      textColor: Colors.white,
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(_borderRadius),
+                      textColor: secondaryActionColor,
+                      borderRadius: const BorderRadiusDirectional.only(
+                        bottomStart: Radius.circular(_borderRadius),
                       ),
                       onPressed: onDoNotAllow,
                     ),
                   ),
                   Container(
                     width: 1,
-                    color: Colors.white.withValues(alpha: 0.12),
+                    color: dividerColor,
                   ),
                   Expanded(
                     child: _DialogButton(
@@ -129,8 +145,8 @@ class CameraPermissionDialog extends StatelessWidget {
                           : l10n.allowCamera,
                       textColor: AppColors.tealColor,
                       fontWeight: FontWeight.w600,
-                      borderRadius: const BorderRadius.only(
-                        bottomRight: Radius.circular(_borderRadius),
+                      borderRadius: const BorderRadiusDirectional.only(
+                        bottomEnd: Radius.circular(_borderRadius),
                       ),
                       onPressed: _useOpenSettings ? onOpenSettings! : onAllow!,
                     ),
@@ -158,15 +174,16 @@ class _DialogButton extends StatelessWidget {
   final Color textColor;
   final VoidCallback onPressed;
   final FontWeight fontWeight;
-  final BorderRadius? borderRadius;
+  final BorderRadiusGeometry? borderRadius;
 
   @override
   Widget build(BuildContext context) {
+    final resolvedRadius = borderRadius?.resolve(Directionality.of(context));
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onPressed,
-        borderRadius: borderRadius,
+        borderRadius: resolvedRadius,
         child: Container(
           height: CameraPermissionDialog._buttonHeight,
           alignment: Alignment.center,

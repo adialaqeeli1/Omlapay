@@ -21,31 +21,37 @@ class KycVerificationRequiredBanner extends StatelessWidget {
   /// Screen that surfaced this banner (used for KYC flow analytics / return context).
   final KycVerificationEntrySource entrySource;
 
-  static const TextStyle _baseStyle = TextStyle(
-    color: AppColors.textWhite,
-    fontSize: 13,
-    height: 1.4,
-  );
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
+    final isDark = context.isDarkMode;
+    final backgroundColor = isDark
+        ? AppColors.kycVerificationBannerBackgroundDark
+        : AppColors.kycVerificationBannerBackgroundLight;
+    final foregroundColor = isDark
+        ? AppColors.white
+        : AppColors.kycBannerAccent;
+    final baseStyle = TextStyle(
+      color: foregroundColor,
+      fontSize: 13,
+      height: 1.4,
+    );
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.kycVerificationBannerBackground,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.kycVerificationBannerBorder),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.error_outline, color: AppColors.textWhite, size: 20),
+          Icon(Icons.error_outline, color: foregroundColor, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: RichText(
               text: TextSpan(
-                style: _baseStyle,
+                style: baseStyle,
                 children: [
                   TextSpan(text: messageBody),
                   WidgetSpan(
@@ -58,7 +64,7 @@ class KycVerificationRequiredBanner extends StatelessWidget {
                       },
                       child: Text(
                         l10n.verifyNowButton,
-                        style: _baseStyle.copyWith(
+                        style: baseStyle.copyWith(
                           decoration: TextDecoration.underline,
                           fontWeight: FontWeight.bold,
                         ),

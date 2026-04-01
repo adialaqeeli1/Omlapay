@@ -35,29 +35,24 @@ class CommonAttachmentField extends StatelessWidget {
                   style: TextStyle(
                     color: selectedFile != null
                         ? (isDark ? AppColors.textWhite : AppColors.textBlack)
-                        : (isDark ? AppColors.textLightGrey : AppColors.textGrey),
+                        : (isDark
+                              ? AppColors.textLightGrey
+                              : AppColors.textGrey),
                     fontSize: 16,
                   ),
                 ),
               ),
-              Icon(
-                Icons.attach_file,
-                color: AppColors.primaryColor,
-                size: 24,
-              ),
+              Icon(Icons.attach_file, color: AppColors.primaryColor, size: 24),
             ],
           ),
         ),
-        if (selectedFile != null) ...[
-          const SizedBox(height: 8),
-          Text(
-            selectedFile!.name,
-            style: TextStyle(
-              color: AppColors.primaryColor,
-              fontSize: 14,
-            ),
-          ),
-        ],
+        // if (selectedFile != null) ...[
+        //   const SizedBox(height: 8),
+        //   Text(
+        //     selectedFile!.name,
+        //     style: TextStyle(color: AppColors.primaryColor, fontSize: 14),
+        //   ),
+        // ],
       ],
     );
   }

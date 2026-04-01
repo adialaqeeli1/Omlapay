@@ -387,7 +387,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get byCreatingAnAccountIAgreeToMushafars =>
-      'By creating an account I agree to Mushafar\'s';
+      'By creating an account I agree';
 
   @override
   String get termsOfService => 'Terms of Service';
@@ -923,6 +923,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get swapDirectionTo => 'To';
 
   @override
+  String get swapMaxAction => 'Max';
+
+  @override
   String get selectCoinTitle => 'Select Coin';
 
   @override
@@ -948,6 +951,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sendFormAmountLabel => 'Amount to be sent';
+
+  @override
+  String get sendValidationInvalidAmount => 'Invalid amount';
+
+  @override
+  String get sendValidationInsufficientBalance => 'Insufficient balance';
+
+  @override
+  String get sendDefaultNetworkCode => 'TRC20';
 
   @override
   String availableBalanceFormatted(String amount, String symbol) {

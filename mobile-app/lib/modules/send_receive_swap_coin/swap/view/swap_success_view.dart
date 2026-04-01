@@ -19,11 +19,11 @@ class SwapSuccessView extends StatelessWidget {
     final toCoin = provider.toCoin;
     // We display the To amount as the result
     final toAmount = provider.toAmountController.text;
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: CommonBackButton(
           onPressed: () {
@@ -45,13 +45,21 @@ class SwapSuccessView extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topRight,
                   end: Alignment.bottomLeft,
-                  colors: [
-                    AppColors.successGradientStart,
-                    AppColors.successGradientEnd,
-                  ],
-                  stops: [0.3, 1.0],
+                  colors: isDark
+                      ? [
+                          AppColors.successGradientStart,
+                          AppColors.successGradientEnd,
+                        ]
+                      : [
+                          AppColors.lightCardColor,
+                          AppColors.primaryColor.withValues(alpha: 0.18),
+                        ],
+                  stops: const [0.3, 1.0],
                 ),
                 borderRadius: BorderRadius.circular(24),
+                border: isDark
+                    ? null
+                    : Border.all(color: colorScheme.outlineVariant),
               ),
               child: Column(
                 children: [
@@ -64,7 +72,12 @@ class SwapSuccessView extends StatelessWidget {
                   const SizedBox(height: 24),
                   Text(
                     l10n.swapSuccessMessage,
-                    style: const TextStyle(color: Colors.grey, fontSize: 14),
+                    style: TextStyle(
+                      color: isDark
+                          ? AppColors.textLightGrey
+                          : colorScheme.onSurfaceVariant,
+                      fontSize: 14,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -73,8 +86,10 @@ class SwapSuccessView extends StatelessWidget {
                     children: [
                       Text(
                         '$toAmount ${toCoin?.localizedCoinTicker(context) ?? ''}',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: isDark
+                              ? AppColors.textWhite
+                              : colorScheme.onSurface,
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                         ),
@@ -86,9 +101,9 @@ class SwapSuccessView extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(
-                            0xFF1E2E2C,
-                          ), // Dark green tint for value?
+                          color: isDark
+                              ? const Color(0xFF1E2E2C)
+                              : AppColors.tealColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -117,17 +132,16 @@ class SwapSuccessView extends StatelessWidget {
                   context.go(Routes.home);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(
-                    0xFF2A2D35,
-                  ), // Grey button in screenshot
+                  backgroundColor: colorScheme.surfaceContainerHigh,
+                  foregroundColor: colorScheme.onSurface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 child: Text(
                   l10n.backHome,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),

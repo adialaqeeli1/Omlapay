@@ -378,7 +378,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get continueAsGuest => 'المتابعة كضيف';
 
   @override
-  String get byCreatingAnAccountIAgreeToMushafars => 'بإنشاء حساب، أوافق على';
+  String get byCreatingAnAccountIAgreeToMushafars => 'بإنشاء حساب، أوافق';
 
   @override
   String get termsOfService => 'شروط الخدمة';
@@ -915,6 +915,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get swapDirectionTo => 'إلى';
 
   @override
+  String get swapMaxAction => 'الحد الأقصى';
+
+  @override
   String get selectCoinTitle => 'اختر العملة';
 
   @override
@@ -940,6 +943,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sendFormAmountLabel => 'المبلغ المراد إرساله';
+
+  @override
+  String get sendValidationInvalidAmount => 'مبلغ غير صالح';
+
+  @override
+  String get sendValidationInsufficientBalance => 'الرصيد غير كافٍ';
+
+  @override
+  String get sendDefaultNetworkCode => 'TRC20';
 
   @override
   String availableBalanceFormatted(String amount, String symbol) {

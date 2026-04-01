@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/l10n/app_localizations_from_storage.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/coins_prices_provider.dart';
@@ -31,9 +32,7 @@ class SwapProvider extends ChangeNotifier {
 
   /// Same rules as send: valid amount, no errors, and verified user.
   bool get canSwap =>
-      _error == null &&
-      fromAmountController.text.isNotEmpty &&
-      isVerified;
+      _error == null && fromAmountController.text.isNotEmpty && isVerified;
 
   SwapProvider(this.authProvider, this._coinsPricesProvider) {
     authProvider.addListener(notifyListeners);
@@ -121,6 +120,7 @@ class SwapProvider extends ChangeNotifier {
   }
 
   void _validate() {
+    final l10n = appLocalizationsFromStoredLocale();
     _error = null;
     final text = fromAmountController.text;
     if (text.isEmpty) {
@@ -130,12 +130,12 @@ class SwapProvider extends ChangeNotifier {
 
     final amount = double.tryParse(text);
     if (amount == null) {
-      _error = 'Invalid amount';
+      _error = l10n.sendValidationInvalidAmount;
     } else if (_fromCoin != null) {
       final balance =
           double.tryParse(_fromCoin!.amount.replaceAll(',', '')) ?? 0.0;
       if (amount > balance) {
-        _error = 'Insufficient balance';
+        _error = l10n.sendValidationInsufficientBalance;
       }
     }
     notifyListeners();

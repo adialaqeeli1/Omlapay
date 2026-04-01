@@ -28,32 +28,20 @@ class _QrCodeViewState extends State<QrCodeView> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final titleStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
+      fontWeight: FontWeight.w600,
+    );
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              _getIconLetter(widget.wallet.symbol),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text(_getIconLetter(widget.wallet.symbol), style: titleStyle),
             const SizedBox(width: 4),
-            Text(
-              widget.wallet.name,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text(widget.wallet.name, style: titleStyle),
           ],
         ),
-        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const CommonBackButton(),
         centerTitle: true,
@@ -68,9 +56,8 @@ class _QrCodeViewState extends State<QrCodeView> {
                 children: [
                   Text(
                     l10n.qrCodeLabel,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -113,8 +100,8 @@ class _QrCodeViewState extends State<QrCodeView> {
                   child: ElevatedButton(
                     onPressed: _onSaveImageTap,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2C2C2E),
-                      foregroundColor: Colors.white,
+                      backgroundColor: colorScheme.surfaceContainerHigh,
+                      foregroundColor: colorScheme.onSurface,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -140,7 +127,7 @@ class _QrCodeViewState extends State<QrCodeView> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.tealColor,
-                      foregroundColor: Colors.white,
+                      foregroundColor: colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

@@ -40,6 +40,12 @@ class AppColors {
   //Card Colors
   static const Color darkCardColor = Color(0xFF141414);
   static const Color lightCardColor = Color(0xFFF2F2F2);
+
+  /// Send flow (light): white field with visible stroke per design (~#666666).
+  static const Color sendFormFieldBorderLight = Color(0xFF666666);
+
+  /// Swap flow (light): field fill per design (~#EFEFEF).
+  static const Color swapFieldFillLight = Color(0xFFEFEFEF);
   static const Color balanceCardGradientStart = Color(0x991C1C1E);
   static const Color balanceCardGradientEnd = Color(0x991A605B);
   static const Color iconBackground = Color(0xFF2C2C2C);
@@ -55,7 +61,12 @@ class AppColors {
   /// Destructive action (Logout confirm) - reddish-pink/coral
   static const Color logoutDestructiveColor = Color(0xFFE57373);
 
-  /// Inline KYC / verification-required banner (send, swap, receive flows)
-  static const Color kycVerificationBannerBackground = Color(0xFF3F1519);
-  static const Color kycVerificationBannerBorder = Color(0xFF8B252C);
+  /// KYC verification banner accent (Figma #D80027).
+  static const Color kycBannerAccent = Color(0xFFD80027);
+
+  /// KYC banner fill, light mode: #D80027 @ alpha 0x1F (Figma #D800271F).
+  static const Color kycVerificationBannerBackgroundLight = Color(0x1FD80027);
+
+  /// KYC banner fill, dark mode: #D80027 @ alpha 0x80 (Figma #D8002780).
+  static const Color kycVerificationBannerBackgroundDark = Color(0x80D80027);
 }

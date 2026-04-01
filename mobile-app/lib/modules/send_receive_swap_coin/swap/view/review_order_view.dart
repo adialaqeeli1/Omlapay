@@ -20,17 +20,15 @@ class ReviewOrderView extends StatelessWidget {
     final fromCoin = provider.fromCoin;
     final toCoin = provider.toCoin;
     final l10n = context.l10n!;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: CommonBackButton(),
         title: Text(
           l10n.reviewOrderTitle,
-          style: const TextStyle(
-            color: Colors.white,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -44,8 +42,9 @@ class ReviewOrderView extends StatelessWidget {
             // Main Card
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF16171D), // Dark card background
+                color: colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
               child: Stack(
                 alignment: Alignment.center,
@@ -60,8 +59,8 @@ class ReviewOrderView extends StatelessWidget {
                           children: [
                             Text(
                               l10n.swapDirectionFrom,
-                              style: const TextStyle(
-                                color: Colors.grey,
+                              style: TextStyle(
+                                color: colorScheme.onSurfaceVariant,
                                 fontSize: 13,
                               ),
                             ),
@@ -77,8 +76,8 @@ class ReviewOrderView extends StatelessWidget {
                                     Text(
                                       fromCoin?.localizedCoinTicker(context) ??
                                           '',
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      style: TextStyle(
+                                        color: colorScheme.onSurface,
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -88,8 +87,8 @@ class ReviewOrderView extends StatelessWidget {
                                 // Amount
                                 Text(
                                   provider.fromAmountController.text,
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  style: TextStyle(
+                                    color: colorScheme.onSurface,
                                     fontSize: 24,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -103,7 +102,7 @@ class ReviewOrderView extends StatelessWidget {
                               child: Text(
                                 '≈100,15 ${l10n.usd}', // TODO: Calculate real USD value
                                 style: TextStyle(
-                                  color: Colors.grey[600],
+                                  color: colorScheme.onSurfaceVariant,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -114,7 +113,7 @@ class ReviewOrderView extends StatelessWidget {
                       ),
 
                       // Divider line partial
-                      const Divider(color: Color(0xFF2A2D35), height: 1),
+                      Divider(color: colorScheme.outlineVariant, height: 1),
 
                       // To Section
                       Padding(
@@ -124,8 +123,8 @@ class ReviewOrderView extends StatelessWidget {
                           children: [
                             Text(
                               l10n.swapDirectionTo,
-                              style: const TextStyle(
-                                color: Colors.grey,
+                              style: TextStyle(
+                                color: colorScheme.onSurfaceVariant,
                                 fontSize: 13,
                               ),
                             ),
@@ -141,8 +140,8 @@ class ReviewOrderView extends StatelessWidget {
                                     Text(
                                       toCoin?.localizedCoinTicker(context) ??
                                           '',
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      style: TextStyle(
+                                        color: colorScheme.onSurface,
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -152,8 +151,8 @@ class ReviewOrderView extends StatelessWidget {
                                 // Amount
                                 Text(
                                   provider.toAmountController.text,
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  style: TextStyle(
+                                    color: colorScheme.onSurface,
                                     fontSize: 24,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -167,7 +166,7 @@ class ReviewOrderView extends StatelessWidget {
                               child: Text(
                                 '≈2,15 ${l10n.usd}', // TODO: Calculate real USD value
                                 style: TextStyle(
-                                  color: Colors.grey[600],
+                                  color: colorScheme.onSurfaceVariant,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -184,14 +183,10 @@ class ReviewOrderView extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: const Color(
-                        0xFF1E2025,
-                      ), // Inner card color or slightly lighter?
-                      // The design usually has a darker circle background matching parent or app bg
-                      // Let's use a subtle dark color or transparency if needed
+                      color: colorScheme.surface,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xFF2A2D35),
+                        color: colorScheme.outlineVariant,
                         width: 1,
                       ),
                     ),
@@ -214,7 +209,10 @@ class ReviewOrderView extends StatelessWidget {
               children: [
                 Text(
                   l10n.network,
-                  style: const TextStyle(color: Colors.grey, fontSize: 14),
+                  style: TextStyle(
+                    color: colorScheme.onSurfaceVariant,
+                    fontSize: 14,
+                  ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -222,11 +220,8 @@ class ReviewOrderView extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2A2D35),
+                    color: colorScheme.surfaceContainerHigh,
                     borderRadius: BorderRadius.circular(6),
-
-                    // If active/selected, typically teal. Screenshot showed TRC20 teal?
-                    // Let's assume generic teal chip for "TRC20" as per prompt description
                   ),
                   child: const Text(
                     'TRC20',
@@ -248,12 +243,15 @@ class ReviewOrderView extends StatelessWidget {
               children: [
                 Text(
                   l10n.swapFeesTitle,
-                  style: const TextStyle(color: Colors.grey, fontSize: 14),
+                  style: TextStyle(
+                    color: colorScheme.onSurfaceVariant,
+                    fontSize: 14,
+                  ),
                 ),
                 Text(
                   '${provider.swapFee} ${fromCoin?.localizedCoinTicker(context) ?? ''}',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -273,14 +271,15 @@ class ReviewOrderView extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.tealColor,
+                  foregroundColor: colorScheme.onPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 child: Text(
                   l10n.swapNowButton,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: colorScheme.onPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),

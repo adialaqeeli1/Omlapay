@@ -1,11 +1,30 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/l10n/app_localizations_from_storage.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/contact_model/contact_model.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/coins_prices_provider.dart';
 
 class SendProvider extends ChangeNotifier {
+  SendProvider(this.authProvider, this._coinsPricesProvider) {
+    final l10n = appLocalizationsFromStoredLocale();
+    _network = l10n.sendDefaultNetworkCode;
+    networkController = TextEditingController(text: _network);
+
+    authProvider.addListener(notifyListeners);
+    _coinsPricesProvider.addListener(_onStreamedCoinsUpdated);
+    _syncCoinsFromPrices();
+    amountController.addListener(_validate);
+    recipientController.addListener(() {
+      if (_selectedContact != null &&
+          recipientController.text != _selectedContact!.phoneNumber) {
+        // Selection is mainly via sheet; manual entry can diverge from stored contact.
+      }
+      notifyListeners();
+    });
+  }
+
   final AuthProvider authProvider;
   final CoinsPricesProvider _coinsPricesProvider;
 
@@ -21,12 +40,10 @@ class SendProvider extends ChangeNotifier {
 
   final TextEditingController amountController = TextEditingController();
   final TextEditingController recipientController = TextEditingController();
-  final TextEditingController networkController = TextEditingController(
-    text: 'TRC20',
-  );
+  late final TextEditingController networkController;
 
   String? _error;
-  final String _network = 'TRC20'; // Mock/Default network
+  late final String _network;
 
   // Getters
   List<CoinModel> get coins => _coins;
@@ -51,24 +68,6 @@ class SendProvider extends ChangeNotifier {
       amountController.text.isNotEmpty &&
       _selectedContact != null &&
       isVerified;
-
-  SendProvider(this.authProvider, this._coinsPricesProvider) {
-    authProvider.addListener(notifyListeners);
-    _coinsPricesProvider.addListener(_onStreamedCoinsUpdated);
-    _syncCoinsFromPrices();
-    amountController.addListener(_validate);
-    recipientController.addListener(() {
-      // If user types manually, we might clear selected contact or try to find one
-      // For now, let's keep it simple: if text changes and doesn't match selected contact, clear specific contact
-      if (_selectedContact != null &&
-          recipientController.text != _selectedContact!.phoneNumber) {
-        // _selectedContact = null; // Optional: depending on UX desired.
-        // For this task, we assume selection mainly via sheet, or manual entry validates differently.
-        // Let's rely on selection for the "Flow" requested.
-      }
-      notifyListeners();
-    });
-  }
 
   void _onStreamedCoinsUpdated() {
     _syncCoinsFromPrices();
@@ -127,15 +126,13 @@ class SendProvider extends ChangeNotifier {
 
   void setMaxAmount() {
     if (_selectedCoin != null) {
-      amountController.text = _selectedCoin!.amount.replaceAll(
-        ',',
-        '',
-      ); // Simple strip
+      amountController.text = _selectedCoin!.amount.replaceAll(',', '');
       _validate();
     }
   }
 
   void _validate() {
+    final l10n = appLocalizationsFromStoredLocale();
     _error = null;
     final text = amountController.text;
     if (text.isEmpty) {
@@ -145,14 +142,13 @@ class SendProvider extends ChangeNotifier {
 
     final amount = double.tryParse(text);
     if (amount == null) {
-      _error = 'Invalid amount';
+      _error = l10n.sendValidationInvalidAmount;
     } else if (_selectedCoin != null) {
-      // Mock parsing amount string "200,023.20" -> 200023.20
       final balanceStr = _selectedCoin!.amount.replaceAll(',', '');
       final balance = double.tryParse(balanceStr) ?? 0.0;
 
       if (amount > balance) {
-        _error = 'Insufficient balance';
+        _error = l10n.sendValidationInsufficientBalance;
       }
     }
     notifyListeners();
@@ -164,6 +160,7 @@ class SendProvider extends ChangeNotifier {
     authProvider.removeListener(notifyListeners);
     amountController.dispose();
     recipientController.dispose();
+    networkController.dispose();
     super.dispose();
   }
 }

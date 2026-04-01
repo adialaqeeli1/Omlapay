@@ -15,15 +15,11 @@ class ReviewSendView extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<SendProvider>();
     final l10n = context.l10n!;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(
-          l10n.sendFlowReviewTitle,
-          style: const TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.transparent,
+        title: Text(l10n.sendFlowReviewTitle),
         elevation: 0,
         leading: const CommonBackButton(),
         centerTitle: true,
@@ -38,13 +34,16 @@ class ReviewSendView extends StatelessWidget {
                 children: [
                   Text(
                     l10n.youAreSending,
-                    style: const TextStyle(color: Colors.grey, fontSize: 14),
+                    style: TextStyle(
+                      color: colorScheme.onSurfaceVariant,
+                      fontSize: 14,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     '${provider.amountController.text} ${provider.selectedCoin?.localizedCoinTicker(context) ?? ''}',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: colorScheme.onSurface,
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                     ),
@@ -56,22 +55,29 @@ class ReviewSendView extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E2025),
+                color: colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
               child: Column(
                 children: [
                   _buildDetailRow(
+                    context,
                     l10n.transferToLabel,
                     provider.selectedContact?.name ??
                         provider.recipientController.text,
                   ),
-                  const Divider(color: Color(0xFF2A2D35), height: 30),
-                  _buildDetailRow(l10n.network, 'TRC20'), // Mock
-                  const Divider(color: Color(0xFF2A2D35), height: 30),
-                  _buildDetailRow(l10n.networkFeeLabel, '1.00 USDT'), // Mock fee
-                  const Divider(color: Color(0xFF2A2D35), height: 30),
+                  Divider(color: colorScheme.outlineVariant, height: 30),
+                  _buildDetailRow(context, l10n.network, provider.network),
+                  Divider(color: colorScheme.outlineVariant, height: 30),
                   _buildDetailRow(
+                    context,
+                    l10n.networkFeeLabel,
+                    '1.00 USDT',
+                  ), // Mock fee
+                  Divider(color: colorScheme.outlineVariant, height: 30),
+                  _buildDetailRow(
+                    context,
                     l10n.total,
                     '${(double.tryParse(provider.amountController.text) ?? 0) + 1} ${provider.selectedCoin?.localizedCoinTicker(context) ?? ''}',
                     isTotal: true,
@@ -89,14 +95,15 @@ class ReviewSendView extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.tealColor,
+                  foregroundColor: colorScheme.onPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 child: Text(
                   l10n.confirmSecurely,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: colorScheme.onPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -110,15 +117,27 @@ class ReviewSendView extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {bool isTotal = false}) {
+  Widget _buildDetailRow(
+    BuildContext context,
+    String label,
+    String value, {
+    bool isTotal = false,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+        Text(
+          label,
+          style: TextStyle(
+            color: colorScheme.onSurfaceVariant,
+            fontSize: 14,
+          ),
+        ),
         Text(
           value,
           style: TextStyle(
-            color: Colors.white,
+            color: colorScheme.onSurface,
             fontSize: 14,
             fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
           ),
