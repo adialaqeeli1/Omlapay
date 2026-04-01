@@ -15,6 +15,7 @@ _CoinModel _$CoinModelFromJson(Map<String, dynamic> json) => _CoinModel(
   quoteSymbol: json['quoteSymbol'] as String?,
   quoteSymbolAr: json['quoteSymbolAr'] as String?,
   coinSymbolAr: json['symbol_ar'] as String?,
+  coinNameAr: json['name_ar'] as String?,
 );
 
 Map<String, dynamic> _$CoinModelToJson(_CoinModel instance) =>
@@ -27,4 +28,5 @@ Map<String, dynamic> _$CoinModelToJson(_CoinModel instance) =>
       'quoteSymbol': instance.quoteSymbol,
       'quoteSymbolAr': instance.quoteSymbolAr,
       'symbol_ar': instance.coinSymbolAr,
+      'name_ar': instance.coinNameAr,
     };
