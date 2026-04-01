@@ -138,15 +138,18 @@ class CoinsService {
         ? '--'
         : _formatPrice(parsedPrice, chainDecimals: chainDecimals);
 
-    final quoteSymbol = _optionalTrimmed(currency?['symbol']) ??
+    final quoteSymbol =
+        _optionalTrimmed(currency?['symbol']) ??
         _optionalTrimmed(coin['quote_symbol']);
     // Fiat quote Arabic label: only from nested `currency` (not coin `symbol_ar`).
     final quoteSymbolAr = _optionalTrimmed(currency?['symbol_ar']);
-    // Coin-level Arabic `symbol_ar` (Arabic coin name); never used for fiat.
+    // Coin-level Arabic ticker (`symbol_ar`); never used for fiat.
     final coinSymbolAr = _optionalTrimmed(coin['symbol_ar']);
+    // Coin-level Arabic full name (`name_ar`); optional until API ships it.
+    final coinNameAr = _optionalTrimmed(coin['name_ar']);
 
     return CoinModel(
-      name: name.isEmpty ? symbol : name,
+      name: name,
       symbol: symbol.isEmpty ? 'N/A' : symbol,
       amount: '0.00',
       valueInUsd: displayPrice,
@@ -154,6 +157,7 @@ class CoinsService {
       quoteSymbol: quoteSymbol,
       quoteSymbolAr: quoteSymbolAr,
       coinSymbolAr: coinSymbolAr,
+      coinNameAr: coinNameAr,
     );
   }
 
@@ -161,8 +165,7 @@ class CoinsService {
   CoinModel toCoinModel(
     Map<String, dynamic> coin, {
     Map<String, dynamic>? currency,
-  }) =>
-      _toCoinModel(coin, currency: currency);
+  }) => _toCoinModel(coin, currency: currency);
 
   String _formatPrice(num price, {required int chainDecimals}) {
     final safeChainDecimals = chainDecimals.clamp(0, 8);

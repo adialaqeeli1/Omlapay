@@ -286,7 +286,7 @@ class HomeView extends StatelessWidget {
           return AssetCard(
             symbol: coin.symbol,
             symbolLabel: coin.localizedCoinTicker(context),
-            name: coin.name,
+            name: coin.name.isEmpty ? coin.symbol : coin.name,
             amount: coin.amount,
             valueInUsd:
                 '${coin.valueInUsd} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',

@@ -18,12 +18,16 @@ extension CoinModelQuoteDisplay on CoinModel {
     return symbol;
   }
 
-  /// Primary title (e.g. coin details app bar): English uses [name]; Arabic prefers [coinSymbolAr] when set.
+  /// Primary title (e.g. subtitle under ticker): English uses [name].
+  /// Arabic prefers [coinNameAr] when set, else [coinSymbolAr] (legacy API), else [name].
   String localizedCoinPrimaryName(BuildContext context) {
-    if (_isArabic(context) &&
-        coinSymbolAr != null &&
-        coinSymbolAr!.trim().isNotEmpty) {
-      return coinSymbolAr!.trim();
+    if (_isArabic(context)) {
+      if (coinNameAr != null && coinNameAr!.trim().isNotEmpty) {
+        return coinNameAr!.trim();
+      }
+      if (coinSymbolAr != null && coinSymbolAr!.trim().isNotEmpty) {
+        return coinSymbolAr!.trim();
+      }
     }
     return name;
   }
