@@ -152,6 +152,7 @@ omlapay_mobile_app/
 │   │   └── theme_aware_icon.dart           # Icon adapting to theme context
 │   └── main.dart            # 🚀 Entry Point: App initialization
 ├── scripts/                 # 🛠️ HELPER SCRIPTS: Automation
+│   ├── build_release_apk.sh # Bash: Full clean build pipeline for APK
 │   ├── gen_icons.sh         # Bash: Generate launcher icons
 │   ├── gen_l10n.sh          # Bash: Generate localization files
 │   ├── gen_models.sh        # Bash: Run build_runner for models
@@ -195,6 +196,20 @@ Rename the app package name and display name across Android and iOS.
 Launch the app with specific configurations (customizable).
 ```bash
 ./scripts/run.sh
+```
+
+### 6. Build Release APK
+Full clean build pipeline that runs all generation steps before building the APK. Executes in order: `flutter clean` -> `flutter pub get` -> `gen_l10n.sh` -> `gen_models.sh` -> `gen_icons.sh` -> `rename_app.sh` -> `flutter build apk`.
+
+```bash
+# Release build (default)
+./scripts/build_release_apk.sh
+
+# Or explicitly pass --release
+./scripts/build_release_apk.sh --release
+
+# Debug build
+./scripts/build_release_apk.sh --debug
 ```
 
 ---
@@ -366,3 +381,5 @@ Centralized activity indicator (CircularProgressIndicator) to ensure uniform loa
 -   **Coin Details**: Refactored `CoinDetailsView` to `StatelessWidget` using `CoinDetailsProvider`.
 -   **Localization**: Added support for RTL (Arabic) and removed hardcoded strings in Coin Details.
 -   **Navigation**: Updated `GoRouter` path handling in widgets for dynamic context awareness.
+-   **API Error Handling**: Fixed `LoginProvider` to display actual API error messages (e.g., "This mobile number is already registered.") instead of a generic "An Unknown Error Occurred" for both registration and login flows.
+-   **Build Script**: Added `build_release_apk.sh` — a full build pipeline that runs clean, pub get, localization, model generation, icon generation, app rename, and APK build in sequence. Supports `--release` (default) and `--debug` flags.
