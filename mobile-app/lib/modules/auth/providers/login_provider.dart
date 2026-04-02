@@ -4,6 +4,7 @@ import 'package:country_picker/country_picker.dart';
 
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/utils/api_message_helper.dart';
+import '../../../core/utils/app_exception.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../routes/app_router.dart';
 import '../services/auth_service.dart';
@@ -158,7 +159,10 @@ class LoginProvider extends ChangeNotifier {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackbarHelper.showError(context, context.l10n!.unknownError);
+          final message = e is AppException
+              ? e.message
+              : context.l10n!.unknownError;
+          SnackbarHelper.showError(context, message);
         }
       }
     } else {
@@ -255,7 +259,10 @@ class LoginProvider extends ChangeNotifier {
         }
       } catch (e) {
         if (context.mounted) {
-          SnackbarHelper.showError(context, context.l10n!.unknownError);
+          final message = e is AppException
+              ? e.message
+              : context.l10n!.unknownError;
+          SnackbarHelper.showError(context, message);
         }
       }
     }
