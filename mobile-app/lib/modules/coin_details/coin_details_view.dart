@@ -53,40 +53,40 @@ class CoinDetailsView extends StatelessWidget {
         : AppColors.redColor;
 
     return Scaffold(
+      appBar: AppBar(
+        leading: CommonBackButton(),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        title: Row(
+          spacing: 14,
+          crossAxisAlignment: .center,
+          mainAxisAlignment: .center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CommonCoinIcon(symbol: headerCoin?.symbol ?? '', radius: 16),
+            Flexible(
+              child: Text(
+                headerCoin?.localizedCoinPrimaryName(context) ?? '',
+                overflow: TextOverflow.ellipsis,
+                style: context.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: context.isDarkMode
+                      ? AppColors.white
+                      : AppColors.textBlack,
+                  fontSize: 18.0,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
       body: SafeArea(
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(
             parent: ClampingScrollPhysics(),
           ),
           slivers: [
-            SliverAppBar(
-              leading: CommonBackButton(),
-              centerTitle: true,
-              elevation: 0,
-              backgroundColor: Colors.transparent,
-              title: Row(
-                spacing: 14,
-                crossAxisAlignment: .center,
-                mainAxisAlignment: .center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CommonCoinIcon(symbol: headerCoin?.symbol ?? '', radius: 16),
-                  Flexible(
-                    child: Text(
-                      headerCoin?.localizedCoinPrimaryName(context) ?? '',
-                      overflow: TextOverflow.ellipsis,
-                      style: context.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: context.isDarkMode
-                            ? AppColors.white
-                            : AppColors.textBlack,
-                        fontSize: 18.0,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
             SliverFillRemaining(
               hasScrollBody: false,
               child: Column(
