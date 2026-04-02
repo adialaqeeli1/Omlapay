@@ -29,6 +29,12 @@ extension CoinModelQuoteDisplay on CoinModel {
         return coinSymbolAr!.trim();
       }
     }
+    // if (symbol == 'USDC') {
+    //   if (_isArabic(context)) {
+    //     return quoteSymbolAr ?? symbol;
+    //   }
+    //   return symbol;
+    // }
     return name;
   }
 
