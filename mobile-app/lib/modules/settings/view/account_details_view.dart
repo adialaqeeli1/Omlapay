@@ -10,6 +10,7 @@ import '../../../core/theme/theme.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../widgets/common_back_button.dart';
 // import '../../../widgets/theme_aware_icon.dart';
+// import '../../../widgets/theme_aware_icon.dart';
 import '../services/wallet_address_service.dart';
 
 class AccountDetailsView extends StatefulWidget {
@@ -71,15 +72,17 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                     // TODO: Navigate to change phone number
                   },
                 ),
-                const SizedBox(height: 24),
-                _buildInfoSection(
-                  context: context,
-                  label: l10n.email,
-                  value: email,
-                  onEdit: () {
-                    // TODO: Navigate to change email
-                  },
-                ),
+                if (email.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  _buildInfoSection(
+                    context: context,
+                    label: l10n.email,
+                    value: email,
+                    onEdit: () {
+                      // TODO: Navigate to change email
+                    },
+                  ),
+                ],
                 const SizedBox(height: 32),
                 _buildWalletsSection(
                   context: context,
@@ -125,10 +128,12 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
         ),
         const SizedBox(height: 8),
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(
+            Flexible(
               child: Text(
                 value,
+                textDirection: TextDirection.ltr,
                 style: TextStyle(
                   color: textColor,
                   fontSize: 16,
@@ -141,7 +146,6 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
             //   icon: ThemeAwareIcon(assetPath: 'assets/icons/edit.svg'),
             //   onPressed: onEdit,
             //   padding: EdgeInsets.zero,
-            //   constraints: BoxConstraints.loose(const Size(24, 24)),
             // ),
           ],
         ),
