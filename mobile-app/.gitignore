@@ -125,3 +125,4 @@ ios/.DerivedData/
 macos/.DerivedData/
 .cursor/
 .agents/
+.claude/
