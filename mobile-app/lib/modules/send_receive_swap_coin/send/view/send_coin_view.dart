@@ -44,10 +44,17 @@ class SendCoinView extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<SendProvider>();
     final l10n = context.l10n!;
+    final theme = context.theme;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.sendFlowSendingTitle),
+        title: Text(
+          l10n.sendFlowSendingTitle,
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: context.isDarkMode ? Colors.white : Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         elevation: 0,
         leading: const CommonBackButton(),
         centerTitle: true,

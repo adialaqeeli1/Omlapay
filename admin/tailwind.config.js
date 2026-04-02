@@ -46,4 +46,5 @@ export default {
       addVariant('group-data-checked', ':merge(.group)[data-checked] &')
     }),
   ],
-}
+};
+
