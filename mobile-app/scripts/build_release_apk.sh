@@ -5,8 +5,9 @@ cd "$(dirname "$0")"
 # Navigate up to the project root
 cd ..
 
-# Default build mode
+# Defaults
 MODE="release"
+VERSION_ARG=""
 
 # Parse arguments
 for arg in "$@"
@@ -20,11 +21,32 @@ do
         MODE="debug"
         shift
         ;;
+        --version=*)
+        VERSION_ARG="${arg#*=}"
+        shift
+        ;;
     esac
 done
 
+# --- Version handling ---
+PUBSPEC="pubspec.yaml"
+CURRENT_VERSION=$(grep -E '^version:' "$PUBSPEC" | sed 's/version: //')
+CURRENT_NAME=$(echo "$CURRENT_VERSION" | cut -d'+' -f1)
+CURRENT_BUILD=$(echo "$CURRENT_VERSION" | cut -d'+' -f2)
+NEW_BUILD=$((CURRENT_BUILD + 1))
+
+if [ -n "$VERSION_ARG" ]; then
+    NEW_VERSION="${VERSION_ARG}+${NEW_BUILD}"
+else
+    NEW_VERSION="${CURRENT_NAME}+${NEW_BUILD}"
+fi
+
+# Update pubspec.yaml
+sed -i '' "s/^version: .*/version: ${NEW_VERSION}/" "$PUBSPEC"
+echo "Version updated: $CURRENT_VERSION -> $NEW_VERSION"
+
 echo "=========================================="
-echo "OmlaPay APK Builder ($MODE)"
+echo "OmlaPay APK Builder ($MODE) - v${NEW_VERSION}"
 echo "=========================================="
 
 # 1. Clean Project
