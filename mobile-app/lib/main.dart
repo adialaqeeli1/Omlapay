@@ -48,7 +48,11 @@ class MyApp extends StatelessWidget {
           create: (_) => ConnectivityProvider(),
         ),
         ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
-        ChangeNotifierProvider<GlobalProvider>(create: (_) => GlobalProvider()),
+        ChangeNotifierProxyProvider<AuthProvider, GlobalProvider>(
+          create: (_) => GlobalProvider(),
+          update: (_, auth, global) => (global ?? GlobalProvider())
+            ..onAuthChanged(auth.state.isAuthenticated),
+        ),
         ChangeNotifierProvider<CoinsPricesProvider>(
           create: (context) {
             final coinsService = CoinsService();

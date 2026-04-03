@@ -1098,4 +1098,21 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get allowContacts => 'السماح بجهات الاتصال';
+
+  @override
+  String get sendInvitationDialogTitle => 'إرسال دعوة';
+
+  @override
+  String get sendInvitationDialogMessage =>
+      'هذا الرقم لا يملك حسابًا على أوملاباي. لتجربة أفضل، أرسل له دعوة.';
+
+  @override
+  String get sendInvitationDialogNote =>
+      'ملاحظة: يمكنك إتمام المعاملة على أي حال';
+
+  @override
+  String get sendInvitationInviteButton => 'دعوة';
+
+  @override
+  String get checkingUserStatus => 'جارٍ التحقق من المستخدم...';
 }

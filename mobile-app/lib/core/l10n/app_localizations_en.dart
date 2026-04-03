@@ -1106,4 +1106,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get allowContacts => 'Allow Contacts';
+
+  @override
+  String get sendInvitationDialogTitle => 'Send invitation';
+
+  @override
+  String get sendInvitationDialogMessage =>
+      'This number does not have an account on Omlapay. For a better experience, send him an invitation.';
+
+  @override
+  String get sendInvitationDialogNote =>
+      'Note: you can complete the transaction though';
+
+  @override
+  String get sendInvitationInviteButton => 'Invite';
+
+  @override
+  String get checkingUserStatus => 'Checking user...';
 }

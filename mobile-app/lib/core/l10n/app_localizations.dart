@@ -2119,6 +2119,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Allow Contacts'**
   String get allowContacts;
+
+  /// No description provided for @sendInvitationDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send invitation'**
+  String get sendInvitationDialogTitle;
+
+  /// No description provided for @sendInvitationDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This number does not have an account on Omlapay. For a better experience, send him an invitation.'**
+  String get sendInvitationDialogMessage;
+
+  /// No description provided for @sendInvitationDialogNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note: you can complete the transaction though'**
+  String get sendInvitationDialogNote;
+
+  /// No description provided for @sendInvitationInviteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite'**
+  String get sendInvitationInviteButton;
+
+  /// No description provided for @checkingUserStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking user...'**
+  String get checkingUserStatus;
 }
 
 class _AppLocalizationsDelegate

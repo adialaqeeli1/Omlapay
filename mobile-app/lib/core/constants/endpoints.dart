@@ -23,6 +23,7 @@ class Endpoints {
   static String get login => '$apiVersion/auth/login';
   static String get softLogin => '$apiVersion/auth/soft-login';
   static String get checkUser => '$apiVersion/auth/check-user';
+  static String get inviteUser => '$apiVersion/user/invite';
   static String get sessionStatus => '$apiVersion/auth/session-status';
   static String get forgotPasscode => '$apiVersion/auth/forgot-passcode';
   static String get forgotPasscodeResendOtp =>
@@ -73,4 +74,5 @@ class Endpoints {
   /// Legal documents; supports query param `language` (e.g. en, ar).
   static String get legalPrivacy => '$apiVersion/legal/privacy';
   static String get legalTerms => '$apiVersion/legal/terms';
+  static String get userSettingsCurrency => '$apiVersion/user/settings/currency';
 }

@@ -122,6 +122,20 @@ class AuthService {
     return response;
   }
 
+  static Future<Map<String, dynamic>> inviteUser({
+    required String countryCode,
+    required String mobileNumber,
+  }) async {
+    final response = await ApiHelper.post(
+      Endpoints.inviteUser,
+      {
+        "country_code": countryCode,
+        "mobile_number": mobileNumber,
+      },
+    );
+    return response;
+  }
+
   static Future<Map<String, dynamic>> sessionStatus() async {
     final response = await ApiHelper.get(Endpoints.sessionStatus);
     return response;

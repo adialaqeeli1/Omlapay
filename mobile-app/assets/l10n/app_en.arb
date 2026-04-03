@@ -447,5 +447,10 @@
         }
     },
     "contactsPermissionDialogMessage": "We need your permission to access your contacts to send payments to people in your address book",
-    "allowContacts": "Allow Contacts"
+    "allowContacts": "Allow Contacts",
+    "sendInvitationDialogTitle": "Send invitation",
+    "sendInvitationDialogMessage": "This number does not have an account on Omlapay. For a better experience, send him an invitation.",
+    "sendInvitationDialogNote": "Note: you can complete the transaction though",
+    "sendInvitationInviteButton": "Invite",
+    "checkingUserStatus": "Checking user..."
 }

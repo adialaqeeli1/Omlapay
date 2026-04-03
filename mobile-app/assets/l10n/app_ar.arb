@@ -447,5 +447,10 @@
         }
     },
     "contactsPermissionDialogMessage": "نحتاج إلى إذنك للوصول إلى جهات الاتصال لإرسال المدفوعات إلى الأشخاص في دفتر العناوين الخاص بك",
-    "allowContacts": "السماح بجهات الاتصال"
+    "allowContacts": "السماح بجهات الاتصال",
+    "sendInvitationDialogTitle": "إرسال دعوة",
+    "sendInvitationDialogMessage": "هذا الرقم لا يملك حسابًا على أوملاباي. لتجربة أفضل، أرسل له دعوة.",
+    "sendInvitationDialogNote": "ملاحظة: يمكنك إتمام المعاملة على أي حال",
+    "sendInvitationInviteButton": "دعوة",
+    "checkingUserStatus": "جارٍ التحقق من المستخدم..."
 }

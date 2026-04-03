@@ -1,14 +1,21 @@
+import 'package:country_picker/country_picker.dart';
 import 'package:fast_contacts/fast_contacts.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/models/contact_model/contact_model.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/app_exception.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../widgets/common_text_field.dart';
+import '../../../auth/services/auth_service.dart';
+import 'send_invitation_dialog.dart';
 
 /// Bottom sheet that displays device contacts for selection.
 ///
 /// Permission must be granted **before** showing this sheet.
+/// When a contact is tapped, we call the check-user API first.
+/// If the user doesn't exist on Omlapay, an invitation dialog is shown.
 class ContactSelectionSheet extends StatefulWidget {
   final Function(ContactModel) onContactSelected;
 
@@ -20,9 +27,13 @@ class ContactSelectionSheet extends StatefulWidget {
 
 class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   List<Contact> _allContacts = [];
   List<Contact> _filteredContacts = [];
   bool _isLoading = true;
+
+  /// Tracks which contact index is currently being checked against the API.
+  int? _checkingIndex;
 
   @override
   void initState() {
@@ -72,9 +83,166 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
     });
   }
 
+  /// Parses a full phone number into (countryCode, mobileNumber).
+  ///
+  /// If the phone number starts with `+`, we extract the country code prefix.
+  /// Otherwise we fall back to the device's locale-based country code.
+  ({String countryCode, String mobileNumber}) _parsePhoneNumber(String phone) {
+    // Normalize: remove spaces, dashes, parentheses.
+    String cleaned = phone.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+
+    // Normalize international prefix "00" to "+"
+    if (cleaned.startsWith('00')) {
+      cleaned = '+${cleaned.substring(2)}';
+    }
+
+    if (cleaned.startsWith('+') && cleaned.length > 3) {
+      // Try to match known country phone codes (1–3 digit codes after '+').
+      // We try 3 digits, then 2, then 1 to find the best match.
+      for (int len = 3; len >= 1; len--) {
+        if (cleaned.length <= len + 1) continue;
+        final codeCandidate = cleaned.substring(1, 1 + len);
+        final country = CountryService().findByPhoneCode(codeCandidate);
+        if (country != null) {
+          // Found a valid country code.
+          return (
+            countryCode: '+$codeCandidate',
+            mobileNumber: cleaned.substring(1 + len),
+          );
+        }
+      }
+    }
+
+    // Fallback: use device locale country code.
+    final defaultCode = _deviceDefaultCountryCode();
+    final mobileNumber = cleaned.startsWith('+')
+        ? cleaned.substring(1)
+        : cleaned;
+    return (countryCode: defaultCode, mobileNumber: mobileNumber);
+  }
+
+  /// Returns the device's default country phone code (e.g. "+966").
+  String _deviceDefaultCountryCode() {
+    try {
+      final localeCountryCode =
+          WidgetsBinding.instance.platformDispatcher.locale.countryCode;
+      if (localeCountryCode != null && localeCountryCode.isNotEmpty) {
+        final country = CountryService().findByCode(localeCountryCode);
+        if (country != null) return '+${country.phoneCode}';
+      }
+    } catch (_) {}
+    // Ultimate fallback.
+    return '+966';
+  }
+
+  /// Called when a contact tile is tapped.
+  /// Checks the user against the API before completing selection.
+  Future<void> _onContactTapped(Contact contact, int index) async {
+    _searchFocusNode.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    if (_checkingIndex != null) return; // Already checking another contact.
+
+    final phone = contact.phones.first.number;
+    final parsed = _parsePhoneNumber(phone);
+
+    setState(() => _checkingIndex = index);
+
+    try {
+      final response = await AuthService.checkUser(
+        countryCode: parsed.countryCode,
+        mobileNumber: parsed.mobileNumber,
+      );
+
+      if (!mounted) return;
+
+      final statusCode = response['statusCode'];
+      final isSuccess =
+          statusCode is int && statusCode >= 200 && statusCode < 300;
+
+      if (isSuccess) {
+        final data = response['data'];
+        final userExists = data is Map && data['userExists'] == true;
+
+        if (userExists) {
+          // User exists — select and close.
+          _selectContactAndPop(contact, phone);
+        } else {
+          // Temporarily hide the loading spinner while the dialog is open.
+          if (mounted) setState(() => _checkingIndex = null);
+
+          // User doesn't exist — show invitation dialog.
+          final result = await SendInvitationDialog.show(context);
+          if (!mounted) return;
+
+          if (result == true) {
+            // Invite tapped — call the invite API.
+            setState(() => _checkingIndex = index);
+            try {
+              final inviteResponse = await AuthService.inviteUser(
+                countryCode: parsed.countryCode,
+                mobileNumber: parsed.mobileNumber,
+              );
+              if (!mounted) return;
+
+              // Pop the bottom sheet so the toast is visible over the main screen
+              Navigator.pop(context);
+
+              final message = inviteResponse['message'] ??
+                  inviteResponse['localized_message'];
+              if (message != null && message.toString().isNotEmpty) {
+                SnackbarHelper.showSuccess(context, message.toString());
+              } else {
+                SnackbarHelper.showSuccess(context, "Invitation sent successfully");
+              }
+            } catch (e) {
+              if (mounted) {
+                // Popping the bottom sheet on error as well
+                Navigator.pop(context);
+                final message = e is AppException ? e.message : context.l10n!.unknownError;
+                SnackbarHelper.showError(context, message);
+              }
+            }
+          }
+          // Cancel tapped — just close the dialog, stay on the sheet.
+          
+          // Defensively ensure keyboard is dropped again after returning to the sheet.
+          if (mounted) FocusManager.instance.primaryFocus?.unfocus();
+        }
+      } else {
+        // Unexpected format from ApiHelper but status is 2xx
+        _selectContactAndPop(contact, phone);
+      }
+    } catch (e) {
+      // Show API errors to the user (e.g. invalid country code)
+      if (mounted) {
+        final message = e is AppException
+            ? e.message
+            : context.l10n!.unknownError;
+        SnackbarHelper.showError(context, message);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _checkingIndex = null);
+      }
+    }
+  }
+
+  /// Creates a [ContactModel], calls the callback, and pops the sheet.
+  void _selectContactAndPop(Contact contact, String phone) {
+    final contactModel = ContactModel(
+      id: contact.id,
+      name: contact.displayName,
+      phoneNumber: phone,
+    );
+    widget.onContactSelected(contactModel);
+    Navigator.pop(context);
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -93,39 +261,40 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  l10n.contactsSheetTitle,
-                  style: TextStyle(
-                    color: colorScheme.onSurface,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n.contactsSheetTitle,
+                      style: TextStyle(
+                        color: colorScheme.onSurface,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close, color: colorScheme.onSurface),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
                 ),
-                IconButton(
-                  icon: Icon(Icons.close, color: colorScheme.onSurface),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-          ),
-
-          // Search
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: CommonTextField(
-              controller: _searchController,
-              hintText: l10n.searchContactsHint,
-              prefixIcon: Icon(
-                Icons.search,
-                color: colorScheme.onSurfaceVariant,
               ),
-              fillColor: colorScheme.surfaceContainerHighest,
-            ),
-          ),
 
-          const SizedBox(height: 16),
+              // Search
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: CommonTextField(
+                  controller: _searchController,
+                  focusNode: _searchFocusNode,
+                  hintText: l10n.searchContactsHint,
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  fillColor: colorScheme.surfaceContainerHighest,
+                ),
+              ),
+
+              const SizedBox(height: 16),
 
           // Content
           Expanded(child: _buildContent(context)),
@@ -166,13 +335,12 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: _filteredContacts.length,
-      separatorBuilder: (context, index) => Divider(
-        color: colorScheme.outlineVariant,
-        height: 1,
-      ),
+      separatorBuilder: (context, index) =>
+          Divider(color: colorScheme.outlineVariant, height: 1),
       itemBuilder: (context, index) {
         final contact = _filteredContacts[index];
         final phone = contact.phones.first.number;
+        final isChecking = _checkingIndex == index;
         return ListTile(
           contentPadding: EdgeInsets.zero,
           leading: CircleAvatar(
@@ -197,20 +365,19 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
           ),
           subtitle: Text(
             phone,
-            style: TextStyle(
-              color: colorScheme.onSurfaceVariant,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14),
           ),
-          onTap: () {
-            final contactModel = ContactModel(
-              id: contact.id,
-              name: contact.displayName,
-              phoneNumber: phone,
-            );
-            widget.onContactSelected(contactModel);
-            Navigator.pop(context);
-          },
+          trailing: isChecking
+              ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.tealColor,
+                  ),
+                )
+              : null,
+          onTap: isChecking ? null : () => _onContactTapped(contact, index),
         );
       },
     );

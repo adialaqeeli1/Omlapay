@@ -7,6 +7,7 @@ class CommonTextField extends StatelessWidget {
   const CommonTextField({
     super.key,
     this.controller,
+    this.focusNode,
     this.hintText,
     this.labelText,
     this.validator,
@@ -29,6 +30,7 @@ class CommonTextField extends StatelessWidget {
   });
 
   final TextEditingController? controller;
+  final FocusNode? focusNode;
   final String? hintText;
   final String? labelText;
   final String? Function(String?)? validator;
@@ -59,6 +61,7 @@ class CommonTextField extends StatelessWidget {
       children: [
         TextFormField(
           controller: controller,
+          focusNode: focusNode,
           validator: validator,
           onChanged: onChanged,
           keyboardType: keyboardType,
