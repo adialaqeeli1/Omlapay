@@ -14,6 +14,7 @@ class NotificationsProvider extends ChangeNotifier {
   int _unreadCount = 0;
   bool _isLoading = false;
   bool _isLoadingMore = false;
+  bool _isActionLoading = false;
   bool _hasMore = false;
   String? _nextCursor;
   String? _errorMessage;
@@ -22,6 +23,7 @@ class NotificationsProvider extends ChangeNotifier {
   int get unreadCount => _unreadCount;
   bool get isLoading => _isLoading;
   bool get isLoadingMore => _isLoadingMore;
+  bool get isActionLoading => _isActionLoading;
   bool get hasMore => _hasMore;
   String? get errorMessage => _errorMessage;
 
@@ -70,25 +72,49 @@ class NotificationsProvider extends ChangeNotifier {
     }
   }
 
-  void markAsRead(String id) {
+  Future<void> markAsRead(String id) async {
     final index = _items.indexWhere((e) => e.id == id);
-    if (index != -1 && !_items[index].isRead) {
-      _items[index] = _items[index].copyWith(isRead: true);
+    if (index == -1 || _items[index].isRead || _isActionLoading) return;
+
+    _isActionLoading = true;
+    notifyListeners();
+
+    try {
+      await _service.markAsRead(id);
+      _items = [
+        for (int i = 0; i < _items.length; i++)
+          if (i == index) _items[i].copyWith(isRead: true) else _items[i],
+      ];
       _unreadCount = (_unreadCount - 1).clamp(0, _unreadCount);
+    } on AppException catch (e) {
+      _errorMessage = e.message;
+    } catch (_) {
+      _errorMessage = 'Failed to mark notification as read';
+    } finally {
+      _isActionLoading = false;
       notifyListeners();
     }
   }
 
-  void markAllAsRead() {
-    bool changed = false;
-    for (int i = 0; i < _items.length; i++) {
-      if (!_items[i].isRead) {
-        _items[i] = _items[i].copyWith(isRead: true);
-        changed = true;
-      }
-    }
-    if (changed) {
+  Future<void> markAllAsRead() async {
+    if (_isActionLoading || _unreadCount == 0) return;
+
+    _isActionLoading = true;
+    notifyListeners();
+
+    try {
+      await _service.markAllAsRead();
+      _items = [
+        for (final item in _items)
+          item.isRead ? item : item.copyWith(isRead: true),
+      ];
       _unreadCount = 0;
+    } on AppException catch (e) {
+      _errorMessage = e.message;
+    } catch (_) {
+      _errorMessage = 'Failed to mark all notifications as read';
+    } finally {
+      _isActionLoading = false;
       notifyListeners();
     }
   }

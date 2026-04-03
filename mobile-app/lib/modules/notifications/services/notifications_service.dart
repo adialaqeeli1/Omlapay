@@ -28,4 +28,12 @@ class NotificationsService {
 
     return NotificationsResponse.fromJson(data);
   }
+
+  Future<void> markAsRead(String id) async {
+    await ApiHelper.post(Endpoints.notificationRead(id), {});
+  }
+
+  Future<void> markAllAsRead() async {
+    await ApiHelper.post(Endpoints.notificationsMarkAllRead, {});
+  }
 }
