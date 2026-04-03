@@ -1,5 +1,5 @@
 import 'package:country_picker/country_picker.dart';
-import 'package:fast_contacts/fast_contacts.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
@@ -43,7 +43,9 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
   }
 
   Future<void> _loadContacts() async {
-    final contacts = await FastContacts.getAllContacts();
+    final contacts = await FlutterContacts.getAll(
+      properties: {ContactProperty.phone},
+    );
     final withPhones = contacts.where((c) => c.phones.isNotEmpty).toList();
     _sortContacts(withPhones);
 
@@ -59,8 +61,8 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
   /// Sorts contacts alphabetically by name; unnamed contacts go to the end.
   void _sortContacts(List<Contact> contacts) {
     contacts.sort((a, b) {
-      final aName = a.displayName.trim();
-      final bName = b.displayName.trim();
+      final aName = a.displayName?.trim() ?? '';
+      final bName = b.displayName?.trim() ?? '';
       final aHasName = aName.isNotEmpty;
       final bHasName = bName.isNotEmpty;
       if (aHasName && !bHasName) return -1;
@@ -73,7 +75,7 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredContacts = _allContacts.where((contact) {
-        final name = contact.displayName.toLowerCase();
+        final name = contact.displayName?.toLowerCase() ?? '';
         final phones = contact.phones
             .map((p) => p.number.replaceAll(RegExp(r'\s+'), ''))
             .join(' ');
@@ -188,24 +190,30 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
               // Pop the bottom sheet so the toast is visible over the main screen
               Navigator.pop(context);
 
-              final message = inviteResponse['message'] ??
+              final message =
+                  inviteResponse['message'] ??
                   inviteResponse['localized_message'];
               if (message != null && message.toString().isNotEmpty) {
                 SnackbarHelper.showSuccess(context, message.toString());
               } else {
-                SnackbarHelper.showSuccess(context, "Invitation sent successfully");
+                SnackbarHelper.showSuccess(
+                  context,
+                  "Invitation sent successfully",
+                );
               }
             } catch (e) {
               if (mounted) {
                 // Popping the bottom sheet on error as well
                 Navigator.pop(context);
-                final message = e is AppException ? e.message : context.l10n!.unknownError;
+                final message = e is AppException
+                    ? e.message
+                    : context.l10n!.unknownError;
                 SnackbarHelper.showError(context, message);
               }
             }
           }
           // Cancel tapped — just close the dialog, stay on the sheet.
-          
+
           // Defensively ensure keyboard is dropped again after returning to the sheet.
           if (mounted) FocusManager.instance.primaryFocus?.unfocus();
         }
@@ -231,8 +239,8 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
   /// Creates a [ContactModel], calls the callback, and pops the sheet.
   void _selectContactAndPop(Contact contact, String phone) {
     final contactModel = ContactModel(
-      id: contact.id,
-      name: contact.displayName,
+      id: contact.id ?? '',
+      name: contact.displayName ?? '',
       phoneNumber: phone,
     );
     widget.onContactSelected(contactModel);
@@ -261,40 +269,40 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      l10n.contactsSheetTitle,
-                      style: TextStyle(
-                        color: colorScheme.onSurface,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.close, color: colorScheme.onSurface),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Search
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: CommonTextField(
-                  controller: _searchController,
-                  focusNode: _searchFocusNode,
-                  hintText: l10n.searchContactsHint,
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: colorScheme.onSurfaceVariant,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n.contactsSheetTitle,
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
-                  fillColor: colorScheme.surfaceContainerHighest,
                 ),
-              ),
+                IconButton(
+                  icon: Icon(Icons.close, color: colorScheme.onSurface),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
 
-              const SizedBox(height: 16),
+          // Search
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: CommonTextField(
+              controller: _searchController,
+              focusNode: _searchFocusNode,
+              hintText: l10n.searchContactsHint,
+              prefixIcon: Icon(
+                Icons.search,
+                color: colorScheme.onSurfaceVariant,
+              ),
+              fillColor: colorScheme.surfaceContainerHighest,
+            ),
+          ),
+
+          const SizedBox(height: 16),
 
           // Content
           Expanded(child: _buildContent(context)),
@@ -346,8 +354,8 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
           leading: CircleAvatar(
             backgroundColor: AppColors.tealColor.withValues(alpha: 0.2),
             child: Text(
-              contact.displayName.isNotEmpty
-                  ? contact.displayName[0].toUpperCase()
+              (contact.displayName != null && contact.displayName!.isNotEmpty)
+                  ? contact.displayName![0].toUpperCase()
                   : '?',
               style: const TextStyle(
                 color: AppColors.tealColor,
@@ -356,7 +364,7 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
             ),
           ),
           title: Text(
-            contact.displayName,
+            contact.displayName ?? '',
             style: TextStyle(
               color: colorScheme.onSurface,
               fontSize: 16,
