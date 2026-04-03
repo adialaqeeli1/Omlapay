@@ -10,6 +10,7 @@ import '../../../routes/app_router.dart';
 import '../../kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../../../widgets/common_grid_bg_wrapper.dart';
 import '../../../widgets/theme_aware_icon.dart';
+import '../../../widgets/logout_alert_dialog.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -239,11 +240,16 @@ class ProfileView extends StatelessWidget {
         : const Color(0xFFE8E8E8);
 
     return ListTile(
-      onTap: () async {
-        await context.read<AuthProvider>().logout();
-        if (context.mounted) {
-          GoRouter.of(context).push(Routes.loginOrRegister);
-        }
+      onTap: () {
+        LogoutAlertDialog.show(
+          context,
+          onLogout: () async {
+            await context.read<AuthProvider>().logout();
+            if (context.mounted) {
+              GoRouter.of(context).push(Routes.loginOrRegister);
+            }
+          },
+        );
       },
       mouseCursor: SystemMouseCursors.click,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
