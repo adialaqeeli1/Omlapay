@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/extentions/context_extensions.dart';
-import '../../../../core/models/coin_model/coin_model.dart';
-import '../../../../core/models/coin_model/coin_model_quote_display.dart';
-import '../../../../core/theme/theme.dart';
-import '../../../../providers/global_provider.dart';
-import '../../../../widgets/common_coin_icon.dart';
+import '../core/extentions/context_extensions.dart';
+import '../core/models/coin_model/coin_model.dart';
+import '../core/models/coin_model/coin_model_quote_display.dart';
+import '../core/theme/theme.dart';
+import '../providers/global_provider.dart';
+import 'common_coin_icon.dart';
 import 'package:crypto_font_icons/crypto_font_icons.dart';
 
 class CoinSelectionSheet extends StatefulWidget {
@@ -52,7 +52,8 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
     setState(() {
       _filteredCoins = widget.coins.where((coin) {
         // Search filter
-        final localizedPrimaryName = coin.localizedCoinPrimaryName(context)
+        final localizedPrimaryName = coin
+            .localizedCoinPrimaryName(context)
             .toLowerCase();
         final arLabel = coin.coinSymbolAr?.toLowerCase() ?? '';
         final matchesSearch =
@@ -102,10 +103,7 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: IconButton(
-                    icon: Icon(
-                      Icons.close,
-                      color: colorScheme.onSurface,
-                    ),
+                    icon: Icon(Icons.close, color: colorScheme.onSurface),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ),
@@ -166,10 +164,7 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                 ),
                 Text(
                   l10n.hideZeroBalance,
-                  style: TextStyle(
-                    color: colorScheme.onSurface,
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: colorScheme.onSurface, fontSize: 13),
                 ),
               ],
             ),
@@ -225,17 +220,15 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                       fallbackIcon: fallbackIcon,
                     ),
                     title: Text(
-                      coin.localizedCoinTicker(context),
+                      coin.localizedCoinPrimaryName(context),
                       style: TextStyle(
                         color: itemColorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     subtitle: Text(
-                      coin.localizedCoinPrimaryName(context),
-                      style: TextStyle(
-                        color: itemColorScheme.onSurfaceVariant,
-                      ),
+                      coin.localizedCoinTicker(context),
+                      style: TextStyle(color: itemColorScheme.onSurfaceVariant),
                     ),
                     trailing: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

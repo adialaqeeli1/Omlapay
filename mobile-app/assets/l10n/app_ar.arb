@@ -433,5 +433,19 @@
     "kycRequiredFieldError": "هذا الحقل مطلوب",
     "kycSubmitButton": "إرسال",
     "kycInvalidDateError": "يرجى اختيار تاريخ صالح",
-    "kycStartedSuccess": "تم بدء عملية التحقق من الهوية بنجاح."
+    "kycStartedSuccess": "تم بدء عملية التحقق من الهوية بنجاح.",
+    "youAreOffline": "أنت غير متصل بالإنترنت",
+    "contactsPermissionDenied": "يلزم إذن الوصول إلى جهات الاتصال لاختيار جهة اتصال. يُرجى تفعيله من إعدادات جهازك.",
+    "contactsLoading": "جارٍ تحميل جهات الاتصال...",
+    "noContactsFound": "لم يتم العثور على جهات اتصال",
+    "contactsPermissionDialogTitle": "{appName} يريد الوصول إلى جهات الاتصال",
+    "@contactsPermissionDialogTitle": {
+        "placeholders": {
+            "appName": {
+                "type": "String"
+            }
+        }
+    },
+    "contactsPermissionDialogMessage": "نحتاج إلى إذنك للوصول إلى جهات الاتصال لإرسال المدفوعات إلى الأشخاص في دفتر العناوين الخاص بك",
+    "allowContacts": "السماح بجهات الاتصال"
 }

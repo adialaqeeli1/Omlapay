@@ -36,6 +36,8 @@
     <string>OmlaPay needs your location during verification to help confirm your current location.</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>OmlaPay needs photo library access to upload identity document images during verification.</string>
+    <key>NSContactsUsageDescription</key>
+    <string>OmlaPay needs access to your contacts to send payments to people in your address book.</string>
     <key>UIApplicationSceneManifest</key>
     <dict>
       <key>UIApplicationSupportsMultipleScenes</key>

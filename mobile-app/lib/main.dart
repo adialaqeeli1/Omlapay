@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/theme/theme.dart';
 import 'core/services/storage_helper.dart';
 import 'providers/auth_provider.dart';
+import 'providers/connectivity_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/coins_prices_provider.dart';
@@ -15,6 +16,7 @@ import 'modules/dashboard/home/services/coins_prices_stream_service.dart';
 import 'modules/dashboard/home/services/coins_service.dart';
 import 'core/l10n/app_localizations.dart';
 import 'routes/app_router.dart';
+import 'widgets/offline_view.dart';
 
 Future<void> _initializeApp() async {
   // Initialize storage (non-blocking)
@@ -42,13 +44,20 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<LocaleProvider>(create: (_) => LocaleProvider()),
         ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider<ConnectivityProvider>(
+          create: (_) => ConnectivityProvider(),
+        ),
         ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
         ChangeNotifierProvider<GlobalProvider>(create: (_) => GlobalProvider()),
         ChangeNotifierProvider<CoinsPricesProvider>(
-          create: (context) => CoinsPricesProvider(
-            context.read<GlobalProvider>(),
-            CoinsPricesStreamService(CoinsService()),
-          ),
+          create: (context) {
+            final coinsService = CoinsService();
+            return CoinsPricesProvider(
+              context.read<GlobalProvider>(),
+              CoinsPricesStreamService(coinsService),
+              coinsService,
+            );
+          },
         ),
         ChangeNotifierProvider<NotificationProvider>(
           create: (_) => NotificationProvider(),
@@ -75,6 +84,16 @@ class MyApp extends StatelessWidget {
                 GlobalCupertinoLocalizations.delegate,
               ],
               supportedLocales: AppLocalizations.supportedLocales,
+              builder: (context, child) {
+                final connectivity = context.watch<ConnectivityProvider>();
+                // Don't block until the initial check is done.
+                if (connectivity.isInitialized && !connectivity.isConnected) {
+                  return OfflineView(
+                    onRetry: () => connectivity.checkConnectivity(),
+                  );
+                }
+                return child ?? const SizedBox.shrink();
+              },
             ),
       ),
     );

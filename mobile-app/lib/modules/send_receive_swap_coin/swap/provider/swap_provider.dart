@@ -73,16 +73,28 @@ class SwapProvider extends ChangeNotifier {
       return;
     }
 
-    // Swap defaults are always driven by fetched list order.
-    _fromCoin = _coins.first;
-    _toCoin = _coins.length > 1 ? _coins[1] : _coins.first;
+    // Preserve user's selection — only refresh price data for the selected coins.
+    // Set defaults only on the first load when no coin is selected yet.
+    if (_fromCoin != null) {
+      _fromCoin = _coins.where((c) => c.symbol == _fromCoin!.symbol).firstOrNull ?? _coins.first;
+    } else {
+      _fromCoin = _coins.first;
+    }
+
+    if (_toCoin != null) {
+      _toCoin = _coins.where((c) => c.symbol == _toCoin!.symbol).firstOrNull ??
+          (_coins.length > 1 ? _coins[1] : _coins.first);
+    } else {
+      _toCoin = _coins.length > 1 ? _coins[1] : _coins.first;
+    }
+
     _validate();
     _calculateToAmount();
     notifyListeners();
   }
 
   void setFromCoin(CoinModel coin) {
-    if (_toCoin == coin) {
+    if (_toCoin != null && _toCoin!.symbol == coin.symbol) {
       _toCoin = _fromCoin;
     }
     _fromCoin = coin;
@@ -92,7 +104,7 @@ class SwapProvider extends ChangeNotifier {
   }
 
   void setToCoin(CoinModel coin) {
-    if (_fromCoin == coin) {
+    if (_fromCoin != null && _fromCoin!.symbol == coin.symbol) {
       _fromCoin = _toCoin;
     }
     _toCoin = coin;
