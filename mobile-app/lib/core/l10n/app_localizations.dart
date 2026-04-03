@@ -1976,65 +1976,23 @@ abstract class AppLocalizations {
   /// **'Available'**
   String get availableShortLabel;
 
-  /// No description provided for @notificationMockNewTransactionTitle.
+  /// No description provided for @noNotifications.
   ///
   /// In en, this message translates to:
-  /// **'New Transaction Completed'**
-  String get notificationMockNewTransactionTitle;
+  /// **'No notifications yet'**
+  String get noNotifications;
 
-  /// No description provided for @notificationMockNewTransactionBody.
+  /// No description provided for @notificationsLoadError.
   ///
   /// In en, this message translates to:
-  /// **'Your payment of 0.5 BTC to [Merchant...'**
-  String get notificationMockNewTransactionBody;
+  /// **'Failed to load notifications'**
+  String get notificationsLoadError;
 
-  /// No description provided for @notificationMockSecurityTitle.
+  /// No description provided for @retry.
   ///
   /// In en, this message translates to:
-  /// **'Security Alert'**
-  String get notificationMockSecurityTitle;
-
-  /// No description provided for @notificationMockSecurityBody.
-  ///
-  /// In en, this message translates to:
-  /// **'New Login Detected'**
-  String get notificationMockSecurityBody;
-
-  /// No description provided for @notificationMockPolicyTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Important Policy Update'**
-  String get notificationMockPolicyTitle;
-
-  /// No description provided for @notificationMockPolicyBody.
-  ///
-  /// In en, this message translates to:
-  /// **'We have updated our user agreemen...'**
-  String get notificationMockPolicyBody;
-
-  /// No description provided for @notificationMockVerifyTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Verify Your Account'**
-  String get notificationMockVerifyTitle;
-
-  /// No description provided for @notificationMockVerifyBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Your account verification is pending...'**
-  String get notificationMockVerifyBody;
-
-  /// No description provided for @notificationMockWeeklyTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Weekly Summary'**
-  String get notificationMockWeeklyTitle;
-
-  /// No description provided for @notificationMockWeeklyBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Your weekly transaction summary is ready.'**
-  String get notificationMockWeeklyBody;
+  /// **'Retry'**
+  String get retry;
 
   /// No description provided for @welcomeBack.
   ///

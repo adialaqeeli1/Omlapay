@@ -1032,38 +1032,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get availableShortLabel => 'Available';
 
   @override
-  String get notificationMockNewTransactionTitle => 'New Transaction Completed';
+  String get noNotifications => 'No notifications yet';
 
   @override
-  String get notificationMockNewTransactionBody =>
-      'Your payment of 0.5 BTC to [Merchant...';
+  String get notificationsLoadError => 'Failed to load notifications';
 
   @override
-  String get notificationMockSecurityTitle => 'Security Alert';
-
-  @override
-  String get notificationMockSecurityBody => 'New Login Detected';
-
-  @override
-  String get notificationMockPolicyTitle => 'Important Policy Update';
-
-  @override
-  String get notificationMockPolicyBody =>
-      'We have updated our user agreemen...';
-
-  @override
-  String get notificationMockVerifyTitle => 'Verify Your Account';
-
-  @override
-  String get notificationMockVerifyBody =>
-      'Your account verification is pending...';
-
-  @override
-  String get notificationMockWeeklyTitle => 'Weekly Summary';
-
-  @override
-  String get notificationMockWeeklyBody =>
-      'Your weekly transaction summary is ready.';
+  String get retry => 'Retry';
 
   @override
   String get welcomeBack => 'Welcome Back';
