@@ -1081,4 +1081,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get kycStartedSuccess => 'KYC process started successfully.';
+
+  @override
+  String get youAreOffline => 'You are offline';
+
+  @override
+  String get contactsPermissionDenied =>
+      'Contacts permission is required to select a contact. Please enable it in your device settings.';
+
+  @override
+  String get contactsLoading => 'Loading contacts...';
+
+  @override
+  String get noContactsFound => 'No contacts found';
+
+  @override
+  String contactsPermissionDialogTitle(String appName) {
+    return '$appName wants to access your contacts';
+  }
+
+  @override
+  String get contactsPermissionDialogMessage =>
+      'We need your permission to access your contacts to send payments to people in your address book';
+
+  @override
+  String get allowContacts => 'Allow Contacts';
 }

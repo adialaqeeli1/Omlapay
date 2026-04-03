@@ -9,7 +9,7 @@ import '../../../../widgets/kyc_verification_required_banner.dart';
 import '../provider/swap_provider.dart';
 import '../widgets/currency_input_card.dart';
 import '../../../../widgets/theme_aware_icon.dart';
-import 'coin_selection_sheet.dart';
+import '../../../../widgets/coin_selection_sheet.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../routes/app_router.dart';
 import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
@@ -53,63 +53,84 @@ class SwapCoinView extends StatelessWidget {
               hasScrollBody: false,
               child: Column(
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    spacing: 6,
-                    children: [
-                      // From Card
-                      CurrencyInputCard(
-                        title: l10n.swapDirectionFrom,
-                        coinSymbol: provider.fromCoin?.symbol ?? '',
-                        coinSymbolLabel:
-                            provider.fromCoin?.localizedCoinTicker(context) ??
-                            l10n.selectCoinPlaceholder,
-                        amount: provider.fromCoin?.amount ?? '0',
-                        controller: provider.fromAmountController,
-                        isFrom: true,
-                        errorText: provider.error,
-                        onMaxPressed: provider.setMaxAmount,
-                        hasBorder: true,
-                        onCoinTap: () =>
-                            _showCoinSelection(context, provider, true),
-                      ),
-
-                      // Swap Icon
-                      Center(
-                        child: GestureDetector(
-                          onTap: provider.swapCoins,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: context.isDarkMode
-                                  ? colorScheme.surfaceContainerLow
-                                  : Colors.transparent,
-                            ),
-                            child: const ThemeAwareIcon(
-                              assetPath: 'assets/icons/swap.svg',
-                              width: 24,
-                              height: 24,
+                  SizedBox(
+                    height: 220,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // From Card
+                        PositionedDirectional(
+                          top: 0,
+                          start: 0,
+                          end: 0,
+                          child: CurrencyInputCard(
+                            title: l10n.swapDirectionFrom,
+                            coinSymbol: provider.fromCoin?.symbol ?? '',
+                            coinSymbolLabel:
+                                provider.fromCoin?.localizedCoinPrimaryName(
+                                  context,
+                                ) ??
+                                l10n.selectCoinPlaceholder,
+                            amount: provider.fromCoin?.amount ?? '0',
+                            controller: provider.fromAmountController,
+                            isFrom: true,
+                            errorText: provider.error,
+                            onMaxPressed: provider.setMaxAmount,
+                            hasBorder: true,
+                            onCoinTap: () =>
+                                _showCoinSelection(context, provider, true),
+                          ),
+                        ),
+                        // Swap Icon
+                        PositionedDirectional(
+                          start: 0,
+                          end: 0,
+                          bottom: (220 / 2) - 38,
+                          child: Center(
+                            child: IconButton(
+                              onPressed: provider.swapCoins,
+                              icon: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: context.isDarkMode
+                                      ? colorScheme.surfaceContainerLow
+                                      : Colors.transparent,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(6),
+                                  child: const ThemeAwareIcon(
+                                    assetPath: 'assets/icons/swap.svg',
+                                    width: 20,
+                                    height: 20,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-
-                      // To Card
-                      CurrencyInputCard(
-                        title: l10n.swapDirectionTo,
-                        coinSymbol: provider.toCoin?.symbol ?? '',
-                        coinSymbolLabel:
-                            provider.toCoin?.localizedCoinTicker(context) ??
-                            l10n.selectCoinPlaceholder,
-                        amount: provider.toCoin?.amount ?? '0',
-                        controller: provider.toAmountController,
-                        isFrom: false,
-                        readOnly: true,
-                        onCoinTap: () =>
-                            _showCoinSelection(context, provider, false),
-                      ),
-                    ],
+                        // To Card
+                        PositionedDirectional(
+                          start: 0,
+                          end: 0,
+                          bottom: 0,
+                          child: CurrencyInputCard(
+                            title: l10n.swapDirectionTo,
+                            coinSymbol: provider.toCoin?.symbol ?? '',
+                            coinSymbolLabel:
+                                provider.toCoin?.localizedCoinPrimaryName(
+                                  context,
+                                ) ??
+                                l10n.selectCoinPlaceholder,
+                            amount: provider.toCoin?.amount ?? '0',
+                            controller: provider.toAmountController,
+                            isFrom: false,
+                            readOnly: true,
+                            onCoinTap: () =>
+                                _showCoinSelection(context, provider, false),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   SizedBox(height: 16.0),
                   Column(
@@ -182,9 +203,8 @@ class SwapCoinView extends StatelessWidget {
                             : colorScheme.onSurface.withValues(alpha: 0.38),
                         disabledBackgroundColor:
                             colorScheme.surfaceContainerHighest,
-                        disabledForegroundColor: colorScheme.onSurface.withValues(
-                          alpha: 0.38,
-                        ),
+                        disabledForegroundColor: colorScheme.onSurface
+                            .withValues(alpha: 0.38),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),

@@ -3,18 +3,21 @@ import 'package:flutter/material.dart';
 import '../core/extentions/context_extensions.dart';
 import '../core/theme/theme.dart';
 
-/// Custom camera-permission rationale dialog; follows app light/dark theme.
+/// Custom permission rationale dialog; follows app light/dark theme.
 ///
 /// Displays rationale with "Do not allow" and "Allow" (or "Open settings"
 /// when permanently denied). Shown before or around the system permission flow.
-class CameraPermissionDialog extends StatelessWidget {
-  const CameraPermissionDialog({
+///
+/// Used for camera, contacts, and any other permission that needs a rationale.
+class PermissionDialog extends StatelessWidget {
+  const PermissionDialog({
     super.key,
     required this.onDoNotAllow,
     this.onAllow,
     this.onOpenSettings,
     this.title,
     this.message,
+    this.allowLabel,
   }) : assert(
          (onAllow != null) != (onOpenSettings != null),
          'Provide either onAllow or onOpenSettings',
@@ -25,6 +28,7 @@ class CameraPermissionDialog extends StatelessWidget {
   final VoidCallback onDoNotAllow;
   final String? title;
   final String? message;
+  final String? allowLabel;
 
   bool get _useOpenSettings => onOpenSettings != null;
 
@@ -36,14 +40,20 @@ class CameraPermissionDialog extends StatelessWidget {
   /// Dark card fill when [Brightness.dark] (matches prior OmlaPay scanner UI).
   static const Color _darkDialogBackground = Color(0xFF1A1A1A);
 
-  /// Shows the camera permission dialog with Allow action.
-  static Future<bool?> show(BuildContext context, {String? title, String? message}) {
+  /// Shows the permission dialog with Allow action.
+  static Future<bool?> show(
+    BuildContext context, {
+    String? title,
+    String? message,
+    String? allowLabel,
+  }) {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => CameraPermissionDialog(
+      builder: (context) => PermissionDialog(
         title: title,
         message: message,
+        allowLabel: allowLabel,
         onAllow: () => Navigator.of(context).pop(true),
         onDoNotAllow: () => Navigator.of(context).pop(false),
       ),
@@ -142,7 +152,7 @@ class CameraPermissionDialog extends StatelessWidget {
                     child: _DialogButton(
                       label: _useOpenSettings
                           ? l10n.openSettings
-                          : l10n.allowCamera,
+                          : allowLabel ?? l10n.allowCamera,
                       textColor: AppColors.tealColor,
                       fontWeight: FontWeight.w600,
                       borderRadius: const BorderRadiusDirectional.only(
@@ -185,7 +195,7 @@ class _DialogButton extends StatelessWidget {
         onTap: onPressed,
         borderRadius: resolvedRadius,
         child: Container(
-          height: CameraPermissionDialog._buttonHeight,
+          height: PermissionDialog._buttonHeight,
           alignment: Alignment.center,
           child: Text(
             label,

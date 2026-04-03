@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
@@ -11,10 +12,11 @@ import '../../../../core/utils/utility.dart';
 import '../../../../routes/app_router.dart';
 import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../../../scan/view/qr_scanner_view.dart';
+import '../../../../widgets/permission_dialog.dart';
 import '../../../../widgets/common_back_button.dart';
 import '../../../../widgets/common_coin_icon.dart';
 import '../../../../widgets/kyc_verification_required_banner.dart';
-import '../../swap/view/coin_selection_sheet.dart';
+import '../../../../widgets/coin_selection_sheet.dart';
 import '../provider/send_provider.dart';
 import '../widgets/contact_selection_sheet.dart';
 
@@ -166,7 +168,7 @@ class SendCoinView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        coin.localizedCoinTicker(context),
+                        coin.localizedCoinPrimaryName(context),
                         style: TextStyle(
                           color: colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
@@ -174,7 +176,7 @@ class SendCoinView extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        coin.localizedCoinPrimaryName(context),
+                        coin.localizedCoinTicker(context),
                         style: TextStyle(
                           color: colorScheme.onSurfaceVariant,
                           fontSize: 12,
@@ -442,7 +444,48 @@ class SendCoinView extends StatelessWidget {
     }
   }
 
-  void _showContactSelection(BuildContext context, SendProvider provider) {
+  Future<void> _showContactSelection(
+    BuildContext context,
+    SendProvider provider,
+  ) async {
+    final l10n = context.l10n!;
+    final status = await Permission.contacts.status;
+
+    if (!context.mounted) return;
+
+    if (status.isPermanentlyDenied) {
+      // Already denied permanently — show dialog with "Open Settings".
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => PermissionDialog(
+          title: l10n.contactsPermissionDialogTitle(l10n.appTitle),
+          message: l10n.contactsPermissionDialogMessage,
+          onDoNotAllow: () => Navigator.of(ctx).pop(),
+          onOpenSettings: () {
+            Navigator.of(ctx).pop();
+            openAppSettings();
+          },
+        ),
+      );
+      return;
+    }
+
+    if (!status.isGranted) {
+      // Show rationale dialog, then request system permission.
+      final allowed = await PermissionDialog.show(
+        context,
+        title: l10n.contactsPermissionDialogTitle(l10n.appTitle),
+        message: l10n.contactsPermissionDialogMessage,
+        allowLabel: l10n.allowContacts,
+      );
+      if (allowed != true || !context.mounted) return;
+
+      final result = await Permission.contacts.request();
+      if (!result.isGranted || !context.mounted) return;
+    }
+
+    // Permission granted — open the contacts sheet.
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

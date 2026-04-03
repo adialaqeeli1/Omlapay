@@ -2077,6 +2077,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'KYC process started successfully.'**
   String get kycStartedSuccess;
+
+  /// No description provided for @youAreOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'You are offline'**
+  String get youAreOffline;
+
+  /// No description provided for @contactsPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Contacts permission is required to select a contact. Please enable it in your device settings.'**
+  String get contactsPermissionDenied;
+
+  /// No description provided for @contactsLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading contacts...'**
+  String get contactsLoading;
+
+  /// No description provided for @noContactsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No contacts found'**
+  String get noContactsFound;
+
+  /// No description provided for @contactsPermissionDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} wants to access your contacts'**
+  String contactsPermissionDialogTitle(String appName);
+
+  /// No description provided for @contactsPermissionDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'We need your permission to access your contacts to send payments to people in your address book'**
+  String get contactsPermissionDialogMessage;
+
+  /// No description provided for @allowContacts.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Contacts'**
+  String get allowContacts;
 }
 
 class _AppLocalizationsDelegate

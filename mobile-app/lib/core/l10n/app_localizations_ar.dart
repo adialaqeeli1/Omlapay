@@ -1073,4 +1073,29 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get kycStartedSuccess => 'تم بدء عملية التحقق من الهوية بنجاح.';
+
+  @override
+  String get youAreOffline => 'أنت غير متصل بالإنترنت';
+
+  @override
+  String get contactsPermissionDenied =>
+      'يلزم إذن الوصول إلى جهات الاتصال لاختيار جهة اتصال. يُرجى تفعيله من إعدادات جهازك.';
+
+  @override
+  String get contactsLoading => 'جارٍ تحميل جهات الاتصال...';
+
+  @override
+  String get noContactsFound => 'لم يتم العثور على جهات اتصال';
+
+  @override
+  String contactsPermissionDialogTitle(String appName) {
+    return '$appName يريد الوصول إلى جهات الاتصال';
+  }
+
+  @override
+  String get contactsPermissionDialogMessage =>
+      'نحتاج إلى إذنك للوصول إلى جهات الاتصال لإرسال المدفوعات إلى الأشخاص في دفتر العناوين الخاص بك';
+
+  @override
+  String get allowContacts => 'السماح بجهات الاتصال';
 }

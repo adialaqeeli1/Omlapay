@@ -149,11 +149,22 @@ class CoinsService {
     final coinNameAr = _optionalTrimmed(coin['name_ar']);
 
     return CoinModel(
+      id: _optionalTrimmed(coin['id']),
       name: name,
       symbol: symbol.isEmpty ? 'N/A' : symbol,
       amount: '0.00',
       valueInUsd: displayPrice,
       change24h: parsedChange24h,
+      decimals: chainDecimals,
+      network: _optionalTrimmed(coin['network']),
+      iconUrl: _optionalTrimmed(coin['iconUrl']),
+      networkIconUrl: _optionalTrimmed(coin['networkIconUrl']),
+      contractAddress: _optionalTrimmed(coin['contractAddress']),
+      minWithdrawal: _optionalTrimmed(coin['minWithdrawal']),
+      minDeposit: _optionalTrimmed(coin['minDeposit']),
+      withdrawalFee: _optionalTrimmed(coin['withdrawalFee']),
+      description: _optionalTrimmed(coin['description']),
+      price: parsedPrice?.toDouble(),
       quoteSymbol: quoteSymbol,
       quoteSymbolAr: quoteSymbolAr,
       coinSymbolAr: coinSymbolAr,

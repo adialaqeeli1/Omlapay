@@ -433,5 +433,19 @@
     "kycRequiredFieldError": "This field is required",
     "kycSubmitButton": "Submit",
     "kycInvalidDateError": "Please select a valid date",
-    "kycStartedSuccess": "KYC process started successfully."
+    "kycStartedSuccess": "KYC process started successfully.",
+    "youAreOffline": "You are offline",
+    "contactsPermissionDenied": "Contacts permission is required to select a contact. Please enable it in your device settings.",
+    "contactsLoading": "Loading contacts...",
+    "noContactsFound": "No contacts found",
+    "contactsPermissionDialogTitle": "{appName} wants to access your contacts",
+    "@contactsPermissionDialogTitle": {
+        "placeholders": {
+            "appName": {
+                "type": "String"
+            }
+        }
+    },
+    "contactsPermissionDialogMessage": "We need your permission to access your contacts to send payments to people in your address book",
+    "allowContacts": "Allow Contacts"
 }

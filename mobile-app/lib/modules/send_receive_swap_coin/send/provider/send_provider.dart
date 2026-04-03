@@ -8,9 +8,7 @@ import '../../../../providers/coins_prices_provider.dart';
 
 class SendProvider extends ChangeNotifier {
   SendProvider(this.authProvider, this._coinsPricesProvider) {
-    final l10n = appLocalizationsFromStoredLocale();
-    _network = l10n.sendDefaultNetworkCode;
-    networkController = TextEditingController(text: _network);
+    networkController = TextEditingController();
 
     authProvider.addListener(notifyListeners);
     _coinsPricesProvider.addListener(_onStreamedCoinsUpdated);
@@ -43,7 +41,6 @@ class SendProvider extends ChangeNotifier {
   late final TextEditingController networkController;
 
   String? _error;
-  late final String _network;
 
   // Getters
   List<CoinModel> get coins => _coins;
@@ -52,7 +49,7 @@ class SendProvider extends ChangeNotifier {
   ContactModel? get selectedContact => _selectedContact;
   String? get error => _error;
   bool get isVerified => authProvider.state.user?.isVerified ?? false;
-  String get network => _network;
+  String get network => networkController.text;
 
   // Logic for showing warning:
   // Show if the user has NOT completed verification
@@ -103,13 +100,19 @@ class SendProvider extends ChangeNotifier {
       _selectedCoin = match ?? _coins.first;
     }
 
+    _updateNetwork();
     _validate();
+  }
+
+  void _updateNetwork() {
+    networkController.text = _selectedCoin?.network ?? '';
   }
 
   void setSelectedCoin(CoinModel coin) {
     _userPickedCoin = true;
     _userPickedSymbol = coin.symbol;
     _selectedCoin = coin;
+    _updateNetwork();
     _validate();
   }
 

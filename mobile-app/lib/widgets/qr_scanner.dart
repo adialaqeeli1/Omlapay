@@ -8,7 +8,7 @@ import 'package:permission_handler/permission_handler.dart' as ph;
 import '../core/extentions/context_extensions.dart';
 import '../core/theme/theme.dart';
 import '../modules/scan/provider/qr_scanner_provider.dart';
-import 'camera_permission_dialog.dart';
+import 'permission_dialog.dart';
 import 'invalid_qr_code_dialog.dart';
 
 /// A QR code scanner widget with camera permission handling.
@@ -160,7 +160,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
     }
   }
 
-  Future<void> _showCameraPermissionDialog() async {
+  Future<void> _showPermissionDialog() async {
     if (!mounted || _hasShownPermissionDialog) return;
     _hasShownPermissionDialog = true;
 
@@ -169,7 +169,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
     final result = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => CameraPermissionDialog(
+      builder: (context) => PermissionDialog(
         onAllow: isPermanentlyDenied
             ? null
             : () => Navigator.of(context).pop(true),
@@ -287,7 +287,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
       if (!_hasShownPermissionDialog) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
-          _showCameraPermissionDialog();
+          _showPermissionDialog();
         });
       }
       return const SizedBox.shrink();
