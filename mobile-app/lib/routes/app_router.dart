@@ -68,8 +68,8 @@ import '../modules/settings/providers/change_email_otp_provider.dart';
 import '../modules/settings/providers/change_phone_form_provider.dart';
 import '../modules/settings/providers/change_phone_otp_provider.dart';
 import '../modules/settings/services/wallet_address_service.dart';
-import '../modules/notifications/notifications_view.dart';
-import '../modules/notifications/notifications_list_provider.dart';
+import '../modules/notifications/views/notifications_view.dart';
+import '../modules/notifications/providers/notifications_provider.dart';
 import '../modules/splash/splash_view.dart';
 import '../providers/auth_provider.dart';
 import '../providers/coins_prices_provider.dart';
@@ -448,8 +448,7 @@ class AppRouter {
         path: Routes.notifications,
         name: 'notifications',
         builder: (context, state) => ChangeNotifierProvider(
-          create: (_) =>
-              NotificationsListProvider(AppLocalizations.of(context)!),
+          create: (_) => NotificationsProvider(),
           child: const NotificationsView(),
         ),
         redirect: AuthMiddleware.isAuthenticated,

@@ -1024,36 +1024,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get availableShortLabel => 'المتاح';
 
   @override
-  String get notificationMockNewTransactionTitle => 'اكتملت معاملة جديدة';
+  String get noNotifications => 'لا توجد إشعارات بعد';
 
   @override
-  String get notificationMockNewTransactionBody =>
-      'دفعتك بمقدار 0.5 BTC إلى [التاجر...';
+  String get notificationsLoadError => 'فشل تحميل الإشعارات';
 
   @override
-  String get notificationMockSecurityTitle => 'تنبيه أمني';
-
-  @override
-  String get notificationMockSecurityBody => 'تم اكتشاف تسجيل دخول جديد';
-
-  @override
-  String get notificationMockPolicyTitle => 'تحديث مهم للسياسة';
-
-  @override
-  String get notificationMockPolicyBody =>
-      'لقد قمنا بتحديث اتفاقية المستخدم...';
-
-  @override
-  String get notificationMockVerifyTitle => 'تحقق من حسابك';
-
-  @override
-  String get notificationMockVerifyBody => 'التحقق من حسابك قيد الانتظار...';
-
-  @override
-  String get notificationMockWeeklyTitle => 'ملخص أسبوعي';
-
-  @override
-  String get notificationMockWeeklyBody => 'ملخص معاملاتك الأسبوعي جاهز.';
+  String get retry => 'إعادة المحاولة';
 
   @override
   String get welcomeBack => 'مرحبًا بعودتك';

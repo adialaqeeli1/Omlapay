@@ -59,6 +59,9 @@ class Endpoints {
   /// KYC start endpoint; returns Sumsub access token.
   static String get kycStart => '$apiVersion/user/kyc/start';
 
+  /// Notifications; supports query params `limit` and `cursor`.
+  static String get notifications => '$apiVersion/notifications';
+
   /// Legal documents; supports query param `language` (e.g. en, ar).
   static String get legalPrivacy => '$apiVersion/legal/privacy';
   static String get legalTerms => '$apiVersion/legal/terms';
