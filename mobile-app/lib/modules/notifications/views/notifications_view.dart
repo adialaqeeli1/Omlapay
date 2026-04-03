@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -59,36 +61,47 @@ class _NotificationsViewState extends State<NotificationsView> {
             return _buildEmptyState(l10n, isDark);
           }
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          return Stack(
             children: [
-              _buildSummaryBar(
-                context,
-                l10n,
-                provider.unreadCount,
-                provider.markAllAsRead,
-                isDark,
-              ),
-              Expanded(
-                child: PaginatedListView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildSummaryBar(
+                    context,
+                    l10n,
+                    provider.unreadCount,
+                    provider.markAllAsRead,
+                    isDark,
                   ),
-                  itemCount: provider.items.length,
-                  isLoadingMore: provider.isLoadingMore,
-                  hasMore: provider.hasMore,
-                  onLoadMore: provider.loadMore,
-                  itemBuilder: (context, index) {
-                    final item = provider.items[index];
-                    return _NotificationTile(
-                      item: item,
-                      isDark: isDark,
-                      onTap: () => provider.markAsRead(item.id),
-                    );
-                  },
-                ),
+                  Expanded(
+                    child: PaginatedListView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      itemCount: provider.items.length,
+                      isLoadingMore: provider.isLoadingMore,
+                      hasMore: provider.hasMore,
+                      onLoadMore: provider.loadMore,
+                      itemBuilder: (context, index) {
+                        final item = provider.items[index];
+                        return _NotificationTile(
+                          item: item,
+                          isDark: isDark,
+                          onTap: () => provider.markAsRead(item.id),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
+              if (provider.isActionLoading)
+                Positioned.fill(
+                  child: ColoredBox(
+                    color: Colors.black26,
+                    child: const Center(child: CommonLoadingIndicator()),
+                  ),
+                ),
             ],
           );
         },
@@ -254,15 +267,14 @@ class _NotificationTile extends StatelessWidget {
                             : FontWeight.w500,
                         fontSize: 13,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      overflow: TextOverflow.visible,
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                _formatDate(item.createdAt),
+              _RelativeTimeText(
+                date: item.createdAt,
                 style: TextStyle(color: subColor, fontSize: 12),
               ),
             ],
@@ -279,6 +291,55 @@ class _NotificationTile extends StatelessWidget {
       NotificationType.promo => (Icons.local_offer, const Color(0xFF9C27B0)),
       NotificationType.system => (Icons.info_outline, AppColors.primaryColor),
     };
+  }
+}
+
+class _RelativeTimeText extends StatefulWidget {
+  final DateTime date;
+  final TextStyle? style;
+
+  const _RelativeTimeText({required this.date, this.style});
+
+  @override
+  State<_RelativeTimeText> createState() => _RelativeTimeTextState();
+}
+
+class _RelativeTimeTextState extends State<_RelativeTimeText> {
+  Stream<void>? _tickStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _initStream();
+  }
+
+  @override
+  void didUpdateWidget(_RelativeTimeText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.date != widget.date) {
+      _initStream();
+    }
+  }
+
+  void _initStream() {
+    final difference = DateTime.now().difference(widget.date);
+    _tickStream = difference.inDays < 7
+        ? Stream.periodic(const Duration(seconds: 1))
+        : null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_tickStream == null) {
+      return Text(DateFormat('d MMM').format(widget.date), style: widget.style);
+    }
+
+    return StreamBuilder<void>(
+      stream: _tickStream,
+      builder: (context, _) {
+        return Text(_formatDate(widget.date), style: widget.style);
+      },
+    );
   }
 
   String _formatDate(DateTime date) {

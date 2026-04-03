@@ -62,6 +62,14 @@ class Endpoints {
   /// Notifications; supports query params `limit` and `cursor`.
   static String get notifications => '$apiVersion/notifications';
 
+  /// Mark a single notification as read.
+  static String notificationRead(String id) =>
+      '$apiVersion/notifications/$id/read';
+
+  /// Mark all notifications as read.
+  static String get notificationsMarkAllRead =>
+      '$apiVersion/notifications/mark-all-read';
+
   /// Legal documents; supports query param `language` (e.g. en, ar).
   static String get legalPrivacy => '$apiVersion/legal/privacy';
   static String get legalTerms => '$apiVersion/legal/terms';
