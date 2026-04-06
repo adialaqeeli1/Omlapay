@@ -75,4 +75,8 @@ class Endpoints {
   static String get legalPrivacy => '$apiVersion/legal/privacy';
   static String get legalTerms => '$apiVersion/legal/terms';
   static String get userSettingsCurrency => '$apiVersion/user/settings/currency';
+  static String get userSettingsAppearance =>
+      '$apiVersion/user/settings/appearance';
+  static String get userSettingsLanguage =>
+      '$apiVersion/user/settings/language';
 }
