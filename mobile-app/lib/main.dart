@@ -42,12 +42,20 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<LocaleProvider>(create: (_) => LocaleProvider()),
-        ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
         ChangeNotifierProvider<ConnectivityProvider>(
           create: (_) => ConnectivityProvider(),
         ),
         ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
+        ChangeNotifierProxyProvider<AuthProvider, LocaleProvider>(
+          create: (_) => LocaleProvider(),
+          update: (_, auth, locale) => (locale ?? LocaleProvider())
+            ..onAuthChanged(auth.state.isAuthenticated),
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, ThemeProvider>(
+          create: (_) => ThemeProvider(),
+          update: (_, auth, theme) => (theme ?? ThemeProvider())
+            ..onAuthChanged(auth.state.isAuthenticated),
+        ),
         ChangeNotifierProxyProvider<AuthProvider, GlobalProvider>(
           create: (_) => GlobalProvider(),
           update: (_, auth, global) => (global ?? GlobalProvider())
