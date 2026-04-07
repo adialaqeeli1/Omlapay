@@ -5,9 +5,10 @@ import 'package:flutter/foundation.dart';
 import '../../../core/utils/app_exception.dart';
 import '../services/change_phone_service.dart';
 
-/// OTP step for [change-phone/request] + [change-phone/verify] (new number only).
+/// OTP step for [change-phone/step3-request] + [change-phone/step4-verify] (new number).
 class ChangePhoneOtpProvider extends ChangeNotifier {
   ChangePhoneOtpProvider({
+    required this.changePhoneToken,
     required this.countryCode,
     required this.newMobileNumber,
     required this.maskedMobile,
@@ -16,6 +17,7 @@ class ChangePhoneOtpProvider extends ChangeNotifier {
 
   static const int otpLength = 6;
 
+  final String changePhoneToken;
   final String countryCode;
   final String newMobileNumber;
   final String maskedMobile;
@@ -67,7 +69,8 @@ class ChangePhoneOtpProvider extends ChangeNotifier {
         _startCountdown(seconds);
         return;
       }
-      final result = await ChangePhoneService.requestChange(
+      final result = await ChangePhoneService.step3Request(
+        changePhoneToken: changePhoneToken,
         countryCode: countryCode,
         newMobileNumber: newMobileNumber,
       );
@@ -90,9 +93,8 @@ class ChangePhoneOtpProvider extends ChangeNotifier {
     _verifyErrorMessage = null;
     notifyListeners();
     try {
-      await ChangePhoneService.verifyChange(
-        countryCode: countryCode,
-        newMobileNumber: newMobileNumber,
+      await ChangePhoneService.step4Verify(
+        changePhoneToken: changePhoneToken,
         otp: _otp,
       );
       return true;

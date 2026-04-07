@@ -102,13 +102,18 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get changePhoneStep1 =>
+      'تحقق من رقم هاتفك المسجل الحالي باستخدام رمز تحقق.';
+
+  @override
+  String get changePhoneStep2 =>
       'أدخل رقم الهاتف الجديد الذي تريد استخدامه في حسابك.';
 
   @override
-  String get changePhoneStep2 => 'سنرسل رمز تحقق إلى ذلك الرقم.';
+  String get changePhoneStep3 => 'تحقق من رقم هاتفك الجديد باستخدام رمز تحقق.';
 
   @override
-  String get changePhoneStep3 => 'أدخل الرمز للتأكيد وإتمام التحديث.';
+  String get changePhoneStep4 =>
+      'تحقق من حسابك باستخدام رمز المرور لتأكيد التغييرات.';
 
   @override
   String get changePhoneAfterStepsNote =>
@@ -1115,4 +1120,36 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get checkingUserStatus => 'جارٍ التحقق من المستخدم...';
+
+  @override
+  String get kycEnterEmail => 'أدخل البريد الإلكتروني';
+
+  @override
+  String get kycWhatsYourEmail => 'ما هو بريدك الإلكتروني؟';
+
+  @override
+  String get kycEmailSubtitle => 'سنرسل رمز تحقق لتأكيد بريدك الإلكتروني';
+
+  @override
+  String get kycEmailHint => 'أدخل عنوان بريدك الإلكتروني';
+
+  @override
+  String get kycEmailRequiredError => 'عنوان البريد الإلكتروني مطلوب';
+
+  @override
+  String get kycEmailInvalidError => 'يرجى إدخال عنوان بريد إلكتروني صالح';
+
+  @override
+  String get kycVerifyEmail => 'تحقق من البريد الإلكتروني';
+
+  @override
+  String get kycVerifyEmailTitle => 'أدخل رمز التحقق';
+
+  @override
+  String kycVerifyEmailSubtitle(String email) {
+    return 'لقد أرسلنا رمزًا مكونًا من 6 أرقام إلى $email';
+  }
+
+  @override
+  String get kycEmailVerified => 'تم التحقق من البريد الإلكتروني بنجاح';
 }

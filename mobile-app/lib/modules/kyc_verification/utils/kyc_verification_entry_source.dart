@@ -1,3 +1,5 @@
+import '../../../routes/app_router.dart';
+
 enum KycVerificationEntrySource {
   profile,
   send,
@@ -23,5 +25,14 @@ enum KycVerificationEntrySource {
     }
 
     return KycVerificationEntrySource.unknown;
+  }
+
+  String get sourceRoute {
+    switch (this) {
+      case KycVerificationEntrySource.profile:
+        return Routes.profile;
+      default:
+        return Routes.home;
+    }
   }
 }

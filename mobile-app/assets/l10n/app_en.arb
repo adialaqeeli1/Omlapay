@@ -30,9 +30,10 @@
     "changePhoneNumber": "Change Phone Number",
     "stepsForChangingPhoneNumber": "Steps for changing your Phone Number",
     "changePhoneStepsDescription": "To change your registered phone number, follow these steps:",
-    "changePhoneStep1": "Enter your new phone number (the one you want to use for your account).",
-    "changePhoneStep2": "We will send a verification code to that number.",
-    "changePhoneStep3": "Enter the code to confirm and complete the update.",
+    "changePhoneStep1": "Verify your current registered phone number with a verification code.",
+    "changePhoneStep2": "Enter your new phone number (the one you want to use for your account).",
+    "changePhoneStep3": "Verify your new phone number with a verification code.",
+    "changePhoneStep4": "Verify your account with a passcode to confirm the changes.",
     "changePhoneAfterStepsNote": "After you verify the code, your account will use the new phone number.",
     "changePhoneEnterNewSubtitle": "After you continue, we will send a verification code to this number.",
     "enterNewPhoneNumber": "Enter new phone number",
@@ -452,5 +453,22 @@
     "sendInvitationDialogMessage": "This number does not have an account on Omlapay. For a better experience, send him an invitation.",
     "sendInvitationDialogNote": "Note: you can complete the transaction though",
     "sendInvitationInviteButton": "Invite",
-    "checkingUserStatus": "Checking user..."
+    "checkingUserStatus": "Checking user...",
+    "kycEnterEmail": "Enter Email",
+    "kycWhatsYourEmail": "What's your email?",
+    "kycEmailSubtitle": "We'll send a verification code to confirm your email",
+    "kycEmailHint": "Enter your email address",
+    "kycEmailRequiredError": "Email address is required",
+    "kycEmailInvalidError": "Please enter a valid email address",
+    "kycVerifyEmail": "Verify Email",
+    "kycVerifyEmailTitle": "Enter verification code",
+    "kycVerifyEmailSubtitle": "We sent a 6-digit code to {email}",
+    "@kycVerifyEmailSubtitle": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "kycEmailVerified": "Email verified successfully"
 }
