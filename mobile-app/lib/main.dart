@@ -12,6 +12,7 @@ import 'providers/theme_provider.dart';
 import 'providers/coins_prices_provider.dart';
 import 'providers/global_provider.dart';
 import 'providers/notification_provider.dart';
+import 'providers/wallets_provider.dart';
 import 'modules/dashboard/home/services/coins_prices_stream_service.dart';
 import 'modules/dashboard/home/services/coins_service.dart';
 import 'core/l10n/app_localizations.dart';
@@ -70,6 +71,11 @@ class MyApp extends StatelessWidget {
               coinsService,
             );
           },
+        ),
+        ChangeNotifierProvider<WalletsProvider>(
+          create: (context) => WalletsProvider(
+            context.read<GlobalProvider>(),
+          ),
         ),
         ChangeNotifierProvider<NotificationProvider>(
           create: (_) => NotificationProvider(),

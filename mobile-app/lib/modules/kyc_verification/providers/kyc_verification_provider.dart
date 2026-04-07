@@ -6,6 +6,7 @@ import 'package:flutter_idensic_mobile_sdk_plugin/flutter_idensic_mobile_sdk_plu
 import 'package:reactive_forms/reactive_forms.dart';
 
 import '../../../core/utils/api_message_helper.dart';
+import '../../../providers/auth_provider.dart';
 import '../services/kyc_verification_service.dart';
 
 class KycVerificationProvider extends ChangeNotifier {
@@ -13,19 +14,20 @@ class KycVerificationProvider extends ChangeNotifier {
 
   bool get isSubmitting => _isSubmitting;
 
-  Future<String> submit({
+  Future<({String message, bool shouldNavigateBack})> submit({
     required FormGroup form,
     required Locale locale,
     required String startFailedFallback,
     required String successFallback,
+    required AuthProvider authProvider,
   }) async {
     if (_isSubmitting) {
-      return '';
+      return (message: '', shouldNavigateBack: false);
     }
 
     form.markAllAsTouched();
     if (!form.valid) {
-      return '';
+      return (message: '', shouldNavigateBack: false);
     }
 
     _isSubmitting = true;
@@ -120,10 +122,28 @@ class KycVerificationProvider extends ChangeNotifier {
       final result = await sdk.launch();
       debugPrint('Sumsub SDK completed with result: $result');
 
-      return ApiMessageHelper.localizedFromResponse(
+      final shouldBack =
+          result.status == SNSMobileSDKStatus.Approved ||
+          result.status == SNSMobileSDKStatus.FinallyRejected ||
+          result.status == SNSMobileSDKStatus.Failed;
+
+      if (result.status == SNSMobileSDKStatus.Approved) {
+        try {
+          debugPrint('Sumsub approved — starting Binance KYC');
+          await KycVerificationService.startBinanceKyc();
+          debugPrint('Binance KYC started — refreshing account details');
+          await authProvider.fetchAccountDetails();
+        } catch (e) {
+          debugPrint('Post-approval flow error: $e');
+        }
+      }
+
+      final message = ApiMessageHelper.localizedFromResponse(
         response.raw,
         fallback: successFallback,
       );
+
+      return (message: message, shouldNavigateBack: shouldBack);
     } finally {
       _isSubmitting = false;
       notifyListeners();

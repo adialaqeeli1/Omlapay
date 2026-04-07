@@ -140,4 +140,8 @@ class AuthService {
     final response = await ApiHelper.get(Endpoints.sessionStatus);
     return response;
   }
+
+  static Future<Map<String, dynamic>> fetchAccountDetails() async {
+    return ApiHelper.get(Endpoints.accountDetails);
+  }
 }

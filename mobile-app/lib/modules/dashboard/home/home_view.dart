@@ -23,6 +23,7 @@ import 'package:provider/provider.dart';
 import '../../../widgets/receive_send_swap_actions.dart';
 import '../../../../providers/coins_prices_provider.dart';
 import '../../../../providers/global_provider.dart';
+import '../../../../providers/wallets_provider.dart';
 import 'widgets/currency_selection_dialog.dart';
 
 class HomeView extends StatelessWidget {
@@ -222,6 +223,7 @@ class HomeView extends StatelessWidget {
     required double horizontalPadding,
   }) {
     final coinsPrices = context.watch<CoinsPricesProvider>();
+    final walletsProvider = context.watch<WalletsProvider>();
     if (coinsPrices.isLoading) {
       return const Padding(
         padding: EdgeInsets.all(20.0),
@@ -287,7 +289,7 @@ class HomeView extends StatelessWidget {
             symbol: coin.symbol,
             symbolLabel: coin.localizedCoinTicker(context),
             name: coin.name.isEmpty ? coin.symbol : coin.name,
-            amount: coin.amount,
+            amount: walletsProvider.balanceForCoin(coin.symbol),
             currentPrice:
                 '${coin.valueInUsd} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',
             iconBackgroundColor: iconBgColor,

@@ -23,4 +23,8 @@ class KycVerificationService {
       'address': address,
     });
   }
+
+  static Future<Map<String, dynamic>> startBinanceKyc() async {
+    return ApiHelper.post(Endpoints.kycBinanceStart, {});
+  }
 }

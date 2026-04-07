@@ -4,9 +4,12 @@ import 'package:country_picker/country_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
+import 'package:go_router/go_router.dart';
+
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/utils/snackbar_helper.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../widgets/common_back_button.dart';
 import '../providers/kyc_verification_provider.dart';
 import '../utils/kyc_verification_entry_source.dart';
@@ -136,18 +139,26 @@ class KycVerificationView extends StatelessWidget {
                             ? () async {
                                 FocusScope.of(context).unfocus();
                                 try {
-                                  final message = await context
+                                  final result = await context
                                       .read<KycVerificationProvider>()
                                       .submit(
                                         form: _form,
                                         locale: Localizations.localeOf(context),
                                         startFailedFallback: l10n.requestFailed,
                                         successFallback: l10n.kycStartedSuccess,
+                                        authProvider:
+                                            context.read<AuthProvider>(),
                                       );
-                                  if (!context.mounted || message.isEmpty) {
-                                    return;
+                                  if (!context.mounted) return;
+                                  if (result.message.isNotEmpty) {
+                                    SnackbarHelper.showSuccess(
+                                      context,
+                                      result.message,
+                                    );
                                   }
-                                  SnackbarHelper.showSuccess(context, message);
+                                  if (result.shouldNavigateBack) {
+                                    context.pop();
+                                  }
                                 } catch (e) {
                                   if (!context.mounted) {
                                     return;
