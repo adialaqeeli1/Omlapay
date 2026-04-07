@@ -293,7 +293,7 @@ as List<WalletCoinModel>,
 /// @nodoc
 mixin _$WalletCoinModel {
 
-@JsonKey(name: 'name') String get name;@JsonKey(name: 'symbol') String get symbol;@JsonKey(name: 'address') String? get address;@JsonKey(name: 'addressTag') String? get addressTag; String get network; String get networkDisplayName; String get networkIconUrl;
+@JsonKey(name: 'name') String get name;@JsonKey(name: 'symbol') String get symbol;@JsonKey(name: 'address') String? get address;@JsonKey(name: 'addressTag') String? get addressTag; String get network; String get networkDisplayName; String get networkIconUrl;@JsonKey(name: 'currentBalance') double get currentBalance;
 /// Create a copy of WalletCoinModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -306,16 +306,16 @@ $WalletCoinModelCopyWith<WalletCoinModel> get copyWith => _$WalletCoinModelCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WalletCoinModel&&(identical(other.name, name) || other.name == name)&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.address, address) || other.address == address)&&(identical(other.addressTag, addressTag) || other.addressTag == addressTag)&&(identical(other.network, network) || other.network == network)&&(identical(other.networkDisplayName, networkDisplayName) || other.networkDisplayName == networkDisplayName)&&(identical(other.networkIconUrl, networkIconUrl) || other.networkIconUrl == networkIconUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WalletCoinModel&&(identical(other.name, name) || other.name == name)&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.address, address) || other.address == address)&&(identical(other.addressTag, addressTag) || other.addressTag == addressTag)&&(identical(other.network, network) || other.network == network)&&(identical(other.networkDisplayName, networkDisplayName) || other.networkDisplayName == networkDisplayName)&&(identical(other.networkIconUrl, networkIconUrl) || other.networkIconUrl == networkIconUrl)&&(identical(other.currentBalance, currentBalance) || other.currentBalance == currentBalance));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,symbol,address,addressTag,network,networkDisplayName,networkIconUrl);
+int get hashCode => Object.hash(runtimeType,name,symbol,address,addressTag,network,networkDisplayName,networkIconUrl,currentBalance);
 
 @override
 String toString() {
-  return 'WalletCoinModel(name: $name, symbol: $symbol, address: $address, addressTag: $addressTag, network: $network, networkDisplayName: $networkDisplayName, networkIconUrl: $networkIconUrl)';
+  return 'WalletCoinModel(name: $name, symbol: $symbol, address: $address, addressTag: $addressTag, network: $network, networkDisplayName: $networkDisplayName, networkIconUrl: $networkIconUrl, currentBalance: $currentBalance)';
 }
 
 
@@ -326,7 +326,7 @@ abstract mixin class $WalletCoinModelCopyWith<$Res>  {
   factory $WalletCoinModelCopyWith(WalletCoinModel value, $Res Function(WalletCoinModel) _then) = _$WalletCoinModelCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'name') String name,@JsonKey(name: 'symbol') String symbol,@JsonKey(name: 'address') String? address,@JsonKey(name: 'addressTag') String? addressTag, String network, String networkDisplayName, String networkIconUrl
+@JsonKey(name: 'name') String name,@JsonKey(name: 'symbol') String symbol,@JsonKey(name: 'address') String? address,@JsonKey(name: 'addressTag') String? addressTag, String network, String networkDisplayName, String networkIconUrl,@JsonKey(name: 'currentBalance') double currentBalance
 });
 
 
@@ -343,7 +343,7 @@ class _$WalletCoinModelCopyWithImpl<$Res>
 
 /// Create a copy of WalletCoinModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? symbol = null,Object? address = freezed,Object? addressTag = freezed,Object? network = null,Object? networkDisplayName = null,Object? networkIconUrl = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? symbol = null,Object? address = freezed,Object? addressTag = freezed,Object? network = null,Object? networkDisplayName = null,Object? networkIconUrl = null,Object? currentBalance = null,}) {
   return _then(_self.copyWith(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,symbol: null == symbol ? _self.symbol : symbol // ignore: cast_nullable_to_non_nullable
@@ -352,7 +352,8 @@ as String?,addressTag: freezed == addressTag ? _self.addressTag : addressTag // 
 as String?,network: null == network ? _self.network : network // ignore: cast_nullable_to_non_nullable
 as String,networkDisplayName: null == networkDisplayName ? _self.networkDisplayName : networkDisplayName // ignore: cast_nullable_to_non_nullable
 as String,networkIconUrl: null == networkIconUrl ? _self.networkIconUrl : networkIconUrl // ignore: cast_nullable_to_non_nullable
-as String,
+as String,currentBalance: null == currentBalance ? _self.currentBalance : currentBalance // ignore: cast_nullable_to_non_nullable
+as double,
   ));
 }
 
@@ -437,10 +438,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'name')  String name, @JsonKey(name: 'symbol')  String symbol, @JsonKey(name: 'address')  String? address, @JsonKey(name: 'addressTag')  String? addressTag,  String network,  String networkDisplayName,  String networkIconUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'name')  String name, @JsonKey(name: 'symbol')  String symbol, @JsonKey(name: 'address')  String? address, @JsonKey(name: 'addressTag')  String? addressTag,  String network,  String networkDisplayName,  String networkIconUrl, @JsonKey(name: 'currentBalance')  double currentBalance)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WalletCoinModel() when $default != null:
-return $default(_that.name,_that.symbol,_that.address,_that.addressTag,_that.network,_that.networkDisplayName,_that.networkIconUrl);case _:
+return $default(_that.name,_that.symbol,_that.address,_that.addressTag,_that.network,_that.networkDisplayName,_that.networkIconUrl,_that.currentBalance);case _:
   return orElse();
 
 }
@@ -458,10 +459,10 @@ return $default(_that.name,_that.symbol,_that.address,_that.addressTag,_that.net
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'name')  String name, @JsonKey(name: 'symbol')  String symbol, @JsonKey(name: 'address')  String? address, @JsonKey(name: 'addressTag')  String? addressTag,  String network,  String networkDisplayName,  String networkIconUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'name')  String name, @JsonKey(name: 'symbol')  String symbol, @JsonKey(name: 'address')  String? address, @JsonKey(name: 'addressTag')  String? addressTag,  String network,  String networkDisplayName,  String networkIconUrl, @JsonKey(name: 'currentBalance')  double currentBalance)  $default,) {final _that = this;
 switch (_that) {
 case _WalletCoinModel():
-return $default(_that.name,_that.symbol,_that.address,_that.addressTag,_that.network,_that.networkDisplayName,_that.networkIconUrl);case _:
+return $default(_that.name,_that.symbol,_that.address,_that.addressTag,_that.network,_that.networkDisplayName,_that.networkIconUrl,_that.currentBalance);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -478,10 +479,10 @@ return $default(_that.name,_that.symbol,_that.address,_that.addressTag,_that.net
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'name')  String name, @JsonKey(name: 'symbol')  String symbol, @JsonKey(name: 'address')  String? address, @JsonKey(name: 'addressTag')  String? addressTag,  String network,  String networkDisplayName,  String networkIconUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'name')  String name, @JsonKey(name: 'symbol')  String symbol, @JsonKey(name: 'address')  String? address, @JsonKey(name: 'addressTag')  String? addressTag,  String network,  String networkDisplayName,  String networkIconUrl, @JsonKey(name: 'currentBalance')  double currentBalance)?  $default,) {final _that = this;
 switch (_that) {
 case _WalletCoinModel() when $default != null:
-return $default(_that.name,_that.symbol,_that.address,_that.addressTag,_that.network,_that.networkDisplayName,_that.networkIconUrl);case _:
+return $default(_that.name,_that.symbol,_that.address,_that.addressTag,_that.network,_that.networkDisplayName,_that.networkIconUrl,_that.currentBalance);case _:
   return null;
 
 }
@@ -493,7 +494,7 @@ return $default(_that.name,_that.symbol,_that.address,_that.addressTag,_that.net
 @JsonSerializable()
 
 class _WalletCoinModel implements WalletCoinModel {
-  const _WalletCoinModel({@JsonKey(name: 'name') this.name = '', @JsonKey(name: 'symbol') this.symbol = '', @JsonKey(name: 'address') this.address, @JsonKey(name: 'addressTag') this.addressTag, this.network = '', this.networkDisplayName = '', this.networkIconUrl = ''});
+  const _WalletCoinModel({@JsonKey(name: 'name') this.name = '', @JsonKey(name: 'symbol') this.symbol = '', @JsonKey(name: 'address') this.address, @JsonKey(name: 'addressTag') this.addressTag, this.network = '', this.networkDisplayName = '', this.networkIconUrl = '', @JsonKey(name: 'currentBalance') this.currentBalance = 0});
   factory _WalletCoinModel.fromJson(Map<String, dynamic> json) => _$WalletCoinModelFromJson(json);
 
 @override@JsonKey(name: 'name') final  String name;
@@ -503,6 +504,7 @@ class _WalletCoinModel implements WalletCoinModel {
 @override@JsonKey() final  String network;
 @override@JsonKey() final  String networkDisplayName;
 @override@JsonKey() final  String networkIconUrl;
+@override@JsonKey(name: 'currentBalance') final  double currentBalance;
 
 /// Create a copy of WalletCoinModel
 /// with the given fields replaced by the non-null parameter values.
@@ -517,16 +519,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WalletCoinModel&&(identical(other.name, name) || other.name == name)&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.address, address) || other.address == address)&&(identical(other.addressTag, addressTag) || other.addressTag == addressTag)&&(identical(other.network, network) || other.network == network)&&(identical(other.networkDisplayName, networkDisplayName) || other.networkDisplayName == networkDisplayName)&&(identical(other.networkIconUrl, networkIconUrl) || other.networkIconUrl == networkIconUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WalletCoinModel&&(identical(other.name, name) || other.name == name)&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.address, address) || other.address == address)&&(identical(other.addressTag, addressTag) || other.addressTag == addressTag)&&(identical(other.network, network) || other.network == network)&&(identical(other.networkDisplayName, networkDisplayName) || other.networkDisplayName == networkDisplayName)&&(identical(other.networkIconUrl, networkIconUrl) || other.networkIconUrl == networkIconUrl)&&(identical(other.currentBalance, currentBalance) || other.currentBalance == currentBalance));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,symbol,address,addressTag,network,networkDisplayName,networkIconUrl);
+int get hashCode => Object.hash(runtimeType,name,symbol,address,addressTag,network,networkDisplayName,networkIconUrl,currentBalance);
 
 @override
 String toString() {
-  return 'WalletCoinModel(name: $name, symbol: $symbol, address: $address, addressTag: $addressTag, network: $network, networkDisplayName: $networkDisplayName, networkIconUrl: $networkIconUrl)';
+  return 'WalletCoinModel(name: $name, symbol: $symbol, address: $address, addressTag: $addressTag, network: $network, networkDisplayName: $networkDisplayName, networkIconUrl: $networkIconUrl, currentBalance: $currentBalance)';
 }
 
 
@@ -537,7 +539,7 @@ abstract mixin class _$WalletCoinModelCopyWith<$Res> implements $WalletCoinModel
   factory _$WalletCoinModelCopyWith(_WalletCoinModel value, $Res Function(_WalletCoinModel) _then) = __$WalletCoinModelCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'name') String name,@JsonKey(name: 'symbol') String symbol,@JsonKey(name: 'address') String? address,@JsonKey(name: 'addressTag') String? addressTag, String network, String networkDisplayName, String networkIconUrl
+@JsonKey(name: 'name') String name,@JsonKey(name: 'symbol') String symbol,@JsonKey(name: 'address') String? address,@JsonKey(name: 'addressTag') String? addressTag, String network, String networkDisplayName, String networkIconUrl,@JsonKey(name: 'currentBalance') double currentBalance
 });
 
 
@@ -554,7 +556,7 @@ class __$WalletCoinModelCopyWithImpl<$Res>
 
 /// Create a copy of WalletCoinModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? symbol = null,Object? address = freezed,Object? addressTag = freezed,Object? network = null,Object? networkDisplayName = null,Object? networkIconUrl = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? symbol = null,Object? address = freezed,Object? addressTag = freezed,Object? network = null,Object? networkDisplayName = null,Object? networkIconUrl = null,Object? currentBalance = null,}) {
   return _then(_WalletCoinModel(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,symbol: null == symbol ? _self.symbol : symbol // ignore: cast_nullable_to_non_nullable
@@ -563,7 +565,8 @@ as String?,addressTag: freezed == addressTag ? _self.addressTag : addressTag // 
 as String?,network: null == network ? _self.network : network // ignore: cast_nullable_to_non_nullable
 as String,networkDisplayName: null == networkDisplayName ? _self.networkDisplayName : networkDisplayName // ignore: cast_nullable_to_non_nullable
 as String,networkIconUrl: null == networkIconUrl ? _self.networkIconUrl : networkIconUrl // ignore: cast_nullable_to_non_nullable
-as String,
+as String,currentBalance: null == currentBalance ? _self.currentBalance : currentBalance // ignore: cast_nullable_to_non_nullable
+as double,
   ));
 }
 

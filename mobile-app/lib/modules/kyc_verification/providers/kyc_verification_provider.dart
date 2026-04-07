@@ -65,7 +65,7 @@ class KycVerificationProvider extends ChangeNotifier {
         'KycVerificationProvider.submit request: ${jsonEncode(requestPayload)}',
       );
 
-      final response = await KycVerificationService.startKyc(
+      final response = await _fetchKycAccessToken(
         firstName: firstName,
         lastName: lastName,
         residentialCountry: residentialCountry,
@@ -75,23 +75,29 @@ class KycVerificationProvider extends ChangeNotifier {
         address: address,
       );
 
-      final data = response['data'];
-      final dataMap = data is Map<String, dynamic> ? data : null;
-      final accessToken = dataMap?['token']?.toString() ?? '';
+      final accessToken = response.token;
 
       if (accessToken.isEmpty) {
         throw Exception(
           ApiMessageHelper.localizedFromResponse(
-            response,
+            response.raw,
             fallback: startFailedFallback,
           ),
         );
       }
 
       Future<String> onTokenExpiration() async {
-        // TODO replace with backend refresh endpoint once available.
-        debugPrint('KYC token expired - returning mocked refresh token');
-        return accessToken;
+        debugPrint('KYC token expired - fetching new access token');
+        final refreshed = await _fetchKycAccessToken(
+          firstName: firstName,
+          lastName: lastName,
+          residentialCountry: residentialCountry,
+          dob: dob,
+          country: documentCountry,
+          city: city,
+          address: address,
+        );
+        return refreshed.token;
       }
 
       void onStatusChanged(
@@ -115,13 +121,37 @@ class KycVerificationProvider extends ChangeNotifier {
       debugPrint('Sumsub SDK completed with result: $result');
 
       return ApiMessageHelper.localizedFromResponse(
-        response,
+        response.raw,
         fallback: successFallback,
       );
     } finally {
       _isSubmitting = false;
       notifyListeners();
     }
+  }
+
+  Future<({String token, Map<String, dynamic> raw})> _fetchKycAccessToken({
+    required String firstName,
+    required String lastName,
+    required String residentialCountry,
+    required String dob,
+    required String country,
+    required String city,
+    required String address,
+  }) async {
+    final response = await KycVerificationService.startKyc(
+      firstName: firstName,
+      lastName: lastName,
+      residentialCountry: residentialCountry,
+      dob: dob,
+      country: country,
+      city: city,
+      address: address,
+    );
+    final data = response['data'];
+    final dataMap = data is Map<String, dynamic> ? data : null;
+    final token = dataMap?['token']?.toString() ?? '';
+    return (token: token, raw: response);
   }
 
   String _toIsoDate(String mmddyyyy) {

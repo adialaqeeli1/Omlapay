@@ -68,21 +68,13 @@ class CoinsPricesStreamService {
       rethrow;
     }
 
+    bool firstDataLogged = false;
     try {
       await for (final event in channel.stream) {
         final data = event.data;
         if (data == null || data.isEmpty) {
           _log('Received empty event', 'event=${event.event} id=${event.id}');
           continue;
-        }
-
-        if (kDebugMode) {
-          final preview =
-              data.length > 200 ? '${data.substring(0, 200)}...' : data;
-          debugPrint(
-            '$_logTag: Event received | event=${event.event} id=${event.id} '
-            'dataLength=${data.length} preview=$preview',
-          );
         }
 
         try {
@@ -94,8 +86,17 @@ class CoinsPricesStreamService {
 
           final coins = _extractCoinsFromPayload(json);
           if (coins != null && coins.isNotEmpty) {
-            _log('Parsed ${coins.length} coins',
-                coins.map((c) => c.symbol).join(', '));
+            if (!firstDataLogged && kDebugMode) {
+              firstDataLogged = true;
+              final preview =
+                  data.length > 200 ? '${data.substring(0, 200)}...' : data;
+              _log(
+                'First event received | event=${event.event} id=${event.id} '
+                'dataLength=${data.length} preview=$preview',
+              );
+              _log('Parsed ${coins.length} coins',
+                  coins.map((c) => c.symbol).join(', '));
+            }
             yield coins;
           } else {
             _log('No coins extracted from payload');
