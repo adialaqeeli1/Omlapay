@@ -39,6 +39,7 @@ import '../modules/onboarding/onboarding_view.dart';
 import 'package:provider/provider.dart';
 
 import '../modules/onboarding/provider/onboarding_provider.dart';
+import '../providers/wallets_provider.dart';
 import '../modules/send_receive_swap_coin/receive/provider/receive_coins_history_provider.dart';
 import '../modules/send_receive_swap_coin/receive/view/receive_coin_view.dart';
 import '../modules/send_receive_swap_coin/send/view/send_coin_view.dart';
@@ -569,7 +570,9 @@ class AppRouter {
         builder: (context, state) {
           final fromReceive = state.extra == true;
           return ChangeNotifierProvider(
-            create: (_) => ReciveCoinProvider(),
+            create: (ctx) => ReciveCoinProvider(
+              walletsProvider: ctx.read<WalletsProvider>(),
+            ),
             child: ReceiveCoinView(fromReceive: fromReceive),
           );
         },

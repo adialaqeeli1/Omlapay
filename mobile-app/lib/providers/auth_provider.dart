@@ -342,6 +342,32 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// Fetches account details from the backend and updates the local user's
+  /// [isVerified] status. Fails silently on error.
+  Future<void> fetchAccountDetails() async {
+    try {
+      final currentUser = _state.user;
+      if (currentUser == null || !_state.isAuthenticated) return;
+
+      final response = await AuthService.fetchAccountDetails();
+      final data = response['data'];
+      if (data is Map<String, dynamic>) {
+        final isVerified = data['isVerified'];
+        if (isVerified is bool) {
+          final updatedUser = currentUser.copyWith(isVerified: isVerified);
+          _state = state.copyWith(user: updatedUser);
+          await StorageService.setString(
+            AppConstants.userKey,
+            jsonEncode(updatedUser.toJson()),
+          );
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      debugPrint('fetchAccountDetails failed: $e');
+    }
+  }
+
   Future<bool> updateEmailForCurrentUser(String email) async {
     try {
       final user = _state.user;

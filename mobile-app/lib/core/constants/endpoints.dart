@@ -60,6 +60,12 @@ class Endpoints {
   /// KYC start endpoint; returns Sumsub access token.
   static String get kycStart => '$apiVersion/user/kyc/start';
 
+  /// Binance KYC start endpoint; initiates Binance verification after Sumsub approval.
+  static String get kycBinanceStart => '$apiVersion/user/kyc/binance/start';
+
+  /// User account details endpoint.
+  static String get accountDetails => '$apiVersion/user/account-details';
+
   /// Notifications; supports query params `limit` and `cursor`.
   static String get notifications => '$apiVersion/notifications';
 

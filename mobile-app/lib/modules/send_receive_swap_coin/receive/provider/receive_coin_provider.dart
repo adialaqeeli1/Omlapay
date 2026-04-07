@@ -1,56 +1,43 @@
 import 'package:flutter/material.dart';
 import '../../../../core/models/wallet_model/wallet_model.dart';
-import '../services/receive_wallets_service.dart';
+import '../../../../providers/wallets_provider.dart';
 
 class ReciveCoinProvider extends ChangeNotifier {
-  ReciveCoinProvider({ReceiveWalletsService? receiveWalletsService})
-    : _receiveWalletsService = receiveWalletsService ?? ReceiveWalletsService() {
-    _loadWallets();
+  ReciveCoinProvider({required WalletsProvider walletsProvider})
+      : _walletsProvider = walletsProvider {
+    _walletsProvider.addListener(_onWalletsUpdated);
   }
 
-  final ReceiveWalletsService _receiveWalletsService;
-  List<WalletNetworkModel> _wallets = [];
-  bool _isLoading = false;
+  final WalletsProvider _walletsProvider;
   bool _addressCopiedVisible = false;
-  String? _errorMessage;
-  bool _kycRequired = false;
 
-  // Getters
-  List<WalletNetworkModel> get wallets => _wallets;
-  bool get isLoading => _isLoading;
+  // Delegate to global WalletsProvider
+  List<WalletNetworkModel> get wallets => _walletsProvider.wallets;
+  bool get isLoading => _walletsProvider.isLoading;
+  String? get errorMessage => _walletsProvider.errorMessage;
+  bool get kycRequired => _walletsProvider.kycRequired;
   bool get addressCopiedVisible => _addressCopiedVisible;
-  String? get errorMessage => _errorMessage;
-  bool get kycRequired => _kycRequired;
 
-  Future<void> _loadWallets() async {
-    _isLoading = true;
-    _errorMessage = null;
+  /// Triggers a global wallet refresh (e.g. pull-to-refresh).
+  Future<void> refreshWallets() => _walletsProvider.refreshWallets();
+
+  void _onWalletsUpdated() {
     notifyListeners();
-
-    try {
-      final result = await _receiveWalletsService.fetchWallets();
-      _wallets = result.networks;
-      _kycRequired = result.kycRequired;
-    } catch (error) {
-      _wallets = [];
-      _errorMessage = error.toString();
-      _kycRequired = false;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
   }
 
   void copyAddress(String address) {
-    // In a real app, you would use Clipboard.setData
-    // For now, we'll just show the copied message
     _addressCopiedVisible = true;
     notifyListeners();
 
-    // Clear message after 2 seconds
     Future.delayed(const Duration(seconds: 2), () {
       _addressCopiedVisible = false;
       notifyListeners();
     });
+  }
+
+  @override
+  void dispose() {
+    _walletsProvider.removeListener(_onWalletsUpdated);
+    super.dispose();
   }
 }
