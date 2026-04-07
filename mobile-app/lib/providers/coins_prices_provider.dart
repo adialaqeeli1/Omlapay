@@ -4,8 +4,8 @@ import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 
 import '../core/models/coin_model/coin_model.dart';
-import '../modules/dashboard/home/services/coins_prices_stream_service.dart';
-import '../modules/dashboard/home/services/coins_service.dart';
+import '../core/services/coins_prices_stream_service.dart';
+import '../core/services/coins_service.dart';
 import 'global_provider.dart';
 
 /// App-wide real-time coin prices from the SSE stream (`/v1/coins/prices/stream`).

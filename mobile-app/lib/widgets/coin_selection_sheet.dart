@@ -7,7 +7,6 @@ import '../core/models/coin_model/coin_model_quote_display.dart';
 import '../core/theme/theme.dart';
 import '../providers/global_provider.dart';
 import 'common_coin_icon.dart';
-import 'package:crypto_font_icons/crypto_font_icons.dart';
 
 class CoinSelectionSheet extends StatefulWidget {
   final String title;

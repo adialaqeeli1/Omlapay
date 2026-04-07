@@ -1,7 +1,6 @@
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 
-import '../../../../core/mock_data/mock_data.dart';
 import '../../../../core/models/transaction_model/transaction_model.dart';
 import '../../../../providers/coins_prices_provider.dart';
 
@@ -116,37 +115,9 @@ class HistoryProvider extends ChangeNotifier {
   //   }
   // }
 
-  void _loadDummyData() {
-    developer.log('HistoryProvider: Loading dummy transaction data');
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
-    // Simulate API call delay
-    Future.delayed(const Duration(milliseconds: 500), () async {
-      try {
-        _transactions = await _generateDummyTransactions();
-        _isLoading = false;
-        developer.log(
-          'HistoryProvider: Successfully loaded ${_transactions.length} dummy transactions',
-        );
-        notifyListeners();
-      } catch (e) {
-        developer.log(
-          'HistoryProvider: Error loading dummy data: $e',
-          error: e,
-        );
-        _errorMessage = 'Failed to load transactions';
-        _isLoading = false;
-        notifyListeners();
-      }
-    });
-  }
-
   // TODO: Implement refresh when API is ready
   Future<void> refresh() async {
     developer.log('HistoryProvider: Refreshing transactions');
-    // _loadDummyData();
   }
 
   void setCoinFilter(String? coinSymbol) {
@@ -175,21 +146,6 @@ class HistoryProvider extends ChangeNotifier {
     _dateStart = null;
     _dateEnd = null;
     notifyListeners();
-  }
-
-  Future<List<TransactionModel>> _generateDummyTransactions() async {
-    developer.log('HistoryProvider: Generating dummy transactions');
-
-    try {
-      await Future.delayed(const Duration(milliseconds: 500));
-      return MockData.getTransactions();
-    } catch (e) {
-      developer.log(
-        'HistoryProvider: Error generating dummy transactions: $e',
-        error: e,
-      );
-      return [];
-    }
   }
 
   @override

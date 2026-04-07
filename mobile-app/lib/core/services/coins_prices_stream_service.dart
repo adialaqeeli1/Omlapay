@@ -5,10 +5,10 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:sse_channel/sse_channel.dart';
 
-import '../../../../core/constants/constants.dart';
-import '../../../../core/constants/endpoints.dart';
-import '../../../../core/models/coin_model/coin_model.dart';
-import '../../../../core/services/storage_helper.dart';
+import '../constants/constants.dart';
+import '../constants/endpoints.dart';
+import '../models/coin_model/coin_model.dart';
+import 'storage_helper.dart';
 import 'coins_service.dart';
 
 const String _logTag = 'CoinsPricesStream';

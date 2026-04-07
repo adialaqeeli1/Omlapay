@@ -6,19 +6,7 @@ class TransactionDetailsProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  TransactionDetailsProvider({required this.transaction}) {
-    // _simulateLoading();
-  }
-
-  Future<void> _simulateLoading() async {
-    _isLoading = true;
-    notifyListeners();
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    _isLoading = false;
-    notifyListeners();
-  }
+  TransactionDetailsProvider({required this.transaction});
 
   void saveAs() {
     debugPrint("Saving transaction: ${transaction.id}");

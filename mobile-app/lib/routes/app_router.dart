@@ -20,11 +20,13 @@ import '../modules/auth/views/login_or_register_screen.dart';
 import '../modules/auth/views/verification_screen.dart';
 import '../modules/auth/views/change_passcode_success_view.dart';
 import '../modules/auth/providers/verification_provider.dart';
-import '../modules/coin_details/coin_details_view.dart';
+import '../modules/coin_details/views/coin_details_view.dart';
+import '../modules/coin_details/providers/coin_details_provider.dart';
 import '../modules/dashboard/dashboard_view.dart';
-import '../modules/dashboard/history/history_view.dart';
-import '../modules/dashboard/history/transaction_detail_view.dart';
-import '../modules/dashboard/home/home_view.dart';
+import '../modules/dashboard/history/views/history_view.dart';
+import '../modules/dashboard/history/views/transaction_detail_view.dart';
+import '../modules/dashboard/home/views/home_view.dart';
+import '../modules/dashboard/home/providers/home_provider.dart';
 import '../modules/dashboard/profile/about/about_view.dart';
 import '../modules/dashboard/profile/about/faqs_view.dart';
 import '../modules/dashboard/profile/about/privacy_policy_view.dart';
@@ -425,7 +427,14 @@ class AppRouter {
           GoRoute(
             path: Routes.home,
             name: 'home',
-            builder: (context, state) => const HomeView(),
+            builder: (context, state) =>
+                ChangeNotifierProxyProvider<AuthProvider, HomeProvider>(
+                  create: (_) => HomeProvider(),
+                  update: (_, auth, home) =>
+                      (home ?? HomeProvider())
+                        ..onAuthChanged(auth.state.isAuthenticated),
+                  child: const HomeView(),
+                ),
           ),
           GoRoute(
             path: Routes.history,
@@ -511,7 +520,12 @@ class AppRouter {
         name: 'coinDetails',
         builder: (context, state) {
           final CoinModel? coinModel = state.extra as CoinModel?;
-          return CoinDetailsView(coinModel: coinModel);
+          return ChangeNotifierProvider(
+            create: (_) =>
+                CoinDetailsProvider()
+                  ..initWithBalance(coinModel?.amount ?? '0.00'),
+            child: CoinDetailsView(coinModel: coinModel),
+          );
         },
         redirect: AuthMiddleware.isAuthenticated,
       ),
@@ -583,9 +597,9 @@ class AppRouter {
         name: 'receiveCoinsHistory',
         builder: (context, state) => ChangeNotifierProvider(
           create: (_) => ReceiveCoinsHistoryProvider(
-                context.read<AuthProvider>(),
-                context.read<CoinsPricesProvider>(),
-              ),
+            context.read<AuthProvider>(),
+            context.read<CoinsPricesProvider>(),
+          ),
           child: const ReceiveCoinsHistoryView(),
         ),
         redirect: AuthMiddleware.isAuthenticated,
