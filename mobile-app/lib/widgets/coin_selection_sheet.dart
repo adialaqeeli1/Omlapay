@@ -182,28 +182,28 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                 Color? iconBackgroundColor;
                 Widget? fallbackIcon;
 
-                if (coin.symbol == 'USDT') {
-                  iconBackgroundColor = AppColors.usdtColor;
-                  fallbackIcon = const Icon(
-                    CryptoFontIcons.USDT,
-                    color: Colors.white,
-                    size: 24,
-                  );
-                } else if (coin.symbol == 'ETH') {
-                  iconBackgroundColor = AppColors.textWhite;
-                  fallbackIcon = const Icon(
-                    CryptoFontIcons.ETH,
-                    color: Colors.black,
-                    size: 24,
-                  );
-                } else if (coin.symbol == 'BTC') {
-                  iconBackgroundColor = AppColors.bitcoinColor;
-                  fallbackIcon = const Icon(
-                    CryptoFontIcons.BTC,
-                    color: Colors.white,
-                    size: 24,
-                  );
-                }
+                // if (coin.symbol == 'USDT') {
+                //   iconBackgroundColor = AppColors.usdtColor;
+                //   fallbackIcon = const Icon(
+                //     CryptoFontIcons.USDT,
+                //     color: Colors.white,
+                //     size: 24,
+                //   );
+                // } else if (coin.symbol == 'ETH') {
+                //   iconBackgroundColor = AppColors.textWhite;
+                //   fallbackIcon = const Icon(
+                //     CryptoFontIcons.ETH,
+                //     color: Colors.black,
+                //     size: 24,
+                //   );
+                // } else if (coin.symbol == 'BTC') {
+                //   iconBackgroundColor = AppColors.bitcoinColor;
+                //   fallbackIcon = const Icon(
+                //     CryptoFontIcons.BTC,
+                //     color: Colors.white,
+                //     size: 24,
+                //   );
+                // }
 
                 return Container(
                   decoration: BoxDecoration(
@@ -218,6 +218,7 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                       symbol: coin.symbol,
                       iconBackgroundColor: iconBackgroundColor,
                       fallbackIcon: fallbackIcon,
+                      networkIconUrl: coin.networkIconUrl,
                     ),
                     title: Text(
                       coin.localizedCoinPrimaryName(context),

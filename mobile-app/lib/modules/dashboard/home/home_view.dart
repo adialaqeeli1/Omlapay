@@ -243,47 +243,47 @@ class HomeView extends StatelessWidget {
           Color? iconBgColor;
           Widget? iconWidget;
 
-          if (coin.symbol == 'USDT') {
-            iconBgColor = AppColors.usdtColor;
-            iconWidget = DecoratedBox(
-              decoration: const BoxDecoration(
-                color: AppColors.usdtColor,
-                shape: BoxShape.circle,
-              ),
-              child: const Padding(
-                padding: EdgeInsets.all(8),
-                child: Icon(
-                  CryptoFontIcons.USDT,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-            );
-          } else if (coin.symbol == 'ETH') {
-            iconBgColor = AppColors.textWhite;
-            iconWidget = DecoratedBox(
-              decoration: const BoxDecoration(
-                color: AppColors.textWhite,
-                shape: BoxShape.circle,
-              ),
-              child: const Padding(
-                padding: EdgeInsets.all(8),
-                child: Icon(CryptoFontIcons.ETH, color: Colors.black, size: 24),
-              ),
-            );
-          } else if (coin.symbol == 'BTC') {
-            iconBgColor = AppColors.bitcoinColor;
-            iconWidget = DecoratedBox(
-              decoration: const BoxDecoration(
-                color: AppColors.bitcoinColor,
-                shape: BoxShape.circle,
-              ),
-              child: const Padding(
-                padding: EdgeInsets.all(8),
-                child: Icon(CryptoFontIcons.BTC, color: Colors.white, size: 24),
-              ),
-            );
-          }
+          // if (coin.symbol == 'USDT') {
+          //   iconBgColor = AppColors.usdtColor;
+          //   iconWidget = DecoratedBox(
+          //     decoration: const BoxDecoration(
+          //       color: AppColors.usdtColor,
+          //       shape: BoxShape.circle,
+          //     ),
+          //     child: const Padding(
+          //       padding: EdgeInsets.all(8),
+          //       child: Icon(
+          //         CryptoFontIcons.USDT,
+          //         color: Colors.white,
+          //         size: 24,
+          //       ),
+          //     ),
+          //   );
+          // } else if (coin.symbol == 'ETH') {
+          //   iconBgColor = AppColors.textWhite;
+          //   iconWidget = DecoratedBox(
+          //     decoration: const BoxDecoration(
+          //       color: AppColors.textWhite,
+          //       shape: BoxShape.circle,
+          //     ),
+          //     child: const Padding(
+          //       padding: EdgeInsets.all(8),
+          //       child: Icon(CryptoFontIcons.ETH, color: Colors.black, size: 24),
+          //     ),
+          //   );
+          // } else if (coin.symbol == 'BTC') {
+          //   iconBgColor = AppColors.bitcoinColor;
+          //   iconWidget = DecoratedBox(
+          //     decoration: const BoxDecoration(
+          //       color: AppColors.bitcoinColor,
+          //       shape: BoxShape.circle,
+          //     ),
+          //     child: const Padding(
+          //       padding: EdgeInsets.all(8),
+          //       child: Icon(CryptoFontIcons.BTC, color: Colors.white, size: 24),
+          //     ),
+          //   );
+          // }
 
           return AssetCard(
             symbol: coin.symbol,

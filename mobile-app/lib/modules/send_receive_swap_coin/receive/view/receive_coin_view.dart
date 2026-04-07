@@ -282,14 +282,15 @@ class ReceiveCoinView extends StatelessWidget {
         assetPath = 'assets/icons/bitcoin.svg';
     }
 
-    return Container(
-      width: 32,
-      height: 32,
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: backgroundColor.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
-      ),
+    return SizedBox.square(
+      // width: 32,
+      // height: 32,
+      // padding: const EdgeInsets.all(6),
+      // decoration: BoxDecoration(
+      //   color: backgroundColor.withValues(alpha: 0.15),
+      //   borderRadius: BorderRadius.circular(8),
+      // ),
+      dimension: 30,
       child: iconUrl.isNotEmpty
           ? ClipRRect(
               borderRadius: BorderRadius.circular(8),

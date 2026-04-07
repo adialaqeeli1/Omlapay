@@ -22,11 +22,16 @@ class CommonCoinIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isUSDCORUSDT = symbol == 'USDT' || symbol == 'USDC';
+    final bool showNetworkIcon = networkIconUrl != null && !isUSDCORUSDT;
+
     return CircleAvatar(
       backgroundColor: iconBackgroundColor,
       radius: radius,
       child: CachedNetworkImage(
-        imageUrl: networkIconUrl ?? Utility.getCryptoCoinIconFromSymbol(symbol),
+        imageUrl: showNetworkIcon
+            ? (networkIconUrl ?? Utility.getCryptoCoinIconFromSymbol(symbol))
+            : Utility.getCryptoCoinIconFromSymbol(symbol),
         progressIndicatorBuilder: (context, url, progress) =>
             CommonLoadingIndicator(value: progress.progress),
         errorWidget: (context, url, error) => fallbackIcon ?? Icon(Icons.image),
