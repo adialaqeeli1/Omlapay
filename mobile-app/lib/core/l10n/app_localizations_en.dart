@@ -103,15 +103,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get changePhoneStep1 =>
-      'Enter your new phone number (the one you want to use for your account).';
+      'Verify your current registered phone number with a verification code.';
 
   @override
   String get changePhoneStep2 =>
-      'We will send a verification code to that number.';
+      'Enter your new phone number (the one you want to use for your account).';
 
   @override
   String get changePhoneStep3 =>
-      'Enter the code to confirm and complete the update.';
+      'Verify your new phone number with a verification code.';
+
+  @override
+  String get changePhoneStep4 =>
+      'Verify your account with a passcode to confirm the changes.';
 
   @override
   String get changePhoneAfterStepsNote =>
@@ -1123,4 +1127,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get checkingUserStatus => 'Checking user...';
+
+  @override
+  String get kycEnterEmail => 'Enter Email';
+
+  @override
+  String get kycWhatsYourEmail => 'What\'s your email?';
+
+  @override
+  String get kycEmailSubtitle =>
+      'We\'ll send a verification code to confirm your email';
+
+  @override
+  String get kycEmailHint => 'Enter your email address';
+
+  @override
+  String get kycEmailRequiredError => 'Email address is required';
+
+  @override
+  String get kycEmailInvalidError => 'Please enter a valid email address';
+
+  @override
+  String get kycVerifyEmail => 'Verify Email';
+
+  @override
+  String get kycVerifyEmailTitle => 'Enter verification code';
+
+  @override
+  String kycVerifyEmailSubtitle(String email) {
+    return 'We sent a 6-digit code to $email';
+  }
+
+  @override
+  String get kycEmailVerified => 'Email verified successfully';
 }

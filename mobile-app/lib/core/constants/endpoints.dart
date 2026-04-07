@@ -34,11 +34,15 @@ class Endpoints {
   static String get forgotPasscodeReset => '$apiVersion/auth/forgot-passcode/reset';
   static String get changePasscode => '$apiVersion/user/settings/change-passcode';
 
-  /// Settings → change phone: send OTP to the new number, then verify.
-  static String get changePhoneRequest =>
-      '$apiVersion/user/settings/change-phone/request';
-  static String get changePhoneVerify =>
-      '$apiVersion/user/settings/change-phone/verify';
+  /// Settings → change phone (4-step flow).
+  static String get changePhoneStep1Request =>
+      '$apiVersion/user/settings/change-phone/step1-request';
+  static String get changePhoneStep2Verify =>
+      '$apiVersion/user/settings/change-phone/step2-verify';
+  static String get changePhoneStep3Request =>
+      '$apiVersion/user/settings/change-phone/step3-request';
+  static String get changePhoneStep4Verify =>
+      '$apiVersion/user/settings/change-phone/step4-verify';
 
   /// Settings → change email: send OTP to new address, then verify.
   static String get changeEmailRequest =>

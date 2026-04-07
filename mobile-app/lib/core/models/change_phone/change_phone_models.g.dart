@@ -20,6 +20,16 @@ Map<String, dynamic> _$ChangePhoneRequestDataToJson(
   'otp_expiry_seconds': instance.otpExpirySeconds,
 };
 
+_ChangePhoneStep2Data _$ChangePhoneStep2DataFromJson(
+  Map<String, dynamic> json,
+) => _ChangePhoneStep2Data(
+  changePhoneToken: json['change_phone_token'] as String,
+);
+
+Map<String, dynamic> _$ChangePhoneStep2DataToJson(
+  _ChangePhoneStep2Data instance,
+) => <String, dynamic>{'change_phone_token': instance.changePhoneToken};
+
 _ChangePhoneVerifyData _$ChangePhoneVerifyDataFromJson(
   Map<String, dynamic> json,
 ) => _ChangePhoneVerifyData(maskedMobile: json['masked_mobile'] as String);

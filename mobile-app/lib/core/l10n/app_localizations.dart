@@ -281,20 +281,26 @@ abstract class AppLocalizations {
   /// No description provided for @changePhoneStep1.
   ///
   /// In en, this message translates to:
-  /// **'Enter your new phone number (the one you want to use for your account).'**
+  /// **'Verify your current registered phone number with a verification code.'**
   String get changePhoneStep1;
 
   /// No description provided for @changePhoneStep2.
   ///
   /// In en, this message translates to:
-  /// **'We will send a verification code to that number.'**
+  /// **'Enter your new phone number (the one you want to use for your account).'**
   String get changePhoneStep2;
 
   /// No description provided for @changePhoneStep3.
   ///
   /// In en, this message translates to:
-  /// **'Enter the code to confirm and complete the update.'**
+  /// **'Verify your new phone number with a verification code.'**
   String get changePhoneStep3;
+
+  /// No description provided for @changePhoneStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your account with a passcode to confirm the changes.'**
+  String get changePhoneStep4;
 
   /// No description provided for @changePhoneAfterStepsNote.
   ///
@@ -2149,6 +2155,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Checking user...'**
   String get checkingUserStatus;
+
+  /// No description provided for @kycEnterEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Email'**
+  String get kycEnterEmail;
+
+  /// No description provided for @kycWhatsYourEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s your email?'**
+  String get kycWhatsYourEmail;
+
+  /// No description provided for @kycEmailSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll send a verification code to confirm your email'**
+  String get kycEmailSubtitle;
+
+  /// No description provided for @kycEmailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email address'**
+  String get kycEmailHint;
+
+  /// No description provided for @kycEmailRequiredError.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address is required'**
+  String get kycEmailRequiredError;
+
+  /// No description provided for @kycEmailInvalidError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email address'**
+  String get kycEmailInvalidError;
+
+  /// No description provided for @kycVerifyEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Email'**
+  String get kycVerifyEmail;
+
+  /// No description provided for @kycVerifyEmailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter verification code'**
+  String get kycVerifyEmailTitle;
+
+  /// No description provided for @kycVerifyEmailSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a 6-digit code to {email}'**
+  String kycVerifyEmailSubtitle(String email);
+
+  /// No description provided for @kycEmailVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verified successfully'**
+  String get kycEmailVerified;
 }
 
 class _AppLocalizationsDelegate

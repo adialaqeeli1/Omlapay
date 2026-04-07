@@ -30,9 +30,10 @@
     "changePhoneNumber": "تغيير رقم الهاتف",
     "stepsForChangingPhoneNumber": "خطوات تغيير رقم هاتفك",
     "changePhoneStepsDescription": "لتغيير رقم هاتفك المسجل، اتبع الخطوات التالية:",
-    "changePhoneStep1": "أدخل رقم الهاتف الجديد الذي تريد استخدامه في حسابك.",
-    "changePhoneStep2": "سنرسل رمز تحقق إلى ذلك الرقم.",
-    "changePhoneStep3": "أدخل الرمز للتأكيد وإتمام التحديث.",
+    "changePhoneStep1": "تحقق من رقم هاتفك المسجل الحالي باستخدام رمز تحقق.",
+    "changePhoneStep2": "أدخل رقم الهاتف الجديد الذي تريد استخدامه في حسابك.",
+    "changePhoneStep3": "تحقق من رقم هاتفك الجديد باستخدام رمز تحقق.",
+    "changePhoneStep4": "تحقق من حسابك باستخدام رمز المرور لتأكيد التغييرات.",
     "changePhoneAfterStepsNote": "بعد التحقق من الرمز، سيصبح رقم هاتف حسابك هو الرقم الجديد.",
     "changePhoneEnterNewSubtitle": "بعد أن تضغط متابعة، سنرسل رمز تحقق إلى هذا الرقم.",
     "enterNewPhoneNumber": "أدخل رقم الهاتف الجديد",
@@ -452,5 +453,22 @@
     "sendInvitationDialogMessage": "هذا الرقم لا يملك حسابًا على أوملاباي. لتجربة أفضل، أرسل له دعوة.",
     "sendInvitationDialogNote": "ملاحظة: يمكنك إتمام المعاملة على أي حال",
     "sendInvitationInviteButton": "دعوة",
-    "checkingUserStatus": "جارٍ التحقق من المستخدم..."
+    "checkingUserStatus": "جارٍ التحقق من المستخدم...",
+    "kycEnterEmail": "أدخل البريد الإلكتروني",
+    "kycWhatsYourEmail": "ما هو بريدك الإلكتروني؟",
+    "kycEmailSubtitle": "سنرسل رمز تحقق لتأكيد بريدك الإلكتروني",
+    "kycEmailHint": "أدخل عنوان بريدك الإلكتروني",
+    "kycEmailRequiredError": "عنوان البريد الإلكتروني مطلوب",
+    "kycEmailInvalidError": "يرجى إدخال عنوان بريد إلكتروني صالح",
+    "kycVerifyEmail": "تحقق من البريد الإلكتروني",
+    "kycVerifyEmailTitle": "أدخل رمز التحقق",
+    "kycVerifyEmailSubtitle": "لقد أرسلنا رمزًا مكونًا من 6 أرقام إلى {email}",
+    "@kycVerifyEmailSubtitle": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "kycEmailVerified": "تم التحقق من البريد الإلكتروني بنجاح"
 }

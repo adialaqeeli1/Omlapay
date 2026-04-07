@@ -279,6 +279,269 @@ as int,
 
 
 /// @nodoc
+mixin _$ChangePhoneStep2Data {
+
+@JsonKey(name: 'change_phone_token') String get changePhoneToken;
+/// Create a copy of ChangePhoneStep2Data
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ChangePhoneStep2DataCopyWith<ChangePhoneStep2Data> get copyWith => _$ChangePhoneStep2DataCopyWithImpl<ChangePhoneStep2Data>(this as ChangePhoneStep2Data, _$identity);
+
+  /// Serializes this ChangePhoneStep2Data to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChangePhoneStep2Data&&(identical(other.changePhoneToken, changePhoneToken) || other.changePhoneToken == changePhoneToken));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,changePhoneToken);
+
+@override
+String toString() {
+  return 'ChangePhoneStep2Data(changePhoneToken: $changePhoneToken)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ChangePhoneStep2DataCopyWith<$Res>  {
+  factory $ChangePhoneStep2DataCopyWith(ChangePhoneStep2Data value, $Res Function(ChangePhoneStep2Data) _then) = _$ChangePhoneStep2DataCopyWithImpl;
+@useResult
+$Res call({
+@JsonKey(name: 'change_phone_token') String changePhoneToken
+});
+
+
+
+
+}
+/// @nodoc
+class _$ChangePhoneStep2DataCopyWithImpl<$Res>
+    implements $ChangePhoneStep2DataCopyWith<$Res> {
+  _$ChangePhoneStep2DataCopyWithImpl(this._self, this._then);
+
+  final ChangePhoneStep2Data _self;
+  final $Res Function(ChangePhoneStep2Data) _then;
+
+/// Create a copy of ChangePhoneStep2Data
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? changePhoneToken = null,}) {
+  return _then(_self.copyWith(
+changePhoneToken: null == changePhoneToken ? _self.changePhoneToken : changePhoneToken // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [ChangePhoneStep2Data].
+extension ChangePhoneStep2DataPatterns on ChangePhoneStep2Data {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ChangePhoneStep2Data value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ChangePhoneStep2Data() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ChangePhoneStep2Data value)  $default,){
+final _that = this;
+switch (_that) {
+case _ChangePhoneStep2Data():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ChangePhoneStep2Data value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ChangePhoneStep2Data() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'change_phone_token')  String changePhoneToken)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ChangePhoneStep2Data() when $default != null:
+return $default(_that.changePhoneToken);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'change_phone_token')  String changePhoneToken)  $default,) {final _that = this;
+switch (_that) {
+case _ChangePhoneStep2Data():
+return $default(_that.changePhoneToken);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'change_phone_token')  String changePhoneToken)?  $default,) {final _that = this;
+switch (_that) {
+case _ChangePhoneStep2Data() when $default != null:
+return $default(_that.changePhoneToken);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _ChangePhoneStep2Data implements ChangePhoneStep2Data {
+  const _ChangePhoneStep2Data({@JsonKey(name: 'change_phone_token') required this.changePhoneToken});
+  factory _ChangePhoneStep2Data.fromJson(Map<String, dynamic> json) => _$ChangePhoneStep2DataFromJson(json);
+
+@override@JsonKey(name: 'change_phone_token') final  String changePhoneToken;
+
+/// Create a copy of ChangePhoneStep2Data
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ChangePhoneStep2DataCopyWith<_ChangePhoneStep2Data> get copyWith => __$ChangePhoneStep2DataCopyWithImpl<_ChangePhoneStep2Data>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$ChangePhoneStep2DataToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChangePhoneStep2Data&&(identical(other.changePhoneToken, changePhoneToken) || other.changePhoneToken == changePhoneToken));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,changePhoneToken);
+
+@override
+String toString() {
+  return 'ChangePhoneStep2Data(changePhoneToken: $changePhoneToken)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ChangePhoneStep2DataCopyWith<$Res> implements $ChangePhoneStep2DataCopyWith<$Res> {
+  factory _$ChangePhoneStep2DataCopyWith(_ChangePhoneStep2Data value, $Res Function(_ChangePhoneStep2Data) _then) = __$ChangePhoneStep2DataCopyWithImpl;
+@override @useResult
+$Res call({
+@JsonKey(name: 'change_phone_token') String changePhoneToken
+});
+
+
+
+
+}
+/// @nodoc
+class __$ChangePhoneStep2DataCopyWithImpl<$Res>
+    implements _$ChangePhoneStep2DataCopyWith<$Res> {
+  __$ChangePhoneStep2DataCopyWithImpl(this._self, this._then);
+
+  final _ChangePhoneStep2Data _self;
+  final $Res Function(_ChangePhoneStep2Data) _then;
+
+/// Create a copy of ChangePhoneStep2Data
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? changePhoneToken = null,}) {
+  return _then(_ChangePhoneStep2Data(
+changePhoneToken: null == changePhoneToken ? _self.changePhoneToken : changePhoneToken // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
 mixin _$ChangePhoneVerifyData {
 
 @JsonKey(name: 'masked_mobile') String get maskedMobile;

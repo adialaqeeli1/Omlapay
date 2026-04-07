@@ -34,6 +34,9 @@ import '../modules/dashboard/profile/about/terms_conditions_view.dart';
 import '../modules/dashboard/profile/help_center/help_center_view.dart';
 import '../modules/kyc_verification/view/kyc_verification_view.dart';
 import '../modules/kyc_verification/providers/kyc_verification_provider.dart';
+import '../modules/kyc_verification/providers/kyc_email_provider.dart';
+import '../modules/kyc_verification/views/kyc_email_entry_view.dart';
+import '../modules/kyc_verification/views/kyc_email_otp_view.dart';
 import '../modules/dashboard/profile/help_center/past_requests_view.dart';
 import '../modules/dashboard/profile/help_center/send_request_view.dart';
 import '../modules/dashboard/profile/profile_view.dart';
@@ -65,9 +68,11 @@ import '../modules/settings/view/change_email/change_email_verify_otp_view.dart'
 import '../modules/settings/view/change_phone_number/change_phone_enter_new_view.dart';
 import '../modules/settings/view/change_phone_number/change_phone_intro_view.dart';
 import '../modules/settings/view/change_phone_number/change_phone_success_view.dart';
+import '../modules/settings/view/change_phone_number/change_phone_verify_current_otp_view.dart';
 import '../modules/settings/view/change_phone_number/change_phone_verify_otp_view.dart';
 import '../modules/settings/providers/change_email_form_provider.dart';
 import '../modules/settings/providers/change_email_otp_provider.dart';
+import '../modules/settings/providers/change_phone_current_otp_provider.dart';
 import '../modules/settings/providers/change_phone_form_provider.dart';
 import '../modules/settings/providers/change_phone_otp_provider.dart';
 import '../modules/settings/services/wallet_address_service.dart';
@@ -349,12 +354,52 @@ class AppRouter {
         redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
+        path: Routes.changePhoneVerifyCurrent,
+        name: 'changePhoneVerifyCurrent',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final maskedMobile =
+              extra?[LoginProvider.extraMaskedMobileKey] as String? ?? '';
+          final otpExpiry =
+              extra?[LoginProvider.extraOtpExpirySecondsKey] as int?;
+          final l10n = AppLocalizations.of(context)!;
+          return ChangeNotifierProvider(
+            create: (_) => ChangePhoneCurrentOtpProvider(
+              maskedMobile: maskedMobile,
+              initialOtpExpirySeconds: otpExpiry,
+            ),
+            child: ChangePhoneVerifyCurrentOtpView(
+              appBarTitle: l10n.changePhoneNumber,
+              title: l10n.verifyCurrentPhoneNumber,
+              subtitle: l10n.changePhoneCurrentOtpSent(maskedMobile),
+              onVerified: (ctx) async {
+                final token = ctx
+                    .read<ChangePhoneCurrentOtpProvider>()
+                    .changePhoneToken;
+                if (token == null || token.isEmpty) return;
+                ctx.push(
+                  Routes.changePhoneEnterNew,
+                  extra: {
+                    LoginProvider.extraChangePhoneTokenKey: token,
+                  },
+                );
+              },
+            ),
+          );
+        },
+        redirect: AuthMiddleware.isAuthenticated,
+      ),
+      GoRoute(
         path: Routes.changePhoneEnterNew,
         name: 'changePhoneEnterNew',
         builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final changePhoneToken =
+              extra?[LoginProvider.extraChangePhoneTokenKey] as String? ?? '';
           final user = context.read<AuthProvider>().state.user!;
           return ChangeNotifierProvider(
             create: (_) => ChangePhoneFormProvider(
+              changePhoneToken: changePhoneToken,
               currentPhone: user.mobileNumber,
               accountCountryDialCode: user.countryCode.trim().isNotEmpty
                   ? user.countryCode.trim()
@@ -370,6 +415,8 @@ class AppRouter {
         name: 'changePhoneVerifyNew',
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
+          final changePhoneToken =
+              extra?[LoginProvider.extraChangePhoneTokenKey] as String? ?? '';
           final countryCode =
               extra?[LoginProvider.extraCountryCodeKey] as String? ?? '';
           final phoneNumber =
@@ -381,6 +428,7 @@ class AppRouter {
           final l10n = AppLocalizations.of(context)!;
           return ChangeNotifierProvider(
             create: (_) => ChangePhoneOtpProvider(
+              changePhoneToken: changePhoneToken,
               countryCode: countryCode,
               newMobileNumber: phoneNumber,
               maskedMobile: maskedMobile,
@@ -504,6 +552,25 @@ class AppRouter {
             entrySource: KycVerificationEntrySource.fromExtra(state.extra),
           ),
         ),
+      ),
+      GoRoute(
+        path: Routes.kycEmailEntry,
+        name: 'kycEmailEntry',
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => KycEmailProvider(),
+          child: const KycEmailEntryView(),
+        ),
+      ),
+      GoRoute(
+        path: Routes.kycEmailVerifyOtp,
+        name: 'kycEmailVerifyOtp',
+        builder: (context, state) {
+          final provider = state.extra as KycEmailProvider;
+          return ChangeNotifierProvider.value(
+            value: provider,
+            child: const KycEmailOtpView(),
+          );
+        },
       ),
       GoRoute(
         path: Routes.sendRequest,

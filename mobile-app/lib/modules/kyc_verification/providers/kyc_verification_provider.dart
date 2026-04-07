@@ -14,8 +14,58 @@ class KycVerificationProvider extends ChangeNotifier {
 
   bool get isSubmitting => _isSubmitting;
 
-  Future<({String message, bool shouldNavigateBack})> submit({
-    required FormGroup form,
+  /// Validates form and returns collected data, or null if invalid.
+  ({
+    String firstName,
+    String lastName,
+    String residentialCountry,
+    String documentCountry,
+    String city,
+    String address,
+    String dob,
+  })? validateForm(FormGroup form) {
+    form.markAllAsTouched();
+    if (!form.valid) return null;
+
+    final firstName =
+        (form.control('firstName').value ?? '').toString().trim();
+    final lastName =
+        (form.control('lastName').value ?? '').toString().trim();
+    final residentialCountry =
+        (form.control('residentialCountry').value ?? '')
+            .toString()
+            .trim()
+            .toUpperCase();
+    final documentCountry =
+        (form.control('documentCountry').value ?? '')
+            .toString()
+            .trim()
+            .toUpperCase();
+    final city = (form.control('city').value ?? '').toString().trim();
+    final address = (form.control('address').value ?? '').toString().trim();
+    final dob = _toIsoDate(
+      (form.control('dateOfBirth').value ?? '').toString(),
+    );
+
+    return (
+      firstName: firstName,
+      lastName: lastName,
+      residentialCountry: residentialCountry,
+      documentCountry: documentCountry,
+      city: city,
+      address: address,
+      dob: dob,
+    );
+  }
+
+  Future<({String message, bool shouldNavigateBack})> launchSumSub({
+    required String firstName,
+    required String lastName,
+    required String residentialCountry,
+    required String documentCountry,
+    required String city,
+    required String address,
+    required String dob,
     required Locale locale,
     required String startFailedFallback,
     required String successFallback,
@@ -25,34 +75,10 @@ class KycVerificationProvider extends ChangeNotifier {
       return (message: '', shouldNavigateBack: false);
     }
 
-    form.markAllAsTouched();
-    if (!form.valid) {
-      return (message: '', shouldNavigateBack: false);
-    }
-
     _isSubmitting = true;
     notifyListeners();
 
     try {
-      final firstName = (form.control('firstName').value ?? '')
-          .toString()
-          .trim();
-      final lastName = (form.control('lastName').value ?? '').toString().trim();
-      final residentialCountry =
-          (form.control('residentialCountry').value ?? '')
-              .toString()
-              .trim()
-              .toUpperCase();
-      final documentCountry = (form.control('documentCountry').value ?? '')
-          .toString()
-          .trim()
-          .toUpperCase();
-      final city = (form.control('city').value ?? '').toString().trim();
-      final address = (form.control('address').value ?? '').toString().trim();
-      final dob = _toIsoDate(
-        (form.control('dateOfBirth').value ?? '').toString(),
-      );
-
       final requestPayload = <String, dynamic>{
         'firstName': firstName,
         'lastName': lastName,
@@ -64,7 +90,7 @@ class KycVerificationProvider extends ChangeNotifier {
       };
 
       debugPrint(
-        'KycVerificationProvider.submit request: ${jsonEncode(requestPayload)}',
+        'KycVerificationProvider.launchSumSub request: ${jsonEncode(requestPayload)}',
       );
 
       final response = await _fetchKycAccessToken(

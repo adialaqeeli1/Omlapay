@@ -125,6 +125,8 @@ class ChangePhoneEnterNewView extends StatelessWidget {
           context.push(
             Routes.changePhoneVerifyNew,
             extra: {
+              LoginProvider.extraChangePhoneTokenKey:
+                  provider.changePhoneToken,
               LoginProvider.extraCountryCodeKey: countryCode,
               LoginProvider.extraPhoneNumberKey: provider.digitsOnly,
               LoginProvider.extraMaskedMobileKey: result.maskedMobile,

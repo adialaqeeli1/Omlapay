@@ -35,7 +35,10 @@ class LoginProvider extends ChangeNotifier {
   /// Settings → change phone verify route: server-masked destination (e.g. +91 ******6660).
   static const String extraMaskedMobileKey = 'maskedMobile';
 
-  /// OTP resend window from `change-phone/request` (`otp_expiry_seconds`).
+  /// Token from step2-verify used for step3/step4.
+  static const String extraChangePhoneTokenKey = 'changePhoneToken';
+
+  /// OTP resend window (`otp_expiry_seconds`).
   static const String extraOtpExpirySecondsKey = 'otpExpirySeconds';
   static const String extraVerificationPurposeKey = 'verificationPurpose';
   static const String purposeChangePasscode = 'change_passcode';

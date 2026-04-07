@@ -8,10 +8,14 @@ class ChangePhoneFormProvider extends ChangeNotifier {
   ChangePhoneFormProvider({
     String? currentPhone,
     String? accountCountryDialCode,
+    required this.changePhoneToken,
   }) : _currentPhoneDigits = _sanitizeDigits(currentPhone ?? ''),
        _accountCountryDialCode = _normalizeDialCode(accountCountryDialCode) {
     _initSelectedCountryFromDevice();
   }
+
+  /// Token obtained from step 2 (verify current phone).
+  final String changePhoneToken;
 
   /// Signed-in user's dial code (e.g. `+966`) for "same number" validation only.
   final String? _accountCountryDialCode;
@@ -84,7 +88,8 @@ class ChangePhoneFormProvider extends ChangeNotifier {
     _isSubmitting = true;
     notifyListeners();
     try {
-      return await ChangePhoneService.requestChange(
+      return await ChangePhoneService.step3Request(
+        changePhoneToken: changePhoneToken,
         countryCode: currentPhoneCode,
         newMobileNumber: digitsOnly,
       );

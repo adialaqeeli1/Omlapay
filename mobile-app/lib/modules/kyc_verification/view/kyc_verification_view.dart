@@ -7,6 +7,7 @@ import 'package:reactive_forms/reactive_forms.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../routes/app_router.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../providers/auth_provider.dart';
@@ -138,17 +139,44 @@ class KycVerificationView extends StatelessWidget {
                         onPressed: form.valid
                             ? () async {
                                 FocusScope.of(context).unfocus();
+                                final kycProvider =
+                                    context.read<KycVerificationProvider>();
+                                final formData =
+                                    kycProvider.validateForm(_form);
+                                if (formData == null) return;
+
+                                // Push email entry; wait for verified result
+                                final emailVerified =
+                                    await context.push<bool>(
+                                  Routes.kycEmailEntry,
+                                );
+                                if (!context.mounted ||
+                                    emailVerified != true) {
+                                  return;
+                                }
+
+                                // Email verified — launch SumSub
                                 try {
-                                  final result = await context
-                                      .read<KycVerificationProvider>()
-                                      .submit(
-                                        form: _form,
-                                        locale: Localizations.localeOf(context),
-                                        startFailedFallback: l10n.requestFailed,
-                                        successFallback: l10n.kycStartedSuccess,
-                                        authProvider:
-                                            context.read<AuthProvider>(),
-                                      );
+                                  final result =
+                                      await kycProvider.launchSumSub(
+                                    firstName: formData.firstName,
+                                    lastName: formData.lastName,
+                                    residentialCountry:
+                                        formData.residentialCountry,
+                                    documentCountry:
+                                        formData.documentCountry,
+                                    city: formData.city,
+                                    address: formData.address,
+                                    dob: formData.dob,
+                                    locale:
+                                        Localizations.localeOf(context),
+                                    startFailedFallback:
+                                        l10n.requestFailed,
+                                    successFallback:
+                                        l10n.kycStartedSuccess,
+                                    authProvider:
+                                        context.read<AuthProvider>(),
+                                  );
                                   if (!context.mounted) return;
                                   if (result.message.isNotEmpty) {
                                     SnackbarHelper.showSuccess(
@@ -157,12 +185,12 @@ class KycVerificationView extends StatelessWidget {
                                     );
                                   }
                                   if (result.shouldNavigateBack) {
-                                    context.pop();
+                                    context.go(
+                                      entrySource.sourceRoute,
+                                    );
                                   }
                                 } catch (e) {
-                                  if (!context.mounted) {
-                                    return;
-                                  }
+                                  if (!context.mounted) return;
                                   SnackbarHelper.showError(
                                     context,
                                     e.toString(),
