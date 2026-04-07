@@ -3,6 +3,13 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'wallet_model.freezed.dart';
 part 'wallet_model.g.dart';
 
+double _parseDouble(dynamic value) {
+  if (value == null) return 0;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? 0;
+  return 0;
+}
+
 @freezed
 abstract class WalletNetworkModel with _$WalletNetworkModel {
   const factory WalletNetworkModel({
@@ -26,7 +33,8 @@ abstract class WalletCoinModel with _$WalletCoinModel {
     @Default('') String network,
     @Default('') String networkDisplayName,
     @Default('') String networkIconUrl,
-    @JsonKey(name: 'currentBalance') @Default(0) double currentBalance,
+    @JsonKey(name: 'currentBalance', fromJson: _parseDouble) @Default(0) double currentBalance,
+    @JsonKey(name: 'currentBalanceUsd', fromJson: _parseDouble) @Default(0) double currentBalanceUsd,
   }) = _WalletCoinModel;
 
   factory WalletCoinModel.fromJson(Map<String, dynamic> json) =>
