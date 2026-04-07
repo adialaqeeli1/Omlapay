@@ -5,26 +5,26 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:omlapay_mobile_app/core/constants/constants.dart';
 
-import '../../../core/extentions/context_extensions.dart';
+import '../../../../core/extentions/context_extensions.dart';
 
-import '../../../core/l10n/app_localizations.dart';
-import '../../../core/models/coin_model/coin_model.dart';
-import '../../../core/models/coin_model/coin_model_quote_display.dart';
-import '../../../core/theme/theme.dart';
-import '../../../providers/auth_provider.dart';
-import '../../../routes/app_router.dart';
-import '../../../widgets/common_grid_bg_wrapper.dart';
-import '../../../widgets/common_icon_button.dart';
-import 'package:crypto_font_icons/crypto_font_icons.dart';
+import '../../../../core/l10n/app_localizations.dart';
+import '../../../../core/models/coin_model/coin_model.dart';
+import '../../../../core/models/coin_model/coin_model_quote_display.dart';
+import '../../../../core/theme/theme.dart';
+import '../../../../providers/auth_provider.dart';
+import '../../../../routes/app_router.dart';
+import '../../../../widgets/common_grid_bg_wrapper.dart';
+import '../../../../widgets/common_icon_button.dart';
 import 'package:omlapay_mobile_app/widgets/asset_card.dart';
 import 'package:omlapay_mobile_app/widgets/no_transactions_found.dart';
 import 'package:provider/provider.dart';
 
-import '../../../widgets/receive_send_swap_actions.dart';
+import '../../../../widgets/receive_send_swap_actions.dart';
 import '../../../../providers/coins_prices_provider.dart';
 import '../../../../providers/global_provider.dart';
 import '../../../../providers/wallets_provider.dart';
-import 'widgets/currency_selection_dialog.dart';
+import '../providers/home_provider.dart';
+import '../widgets/currency_selection_dialog.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -315,7 +315,7 @@ class HomeView extends StatelessWidget {
         child: DropdownButtonHideUnderline(
           child: DropdownButton2<String>(
             valueListenable: ValueNotifier(selectedCurrency),
-            onChanged: context.watch<GlobalProvider>().isBalanceLoading
+            onChanged: context.watch<HomeProvider>().isLoading
                 ? null
                 : onCurrencyChanged,
             items: AppConstants.supportedCurrencies
@@ -425,7 +425,7 @@ class HomeView extends StatelessWidget {
               crossAxisAlignment: .end,
               spacing: 4,
               children: [
-                if (context.watch<GlobalProvider>().isBalanceLoading)
+                if (context.watch<HomeProvider>().isLoading)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8.0, right: 8.0),
                     child: SizedBox(
@@ -442,7 +442,7 @@ class HomeView extends StatelessWidget {
                 else
                   Text(
                     "${l10n.currencySymbol(selectedCurrency.toLowerCase())} ${(isAuthenticated && context.watch<GlobalProvider>().isBalanceVisible)
-                        ? '0'
+                        ? (selectedCurrency.toLowerCase() == 'sar' ? (context.watch<HomeProvider>().homeData?.totalBalanceSar ?? '0.00') : (context.watch<HomeProvider>().homeData?.totalBalance ?? '0.00'))
                         : isAuthenticated
                         ? '****'
                         : 'X'}",
@@ -456,7 +456,7 @@ class HomeView extends StatelessWidget {
                 InkWell(
                   onTap:
                       (isAuthenticated &&
-                          !context.watch<GlobalProvider>().isBalanceLoading)
+                          !context.watch<HomeProvider>().isLoading)
                       ? () {
                           showDialog(
                             context: context,
@@ -517,7 +517,7 @@ class HomeView extends StatelessWidget {
         child: IconButton(
           onPressed: () {
             if (isAuthenticated) {
-              if (context.read<GlobalProvider>().isBalanceLoading) return;
+              if (context.read<HomeProvider>().isLoading) return;
               context.read<GlobalProvider>().toggleBalanceVisibility();
               return;
             } else {

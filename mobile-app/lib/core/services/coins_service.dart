@@ -1,9 +1,9 @@
 import 'package:intl/intl.dart';
 
-import '../../../../core/constants/endpoints.dart';
-import '../../../../core/models/coin_model/coin_model.dart';
-import '../../../../core/services/api_helper.dart';
-import '../../../../core/utils/app_exception.dart';
+import '../constants/endpoints.dart';
+import '../models/coin_model/coin_model.dart';
+import 'api_helper.dart';
+import '../utils/app_exception.dart';
 
 class CoinsService {
   static final RegExp _currencyRegex = RegExp(r'^[a-z]{3}$');

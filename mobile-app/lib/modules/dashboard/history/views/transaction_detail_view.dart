@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../core/extentions/context_extensions.dart';
-import '../../../core/models/transaction_model/transaction_model.dart';
-import '../../../core/theme/theme.dart';
-import '../../../providers/global_provider.dart';
-import '../../../widgets/common_back_button.dart';
+import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/models/transaction_model/transaction_model.dart';
+import '../../../../core/theme/theme.dart';
+import '../../../../providers/global_provider.dart';
+import '../../../../widgets/common_back_button.dart';
 import 'package:provider/provider.dart';
-import '../../../widgets/theme_aware_icon.dart';
-import 'widgets/save_as_bottom_sheet.dart';
+import '../../../../widgets/theme_aware_icon.dart';
+import '../widgets/save_as_bottom_sheet.dart';
 
 class TransactionDetailView extends StatefulWidget {
   const TransactionDetailView({super.key, required this.transaction});

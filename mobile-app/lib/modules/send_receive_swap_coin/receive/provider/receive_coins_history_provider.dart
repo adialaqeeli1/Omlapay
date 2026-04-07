@@ -13,7 +13,7 @@ class ReceiveCoinsHistoryProvider extends ChangeNotifier {
   final AuthProvider authProvider;
   final CoinsPricesProvider _coinsPrices;
 
-  List<TransactionModel> _allTransactions = [];
+  final List<TransactionModel> _allTransactions = [];
   bool _isLoading = false;
   bool _disposed = false;
   bool get isLoading => _isLoading;

@@ -9,9 +9,6 @@ class GlobalProvider extends ChangeNotifier {
   bool _isBalanceVisible = false;
   bool get isBalanceVisible => _isBalanceVisible;
 
-  bool _isBalanceLoading = false;
-  bool get isBalanceLoading => _isBalanceLoading;
-
   bool _hasFetchedCurrency = false;
 
   void onAuthChanged(bool isAuthenticated) {
@@ -61,21 +58,8 @@ class GlobalProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> toggleBalanceVisibility() async {
-    if (!_isBalanceVisible) {
-      // Showing balance: Simulate loading
-      _isBalanceLoading = true;
-      notifyListeners();
-
-      await Future.delayed(const Duration(seconds: 2));
-
-      _isBalanceVisible = true;
-      _isBalanceLoading = false;
-      notifyListeners();
-    } else {
-      // Hiding balance: Instant
-      _isBalanceVisible = false;
-      notifyListeners();
-    }
+  void toggleBalanceVisibility() {
+    _isBalanceVisible = !_isBalanceVisible;
+    notifyListeners();
   }
 }

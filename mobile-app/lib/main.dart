@@ -13,8 +13,8 @@ import 'providers/coins_prices_provider.dart';
 import 'providers/global_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/wallets_provider.dart';
-import 'modules/dashboard/home/services/coins_prices_stream_service.dart';
-import 'modules/dashboard/home/services/coins_service.dart';
+import 'core/services/coins_prices_stream_service.dart';
+import 'core/services/coins_service.dart';
 import 'core/l10n/app_localizations.dart';
 import 'routes/app_router.dart';
 import 'widgets/offline_view.dart';
@@ -49,18 +49,21 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
         ChangeNotifierProxyProvider<AuthProvider, LocaleProvider>(
           create: (_) => LocaleProvider(),
-          update: (_, auth, locale) => (locale ?? LocaleProvider())
-            ..onAuthChanged(auth.state.isAuthenticated),
+          update: (_, auth, locale) =>
+              (locale ?? LocaleProvider())
+                ..onAuthChanged(auth.state.isAuthenticated),
         ),
         ChangeNotifierProxyProvider<AuthProvider, ThemeProvider>(
           create: (_) => ThemeProvider(),
-          update: (_, auth, theme) => (theme ?? ThemeProvider())
-            ..onAuthChanged(auth.state.isAuthenticated),
+          update: (_, auth, theme) =>
+              (theme ?? ThemeProvider())
+                ..onAuthChanged(auth.state.isAuthenticated),
         ),
         ChangeNotifierProxyProvider<AuthProvider, GlobalProvider>(
           create: (_) => GlobalProvider(),
-          update: (_, auth, global) => (global ?? GlobalProvider())
-            ..onAuthChanged(auth.state.isAuthenticated),
+          update: (_, auth, global) =>
+              (global ?? GlobalProvider())
+                ..onAuthChanged(auth.state.isAuthenticated),
         ),
         ChangeNotifierProvider<CoinsPricesProvider>(
           create: (context) {
@@ -73,9 +76,7 @@ class MyApp extends StatelessWidget {
           },
         ),
         ChangeNotifierProvider<WalletsProvider>(
-          create: (context) => WalletsProvider(
-            context.read<GlobalProvider>(),
-          ),
+          create: (context) => WalletsProvider(context.read<GlobalProvider>()),
         ),
         ChangeNotifierProvider<NotificationProvider>(
           create: (_) => NotificationProvider(),

@@ -85,7 +85,7 @@ class ReceiveCoinsHistoryView extends StatelessWidget {
               ),
             Expanded(
               child: TabBarView(
-                physics: const NeverScrollableScrollPhysics(),
+                // physics: const NeverScrollableScrollPhysics(),
                 children: tabs
                     .map((e) => _TransactionList(coinSymbol: e))
                     .toList(),
@@ -251,10 +251,7 @@ class _TransactionItem extends StatelessWidget {
           'yyyy-MM-dd HH:mm:ss',
           AppLocalizations.of(context)!.localeName,
         ).format(transaction.date),
-        style: TextStyle(
-          color: colorScheme.onSurfaceVariant,
-          fontSize: 12,
-        ),
+        style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
       ),
       trailing: Text(
         '+${double.parse(transaction.amount).toStringAsFixed(2)} ${transaction.coinSymbol}',
