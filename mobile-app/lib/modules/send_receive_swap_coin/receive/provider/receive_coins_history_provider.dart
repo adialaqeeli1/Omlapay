@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../../../core/mock_data/mock_data.dart';
 import '../../../../core/models/transaction_model/transaction_model.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../../providers/coins_prices_provider.dart';
 
 class ReceiveCoinsHistoryProvider extends ChangeNotifier {
-  ReceiveCoinsHistoryProvider(this.authProvider) {
+  ReceiveCoinsHistoryProvider(this.authProvider, this._coinsPrices) {
     authProvider.addListener(_onAuthChanged);
+    _coinsPrices.addListener(_onCoinsUpdated);
     _loadData();
   }
 
   final AuthProvider authProvider;
+  final CoinsPricesProvider _coinsPrices;
 
   List<TransactionModel> _allTransactions = [];
   bool _isLoading = false;
@@ -20,6 +22,11 @@ class ReceiveCoinsHistoryProvider extends ChangeNotifier {
   bool get showVerificationWarning => !isVerified;
 
   void _onAuthChanged() {
+    if (_disposed) return;
+    notifyListeners();
+  }
+
+  void _onCoinsUpdated() {
     if (_disposed) return;
     notifyListeners();
   }
@@ -35,10 +42,11 @@ class ReceiveCoinsHistoryProvider extends ChangeNotifier {
     notifyListeners();
 
     // Simulate loading data
-    await Future.delayed(const Duration(seconds: 2));
+    // await Future.delayed(const Duration(seconds: 2));
     if (_disposed) return;
 
-    _allTransactions = MockData.getTransactions();
+    //Todo: Handle API for transactions
+    // _allTransactions = MockData.getTransactions();
     _isLoading = false;
     notifyListeners();
   }
@@ -47,11 +55,18 @@ class ReceiveCoinsHistoryProvider extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     authProvider.removeListener(_onAuthChanged);
+    _coinsPrices.removeListener(_onCoinsUpdated);
     super.dispose();
   }
 
   List<String> get uniqueCoinSymbols {
-    final allSymbols = MockData.coins.map((e) => e.symbol).toList();
+    final seen = <String>{};
+    final allSymbols = <String>[];
+    for (final c in _coinsPrices.coins) {
+      if (seen.add(c.symbol.toUpperCase())) {
+        allSymbols.add(c.symbol);
+      }
+    }
     return ['All', ...allSymbols];
   }
 

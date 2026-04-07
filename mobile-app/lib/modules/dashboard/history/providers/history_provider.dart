@@ -29,8 +29,7 @@ class HistoryProvider extends ChangeNotifier {
   List<TransactionModel> get _filteredTransactions {
     var result = _transactions;
 
-    if (_selectedCoinFilter != null &&
-        _selectedCoinFilter!.trim().isNotEmpty) {
+    if (_selectedCoinFilter != null && _selectedCoinFilter!.trim().isNotEmpty) {
       result = result
           .where(
             (tx) =>
@@ -74,7 +73,7 @@ class HistoryProvider extends ChangeNotifier {
   HistoryProvider(this._coinsPrices) {
     developer.log('HistoryProvider: Initializing with dummy data');
     _coinsPrices.addListener(_onStreamedCoinsUpdated);
-    _loadDummyData();
+    // _loadDummyData();
   }
 
   void _onStreamedCoinsUpdated() {
@@ -147,7 +146,7 @@ class HistoryProvider extends ChangeNotifier {
   // TODO: Implement refresh when API is ready
   Future<void> refresh() async {
     developer.log('HistoryProvider: Refreshing transactions');
-    _loadDummyData();
+    // _loadDummyData();
   }
 
   void setCoinFilter(String? coinSymbol) {

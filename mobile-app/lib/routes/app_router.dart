@@ -579,8 +579,10 @@ class AppRouter {
         path: Routes.receiveCoinsHistory,
         name: 'receiveCoinsHistory',
         builder: (context, state) => ChangeNotifierProvider(
-          create: (_) =>
-              ReceiveCoinsHistoryProvider(context.read<AuthProvider>()),
+          create: (_) => ReceiveCoinsHistoryProvider(
+                context.read<AuthProvider>(),
+                context.read<CoinsPricesProvider>(),
+              ),
           child: const ReceiveCoinsHistoryView(),
         ),
         redirect: AuthMiddleware.isAuthenticated,
