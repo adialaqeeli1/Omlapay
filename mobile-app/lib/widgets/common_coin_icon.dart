@@ -11,12 +11,14 @@ class CommonCoinIcon extends StatelessWidget {
     this.iconBackgroundColor,
     required this.symbol,
     this.radius,
+    this.networkIconUrl,
   });
 
   final Widget? fallbackIcon;
   final Color? iconBackgroundColor;
   final String symbol;
   final double? radius;
+  final String? networkIconUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,7 @@ class CommonCoinIcon extends StatelessWidget {
       backgroundColor: iconBackgroundColor,
       radius: radius,
       child: CachedNetworkImage(
-        imageUrl: Utility.getCryptoCoinIconFromSymbol(symbol),
+        imageUrl: networkIconUrl ?? Utility.getCryptoCoinIconFromSymbol(symbol),
         progressIndicatorBuilder: (context, url, progress) =>
             CommonLoadingIndicator(value: progress.progress),
         errorWidget: (context, url, error) => fallbackIcon ?? Icon(Icons.image),

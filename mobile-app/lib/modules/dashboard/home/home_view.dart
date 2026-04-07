@@ -290,6 +290,7 @@ class HomeView extends StatelessWidget {
             symbolLabel: coin.localizedCoinTicker(context),
             name: coin.name.isEmpty ? coin.symbol : coin.name,
             amount: walletsProvider.balanceForCoin(coin.symbol),
+            networkIconUrl: coin.networkIconUrl,
             currentPrice:
                 '${coin.valueInUsd} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',
             iconBackgroundColor: iconBgColor,
