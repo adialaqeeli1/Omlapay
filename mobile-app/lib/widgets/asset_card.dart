@@ -17,6 +17,7 @@ class AssetCard extends StatelessWidget {
     this.icon,
     this.iconBackgroundColor,
     required this.onTap,
+    this.networkIconUrl,
   });
 
   final String symbol;
@@ -27,6 +28,7 @@ class AssetCard extends StatelessWidget {
   final Widget? icon;
   final Color? iconBackgroundColor;
   final VoidCallback onTap;
+  final String? networkIconUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +70,7 @@ class AssetCard extends StatelessWidget {
                     symbol: symbol,
                     iconBackgroundColor: iconBackgroundColor,
                     fallbackIcon: icon,
+                    networkIconUrl: networkIconUrl,
                   ),
                   Expanded(
                     child: Column(
