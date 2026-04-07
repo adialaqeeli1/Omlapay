@@ -7,7 +7,7 @@ class TransactionDetailsProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   TransactionDetailsProvider({required this.transaction}) {
-    _simulateLoading();
+    // _simulateLoading();
   }
 
   Future<void> _simulateLoading() async {
