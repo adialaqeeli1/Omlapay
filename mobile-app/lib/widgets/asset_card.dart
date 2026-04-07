@@ -13,7 +13,7 @@ class AssetCard extends StatelessWidget {
     this.symbolLabel,
     required this.name,
     required this.amount,
-    required this.valueInUsd,
+    required this.currentPrice,
     this.icon,
     this.iconBackgroundColor,
     required this.onTap,
@@ -23,7 +23,7 @@ class AssetCard extends StatelessWidget {
   final String? symbolLabel;
   final String name;
   final String amount;
-  final String valueInUsd;
+  final String currentPrice;
   final Widget? icon;
   final Color? iconBackgroundColor;
   final VoidCallback onTap;
@@ -121,7 +121,7 @@ class AssetCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      valueInUsd,
+                      currentPrice,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: context.textTheme.bodyMedium?.copyWith(

@@ -33,8 +33,12 @@ abstract class WalletCoinModel with _$WalletCoinModel {
     @Default('') String network,
     @Default('') String networkDisplayName,
     @Default('') String networkIconUrl,
-    @JsonKey(name: 'currentBalance', fromJson: _parseDouble) @Default(0) double currentBalance,
-    @JsonKey(name: 'currentBalanceUsd', fromJson: _parseDouble) @Default(0) double currentBalanceUsd,
+    @JsonKey(name: 'currentBalance', fromJson: _parseDouble)
+    @Default(0)
+    double currentBalance,
+    @JsonKey(name: 'currentBalanceSar', fromJson: _parseDouble)
+    @Default(0)
+    double currentBalanceSar,
   }) = _WalletCoinModel;
 
   factory WalletCoinModel.fromJson(Map<String, dynamic> json) =>
