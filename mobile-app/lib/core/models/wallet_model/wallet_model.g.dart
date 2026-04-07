@@ -35,7 +35,12 @@ _WalletCoinModel _$WalletCoinModelFromJson(Map<String, dynamic> json) =>
       network: json['network'] as String? ?? '',
       networkDisplayName: json['networkDisplayName'] as String? ?? '',
       networkIconUrl: json['networkIconUrl'] as String? ?? '',
-      currentBalance: (json['currentBalance'] as num?)?.toDouble() ?? 0,
+      currentBalance: json['currentBalance'] == null
+          ? 0
+          : _parseDouble(json['currentBalance']),
+      currentBalanceUsd: json['currentBalanceUsd'] == null
+          ? 0
+          : _parseDouble(json['currentBalanceUsd']),
     );
 
 Map<String, dynamic> _$WalletCoinModelToJson(_WalletCoinModel instance) =>
@@ -48,4 +53,5 @@ Map<String, dynamic> _$WalletCoinModelToJson(_WalletCoinModel instance) =>
       'networkDisplayName': instance.networkDisplayName,
       'networkIconUrl': instance.networkIconUrl,
       'currentBalance': instance.currentBalance,
+      'currentBalanceUsd': instance.currentBalanceUsd,
     };
