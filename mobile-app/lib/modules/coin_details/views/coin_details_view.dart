@@ -65,7 +65,11 @@ class CoinDetailsView extends StatelessWidget {
           mainAxisAlignment: .center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            CommonCoinIcon(symbol: headerCoin?.symbol ?? '', radius: 16),
+            CommonCoinIcon(
+              symbol: headerCoin?.symbol ?? '',
+              radius: 16,
+              networkIconUrl: headerCoin?.networkIconUrl,
+            ),
             Flexible(
               child: Text(
                 headerCoin?.localizedCoinPrimaryName(context) ?? '',
