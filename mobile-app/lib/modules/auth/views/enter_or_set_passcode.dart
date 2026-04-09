@@ -877,22 +877,7 @@ class _KeypadGrid extends StatelessWidget {
               textColor: buttonTextColor,
             ),
             const SizedBox(width: 18),
-            SizedBox(
-              width: 64,
-              height: 64,
-              child: Center(
-                child: GestureDetector(
-                  onTap: isEnabled ? onBackspacePressed : null,
-                  child: SvgPicture.asset(
-                    context.isDarkMode
-                        ? 'assets/icons/clear-number-icon-dark.svg'
-                        : 'assets/icons/clear-number-icon-light.svg',
-                    width: 28,
-                    height: 24,
-                  ),
-                ),
-              ),
-            ),
+            _BackspaceButton(onPressed: isEnabled ? onBackspacePressed : null),
           ],
         ),
       ],
@@ -900,7 +885,7 @@ class _KeypadGrid extends StatelessWidget {
   }
 }
 
-class _KeypadButton extends StatelessWidget {
+class _KeypadButton extends StatefulWidget {
   const _KeypadButton({
     required this.label,
     required this.onPressed,
@@ -914,23 +899,158 @@ class _KeypadButton extends StatelessWidget {
   final Color textColor;
 
   @override
+  State<_KeypadButton> createState() => _KeypadButtonState();
+}
+
+class _KeypadButtonState extends State<_KeypadButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+      reverseDuration: const Duration(milliseconds: 80),
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.85,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTapDown(TapDownDetails _) {
+    if (widget.onPressed != null) {
+      _controller.forward();
+    }
+  }
+
+  void _handleTapUp(TapUpDetails _) {
+    if (widget.onPressed != null) {
+      _controller.reverse();
+      widget.onPressed!();
+    }
+  }
+
+  void _handleTapCancel() {
+    _controller.reverse();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onPressed,
-      child: Opacity(
-        opacity: onPressed == null ? 0.5 : 1,
-        child: Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(shape: BoxShape.circle, color: buttonColor),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: context.textTheme.titleLarge?.copyWith(
-              fontSize: 44 / 1.35,
-              fontWeight: FontWeight.w500,
-              color: textColor,
-              height: 1.0,
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
+      child: AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) =>
+            Transform.scale(scale: _scaleAnimation.value, child: child),
+        child: Opacity(
+          opacity: widget.onPressed == null ? 0.5 : 1,
+          child: Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: widget.buttonColor,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              widget.label,
+              style: context.textTheme.titleLarge?.copyWith(
+                fontSize: 44 / 1.35,
+                fontWeight: FontWeight.w500,
+                color: widget.textColor,
+                height: 1.0,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BackspaceButton extends StatefulWidget {
+  const _BackspaceButton({required this.onPressed});
+
+  final VoidCallback? onPressed;
+
+  @override
+  State<_BackspaceButton> createState() => _BackspaceButtonState();
+}
+
+class _BackspaceButtonState extends State<_BackspaceButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+      reverseDuration: const Duration(milliseconds: 80),
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.85,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTapDown(TapDownDetails _) {
+    if (widget.onPressed != null) {
+      _controller.forward();
+    }
+  }
+
+  void _handleTapUp(TapUpDetails _) {
+    if (widget.onPressed != null) {
+      _controller.reverse();
+      widget.onPressed!();
+    }
+  }
+
+  void _handleTapCancel() {
+    _controller.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 64,
+      height: 64,
+      child: Center(
+        child: GestureDetector(
+          onTapDown: _handleTapDown,
+          onTapUp: _handleTapUp,
+          onTapCancel: _handleTapCancel,
+          child: AnimatedBuilder(
+            animation: _scaleAnimation,
+            builder: (context, child) =>
+                Transform.scale(scale: _scaleAnimation.value, child: child),
+            child: SvgPicture.asset(
+              context.isDarkMode
+                  ? 'assets/icons/clear-number-icon-dark.svg'
+                  : 'assets/icons/clear-number-icon-light.svg',
+              width: 28,
+              height: 24,
             ),
           ),
         ),
