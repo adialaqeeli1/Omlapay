@@ -43,7 +43,9 @@ abstract class NotificationModel with _$NotificationModel {
   const factory NotificationModel({
     required String id,
     required String title,
+    @JsonKey(name: 'title_ar') String? titleAr,
     required String message,
+    @JsonKey(name: 'message_ar') String? messageAr,
     @Default(NotificationType.system) NotificationType type,
     @Default(false) bool isRead,
     required DateTime createdAt,

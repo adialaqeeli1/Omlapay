@@ -46,7 +46,9 @@ _NotificationModel _$NotificationModelFromJson(Map<String, dynamic> json) =>
     _NotificationModel(
       id: json['id'] as String,
       title: json['title'] as String,
+      titleAr: json['title_ar'] as String?,
       message: json['message'] as String,
+      messageAr: json['message_ar'] as String?,
       type:
           $enumDecodeNullable(_$NotificationTypeEnumMap, json['type']) ??
           NotificationType.system,
@@ -60,7 +62,9 @@ Map<String, dynamic> _$NotificationModelToJson(_NotificationModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'title': instance.title,
+      'title_ar': instance.titleAr,
       'message': instance.message,
+      'message_ar': instance.messageAr,
       'type': _$NotificationTypeEnumMap[instance.type]!,
       'isRead': instance.isRead,
       'createdAt': instance.createdAt.toIso8601String(),
