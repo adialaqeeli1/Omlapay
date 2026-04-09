@@ -223,6 +223,8 @@ class _NotificationTile extends StatelessWidget {
     final readOpacity = item.isRead ? 0.5 : 1.0;
     final iconInfo = _iconForType(item.type);
 
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -248,7 +250,7 @@ class _NotificationTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item.title,
+                      isAr ? (item.titleAr ?? item.title) : item.title,
                       style: TextStyle(
                         color: textColor,
                         fontWeight: item.isRead
@@ -259,7 +261,7 @@ class _NotificationTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      item.message,
+                      isAr ? (item.messageAr ?? item.message) : item.message,
                       style: TextStyle(
                         color: subColor,
                         fontWeight: item.isRead
