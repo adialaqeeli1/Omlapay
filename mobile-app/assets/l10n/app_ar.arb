@@ -307,7 +307,7 @@
     "passcodesMismatchTryAgain": "رموز المرور غير متطابقة. حاول مرة أخرى.",
     "qrCodeScanner": "ماسح رمز QR",
     "scanQrCode": "مسح رمز QR",
-    "scanAQrCode": "امسح رمز QR",
+    "scanAQrCode": "امسح رمز الاستجابة السريعة",
     "cameraPermissionRequired": "الوصول إلى الكاميرا مطلوب لمسح رموز QR",
     "cameraPermissionDenied": "تم رفض إذن الكاميرا",
     "cameraPermissionDeniedMessage": "يرجى منح الوصول إلى الكاميرا في الإعدادات لمسح رموز QR.",
