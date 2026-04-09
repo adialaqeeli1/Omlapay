@@ -523,6 +523,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get all => 'All';
 
   @override
+  String get open => 'Open';
+
+  @override
   String get solved => 'Solved';
 
   @override
@@ -1160,4 +1163,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get kycEmailVerified => 'Email verified successfully';
+
+  @override
+  String get pleaseEnterATitle => 'Please enter a title';
+
+  @override
+  String titleMustNotExceedCharacters(int maxLength) {
+    return 'Title must not exceed $maxLength characters';
+  }
+
+  @override
+  String get pleaseEnterADescription => 'Please enter a description';
+
+  @override
+  String descriptionMustNotExceedCharacters(int maxLength) {
+    return 'Description must not exceed $maxLength characters';
+  }
 }

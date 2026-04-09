@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/extentions/context_extensions.dart';
-import '../../../../core/theme/theme.dart';
-import '../../../../routes/app_router.dart';
-import '../../../../widgets/common_back_button.dart';
-import 'widgets/help_center_menu_item.dart';
+import '../../../core/extentions/context_extensions.dart';
+import '../../../core/theme/theme.dart';
+import '../../../routes/app_router.dart';
+import '../../../widgets/common_back_button.dart';
+import '../widgets/help_center_menu_item.dart';
 
 class HelpCenterView extends StatelessWidget {
   const HelpCenterView({super.key});

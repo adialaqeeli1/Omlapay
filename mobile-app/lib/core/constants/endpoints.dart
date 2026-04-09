@@ -90,4 +90,7 @@ class Endpoints {
       '$apiVersion/user/settings/appearance';
   static String get userSettingsLanguage =>
       '$apiVersion/user/settings/language';
+
+  /// Support requests; supports query params `status`, `page`, `limit`.
+  static String get supportRequests => '$apiVersion/user/support-requests';
 }
