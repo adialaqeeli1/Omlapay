@@ -1,0 +1,90 @@
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:reactive_forms/reactive_forms.dart';
+
+import '../../../core/utils/app_exception.dart';
+import '../services/help_center_service.dart';
+
+class SendRequestProvider extends ChangeNotifier {
+  final HelpCenterService _service;
+
+  SendRequestProvider({HelpCenterService? service})
+    : _service = service ?? HelpCenterService();
+
+  final FormGroup form = FormGroup({
+    'title': FormControl<String>(
+      validators: [Validators.required, Validators.maxLength(50)],
+    ),
+    'description': FormControl<String>(
+      validators: [Validators.required, Validators.maxLength(200)],
+    ),
+  });
+
+  PlatformFile? _selectedFile;
+  bool _isSending = false;
+  String? _errorMessage;
+
+  PlatformFile? get selectedFile => _selectedFile;
+  bool get isSending => _isSending;
+  String? get errorMessage => _errorMessage;
+
+  FormControl<String> get titleControl =>
+      form.control('title') as FormControl<String>;
+  FormControl<String> get descriptionControl =>
+      form.control('description') as FormControl<String>;
+
+  Future<void> pickFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['png', 'jpg', 'jpeg', 'pdf'],
+    );
+
+    if (result != null && result.files.single.path != null) {
+      _selectedFile = result.files.single;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> send() async {
+    form.markAllAsTouched();
+    if (!form.valid) return false;
+
+    _isSending = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      String? attachmentUrl;
+
+      if (_selectedFile?.path != null) {
+        attachmentUrl = await _service.uploadFile(
+          filePath: _selectedFile!.path!,
+          fileName: _selectedFile!.name,
+        );
+      }
+
+      await _service.submitRequest(
+        title: titleControl.value!.trim(),
+        description: descriptionControl.value!.trim(),
+        attachmentUrl: attachmentUrl,
+      );
+
+      return true;
+    } on AppException catch (e) {
+      _errorMessage = e.message;
+      return false;
+    } catch (_) {
+      _errorMessage = 'Something went wrong';
+      return false;
+    } finally {
+      _isSending = false;
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    form.dispose();
+    super.dispose();
+  }
+}

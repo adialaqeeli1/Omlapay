@@ -1,65 +1,19 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../core/utils/snackbar_helper.dart';
 import '../../../widgets/common_attachment_field.dart';
 import '../../../widgets/common_back_button.dart';
 import '../../../widgets/common_button.dart';
 import '../../../widgets/common_form_label.dart';
-import '../../../widgets/common_text_field.dart';
+import '../../../widgets/common_loading_indicator.dart';
+import '../providers/send_request_provider.dart';
 
-class SendRequestView extends StatefulWidget {
+class SendRequestView extends StatelessWidget {
   const SendRequestView({super.key});
-
-  @override
-  State<SendRequestView> createState() => _SendRequestViewState();
-}
-
-class _SendRequestViewState extends State<SendRequestView> {
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  PlatformFile? _selectedFile;
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _pickFile() async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['png', 'jpg', 'jpeg', 'pdf'],
-      );
-
-      if (result != null && result.files.single.path != null) {
-        setState(() {
-          _selectedFile = result.files.single;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        final loc = context.l10n!;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(loc.errorPickingFile('$e'))));
-      }
-    }
-  }
-
-  void _handleSend() {
-    if (_formKey.currentState!.validate()) {
-      // TODO: Implement send request logic
-      final loc = context.l10n!;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(loc.helpRequestSentSuccess)));
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +22,7 @@ class _SendRequestViewState extends State<SendRequestView> {
     final isDark = theme.brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
     final horizontalPadding = screenWidth * 0.05;
+    final provider = context.watch<SendRequestProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -80,8 +35,8 @@ class _SendRequestViewState extends State<SendRequestView> {
           ),
         ),
       ),
-      body: Form(
-        key: _formKey,
+      body: ReactiveForm(
+        formGroup: provider.form,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(
             parent: ClampingScrollPhysics(),
@@ -92,56 +47,145 @@ class _SendRequestViewState extends State<SendRequestView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-              // Title field
               CommonFormLabel(label: l10n.title),
               const SizedBox(height: 8),
-              CommonTextField(
-                controller: _titleController,
-                hintText: l10n.titlePlaceholder,
+              ReactiveTextField<String>(
+                formControlName: 'title',
                 maxLength: 50,
-                showCharacterCount: true,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return l10n.pleaseEnterATitle;
-                  }
-                  if (value.length > 50) {
-                    return l10n.titleMustNotExceedCharacters(50);
-                  }
-                  return null;
+                onTapOutside: (_) => FocusScope.of(context).unfocus(),
+                onEditingComplete: (control) =>
+                    provider.form.control('description').focus(),
+                textInputAction: TextInputAction.next,
+                decoration: InputDecoration(
+                  hintText: l10n.titlePlaceholder,
+                  counterText: '',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: theme.colorScheme.outline.withValues(alpha: 0.35),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: theme.colorScheme.outline.withValues(alpha: 0.35),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: theme.colorScheme.primary),
+                  ),
+                ),
+                validationMessages: {
+                  ValidationMessage.required: (_) => l10n.pleaseEnterATitle,
+                  ValidationMessage.maxLength: (_) =>
+                      l10n.titleMustNotExceedCharacters(50),
                 },
               ),
               const SizedBox(height: 24),
-              // Description field
               CommonFormLabel(label: l10n.description),
               const SizedBox(height: 8),
-              CommonTextField(
-                controller: _descriptionController,
-                hintText: l10n.descriptionPlaceholder,
+              ReactiveTextField<String>(
+                formControlName: 'description',
                 maxLines: 5,
                 maxLength: 200,
-                showCharacterCount: true,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return l10n.pleaseEnterADescription;
-                  }
-                  if (value.length > 200) {
-                    return l10n.descriptionMustNotExceedCharacters(200);
-                  }
-                  return null;
+                onTapOutside: (_) => FocusScope.of(context).unfocus(),
+                onEditingComplete: (control) =>
+                    FocusScope.of(context).unfocus(),
+                textInputAction: TextInputAction.newline,
+                decoration: InputDecoration(
+                  hintText: l10n.descriptionPlaceholder,
+                  counterText: '',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: theme.colorScheme.outline.withValues(alpha: 0.35),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: theme.colorScheme.outline.withValues(alpha: 0.35),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: theme.colorScheme.primary),
+                  ),
+                ),
+                validationMessages: {
+                  ValidationMessage.required: (_) =>
+                      l10n.pleaseEnterADescription,
+                  ValidationMessage.maxLength: (_) =>
+                      l10n.descriptionMustNotExceedCharacters(200),
                 },
               ),
               const SizedBox(height: 24),
-              // Attachment field
               CommonFormLabel(label: l10n.attachment),
               const SizedBox(height: 8),
               CommonAttachmentField(
-                onTap: _pickFile,
-                selectedFile: _selectedFile,
+                onTap: () async {
+                  try {
+                    await provider.pickFile();
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(l10n.errorPickingFile('$e'))),
+                      );
+                    }
+                  }
+                },
+                selectedFile: provider.selectedFile,
                 placeholder: l10n.attachFileDescription,
               ),
               SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-              // Send button
-              CommonButton(onPressed: _handleSend, title: l10n.send),
+              CommonButton(
+                onPressed: () {
+                  if (provider.isSending) return;
+                  FocusScope.of(context).unfocus();
+
+                  final navigator = Navigator.of(context, rootNavigator: true);
+                  final barrierColor = theme.colorScheme.scrim.withValues(
+                    alpha: 0.45,
+                  );
+
+                  showDialog<void>(
+                    context: context,
+                    barrierDismissible: false,
+                    barrierColor: barrierColor,
+                    useRootNavigator: true,
+                    builder: (_) => PopScope(
+                      canPop: false,
+                      child: Center(
+                        child: Material(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const SizedBox.square(
+                            dimension: 60,
+                            child: CommonLoadingIndicator(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+
+                  provider.send().then((success) {
+                    if (navigator.mounted) navigator.pop();
+                    if (!context.mounted) return;
+                    if (success) {
+                      SnackbarHelper.showSuccess(
+                        context,
+                        l10n.helpRequestSentSuccess,
+                      );
+                      GoRouter.of(context).pop();
+                    } else if (provider.errorMessage != null) {
+                      SnackbarHelper.showError(context, provider.errorMessage!);
+                    }
+                  });
+                },
+                title: l10n.send,
+              ),
               SizedBox(height: MediaQuery.of(context).size.height * 0.03),
             ],
           ),

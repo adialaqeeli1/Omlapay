@@ -32,6 +32,7 @@ import '../modules/dashboard/profile/about/faqs_view.dart';
 import '../modules/dashboard/profile/about/privacy_policy_view.dart';
 import '../modules/dashboard/profile/about/terms_conditions_view.dart';
 import '../modules/help_center/providers/help_center_provider.dart';
+import '../modules/help_center/providers/send_request_provider.dart';
 import '../modules/help_center/views/help_center_view.dart';
 import '../modules/kyc_verification/view/kyc_verification_view.dart';
 import '../modules/kyc_verification/providers/kyc_verification_provider.dart';
@@ -574,7 +575,10 @@ class AppRouter {
       GoRoute(
         path: Routes.sendRequest,
         name: 'sendRequest',
-        builder: (context, state) => const SendRequestView(),
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => SendRequestProvider(),
+          child: const SendRequestView(),
+        ),
       ),
       GoRoute(
         path: Routes.pastRequests,

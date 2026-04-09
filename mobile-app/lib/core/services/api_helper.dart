@@ -77,6 +77,29 @@ class ApiHelper {
     }
   }
 
+  static Future<Map<String, dynamic>> multipartPost(
+    String endpoint, {
+    required Map<String, dynamic> data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    try {
+      final client = _getClient();
+      final response = await client.multipartPost(
+        url: endpoint,
+        data: data,
+        queryParameters: queryParameters,
+      );
+      return _handleNetworkResponse(response);
+    } on DioException catch (e) {
+      throw _handleDioException(e);
+    } on SocketException {
+      throw AppException('Network error', messageKey: 'networkError');
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw AppException('Network error: $e', messageKey: 'unknownError');
+    }
+  }
+
   static Future<Map<String, dynamic>> delete(String endpoint) async {
     try {
       final client = _getClient();
