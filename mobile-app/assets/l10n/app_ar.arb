@@ -483,5 +483,12 @@
     "pleaseEnterATitle": "يرجى إدخال عنوان",
     "titleMustNotExceedCharacters": "يجب ألا يتجاوز العنوان {maxLength} حرفًا",
     "pleaseEnterADescription": "يرجى إدخال وصف",
-    "descriptionMustNotExceedCharacters": "يجب ألا يتجاوز الوصف {maxLength} حرفًا"
+    "descriptionMustNotExceedCharacters": "يجب ألا يتجاوز الوصف {maxLength} حرفًا",
+    "somethingWentWrong": "حدث خطأ ما",
+    "failedToLoadNotifications": "فشل في تحميل الإشعارات",
+    "failedToLoadMoreNotifications": "فشل في تحميل المزيد من الإشعارات",
+    "failedToMarkNotificationAsRead": "فشل في تحديد الإشعار كمقروء",
+    "failedToMarkAllNotificationsAsRead": "فشل في تحديد جميع الإشعارات كمقروءة",
+    "failedToLoadSupportRequests": "فشل في تحميل طلبات الدعم",
+    "failedToLoadMoreRequests": "فشل في تحميل المزيد من الطلبات"
 }

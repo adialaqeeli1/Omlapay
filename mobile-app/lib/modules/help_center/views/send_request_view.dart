@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../core/utils/app_exception.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../widgets/common_attachment_field.dart';
 import '../../../widgets/common_back_button.dart';
@@ -188,8 +189,11 @@ class SendRequestView extends StatelessWidget {
                         l10n.helpRequestSentSuccess,
                       );
                       GoRouter.of(context).pop();
-                    } else if (provider.errorMessage != null) {
-                      SnackbarHelper.showError(context, provider.errorMessage!);
+                    } else if (provider.errorKey != null) {
+                      SnackbarHelper.showError(
+                        context,
+                        AppException.resolveErrorKey(l10n, provider.errorKey!) ?? l10n.unknownError,
+                      );
                     }
                   });
                 },

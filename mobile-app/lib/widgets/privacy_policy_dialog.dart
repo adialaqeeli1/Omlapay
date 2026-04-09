@@ -143,7 +143,7 @@ Future<void> showPrivacyPolicyDialog(BuildContext context) async {
     }
     if (!context.mounted) return;
 
-    final message = e is AppException ? e.message : l10n.unknownError;
+    final message = e is AppException ? e.localizedMessage(l10n) : l10n.unknownError;
     SnackbarHelper.showError(context, message);
   }
 }

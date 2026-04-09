@@ -206,7 +206,7 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
                 // Popping the bottom sheet on error as well
                 Navigator.pop(context);
                 final message = e is AppException
-                    ? e.message
+                    ? e.localizedMessage(context.l10n)
                     : context.l10n!.unknownError;
                 SnackbarHelper.showError(context, message);
               }

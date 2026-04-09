@@ -25,14 +25,14 @@ class ChangePhoneCurrentOtpProvider extends ChangeNotifier {
   bool _isRequestingOtp = false;
   bool _isVerifying = false;
   bool _hasError = false;
-  String? _verifyErrorMessage;
+  String? _verifyErrorKey;
   String? _changePhoneToken;
 
   String get otp => _otp;
   int get countdownSeconds => _countdownSeconds;
   bool get canResend => _countdownSeconds <= 0 && !_isRequestingOtp;
   bool get hasError => _hasError;
-  String? get verifyErrorMessage => _verifyErrorMessage;
+  String? get verifyErrorKey => _verifyErrorKey;
   bool get isComplete => _otp.length == otpLength;
   String? get changePhoneToken => _changePhoneToken;
 
@@ -43,7 +43,7 @@ class ChangePhoneCurrentOtpProvider extends ChangeNotifier {
     if (_otp == truncated) return;
     _otp = truncated;
     _hasError = false;
-    _verifyErrorMessage = null;
+    _verifyErrorKey = null;
     notifyListeners();
   }
 
@@ -85,7 +85,7 @@ class ChangePhoneCurrentOtpProvider extends ChangeNotifier {
     if (!isComplete || _isVerifying) return false;
     _isVerifying = true;
     _hasError = false;
-    _verifyErrorMessage = null;
+    _verifyErrorKey = null;
     notifyListeners();
     try {
       final result = await ChangePhoneService.step2Verify(otp: _otp);
@@ -93,7 +93,7 @@ class ChangePhoneCurrentOtpProvider extends ChangeNotifier {
       return true;
     } on AppException catch (e) {
       _hasError = true;
-      _verifyErrorMessage = e.message;
+      _verifyErrorKey = e.messageKey ?? 'requestFailed';
       return false;
     } finally {
       _isVerifying = false;

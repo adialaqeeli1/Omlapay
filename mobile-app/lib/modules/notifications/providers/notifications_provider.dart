@@ -17,7 +17,7 @@ class NotificationsProvider extends ChangeNotifier {
   bool _isActionLoading = false;
   bool _hasMore = false;
   String? _nextCursor;
-  String? _errorMessage;
+  String? _errorKey;
 
   List<NotificationModel> get items => _items;
   int get unreadCount => _unreadCount;
@@ -25,11 +25,11 @@ class NotificationsProvider extends ChangeNotifier {
   bool get isLoadingMore => _isLoadingMore;
   bool get isActionLoading => _isActionLoading;
   bool get hasMore => _hasMore;
-  String? get errorMessage => _errorMessage;
+  String? get errorKey => _errorKey;
 
   Future<void> fetchNotifications() async {
     _isLoading = true;
-    _errorMessage = null;
+    _errorKey = null;
     notifyListeners();
 
     try {
@@ -39,9 +39,9 @@ class NotificationsProvider extends ChangeNotifier {
       _hasMore = response.pagination?.hasMore ?? false;
       _nextCursor = response.pagination?.nextCursor;
     } on AppException catch (e) {
-      _errorMessage = e.message;
+      _errorKey = e.messageKey ?? 'requestFailed';
     } catch (_) {
-      _errorMessage = 'Failed to load notifications';
+      _errorKey = 'failedToLoadNotifications';
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -63,9 +63,9 @@ class NotificationsProvider extends ChangeNotifier {
       _hasMore = response.pagination?.hasMore ?? false;
       _nextCursor = response.pagination?.nextCursor;
     } on AppException catch (e) {
-      _errorMessage = e.message;
+      _errorKey = e.messageKey ?? 'requestFailed';
     } catch (_) {
-      _errorMessage = 'Failed to load more notifications';
+      _errorKey = 'failedToLoadMoreNotifications';
     } finally {
       _isLoadingMore = false;
       notifyListeners();
@@ -87,9 +87,9 @@ class NotificationsProvider extends ChangeNotifier {
       ];
       _unreadCount = (_unreadCount - 1).clamp(0, _unreadCount);
     } on AppException catch (e) {
-      _errorMessage = e.message;
+      _errorKey = e.messageKey ?? 'requestFailed';
     } catch (_) {
-      _errorMessage = 'Failed to mark notification as read';
+      _errorKey = 'failedToMarkNotificationAsRead';
     } finally {
       _isActionLoading = false;
       notifyListeners();
@@ -110,9 +110,9 @@ class NotificationsProvider extends ChangeNotifier {
       ];
       _unreadCount = 0;
     } on AppException catch (e) {
-      _errorMessage = e.message;
+      _errorKey = e.messageKey ?? 'requestFailed';
     } catch (_) {
-      _errorMessage = 'Failed to mark all notifications as read';
+      _errorKey = 'failedToMarkAllNotificationsAsRead';
     } finally {
       _isActionLoading = false;
       notifyListeners();

@@ -18,14 +18,14 @@ class HelpCenterProvider extends ChangeNotifier {
   int _currentPage = 1;
   int _totalPages = 1;
   FilterOption _selectedFilter = FilterOption.all;
-  String? _errorMessage;
+  String? _errorKey;
 
   List<SupportRequestModel> get items => _items;
   bool get isLoading => _isLoading;
   bool get isLoadingMore => _isLoadingMore;
   bool get hasMore => _hasMore;
   FilterOption get selectedFilter => _selectedFilter;
-  String? get errorMessage => _errorMessage;
+  String? get errorKey => _errorKey;
 
   String? get _statusParam {
     switch (_selectedFilter) {
@@ -42,7 +42,7 @@ class HelpCenterProvider extends ChangeNotifier {
 
   Future<void> fetchRequests() async {
     _isLoading = true;
-    _errorMessage = null;
+    _errorKey = null;
     _currentPage = 1;
     notifyListeners();
 
@@ -55,9 +55,9 @@ class HelpCenterProvider extends ChangeNotifier {
       _totalPages = response.pagination?.totalPages ?? 1;
       _hasMore = _currentPage < _totalPages;
     } on AppException catch (e) {
-      _errorMessage = e.message;
+      _errorKey = e.messageKey ?? 'requestFailed';
     } catch (_) {
-      _errorMessage = 'Failed to load support requests';
+      _errorKey = 'failedToLoadSupportRequests';
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -81,10 +81,10 @@ class HelpCenterProvider extends ChangeNotifier {
       _hasMore = _currentPage < _totalPages;
     } on AppException catch (e) {
       _currentPage--;
-      _errorMessage = e.message;
+      _errorKey = e.messageKey ?? 'requestFailed';
     } catch (_) {
       _currentPage--;
-      _errorMessage = 'Failed to load more requests';
+      _errorKey = 'failedToLoadMoreRequests';
     } finally {
       _isLoadingMore = false;
       notifyListeners();

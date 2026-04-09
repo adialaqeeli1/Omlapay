@@ -53,7 +53,7 @@ class _NotificationsViewState extends State<NotificationsView> {
             return const Center(child: CommonLoadingIndicator());
           }
 
-          if (provider.errorMessage != null && provider.items.isEmpty) {
+          if (provider.errorKey != null && provider.items.isEmpty) {
             return _buildErrorState(l10n, provider, isDark);
           }
 

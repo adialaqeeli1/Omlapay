@@ -44,7 +44,7 @@ class KycEmailOtpView extends StatelessWidget {
       context.pop(true);
     } on AppException catch (e) {
       if (context.mounted) {
-        SnackbarHelper.showError(context, e.message);
+        SnackbarHelper.showError(context, e.localizedMessage(context.l10n));
       }
     }
   }
@@ -57,7 +57,7 @@ class KycEmailOtpView extends StatelessWidget {
       await provider.resendOtp();
     } on AppException catch (e) {
       if (context.mounted) {
-        SnackbarHelper.showError(context, e.message);
+        SnackbarHelper.showError(context, e.localizedMessage(context.l10n));
       }
     }
   }

@@ -57,7 +57,7 @@ class ChangePhoneVerifyCurrentOtpView extends StatelessWidget {
       await provider.requestOtp();
     } on AppException catch (e) {
       if (!context.mounted) return;
-      SnackbarHelper.showError(context, e.message);
+      SnackbarHelper.showError(context, e.localizedMessage(context.l10n));
     } catch (_) {
       if (!context.mounted) return;
       SnackbarHelper.showError(context, l10n.unknownError);
@@ -73,7 +73,7 @@ class ChangePhoneVerifyCurrentOtpView extends StatelessWidget {
       await provider.resendOtp();
     } on AppException catch (e) {
       if (!context.mounted) return;
-      SnackbarHelper.showError(context, e.message);
+      SnackbarHelper.showError(context, e.localizedMessage(context.l10n));
     } catch (_) {
       if (!context.mounted) return;
       SnackbarHelper.showError(context, l10n.unknownError);
@@ -87,9 +87,12 @@ class ChangePhoneVerifyCurrentOtpView extends StatelessWidget {
     final valid = await provider.verifyOtp();
     if (!context.mounted) return;
     if (!valid) {
-      final msg = provider.verifyErrorMessage;
-      if (msg != null && msg.isNotEmpty) {
-        SnackbarHelper.showError(context, msg);
+      final key = provider.verifyErrorKey;
+      if (key != null && key.isNotEmpty) {
+        SnackbarHelper.showError(
+          context,
+          AppException.resolveErrorKey(context.l10n!, key) ?? context.l10n!.unknownError,
+        );
       }
       return;
     }

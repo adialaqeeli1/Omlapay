@@ -1185,4 +1185,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String descriptionMustNotExceedCharacters(int maxLength) {
     return 'Description must not exceed $maxLength characters';
   }
+
+  @override
+  String get somethingWentWrong => 'Something went wrong';
+
+  @override
+  String get failedToLoadNotifications => 'Failed to load notifications';
+
+  @override
+  String get failedToLoadMoreNotifications =>
+      'Failed to load more notifications';
+
+  @override
+  String get failedToMarkNotificationAsRead =>
+      'Failed to mark notification as read';
+
+  @override
+  String get failedToMarkAllNotificationsAsRead =>
+      'Failed to mark all notifications as read';
+
+  @override
+  String get failedToLoadSupportRequests => 'Failed to load support requests';
+
+  @override
+  String get failedToLoadMoreRequests => 'Failed to load more requests';
 }

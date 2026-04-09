@@ -34,7 +34,7 @@ import '../modules/dashboard/profile/about/terms_conditions_view.dart';
 import '../modules/help_center/providers/help_center_provider.dart';
 import '../modules/help_center/providers/send_request_provider.dart';
 import '../modules/help_center/views/help_center_view.dart';
-import '../modules/kyc_verification/view/kyc_verification_view.dart';
+import '../modules/kyc_verification/views/kyc_verification_view.dart';
 import '../modules/kyc_verification/providers/kyc_verification_provider.dart';
 import '../modules/kyc_verification/providers/kyc_email_provider.dart';
 import '../modules/kyc_verification/views/kyc_email_entry_view.dart';
