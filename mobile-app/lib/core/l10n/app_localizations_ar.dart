@@ -801,7 +801,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get scanQrCode => 'مسح رمز QR';
 
   @override
-  String get scanAQrCode => 'امسح رمز QR';
+  String get scanAQrCode => 'امسح رمز الاستجابة السريعة';
 
   @override
   String get cameraPermissionRequired =>
