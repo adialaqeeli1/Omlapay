@@ -31,14 +31,15 @@ import '../modules/dashboard/profile/about/about_view.dart';
 import '../modules/dashboard/profile/about/faqs_view.dart';
 import '../modules/dashboard/profile/about/privacy_policy_view.dart';
 import '../modules/dashboard/profile/about/terms_conditions_view.dart';
-import '../modules/dashboard/profile/help_center/help_center_view.dart';
+import '../modules/help_center/providers/help_center_provider.dart';
+import '../modules/help_center/views/help_center_view.dart';
 import '../modules/kyc_verification/view/kyc_verification_view.dart';
 import '../modules/kyc_verification/providers/kyc_verification_provider.dart';
 import '../modules/kyc_verification/providers/kyc_email_provider.dart';
 import '../modules/kyc_verification/views/kyc_email_entry_view.dart';
 import '../modules/kyc_verification/views/kyc_email_otp_view.dart';
-import '../modules/dashboard/profile/help_center/past_requests_view.dart';
-import '../modules/dashboard/profile/help_center/send_request_view.dart';
+import '../modules/help_center/views/past_requests_view.dart';
+import '../modules/help_center/views/send_request_view.dart';
 import '../modules/dashboard/profile/profile_view.dart';
 import '../modules/onboarding/onboarding_view.dart';
 import 'package:provider/provider.dart';
@@ -379,9 +380,7 @@ class AppRouter {
                 if (token == null || token.isEmpty) return;
                 ctx.push(
                   Routes.changePhoneEnterNew,
-                  extra: {
-                    LoginProvider.extraChangePhoneTokenKey: token,
-                  },
+                  extra: {LoginProvider.extraChangePhoneTokenKey: token},
                 );
               },
             ),
@@ -580,7 +579,11 @@ class AppRouter {
       GoRoute(
         path: Routes.pastRequests,
         name: 'pastRequests',
-        builder: (context, state) => const PastRequestsView(),
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (_) => HelpCenterProvider(),
+          child: const PastRequestsView(),
+        ),
+        redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
         path: Routes.coinDetails,

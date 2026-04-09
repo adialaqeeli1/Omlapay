@@ -186,6 +186,7 @@
     "reset": "إعادة تعيين",
     "apply": "تطبيق",
     "all": "الكل",
+    "open": "مفتوح",
     "solved": "محلول",
     "pending": "قيد الانتظار",
     "rejected": "مرفوض",
@@ -470,5 +471,9 @@
             }
         }
     },
-    "kycEmailVerified": "تم التحقق من البريد الإلكتروني بنجاح"
+    "kycEmailVerified": "تم التحقق من البريد الإلكتروني بنجاح",
+    "pleaseEnterATitle": "يرجى إدخال عنوان",
+    "titleMustNotExceedCharacters": "يجب ألا يتجاوز العنوان {maxLength} حرفًا",
+    "pleaseEnterADescription": "يرجى إدخال وصف",
+    "descriptionMustNotExceedCharacters": "يجب ألا يتجاوز الوصف {maxLength} حرفًا"
 }

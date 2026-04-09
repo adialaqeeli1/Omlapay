@@ -2,12 +2,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/extentions/context_extensions.dart';
-import '../../../../widgets/common_attachment_field.dart';
-import '../../../../widgets/common_back_button.dart';
-import '../../../../widgets/common_button.dart';
-import '../../../../widgets/common_form_label.dart';
-import '../../../../widgets/common_text_field.dart';
+import '../../../core/extentions/context_extensions.dart';
+import '../../../widgets/common_attachment_field.dart';
+import '../../../widgets/common_back_button.dart';
+import '../../../widgets/common_button.dart';
+import '../../../widgets/common_form_label.dart';
+import '../../../widgets/common_text_field.dart';
 
 class SendRequestView extends StatefulWidget {
   const SendRequestView({super.key});
@@ -102,10 +102,10 @@ class _SendRequestViewState extends State<SendRequestView> {
                 showCharacterCount: true,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a title';
+                    return l10n.pleaseEnterATitle;
                   }
                   if (value.length > 50) {
-                    return 'Title must not exceed 50 characters';
+                    return l10n.titleMustNotExceedCharacters(50);
                   }
                   return null;
                 },
@@ -122,10 +122,10 @@ class _SendRequestViewState extends State<SendRequestView> {
                 showCharacterCount: true,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a description';
+                    return l10n.pleaseEnterADescription;
                   }
                   if (value.length > 200) {
-                    return 'Description must not exceed 200 characters';
+                    return l10n.descriptionMustNotExceedCharacters(200);
                   }
                   return null;
                 },

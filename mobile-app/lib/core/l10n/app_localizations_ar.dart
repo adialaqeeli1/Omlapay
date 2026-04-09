@@ -515,6 +515,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get all => 'الكل';
 
   @override
+  String get open => 'مفتوح';
+
+  @override
   String get solved => 'محلول';
 
   @override
@@ -1152,4 +1155,20 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get kycEmailVerified => 'تم التحقق من البريد الإلكتروني بنجاح';
+
+  @override
+  String get pleaseEnterATitle => 'يرجى إدخال عنوان';
+
+  @override
+  String titleMustNotExceedCharacters(int maxLength) {
+    return 'يجب ألا يتجاوز العنوان $maxLength حرفًا';
+  }
+
+  @override
+  String get pleaseEnterADescription => 'يرجى إدخال وصف';
+
+  @override
+  String descriptionMustNotExceedCharacters(int maxLength) {
+    return 'يجب ألا يتجاوز الوصف $maxLength حرفًا';
+  }
 }

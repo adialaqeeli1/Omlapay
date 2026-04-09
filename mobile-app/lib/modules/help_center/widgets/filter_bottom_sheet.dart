@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/extentions/context_extensions.dart';
-import '../../../../../core/theme/theme.dart';
-import '../../../../../widgets/common_bottom_sheet.dart';
+import 'package:provider/provider.dart';
+
+import '../../../core/extentions/context_extensions.dart';
+import '../../../core/theme/theme.dart';
+import '../../../widgets/common_bottom_sheet.dart';
+import '../providers/help_center_provider.dart';
 
 enum FilterOption { all, solved, pending, rejected }
 
@@ -13,7 +16,10 @@ class FilterBottomSheet extends StatefulWidget {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => const FilterBottomSheet(),
+      builder: (_) => ChangeNotifierProvider.value(
+        value: context.read<HelpCenterProvider>(),
+        child: const FilterBottomSheet(),
+      ),
     );
   }
 
@@ -22,7 +28,21 @@ class FilterBottomSheet extends StatefulWidget {
 }
 
 class _FilterBottomSheetState extends State<FilterBottomSheet> {
-  FilterOption _selectedOption = FilterOption.all;
+  late FilterOption _selectedOption;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedOption = context.read<HelpCenterProvider>().selectedFilter;
+  }
+
+  void _applyFilter(FilterOption option) {
+    setState(() {
+      _selectedOption = option;
+    });
+    context.read<HelpCenterProvider>().setFilter(option);
+    Navigator.of(context).pop();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,22 +78,14 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
           groupValue: _selectedOption,
           onChanged: (value) {
             if (value != null) {
-              setState(() {
-                _selectedOption = value;
-              });
+              _applyFilter(value);
             }
           },
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: options.map((option) {
               return ListTile(
-                onTap: () {
-                  setState(() {
-                    _selectedOption = option;
-                  });
-                  // You can add callback here if needed
-                  // Navigator.of(context).pop();
-                },
+                onTap: () => _applyFilter(option),
                 title: Text(
                   getOptionLabel(option),
                   style: TextStyle(

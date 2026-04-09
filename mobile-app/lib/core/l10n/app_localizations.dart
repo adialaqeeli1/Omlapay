@@ -1046,6 +1046,12 @@ abstract class AppLocalizations {
   /// **'All'**
   String get all;
 
+  /// No description provided for @open.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get open;
+
   /// No description provided for @solved.
   ///
   /// In en, this message translates to:
@@ -2215,6 +2221,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Email verified successfully'**
   String get kycEmailVerified;
+
+  /// No description provided for @pleaseEnterATitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a title'**
+  String get pleaseEnterATitle;
+
+  /// No description provided for @titleMustNotExceedCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Title must not exceed {maxLength} characters'**
+  String titleMustNotExceedCharacters(int maxLength);
+
+  /// No description provided for @pleaseEnterADescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a description'**
+  String get pleaseEnterADescription;
+
+  /// No description provided for @descriptionMustNotExceedCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Description must not exceed {maxLength} characters'**
+  String descriptionMustNotExceedCharacters(int maxLength);
 }
 
 class _AppLocalizationsDelegate

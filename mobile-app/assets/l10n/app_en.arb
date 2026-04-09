@@ -186,6 +186,7 @@
     "reset": "Reset",
     "apply": "Apply",
     "all": "All",
+    "open": "Open",
     "solved": "Solved",
     "pending": "Pending",
     "rejected": "Rejected",
@@ -470,5 +471,23 @@
             }
         }
     },
-    "kycEmailVerified": "Email verified successfully"
+    "kycEmailVerified": "Email verified successfully",
+    "pleaseEnterATitle": "Please enter a title",
+    "titleMustNotExceedCharacters": "Title must not exceed {maxLength} characters",
+    "@titleMustNotExceedCharacters": {
+        "placeholders": {
+            "maxLength": {
+                "type": "int"
+            }
+        }
+    },
+    "pleaseEnterADescription": "Please enter a description",
+    "descriptionMustNotExceedCharacters": "Description must not exceed {maxLength} characters",
+    "@descriptionMustNotExceedCharacters": {
+        "placeholders": {
+            "maxLength": {
+                "type": "int"
+            }
+        }
+    }
 }
