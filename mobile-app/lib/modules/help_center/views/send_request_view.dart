@@ -136,7 +136,16 @@ class SendRequestView extends StatelessWidget {
                   }
                 },
                 selectedFile: provider.selectedFile,
-                placeholder: l10n.attachFileDescription,
+                allowedExtensions: SendRequestProvider.allowedExtensions,
+                placeholder: l10n.attachFileDescription(
+                  SendRequestProvider.allowedExtensions
+                      .map((e) => e.toUpperCase())
+                      .join(
+                        Localizations.localeOf(context).languageCode == 'ar'
+                            ? ' أو '
+                            : ', ',
+                      ),
+                ),
               ),
               SizedBox(height: MediaQuery.of(context).size.height * 0.05),
               CommonButton(

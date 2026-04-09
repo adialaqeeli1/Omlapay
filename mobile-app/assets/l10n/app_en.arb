@@ -170,7 +170,14 @@
     "description": "Description",
     "descriptionPlaceholder": "Describe Your inquiry",
     "attachment": "Attachment",
-    "attachFileDescription": "Attach any related PNG, JPG, PDF",
+    "attachFileDescription": "Attach any related {extensions}",
+    "@attachFileDescription": {
+        "placeholders": {
+            "extensions": {
+                "type": "String"
+            }
+        }
+    },
     "send": "Send",
     "noRequestsFound": "No Requests Found",
     "allRequestsWillBeListedHere": "All requests will be listed here",
@@ -279,8 +286,9 @@
             }
         }
     },
-    "verificationCodesInSeconds": "You should receive the verification codes in {seconds} Seconds",
-    "@verificationCodesInSeconds": {
+    "verificationCodesIn": "You should receive the verification codes in",
+    "secondsCount": "{seconds} Seconds",
+    "@secondsCount": {
         "placeholders": {
             "seconds": {
                 "type": "int"

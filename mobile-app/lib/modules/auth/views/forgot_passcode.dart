@@ -236,10 +236,6 @@ class _StatusText extends StatelessWidget {
     final mutedColor = theme.colorScheme.onSurface.withValues(alpha: 0.6);
 
     if (provider.countdownSeconds > 0) {
-      final full = l10n.verificationCodesInSeconds(provider.countdownSeconds);
-      final secondsStr = provider.countdownSeconds.toString();
-      final secondsPart = '$secondsStr Seconds';
-      final prefix = full.replaceAll(secondsPart, '').trim();
       return RichText(
         textAlign: TextAlign.start,
         text: TextSpan(
@@ -249,9 +245,9 @@ class _StatusText extends StatelessWidget {
             color: mutedColor,
           ),
           children: [
-            if (prefix.isNotEmpty) TextSpan(text: '$prefix '),
+            TextSpan(text: '${l10n.verificationCodesIn} '),
             TextSpan(
-              text: secondsPart,
+              text: l10n.secondsCount(provider.countdownSeconds),
               style: const TextStyle(
                 color: AppColors.primaryColor,
                 fontWeight: FontWeight.w600,

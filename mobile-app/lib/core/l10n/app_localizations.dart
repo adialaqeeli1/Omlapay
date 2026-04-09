@@ -953,8 +953,8 @@ abstract class AppLocalizations {
   /// No description provided for @attachFileDescription.
   ///
   /// In en, this message translates to:
-  /// **'Attach any related PNG, JPG, PDF'**
-  String get attachFileDescription;
+  /// **'Attach any related {extensions}'**
+  String attachFileDescription(String extensions);
 
   /// No description provided for @send.
   ///
@@ -1478,11 +1478,17 @@ abstract class AppLocalizations {
   /// **'An 6 digit verification code has been sent via SMS to {phone}.'**
   String verificationCodeSentViaSmsTo(String phone);
 
-  /// No description provided for @verificationCodesInSeconds.
+  /// No description provided for @verificationCodesIn.
   ///
   /// In en, this message translates to:
-  /// **'You should receive the verification codes in {seconds} Seconds'**
-  String verificationCodesInSeconds(int seconds);
+  /// **'You should receive the verification codes in'**
+  String get verificationCodesIn;
+
+  /// No description provided for @secondsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds} Seconds'**
+  String secondsCount(int seconds);
 
   /// No description provided for @didntReceiveCodesResendOtp.
   ///
