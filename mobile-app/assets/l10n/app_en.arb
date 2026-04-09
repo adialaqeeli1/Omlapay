@@ -497,5 +497,12 @@
                 "type": "int"
             }
         }
-    }
+    },
+    "somethingWentWrong": "Something went wrong",
+    "failedToLoadNotifications": "Failed to load notifications",
+    "failedToLoadMoreNotifications": "Failed to load more notifications",
+    "failedToMarkNotificationAsRead": "Failed to mark notification as read",
+    "failedToMarkAllNotificationsAsRead": "Failed to mark all notifications as read",
+    "failedToLoadSupportRequests": "Failed to load support requests",
+    "failedToLoadMoreRequests": "Failed to load more requests"
 }

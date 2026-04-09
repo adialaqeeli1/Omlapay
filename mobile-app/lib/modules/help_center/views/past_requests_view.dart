@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../core/utils/app_exception.dart';
 import '../../../core/theme/theme.dart';
 import '../../../widgets/common_back_button.dart';
 import '../../../widgets/common_loading_indicator.dart';
@@ -71,9 +72,9 @@ class _PastRequestsViewState extends State<PastRequestsView> {
             return const Center(child: CommonLoadingIndicator());
           }
 
-          if (provider.errorMessage != null && provider.items.isEmpty) {
+          if (provider.errorKey != null && provider.items.isEmpty) {
             return _ErrorView(
-              message: provider.errorMessage!,
+              message: AppException.resolveErrorKey(l10n, provider.errorKey!) ?? l10n.unknownError,
               onRetry: () => provider.fetchRequests(),
             );
           }

@@ -36,7 +36,7 @@ class _ChangePhoneIntroViewState extends State<ChangePhoneIntroView> {
       );
     } on AppException catch (e) {
       if (!mounted) return;
-      SnackbarHelper.showError(context, e.message);
+      SnackbarHelper.showError(context, e.localizedMessage(context.l10n));
     } catch (_) {
       if (!mounted) return;
       SnackbarHelper.showError(context, l10n.unknownError);

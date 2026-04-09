@@ -2251,6 +2251,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Description must not exceed {maxLength} characters'**
   String descriptionMustNotExceedCharacters(int maxLength);
+
+  /// No description provided for @somethingWentWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get somethingWentWrong;
+
+  /// No description provided for @failedToLoadNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load notifications'**
+  String get failedToLoadNotifications;
+
+  /// No description provided for @failedToLoadMoreNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load more notifications'**
+  String get failedToLoadMoreNotifications;
+
+  /// No description provided for @failedToMarkNotificationAsRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to mark notification as read'**
+  String get failedToMarkNotificationAsRead;
+
+  /// No description provided for @failedToMarkAllNotificationsAsRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to mark all notifications as read'**
+  String get failedToMarkAllNotificationsAsRead;
+
+  /// No description provided for @failedToLoadSupportRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load support requests'**
+  String get failedToLoadSupportRequests;
+
+  /// No description provided for @failedToLoadMoreRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load more requests'**
+  String get failedToLoadMoreRequests;
 }
 
 class _AppLocalizationsDelegate

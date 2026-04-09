@@ -135,7 +135,7 @@ class ChangePhoneEnterNewView extends StatelessWidget {
           );
         } on AppException catch (e) {
           if (!context.mounted) return;
-          SnackbarHelper.showError(context, e.message);
+          SnackbarHelper.showError(context, e.localizedMessage(context.l10n));
         } catch (_) {
           if (!context.mounted) return;
           SnackbarHelper.showError(context, l10n.unknownError);

@@ -163,7 +163,7 @@ class LoginProvider extends ChangeNotifier {
       } catch (e) {
         if (context.mounted) {
           final message = e is AppException
-              ? e.message
+              ? e.localizedMessage(context.l10n)
               : context.l10n!.unknownError;
           SnackbarHelper.showError(context, message);
         }
@@ -263,7 +263,7 @@ class LoginProvider extends ChangeNotifier {
       } catch (e) {
         if (context.mounted) {
           final message = e is AppException
-              ? e.message
+              ? e.localizedMessage(context.l10n)
               : context.l10n!.unknownError;
           SnackbarHelper.showError(context, message);
         }

@@ -15,6 +15,6 @@ class KycEmailService {
     if (otp == _validOtp) {
       return true;
     }
-    throw AppException('Invalid OTP code');
+    throw AppException('Invalid OTP code', messageKey: 'invalidOtpTryAgain');
   }
 }

@@ -1176,4 +1176,27 @@ class AppLocalizationsAr extends AppLocalizations {
   String descriptionMustNotExceedCharacters(int maxLength) {
     return 'يجب ألا يتجاوز الوصف $maxLength حرفًا';
   }
+
+  @override
+  String get somethingWentWrong => 'حدث خطأ ما';
+
+  @override
+  String get failedToLoadNotifications => 'فشل في تحميل الإشعارات';
+
+  @override
+  String get failedToLoadMoreNotifications =>
+      'فشل في تحميل المزيد من الإشعارات';
+
+  @override
+  String get failedToMarkNotificationAsRead => 'فشل في تحديد الإشعار كمقروء';
+
+  @override
+  String get failedToMarkAllNotificationsAsRead =>
+      'فشل في تحديد جميع الإشعارات كمقروءة';
+
+  @override
+  String get failedToLoadSupportRequests => 'فشل في تحميل طلبات الدعم';
+
+  @override
+  String get failedToLoadMoreRequests => 'فشل في تحميل المزيد من الطلبات';
 }

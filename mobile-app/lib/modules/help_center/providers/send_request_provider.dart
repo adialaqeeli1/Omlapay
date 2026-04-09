@@ -22,11 +22,11 @@ class SendRequestProvider extends ChangeNotifier {
 
   PlatformFile? _selectedFile;
   bool _isSending = false;
-  String? _errorMessage;
+  String? _errorKey;
 
   PlatformFile? get selectedFile => _selectedFile;
   bool get isSending => _isSending;
-  String? get errorMessage => _errorMessage;
+  String? get errorKey => _errorKey;
 
   FormControl<String> get titleControl =>
       form.control('title') as FormControl<String>;
@@ -52,7 +52,7 @@ class SendRequestProvider extends ChangeNotifier {
     if (!form.valid) return false;
 
     _isSending = true;
-    _errorMessage = null;
+    _errorKey = null;
     notifyListeners();
 
     try {
@@ -73,10 +73,10 @@ class SendRequestProvider extends ChangeNotifier {
 
       return true;
     } on AppException catch (e) {
-      _errorMessage = e.message;
+      _errorKey = e.messageKey ?? 'requestFailed';
       return false;
     } catch (_) {
-      _errorMessage = 'Something went wrong';
+      _errorKey = 'somethingWentWrong';
       return false;
     } finally {
       _isSending = false;

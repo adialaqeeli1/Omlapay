@@ -61,7 +61,7 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
         await widget.onInitialRequest();
       } catch (e) {
         if (!mounted) return;
-        final message = e is AppException ? e.message : e.toString();
+        final message = e is AppException ? e.localizedMessage(context.l10n) : e.toString();
         SnackbarHelper.showError(context, message);
       }
     });
