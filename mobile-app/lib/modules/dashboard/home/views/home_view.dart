@@ -1,3 +1,4 @@
+import 'package:badges/badges.dart' as badges;
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -112,11 +113,34 @@ class HomeView extends StatelessWidget {
       appBarLeadingWidth: screenWidth * 0.62,
       appBarButtons: [
         // Notifications Icon
-        CommonIconButton(
-          iconPath: 'assets/icons/notifications-icon.svg',
-          iconSize: iconSize,
-          iconPadding: iconPadding,
-          onTap: () => context.push(Routes.notifications),
+        badges.Badge(
+          showBadge:
+              (context.watch<HomeProvider>().homeData?.unreadNotifications ??
+                  0) >
+              0,
+          badgeContent: Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Text(
+              '${context.watch<HomeProvider>().homeData?.unreadNotifications ?? 0}',
+              style: TextStyle(color: AppColors.textWhite, fontSize: 10),
+            ),
+          ),
+          badgeStyle: badges.BadgeStyle(
+            badgeColor: AppColors.redColor,
+            padding: const EdgeInsets.all(4),
+          ),
+          position: badges.BadgePosition.topEnd(top: -5, end: 5),
+          child: CommonIconButton(
+            iconPath: 'assets/icons/notifications-icon.svg',
+            iconSize: iconSize,
+            iconPadding: iconPadding,
+            onTap: () async {
+              await context.push(Routes.notifications);
+              if (context.mounted) {
+                context.read<HomeProvider>().fetchHomeData();
+              }
+            },
+          ),
         ),
         // Scan Icon
         CommonIconButton(

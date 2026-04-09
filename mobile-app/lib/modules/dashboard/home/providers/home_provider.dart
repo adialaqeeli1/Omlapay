@@ -45,9 +45,18 @@ class HomeProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateUnreadNotifications(int count) {
+    if (_homeData != null) {
+      _homeData = _homeData!.copyWith(unreadNotifications: count);
+      notifyListeners();
+    }
+  }
+
   void onAuthChanged(bool isAuthenticated) {
     if (!isAuthenticated) {
       clearData();
+    } else if (!_hasFetchedHome) {
+      fetchHomeData();
     }
   }
 }
