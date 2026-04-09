@@ -517,8 +517,14 @@ class HomeView extends StatelessWidget {
         child: IconButton(
           onPressed: () {
             if (isAuthenticated) {
-              if (context.read<HomeProvider>().isLoading) return;
-              context.read<GlobalProvider>().toggleBalanceVisibility();
+              final homeProvider = context.read<HomeProvider>();
+              if (homeProvider.isLoading) return;
+              final globalProvider = context.read<GlobalProvider>();
+              globalProvider.toggleBalanceVisibility();
+              if (globalProvider.isBalanceVisible &&
+                  !homeProvider.hasFetchedHome) {
+                homeProvider.fetchHomeData();
+              }
               return;
             } else {
               context.push(Routes.loginOrRegister);

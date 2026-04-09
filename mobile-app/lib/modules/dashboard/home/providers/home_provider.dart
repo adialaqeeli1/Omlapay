@@ -7,6 +7,9 @@ class HomeProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  bool _hasFetchedHome = false;
+  bool get hasFetchedHome => _hasFetchedHome;
+
   HomeModel? _homeData;
   HomeModel? get homeData => _homeData;
 
@@ -16,6 +19,7 @@ class HomeProvider extends ChangeNotifier {
   Future<void> fetchHomeData() async {
     _isLoading = true;
     _errorMessage = null;
+    _hasFetchedHome = true;
     notifyListeners();
 
     try {
@@ -37,13 +41,12 @@ class HomeProvider extends ChangeNotifier {
   void clearData() {
     _homeData = null;
     _errorMessage = null;
+    _hasFetchedHome = false;
     notifyListeners();
   }
 
   void onAuthChanged(bool isAuthenticated) {
-    if (isAuthenticated) {
-      fetchHomeData();
-    } else {
+    if (!isAuthenticated) {
       clearData();
     }
   }

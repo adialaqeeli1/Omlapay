@@ -91,6 +91,9 @@ class Endpoints {
   static String get userSettingsLanguage =>
       '$apiVersion/user/settings/language';
 
+  /// File upload; supports query param `prefix` (e.g. support-requests).
+  static String get upload => '$apiVersion/user/upload';
+
   /// Support requests; supports query params `status`, `page`, `limit`.
   static String get supportRequests => '$apiVersion/user/support-requests';
 }

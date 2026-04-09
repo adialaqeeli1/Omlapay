@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../../../core/constants/endpoints.dart';
 import '../../../core/services/api_helper.dart';
 import '../../../core/utils/app_exception.dart';
@@ -31,5 +33,47 @@ class HelpCenterService {
     }
 
     return SupportRequestsResponse.fromJson(data);
+  }
+
+  Future<String> uploadFile({
+    required String filePath,
+    required String fileName,
+  }) async {
+    final response = await ApiHelper.multipartPost(
+      Endpoints.upload,
+      data: {
+        'files': await MultipartFile.fromFile(filePath, filename: fileName),
+      },
+      queryParameters: {'prefix': 'support-requests'},
+    );
+
+    final dynamic data = response['data'];
+    if (data is Map<String, dynamic>) {
+      final attachmentUrl = data['attachmentUrl'] as String?;
+      if (attachmentUrl != null && attachmentUrl.isNotEmpty) {
+        return attachmentUrl;
+      }
+    }
+
+    throw AppException(
+      'Failed to upload file',
+      messageKey: 'requestFailed',
+    );
+  }
+
+  Future<void> submitRequest({
+    required String title,
+    required String description,
+    String? attachmentUrl,
+  }) async {
+    final body = <String, dynamic>{
+      'title': title,
+      'description': description,
+    };
+    if (attachmentUrl != null) {
+      body['attachmentUrl'] = attachmentUrl;
+    }
+
+    await ApiHelper.post(Endpoints.supportRequests, body);
   }
 }
