@@ -72,6 +72,7 @@ dependencies:
   flutter_idensic_mobile_sdk_plugin: ^1.41.2
   connectivity_plus: ^7.1.0
   flutter_contacts: ^2.0.1
+  badges: ^3.1.2
 
 dev_dependencies:
   flutter_test:
