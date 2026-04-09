@@ -467,7 +467,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get attachment => 'المرفق';
 
   @override
-  String get attachFileDescription => 'أرفق أي ملفات ذات صلة PNG، JPG، PDF';
+  String attachFileDescription(String extensions) {
+    return 'أرفق أي ملفات $extensions ذات صلة';
+  }
 
   @override
   String get send => 'إرسال';
@@ -753,8 +755,11 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String verificationCodesInSeconds(int seconds) {
-    return 'يجب أن تستلم رموز التحقق خلال $seconds ثانية';
+  String get verificationCodesIn => 'يجب أن تستلم رموز التحقق خلال';
+
+  @override
+  String secondsCount(int seconds) {
+    return '$seconds ثانية';
   }
 
   @override

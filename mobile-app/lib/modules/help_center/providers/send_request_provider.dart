@@ -33,10 +33,12 @@ class SendRequestProvider extends ChangeNotifier {
   FormControl<String> get descriptionControl =>
       form.control('description') as FormControl<String>;
 
+  static const List<String> allowedExtensions = ['png', 'jpg', 'pdf'];
+
   Future<void> pickFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['png', 'jpg', 'jpeg', 'pdf'],
+      allowedExtensions: allowedExtensions,
     );
 
     if (result != null && result.files.single.path != null) {

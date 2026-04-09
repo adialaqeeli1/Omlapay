@@ -475,7 +475,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get attachment => 'Attachment';
 
   @override
-  String get attachFileDescription => 'Attach any related PNG, JPG, PDF';
+  String attachFileDescription(String extensions) {
+    return 'Attach any related $extensions';
+  }
 
   @override
   String get send => 'Send';
@@ -761,8 +763,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String verificationCodesInSeconds(int seconds) {
-    return 'You should receive the verification codes in $seconds Seconds';
+  String get verificationCodesIn =>
+      'You should receive the verification codes in';
+
+  @override
+  String secondsCount(int seconds) {
+    return '$seconds Seconds';
   }
 
   @override

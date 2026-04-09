@@ -168,6 +168,7 @@ class LoginOrRegisterScreen extends StatelessWidget {
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
+                              textDirection: TextDirection.ltr,
                               children: [
                                 Text(
                                   loginProvider.currentFlagEmoji,
@@ -176,6 +177,7 @@ class LoginOrRegisterScreen extends StatelessWidget {
                                 const SizedBox(width: 8),
                                 Text(
                                   loginProvider.currentPhoneCode,
+                                  textDirection: TextDirection.ltr,
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
@@ -202,6 +204,14 @@ class LoginOrRegisterScreen extends StatelessWidget {
                             ),
                             alignment: Alignment.center,
                             child: TextField(
+                              textDirection: TextDirection.ltr,
+                              textAlign:
+                                  Localizations.localeOf(
+                                        context,
+                                      ).languageCode ==
+                                      'ar'
+                                  ? TextAlign.right
+                                  : TextAlign.left,
                               onTapOutside: (event) =>
                                   FocusScope.of(context).unfocus(),
                               keyboardType: TextInputType.phone,

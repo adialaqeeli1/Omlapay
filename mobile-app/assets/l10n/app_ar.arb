@@ -172,7 +172,14 @@
     "description": "الوصف",
     "descriptionPlaceholder": "اوصف استفسارك",
     "attachment": "المرفق",
-    "attachFileDescription": "أرفق أي ملفات ذات صلة PNG، JPG، PDF",
+    "attachFileDescription": "أرفق أي ملفات {extensions} ذات صلة",
+    "@attachFileDescription": {
+        "placeholders": {
+            "extensions": {
+                "type": "String"
+            }
+        }
+    },
     "send": "إرسال",
     "filter": "تصفية",
     "transactionType": "نوع المعاملة",
@@ -279,8 +286,9 @@
             }
         }
     },
-    "verificationCodesInSeconds": "يجب أن تستلم رموز التحقق خلال {seconds} ثانية",
-    "@verificationCodesInSeconds": {
+    "verificationCodesIn": "يجب أن تستلم رموز التحقق خلال",
+    "secondsCount": "{seconds} ثانية",
+    "@secondsCount": {
         "placeholders": {
             "seconds": {
                 "type": "int"
