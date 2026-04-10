@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:omlapay_mobile_app/widgets/common_transparent_card.dart';
@@ -52,6 +53,12 @@ class CommonGridBgWrapper extends StatelessWidget {
                 automaticallyImplyLeading: false,
                 actions: appBarButtons,
                 iconTheme: context.theme.iconTheme,
+                systemOverlayStyle: SystemUiOverlayStyle(
+                  statusBarColor: Colors.transparent,
+                  statusBarIconBrightness: context.isDarkMode
+                      ? Brightness.light
+                      : Brightness.dark,
+                ),
               ),
             ),
             SliverSafeArea(

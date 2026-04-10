@@ -124,6 +124,8 @@ class AuthProvider extends ChangeNotifier {
         );
 
         notifyListeners();
+        // Refresh account details in background to sync latest profile data
+        fetchAccountDetails();
         return true;
       }
 
@@ -173,6 +175,8 @@ class AuthProvider extends ChangeNotifier {
           _state = state.copyWith(isLoading: false, errorMessage: null);
         }
         notifyListeners();
+        // Refresh account details in background to sync latest profile data
+        fetchAccountDetails();
         return true;
       }
 
@@ -353,8 +357,17 @@ class AuthProvider extends ChangeNotifier {
       final data = response['data'];
       if (data is Map<String, dynamic>) {
         final isVerified = data['isVerified'];
+        final email = data['email']?.toString();
+
+        var updatedUser = currentUser;
         if (isVerified is bool) {
-          final updatedUser = currentUser.copyWith(isVerified: isVerified);
+          updatedUser = updatedUser.copyWith(isVerified: isVerified);
+        }
+        if (email != null && email.isNotEmpty) {
+          updatedUser = updatedUser.copyWith(email: email);
+        }
+
+        if (updatedUser != currentUser) {
           _state = state.copyWith(user: updatedUser);
           await StorageService.setString(
             AppConstants.userKey,

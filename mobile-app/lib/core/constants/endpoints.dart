@@ -68,6 +68,12 @@ class Endpoints {
   /// Binance KYC start endpoint; initiates Binance verification after Sumsub approval.
   static String get kycBinanceStart => '$apiVersion/user/kyc/binance/start';
 
+  /// Email verification: request OTP for email address.
+  static String get emailRequest => '$apiVersion/user/email/request';
+
+  /// Email verification: verify OTP for email address.
+  static String get emailVerify => '$apiVersion/user/email/verify';
+
   /// User account details endpoint.
   static String get accountDetails => '$apiVersion/user/account-details';
 

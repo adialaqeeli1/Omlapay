@@ -15,7 +15,8 @@ abstract class UserModel with _$UserModel {
     String? id,
     @JsonKey(name: 'mobile_number') String? fullMobileNumber,
     String? status,
-    
+    String? email,
+
     @Default('') String mobileNumber,
     @Default('') @JsonKey(readValue: _readCountryCode) String countryCode,
     @Default('') String password, // 6 digit numeric

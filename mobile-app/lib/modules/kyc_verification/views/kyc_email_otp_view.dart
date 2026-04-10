@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/utils/app_exception.dart';
 import '../../../core/utils/snackbar_helper.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../widgets/otp_verification_view.dart';
 import '../providers/kyc_email_provider.dart';
 
@@ -40,6 +41,9 @@ class KycEmailOtpView extends StatelessWidget {
     try {
       final valid = await provider.verifyOtp();
       if (!context.mounted || !valid) return;
+      // Refresh user data so email is stored on the user model
+      await context.read<AuthProvider>().fetchAccountDetails();
+      if (!context.mounted) return;
       // Pop OTP view, returning true to email entry view
       context.pop(true);
     } on AppException catch (e) {
