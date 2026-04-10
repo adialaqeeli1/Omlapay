@@ -14,21 +14,8 @@ import '../models/support_request_model.dart';
 import '../providers/help_center_provider.dart';
 import '../widgets/filter_bottom_sheet.dart';
 
-class PastRequestsView extends StatefulWidget {
+class PastRequestsView extends StatelessWidget {
   const PastRequestsView({super.key});
-
-  @override
-  State<PastRequestsView> createState() => _PastRequestsViewState();
-}
-
-class _PastRequestsViewState extends State<PastRequestsView> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<HelpCenterProvider>().fetchRequests();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +61,9 @@ class _PastRequestsViewState extends State<PastRequestsView> {
 
           if (provider.errorKey != null && provider.items.isEmpty) {
             return _ErrorView(
-              message: AppException.resolveErrorKey(l10n, provider.errorKey!) ?? l10n.unknownError,
+              message:
+                  AppException.resolveErrorKey(l10n, provider.errorKey!) ??
+                  l10n.unknownError,
               onRetry: () => provider.fetchRequests(),
             );
           }
@@ -97,36 +86,36 @@ class _PastRequestsViewState extends State<PastRequestsView> {
       ),
     );
   }
+}
 
-  List<Widget> _buildSections(List<SupportRequestModel> items, dynamic l10n) {
-    final now = DateTime.now();
-    final sections = <Widget>[];
-    String? currentSection;
+List<Widget> _buildSections(List<SupportRequestModel> items, dynamic l10n) {
+  final now = DateTime.now();
+  final sections = <Widget>[];
+  String? currentSection;
 
-    for (final item in items) {
-      final localDate = item.createdAt.toLocal();
-      final sectionLabel = _getSectionLabel(localDate, now, l10n);
+  for (final item in items) {
+    final localDate = item.createdAt.toLocal();
+    final sectionLabel = _getSectionLabel(localDate, now, l10n);
 
-      if (sectionLabel != currentSection) {
-        currentSection = sectionLabel;
-        sections.add(_SectionHeader(title: sectionLabel));
-      }
-
-      sections.add(_RequestItem(request: item));
+    if (sectionLabel != currentSection) {
+      currentSection = sectionLabel;
+      sections.add(_SectionHeader(title: sectionLabel));
     }
 
-    return sections;
+    sections.add(_RequestItem(request: item));
   }
 
-  String _getSectionLabel(DateTime date, DateTime now, dynamic l10n) {
-    final difference = now.difference(date);
+  return sections;
+}
 
-    if (difference.inDays <= 7) {
-      return l10n.recently as String;
-    }
+String _getSectionLabel(DateTime date, DateTime now, dynamic l10n) {
+  final difference = now.difference(date);
 
-    return DateFormat('MMMM, yyyy').format(date);
+  if (difference.inDays <= 7) {
+    return l10n.recently as String;
   }
+
+  return DateFormat('MMMM, yyyy').format(date);
 }
 
 class _SectionHeader extends StatelessWidget {
@@ -212,7 +201,7 @@ class _RequestItem extends StatelessWidget {
       case SupportRequestStatus.open:
         return l10n.open as String;
       case SupportRequestStatus.pending:
-        return l10n.pending as String;
+        return l10n.open as String;
       case SupportRequestStatus.solved:
         return l10n.solved as String;
       case SupportRequestStatus.rejected:

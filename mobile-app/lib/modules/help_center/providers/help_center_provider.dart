@@ -9,7 +9,9 @@ class HelpCenterProvider extends ChangeNotifier {
   final HelpCenterService _service;
 
   HelpCenterProvider({HelpCenterService? service})
-      : _service = service ?? HelpCenterService();
+    : _service = service ?? HelpCenterService() {
+    fetchRequests();
+  }
 
   List<SupportRequestModel> _items = [];
   bool _isLoading = false;
