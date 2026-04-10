@@ -5,9 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/models/transaction_model/transaction_model.dart';
 import '../../../../core/theme/theme.dart';
-import '../../../../providers/global_provider.dart';
 import '../../../../widgets/common_back_button.dart';
-import 'package:provider/provider.dart';
 import '../../../../widgets/theme_aware_icon.dart';
 import '../widgets/save_as_bottom_sheet.dart';
 
@@ -28,9 +26,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
     final isDarkMode = context.isDarkMode;
-    final selectedCurrency = context.watch<GlobalProvider>().selectedCurrency;
-    final currencySymbol = l10n.currencySymbol(selectedCurrency.toLowerCase());
-    final isSent = widget.transaction.type == TransactionType.sent;
+    final isSent = widget.transaction.isSent;
 
     return Scaffold(
       appBar: AppBar(
@@ -79,7 +75,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                           const SizedBox(height: 8),
                           // Amount
                           Text(
-                            '${_getTypePrefix(widget.transaction.type)}${_formatAmount(widget.transaction.amount)} ${widget.transaction.coinSymbol}',
+                            '${widget.transaction.amount} ${widget.transaction.assetSymbol}',
                             style: context.textTheme.headlineMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: isDarkMode
@@ -88,33 +84,19 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                               fontSize: 24,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          // USD Equivalent
-                          Text(
-                            '≈$currencySymbol${widget.transaction.valueInCurrency}',
-                            style: context.textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textGrey,
-                              fontSize: 14,
-                            ),
-                          ),
-                          // Status (only for sent transactions)
+                          // Status
                           if (isSent) ...[
                             const SizedBox(height: 8),
                             Text(
-                              widget.transaction.status ==
-                                      TransactionStatus.failed
+                              widget.transaction.isFailed
                                   ? l10n.failed
-                                  : widget.transaction.status ==
-                                        TransactionStatus.completed
+                                  : widget.transaction.isCompleted
                                   ? l10n.completed
                                   : l10n.pending,
                               style: context.textTheme.bodyMedium?.copyWith(
-                                color:
-                                    widget.transaction.status ==
-                                        TransactionStatus.failed
+                                color: widget.transaction.isFailed
                                     ? Colors.red
-                                    : widget.transaction.status ==
-                                          TransactionStatus.completed
+                                    : widget.transaction.isCompleted
                                     ? AppColors.greenColor
                                     : AppColors.textGrey,
                                 fontSize: 14,
@@ -132,60 +114,23 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                       l10n.date,
                       DateFormat(
                         'yyyy-MM-dd HH:mm:ss',
-                      ).format(widget.transaction.date),
+                      ).format(widget.transaction.createdAt),
                     ),
                     const SizedBox(height: 16),
                     _buildDetailRow(
                       context,
                       l10n.network,
-                      'TRC20',
+                      widget.transaction.network ?? 'N/A',
                       isNetwork: true,
                     ),
                     const SizedBox(height: 16),
-                    if (isSent) ...[
-                      _buildDetailRow(
-                        context,
-                        l10n.sendTo,
-                        'M**** M*****d A*****', // Dummy masked name
-                      ),
-                      const SizedBox(height: 16),
-                      _buildDetailRow(
-                        context,
-                        l10n.phoneNumber,
-                        '+966 83 872 9872', // Dummy phone number
-                      ),
-                      const SizedBox(height: 16),
-                      _buildDetailRow(
-                        context,
-                        l10n.transactionFees,
-                        widget.transaction.fee != null &&
-                                widget.transaction.fee! > 0
-                            ? '${widget.transaction.fee} ${widget.transaction.coinSymbol}'
-                            : 'Free',
-                      ),
-                    ] else ...[
-                      _buildDetailRow(
-                        context,
-                        l10n.sender,
-                        'M**** M*****d A*****', // Dummy masked name
-                      ),
-                      const SizedBox(height: 16),
+                    if (widget.transaction.txHash != null) ...[
                       _buildDetailRow(
                         context,
                         l10n.address,
-                        widget.transaction.toAddress ??
-                            '09405093285dj9483cjxyg89y...',
+                        widget.transaction.txHash!,
                         isAddress: true,
                       ),
-                      if (widget.transaction.note != null &&
-                          widget.transaction.note!.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        _buildDetailRow(
-                          context,
-                          l10n.note,
-                          widget.transaction.note!,
-                        ),
-                      ],
                     ],
                   ],
                 ),
@@ -336,21 +281,11 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
     );
   }
 
-  String _getTypePrefix(TransactionType type) {
-    switch (type) {
-      case TransactionType.sent:
-        return '-';
-      case TransactionType.received:
-        return '+';
-      case TransactionType.swap:
-        return '';
-    }
-  }
-
   String _formatAmount(String amount) {
-    // Format amount with commas for thousands
     try {
-      final numValue = double.parse(amount);
+      // Remove +/- prefix for formatting
+      final cleanAmount = amount.replaceAll(RegExp(r'^[+-]'), '');
+      final numValue = double.parse(cleanAmount);
       return NumberFormat('#,##0.000').format(numValue);
     } catch (e) {
       return amount;
@@ -359,10 +294,9 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
 
   void _shareTransaction() {
     final tx = widget.transaction;
-    final amountText =
-        '${_getTypePrefix(tx.type)}${_formatAmount(tx.amount)} ${tx.coinSymbol}';
-    final dateText = DateFormat('MMMM, yyyy').format(tx.date);
-    final hashText = tx.transactionHash ?? tx.toAddress ?? tx.fromAddress ?? '';
+    final amountText = '${_formatAmount(tx.amount)} ${tx.assetSymbol}';
+    final dateText = DateFormat('MMMM, yyyy').format(tx.createdAt);
+    final hashText = tx.txHash ?? '';
     final shareText = [
       amountText,
       dateText,

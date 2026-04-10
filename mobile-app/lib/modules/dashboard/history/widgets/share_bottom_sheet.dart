@@ -30,20 +30,10 @@ class ShareBottomSheet extends StatelessWidget {
     );
   }
 
-  String _getTypePrefix(TransactionType type) {
-    switch (type) {
-      case TransactionType.sent:
-        return '-';
-      case TransactionType.received:
-        return '+';
-      case TransactionType.swap:
-        return '';
-    }
-  }
-
   String _formatAmount(String amount) {
     try {
-      final numValue = double.parse(amount);
+      final cleanAmount = amount.replaceAll(RegExp(r'^[+-]'), '');
+      final numValue = double.parse(cleanAmount);
       return NumberFormat('#,##0.000').format(numValue);
     } catch (e) {
       return amount;
@@ -60,13 +50,9 @@ class ShareBottomSheet extends StatelessWidget {
     final secondaryColor = AppColors.textLightGrey;
 
     final amountText =
-        '${_getTypePrefix(transaction.type)}${_formatAmount(transaction.amount)} ${transaction.coinSymbol}';
-    final dateText = DateFormat('MMMM, yyyy').format(transaction.date);
-    final hashText =
-        transaction.transactionHash ??
-        transaction.toAddress ??
-        transaction.fromAddress ??
-        '09405093285dj9483cjxyg89y...';
+        '${_formatAmount(transaction.amount)} ${transaction.assetSymbol}';
+    final dateText = DateFormat('MMMM, yyyy').format(transaction.createdAt);
+    final hashText = transaction.txHash ?? '';
 
     final shareOptions = [
       (ShareDestination.whatsapp, l10n.whatsapp, const Color(0xFF25D366)),
@@ -150,17 +136,18 @@ class ShareBottomSheet extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          hashText.length > 35
-                              ? '${hashText.substring(0, 35)}...'
-                              : hashText,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: secondaryColor,
-                            fontSize: 12,
+                        if (hashText.isNotEmpty)
+                          Text(
+                            hashText.length > 35
+                                ? '${hashText.substring(0, 35)}...'
+                                : hashText,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: secondaryColor,
+                              fontSize: 12,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
                       ],
                     ),
                   ),

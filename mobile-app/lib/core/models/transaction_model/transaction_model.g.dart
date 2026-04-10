@@ -9,45 +9,25 @@ part of 'transaction_model.dart';
 _TransactionModel _$TransactionModelFromJson(Map<String, dynamic> json) =>
     _TransactionModel(
       id: json['id'] as String,
-      coinSymbol: json['coinSymbol'] as String,
-      coinName: json['coinName'] as String,
+      assetSymbol: json['assetSymbol'] as String,
+      assetName: json['assetName'] as String,
+      assetIconUrl: json['assetIconUrl'] as String?,
       amount: json['amount'] as String,
-      valueInCurrency: json['valueInCurrency'] as String,
-      type: $enumDecode(_$TransactionTypeEnumMap, json['type']),
-      status: $enumDecode(_$TransactionStatusEnumMap, json['status']),
-      date: DateTime.parse(json['date'] as String),
-      toAddress: json['toAddress'] as String?,
-      fromAddress: json['fromAddress'] as String?,
-      transactionHash: json['transactionHash'] as String?,
-      fee: (json['fee'] as num?)?.toDouble(),
-      note: json['note'] as String?,
+      network: json['network'] as String?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      txHash: json['txHash'] as String?,
+      status: json['status'] as String,
     );
 
 Map<String, dynamic> _$TransactionModelToJson(_TransactionModel instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'coinSymbol': instance.coinSymbol,
-      'coinName': instance.coinName,
+      'assetSymbol': instance.assetSymbol,
+      'assetName': instance.assetName,
+      'assetIconUrl': instance.assetIconUrl,
       'amount': instance.amount,
-      'valueInCurrency': instance.valueInCurrency,
-      'type': _$TransactionTypeEnumMap[instance.type]!,
-      'status': _$TransactionStatusEnumMap[instance.status]!,
-      'date': instance.date.toIso8601String(),
-      'toAddress': instance.toAddress,
-      'fromAddress': instance.fromAddress,
-      'transactionHash': instance.transactionHash,
-      'fee': instance.fee,
-      'note': instance.note,
+      'network': instance.network,
+      'createdAt': instance.createdAt.toIso8601String(),
+      'txHash': instance.txHash,
+      'status': instance.status,
     };
-
-const _$TransactionTypeEnumMap = {
-  TransactionType.sent: 'sent',
-  TransactionType.received: 'received',
-  TransactionType.swap: 'swap',
-};
-
-const _$TransactionStatusEnumMap = {
-  TransactionStatus.pending: 'pending',
-  TransactionStatus.completed: 'completed',
-  TransactionStatus.failed: 'failed',
-};

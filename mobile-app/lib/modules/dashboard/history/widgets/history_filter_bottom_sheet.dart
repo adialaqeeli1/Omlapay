@@ -1,24 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import '../../../../core/extentions/context_extensions.dart';
-import '../../../../core/models/transaction_model/transaction_model.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/custom_date_picker_dialog.dart';
 
 class HistoryFilterBottomSheet extends StatefulWidget {
   const HistoryFilterBottomSheet({
     super.key,
-    required this.selectedTransactionType,
+    required this.selectedStatus,
     required this.dateStart,
     required this.dateEnd,
     required this.onApply,
   });
 
-  final TransactionType? selectedTransactionType;
+  final String? selectedStatus;
   final DateTime? dateStart;
   final DateTime? dateEnd;
   final void Function({
-    TransactionType? transactionType,
+    String? status,
     DateTime? dateStart,
     DateTime? dateEnd,
   })
@@ -26,11 +25,11 @@ class HistoryFilterBottomSheet extends StatefulWidget {
 
   static void show(
     BuildContext context, {
-    required TransactionType? selectedTransactionType,
+    required String? selectedStatus,
     required DateTime? dateStart,
     required DateTime? dateEnd,
     required void Function({
-      TransactionType? transactionType,
+      String? status,
       DateTime? dateStart,
       DateTime? dateEnd,
     })
@@ -47,7 +46,7 @@ class HistoryFilterBottomSheet extends StatefulWidget {
       ),
       elevation: 5,
       builder: (context) => HistoryFilterBottomSheet(
-        selectedTransactionType: selectedTransactionType,
+        selectedStatus: selectedStatus,
         dateStart: dateStart,
         dateEnd: dateEnd,
         onApply: onApply,
@@ -61,21 +60,21 @@ class HistoryFilterBottomSheet extends StatefulWidget {
 }
 
 class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
-  late TransactionType? _selectedTransactionType;
+  late String? _selectedStatus;
   late DateTime? _dateStart;
   late DateTime? _dateEnd;
 
   @override
   void initState() {
     super.initState();
-    _selectedTransactionType = widget.selectedTransactionType;
+    _selectedStatus = widget.selectedStatus;
     _dateStart = widget.dateStart;
     _dateEnd = widget.dateEnd;
   }
 
   void _handleReset() {
     setState(() {
-      _selectedTransactionType = null;
+      _selectedStatus = null;
       _dateStart = null;
       _dateEnd = null;
     });
@@ -83,7 +82,7 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
 
   void _handleApply() {
     widget.onApply(
-      transactionType: _selectedTransactionType,
+      status: _selectedStatus,
       dateStart: _dateStart,
       dateEnd: _dateEnd,
     );
@@ -126,21 +125,23 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
         theme.textTheme.bodyMedium?.color ?? AppColors.textLightGrey;
     final labelColor = AppColors.textLightGrey;
 
-    final transactionTypeOptions = [
+    final statusOptions = <String?>[
       null,
-      TransactionType.sent,
-      TransactionType.received,
+      'COMPLETED',
+      'PENDING',
     ];
 
-    String getTransactionTypeLabel(TransactionType? type) {
-      if (type == null) return l10n.all;
-      switch (type) {
-        case TransactionType.sent:
-          return l10n.sent;
-        case TransactionType.received:
-          return l10n.receive;
-        case TransactionType.swap:
-          return l10n.swap;
+    String getStatusLabel(String? status) {
+      if (status == null) return l10n.all;
+      switch (status.toUpperCase()) {
+        case 'COMPLETED':
+          return l10n.completed;
+        case 'PENDING':
+          return l10n.pending;
+        case 'FAILED':
+          return l10n.failed;
+        default:
+          return status;
       }
     }
 
@@ -185,7 +186,7 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
               ),
               const SizedBox(height: 24),
 
-              // Transaction type section
+              // Status section
               Text(
                 l10n.transactionType,
                 style: theme.textTheme.bodyMedium?.copyWith(
@@ -197,20 +198,15 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  for (int i = 0; i < transactionTypeOptions.length; i++) ...[
+                  for (int i = 0; i < statusOptions.length; i++) ...[
                     if (i > 0) const SizedBox(width: 8),
                     Expanded(
                       child: _FilterChip(
-                        label: getTransactionTypeLabel(
-                          transactionTypeOptions[i],
-                        ),
-                        isSelected:
-                            _selectedTransactionType ==
-                            transactionTypeOptions[i],
+                        label: getStatusLabel(statusOptions[i]),
+                        isSelected: _selectedStatus == statusOptions[i],
                         onTap: () {
                           setState(
-                            () => _selectedTransactionType =
-                                transactionTypeOptions[i],
+                            () => _selectedStatus = statusOptions[i],
                           );
                         },
                       ),

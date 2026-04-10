@@ -88,7 +88,7 @@ class TransactionDetailsView extends StatelessWidget {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          '+${double.parse(transaction.amount).toStringAsFixed(3).replaceAll(RegExp(r"([.]*0+)(?!.*\d)"), "")} ${transaction.coinSymbol}',
+                          '${transaction.amount} ${transaction.assetSymbol}',
                           style: TextStyle(
                             color: isDark
                                 ? AppColors.white
@@ -107,41 +107,32 @@ class TransactionDetailsView extends StatelessWidget {
                     DateFormat(
                       'yyyy-MM-dd HH:mm:ss',
                       l10n.localeName,
-                    ).format(transaction.date),
+                    ).format(transaction.createdAt),
                   ),
                   Divider(
                     color: colorScheme.outlineVariant,
                     height: 30,
                     thickness: 0.5,
                   ),
-                  _buildDetailRow(
-                    context,
-                    l10n.sender,
-                    transaction.fromAddress ?? l10n.valueNotAvailable,
-                  ),
-                  Divider(
-                    color: colorScheme.outlineVariant,
-                    height: 30,
-                    thickness: 0.5,
-                  ),
-                  _buildDetailRow(
-                    context,
-                    l10n.address,
-                    transaction.toAddress ??
-                        transaction.fromAddress ??
-                        l10n.valueNotAvailable,
-                    isMultiLine: true,
-                  ),
-                  Divider(
-                    color: colorScheme.outlineVariant,
-                    height: 30,
-                    thickness: 0.5,
-                  ),
-                  _buildNetworkRow(
-                    context,
-                    l10n.network,
-                    l10n.sendDefaultNetworkCode,
-                  ),
+                  if (transaction.network != null)
+                    _buildNetworkRow(
+                      context,
+                      l10n.network,
+                      transaction.network!,
+                    ),
+                  if (transaction.txHash != null) ...[
+                    _buildDetailRow(
+                      context,
+                      l10n.address,
+                      transaction.txHash!,
+                      isMultiLine: true,
+                    ),
+                    Divider(
+                      color: colorScheme.outlineVariant,
+                      height: 30,
+                      thickness: 0.5,
+                    ),
+                  ],
 
                   const Spacer(),
                   Row(

@@ -175,7 +175,7 @@ class _TransactionList extends StatelessWidget {
   ) {
     final grouped = <String, List<TransactionModel>>{};
     for (var tx in transactions) {
-      final key = _getDateLabel(tx.date, l10n);
+      final key = _getDateLabel(tx.createdAt, l10n);
       grouped.putIfAbsent(key, () => []).add(tx);
     }
     return grouped;
@@ -207,7 +207,7 @@ class _TransactionItem extends StatelessWidget {
     Color? iconBackgroundColor;
     Widget? fallbackIcon;
 
-    if (transaction.coinSymbol == 'USDT') {
+    if (transaction.assetSymbol == 'USDT') {
       iconBackgroundColor = AppColors.usdtColor;
       fallbackIcon = DecoratedBox(
         decoration: const BoxDecoration(
@@ -219,7 +219,7 @@ class _TransactionItem extends StatelessWidget {
           child: Icon(CryptoFontIcons.USDT, color: Colors.white, size: 24),
         ),
       );
-    } else if (transaction.coinSymbol == 'ETH') {
+    } else if (transaction.assetSymbol == 'ETH') {
       iconBackgroundColor = AppColors.textWhite;
       fallbackIcon = DecoratedBox(
         decoration: const BoxDecoration(
@@ -231,7 +231,7 @@ class _TransactionItem extends StatelessWidget {
           child: Icon(CryptoFontIcons.ETH, color: Colors.black, size: 24),
         ),
       );
-    } else if (transaction.coinSymbol == 'BTC') {
+    } else if (transaction.assetSymbol == 'BTC') {
       iconBackgroundColor = AppColors.bitcoinColor;
       fallbackIcon = DecoratedBox(
         decoration: const BoxDecoration(
@@ -250,12 +250,12 @@ class _TransactionItem extends StatelessWidget {
         context.pushNamed('transactionDetails', extra: transaction);
       },
       leading: CommonCoinIcon(
-        symbol: transaction.coinSymbol,
+        symbol: transaction.assetSymbol,
         iconBackgroundColor: iconBackgroundColor,
         fallbackIcon: fallbackIcon,
       ),
       title: Text(
-        transaction.coinSymbol,
+        transaction.assetSymbol,
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.bold,
           color: colorScheme.onSurface,
@@ -265,11 +265,11 @@ class _TransactionItem extends StatelessWidget {
         DateFormat(
           'yyyy-MM-dd HH:mm:ss',
           AppLocalizations.of(context)!.localeName,
-        ).format(transaction.date),
+        ).format(transaction.createdAt),
         style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
       ),
       trailing: Text(
-        '+${double.parse(transaction.amount).toStringAsFixed(2)} ${transaction.coinSymbol}',
+        '+${double.parse(transaction.amount).toStringAsFixed(2)} ${transaction.assetSymbol}',
         style: TextStyle(
           color: AppColors.greenColor,
           fontWeight: FontWeight.bold,
