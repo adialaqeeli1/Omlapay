@@ -2,8 +2,8 @@ import '../../../core/constants/endpoints.dart';
 import '../../../core/services/api_helper.dart';
 import '../../../core/utils/app_exception.dart';
 
-class KycEmailService {
-  KycEmailService._();
+class EmailVerificationService {
+  EmailVerificationService._();
 
   /// Sends an OTP to the given [email] address.
   static Future<void> sendOtp(String email) async {

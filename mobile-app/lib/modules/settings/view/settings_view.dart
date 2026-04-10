@@ -110,13 +110,28 @@ class SettingsView extends StatelessWidget {
                           );
                         },
                       ),
-                      // if ((user?.email?.trim() ?? '').isNotEmpty)
                       _buildNotificationToggle(
                         context: context,
                         label: l10n.twoFactorAuthentication,
                         screenWidth: screenWidth,
                         value: user?.twoFactorEnabled ?? false,
                         onChanged: (value) async {
+                          // When enabling 2FA, check if user has an email first
+                          if (value) {
+                            final hasEmail =
+                                (user?.email?.trim() ?? '').isNotEmpty;
+                            if (!hasEmail) {
+                              final emailVerified = await GoRouter.of(
+                                context,
+                              ).push<bool>(Routes.emailEntry);
+                              if (!context.mounted || emailVerified != true) {
+                                return;
+                              }
+                            }
+                          }
+
+                          if (!context.mounted) return;
+
                           final navigator = Navigator.of(
                             context,
                             rootNavigator: true,

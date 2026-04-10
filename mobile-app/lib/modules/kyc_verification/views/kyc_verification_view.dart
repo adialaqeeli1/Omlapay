@@ -157,7 +157,7 @@ class KycVerificationView extends StatelessWidget {
 
                                 if (!hasEmail) {
                                   final emailVerified = await context
-                                      .push<bool>(Routes.kycEmailEntry);
+                                      .push<bool>(Routes.emailEntry);
                                   if (!context.mounted ||
                                       emailVerified != true) {
                                     return;
