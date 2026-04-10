@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../core/models/user_model/user_model.dart';
 import '../../../core/theme/theme.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../routes/app_router.dart';
@@ -23,7 +24,8 @@ class ProfileView extends StatelessWidget {
         screenWidth * 0.05; // 5% padding for responsiveness
     final authState = context.watch<AuthProvider>().state;
     final bool isAuthenticated = authState.isAuthenticated;
-    final user = authState.user;
+    final UserModel? user = authState.user;
+    final bool isKycVerified = user?.isVerified == true;
 
     return CommonGridBgWrapper(
       horizontalPadding: horizontalPadding,
@@ -49,12 +51,11 @@ class ProfileView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               spacing: 16,
               children: [
-                if (isAuthenticated) ...[
+                if (isAuthenticated && !isKycVerified)
                   _buildKycMenuItem(
                     context: context,
                     horizontalPadding: horizontalPadding,
                   ),
-                ],
                 if (!isAuthenticated)
                   _buildMenuItem(
                     context: context,
@@ -307,7 +308,7 @@ class ProfileView extends StatelessWidget {
             maxLines: 1,
           ),
         ),
-        const SizedBox(width: 8),
+        Spacer(),
         Material(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(8),
