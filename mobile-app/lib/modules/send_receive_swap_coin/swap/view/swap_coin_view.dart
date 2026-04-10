@@ -92,6 +92,7 @@ class SwapCoinView extends StatelessWidget {
                             hasBorder: true,
                             onCoinTap: () =>
                                 _showCoinSelection(context, provider, true),
+                            networkIconUrl: provider.fromCoin?.networkIconUrl,
                           ),
                         ),
                         // Swap Icon
@@ -140,6 +141,7 @@ class SwapCoinView extends StatelessWidget {
                             readOnly: true,
                             onCoinTap: () =>
                                 _showCoinSelection(context, provider, false),
+                            networkIconUrl: provider.toCoin?.networkIconUrl,
                           ),
                         ),
                       ],

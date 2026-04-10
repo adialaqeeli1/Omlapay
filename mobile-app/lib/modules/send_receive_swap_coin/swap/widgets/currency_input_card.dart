@@ -21,6 +21,7 @@ class CurrencyInputCard extends StatelessWidget {
   final String? errorText;
   final TextEditingController? controller;
   final bool hasBorder;
+  final String? networkIconUrl;
 
   const CurrencyInputCard({
     super.key,
@@ -37,6 +38,7 @@ class CurrencyInputCard extends StatelessWidget {
     this.controller,
     this.hasBorder = false,
     this.readOnly = false,
+    required this.networkIconUrl,
   });
 
   final bool readOnly;
@@ -134,6 +136,7 @@ class CurrencyInputCard extends StatelessWidget {
                             iconBackgroundColor: iconBackgroundColor,
                             fallbackIcon: fallbackIcon,
                             radius: 16,
+                            networkIconUrl: networkIconUrl,
                           ),
                           const SizedBox(width: 8),
                           Text(
