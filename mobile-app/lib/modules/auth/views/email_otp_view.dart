@@ -7,21 +7,21 @@ import '../../../core/utils/app_exception.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../widgets/otp_verification_view.dart';
-import '../providers/kyc_email_provider.dart';
+import '../providers/email_verification_provider.dart';
 
-class KycEmailOtpView extends StatelessWidget {
-  const KycEmailOtpView({super.key});
+class EmailOtpView extends StatelessWidget {
+  const EmailOtpView({super.key});
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
-    final provider = context.watch<KycEmailProvider>();
+    final provider = context.watch<EmailVerificationProvider>();
 
     return OtpVerificationView(
       appBarTitle: l10n.kycVerifyEmail,
       title: l10n.kycVerifyEmailTitle,
       subtitle: l10n.kycVerifyEmailSubtitle(provider.email.trim()),
-      otpLength: KycEmailProvider.otpLength,
+      otpLength: EmailVerificationProvider.otpLength,
       countdownSeconds: provider.countdownSeconds,
       canResend: provider.canResend,
       hasError: provider.hasError,
@@ -36,7 +36,7 @@ class KycEmailOtpView extends StatelessWidget {
 
   Future<void> _onOtpCompleted(
     BuildContext context,
-    KycEmailProvider provider,
+    EmailVerificationProvider provider,
   ) async {
     try {
       final valid = await provider.verifyOtp();
@@ -55,7 +55,7 @@ class KycEmailOtpView extends StatelessWidget {
 
   Future<void> _onResend(
     BuildContext context,
-    KycEmailProvider provider,
+    EmailVerificationProvider provider,
   ) async {
     try {
       await provider.resendOtp();

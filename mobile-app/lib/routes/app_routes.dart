@@ -48,8 +48,8 @@ class Routes {
   static const String accountDetails = _Paths.accountDetails;
   static const String notifications = _Paths.notifications;
   static const String kycVerification = _Paths.kycVerification;
-  static const String kycEmailEntry = _Paths.kycEmailEntry;
-  static const String kycEmailVerifyOtp = _Paths.kycEmailVerifyOtp;
+  static const String emailEntry = _Paths.emailEntry;
+  static const String emailVerifyOtp = _Paths.emailVerifyOtp;
 }
 
 abstract class _Paths {
@@ -101,6 +101,6 @@ abstract class _Paths {
   static const String accountDetails = '/account-details';
   static const String notifications = '/notifications';
   static const String kycVerification = '/kyc-verification';
-  static const String kycEmailEntry = '/kyc-email-entry';
-  static const String kycEmailVerifyOtp = '/kyc-email-verify-otp';
+  static const String emailEntry = '/email-entry';
+  static const String emailVerifyOtp = '/email-verify-otp';
 }

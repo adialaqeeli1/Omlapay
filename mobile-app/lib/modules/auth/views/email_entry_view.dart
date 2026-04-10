@@ -8,17 +8,17 @@ import '../../../core/utils/snackbar_helper.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_back_button.dart';
 import '../../../widgets/common_text_field.dart';
-import '../providers/kyc_email_provider.dart';
+import '../providers/email_verification_provider.dart';
 
-class KycEmailEntryView extends StatelessWidget {
-  const KycEmailEntryView({super.key});
+class EmailEntryView extends StatelessWidget {
+  const EmailEntryView({super.key});
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
     final theme = context.theme;
     final isDark = context.isDarkMode;
-    final provider = context.watch<KycEmailProvider>();
+    final provider = context.watch<EmailVerificationProvider>();
 
     final emailError = provider.emailError;
     String? errorText;
@@ -130,7 +130,7 @@ class KycEmailEntryView extends StatelessWidget {
   }
 
   Future<void> _onContinue(BuildContext context) async {
-    final provider = context.read<KycEmailProvider>();
+    final provider = context.read<EmailVerificationProvider>();
     provider.markEmailSubmitted();
     if (!provider.isEmailValid) return;
 
@@ -138,7 +138,7 @@ class KycEmailEntryView extends StatelessWidget {
       await provider.requestOtp();
       if (!context.mounted) return;
       final verified = await context.push<bool>(
-        Routes.kycEmailVerifyOtp,
+        Routes.emailVerifyOtp,
         extra: provider,
       );
       if (!context.mounted) return;

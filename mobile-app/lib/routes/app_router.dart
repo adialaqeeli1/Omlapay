@@ -36,9 +36,9 @@ import '../modules/help_center/providers/send_request_provider.dart';
 import '../modules/help_center/views/help_center_view.dart';
 import '../modules/kyc_verification/views/kyc_verification_view.dart';
 import '../modules/kyc_verification/providers/kyc_verification_provider.dart';
-import '../modules/kyc_verification/providers/kyc_email_provider.dart';
-import '../modules/kyc_verification/views/kyc_email_entry_view.dart';
-import '../modules/kyc_verification/views/kyc_email_otp_view.dart';
+import '../modules/auth/providers/email_verification_provider.dart';
+import '../modules/auth/views/email_entry_view.dart';
+import '../modules/auth/views/email_otp_view.dart';
 import '../modules/help_center/views/past_requests_view.dart';
 import '../modules/help_center/views/send_request_view.dart';
 import '../modules/dashboard/profile/profile_view.dart';
@@ -554,21 +554,21 @@ class AppRouter {
         ),
       ),
       GoRoute(
-        path: Routes.kycEmailEntry,
-        name: 'kycEmailEntry',
+        path: Routes.emailEntry,
+        name: 'emailEntry',
         builder: (context, state) => ChangeNotifierProvider(
-          create: (_) => KycEmailProvider(),
-          child: const KycEmailEntryView(),
+          create: (_) => EmailVerificationProvider(),
+          child: const EmailEntryView(),
         ),
       ),
       GoRoute(
-        path: Routes.kycEmailVerifyOtp,
-        name: 'kycEmailVerifyOtp',
+        path: Routes.emailVerifyOtp,
+        name: 'emailVerifyOtp',
         builder: (context, state) {
-          final provider = state.extra as KycEmailProvider;
+          final provider = state.extra as EmailVerificationProvider;
           return ChangeNotifierProvider.value(
             value: provider,
-            child: const KycEmailOtpView(),
+            child: const EmailOtpView(),
           );
         },
       ),

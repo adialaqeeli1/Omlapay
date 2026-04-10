@@ -4,9 +4,9 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/extentions/string_extensions.dart';
 import '../../../core/utils/app_exception.dart';
-import '../services/kyc_email_service.dart';
+import '../services/email_verification_service.dart';
 
-class KycEmailProvider extends ChangeNotifier {
+class EmailVerificationProvider extends ChangeNotifier {
   static const int otpLength = 6;
   static const int countdownStartSeconds = 30;
 
@@ -66,7 +66,7 @@ class KycEmailProvider extends ChangeNotifier {
     _isRequestingOtp = true;
     notifyListeners();
     try {
-      await KycEmailService.sendOtp(_email.trim());
+      await EmailVerificationService.sendOtp(_email.trim());
       _countdownSeconds = countdownStartSeconds;
       _timer?.cancel();
       _timer = Timer.periodic(const Duration(seconds: 1), _tick);
@@ -88,7 +88,7 @@ class KycEmailProvider extends ChangeNotifier {
     _hasError = false;
     notifyListeners();
     try {
-      final result = await KycEmailService.verifyOtp(_otp);
+      final result = await EmailVerificationService.verifyOtp(_otp);
       _hasError = !result;
       return result;
     } on AppException {
