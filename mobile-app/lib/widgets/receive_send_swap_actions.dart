@@ -58,7 +58,9 @@ class ReceiveSendSwapActions extends StatelessWidget {
 
     return MaterialButton(
       onPressed: onTap,
-      color: context.isDarkMode ? AppColors.darkCardColor : AppColors.textWhite,
+      color: context.isDarkMode
+          ? AppColors.darkCardColor
+          : AppColors.primaryColor,
       padding: EdgeInsets.zero,
       minWidth: 120,
       height: 48,
@@ -81,13 +83,13 @@ class ReceiveSendSwapActions extends StatelessWidget {
                 ? isDetailsPage
                       ? ColorFilter.mode(AppColors.textWhite, BlendMode.srcIn)
                       : null
-                : ColorFilter.mode(AppColors.textBlack, BlendMode.srcIn),
+                : ColorFilter.mode(AppColors.textWhite, BlendMode.srcIn),
           ),
           const SizedBox(width: 8),
           Text(
             label,
             style: context.textTheme.bodyMedium?.copyWith(
-              color: context.isDarkMode ? AppColors.white : AppColors.textBlack,
+              color: AppColors.textWhite,
               fontWeight: FontWeight.w600,
             ),
           ),
