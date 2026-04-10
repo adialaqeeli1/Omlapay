@@ -41,12 +41,9 @@ class ReceiveCoinsHistoryProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    // Simulate loading data
-    // await Future.delayed(const Duration(seconds: 2));
     if (_disposed) return;
 
     //Todo: Handle API for transactions
-    // _allTransactions = MockData.getTransactions();
     _isLoading = false;
     notifyListeners();
   }
@@ -72,11 +69,12 @@ class ReceiveCoinsHistoryProvider extends ChangeNotifier {
 
   List<TransactionModel> getTransactionsForCoin(String coinSymbol) {
     if (coinSymbol == 'All') {
-      return _allTransactions..sort((a, b) => b.date.compareTo(a.date));
+      return _allTransactions
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     }
     return _allTransactions
-        .where((element) => element.coinSymbol == coinSymbol)
+        .where((element) => element.assetSymbol == coinSymbol)
         .toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 }

@@ -17,6 +17,8 @@ import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_grid_bg_wrapper.dart';
 import '../../../../widgets/common_icon_button.dart';
 import 'package:omlapay_mobile_app/widgets/asset_card.dart';
+import 'package:intl/intl.dart' hide TextDirection;
+import 'package:omlapay_mobile_app/widgets/common_coin_icon.dart';
 import 'package:omlapay_mobile_app/widgets/no_transactions_found.dart';
 import 'package:provider/provider.dart';
 
@@ -216,9 +218,9 @@ class HomeView extends StatelessWidget {
               horizontal: horizontalPadding,
             ),
             child: Column(
-              crossAxisAlignment: .start,
-              mainAxisAlignment: .center,
-              mainAxisSize: .max,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
               children: [
                 Text(
                   l10n.transactions,
@@ -231,7 +233,7 @@ class HomeView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Center(child: const NoTransactionsFound()),
+                _buildRecentTransactions(context),
               ],
             ),
           ),
@@ -323,6 +325,113 @@ class HomeView extends StatelessWidget {
           );
         }).toList(),
       ),
+    );
+  }
+
+  Widget _buildRecentTransactions(BuildContext context) {
+    final homeProvider = context.watch<HomeProvider>();
+    final transactions = homeProvider.homeData?.recentTransactions ?? [];
+
+    if (transactions.isEmpty) {
+      return const Center(child: NoTransactionsFound());
+    }
+
+    return Column(
+      children: transactions.map((transaction) {
+        final isDarkMode = context.isDarkMode;
+
+        Color getCoinColor(String symbol) {
+          switch (symbol.toUpperCase()) {
+            case 'USDT':
+              return AppColors.usdtColor;
+            case 'BTC':
+              return AppColors.bitcoinColor;
+            case 'ETH':
+              return AppColors.textWhite;
+            case 'SOL':
+              return const Color(0xFF9945FF);
+            default:
+              return AppColors.primaryColor;
+          }
+        }
+
+        Color getAmountColor() {
+          if (transaction.isFailed) return Colors.red;
+          if (transaction.isSent) return Colors.red;
+          if (transaction.isReceived) return AppColors.greenColor;
+          return isDarkMode ? AppColors.white : AppColors.textBlack;
+        }
+
+        return InkWell(
+          onTap: () =>
+              context.push(Routes.transactionDetail, extra: transaction),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: getCoinColor(
+                      transaction.assetSymbol,
+                    ).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: CommonCoinIcon(
+                      symbol: transaction.assetSymbol,
+                      radius: 20,
+                      iconBackgroundColor: getCoinColor(
+                        transaction.assetSymbol,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        transaction.assetSymbol,
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: isDarkMode
+                              ? AppColors.white
+                              : AppColors.textBlack,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        DateFormat(
+                          'yyyy-MM-dd HH:mm:ss',
+                        ).format(transaction.createdAt),
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: AppColors.textGrey,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  transaction.isFailed
+                      ? context.l10n!.failed
+                      : '${transaction.amount} ${transaction.assetSymbol}',
+                  style: context.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: getAmountColor(),
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 

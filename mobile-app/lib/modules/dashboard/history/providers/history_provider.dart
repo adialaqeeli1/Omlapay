@@ -9,7 +9,7 @@ class HistoryProvider extends ChangeNotifier {
 
   String?
   _selectedCoinFilter; // null = All, or coin symbol like 'USDT', 'BTC', etc.
-  TransactionType? _selectedTransactionTypeFilter; // null = All
+  String? _selectedStatusFilter; // null = All, or 'COMPLETED', 'PENDING', 'FAILED'
   DateTime? _dateStart;
   DateTime? _dateEnd;
   List<TransactionModel> _transactions = [];
@@ -17,8 +17,7 @@ class HistoryProvider extends ChangeNotifier {
   String? _errorMessage;
 
   String? get selectedCoinFilter => _selectedCoinFilter;
-  TransactionType? get selectedTransactionTypeFilter =>
-      _selectedTransactionTypeFilter;
+  String? get selectedStatusFilter => _selectedStatusFilter;
   DateTime? get dateStart => _dateStart;
   DateTime? get dateEnd => _dateEnd;
   List<TransactionModel> get transactions => _filteredTransactions;
@@ -32,15 +31,19 @@ class HistoryProvider extends ChangeNotifier {
       result = result
           .where(
             (tx) =>
-                tx.coinSymbol.toUpperCase() ==
+                tx.assetSymbol.toUpperCase() ==
                 _selectedCoinFilter!.toUpperCase(),
           )
           .toList();
     }
 
-    if (_selectedTransactionTypeFilter != null) {
+    if (_selectedStatusFilter != null) {
       result = result
-          .where((tx) => tx.type == _selectedTransactionTypeFilter)
+          .where(
+            (tx) =>
+                tx.status.toUpperCase() ==
+                _selectedStatusFilter!.toUpperCase(),
+          )
           .toList();
     }
 
@@ -50,7 +53,8 @@ class HistoryProvider extends ChangeNotifier {
         _dateStart!.month,
         _dateStart!.day,
       );
-      result = result.where((tx) => !tx.date.isBefore(startOfDay)).toList();
+      result =
+          result.where((tx) => !tx.createdAt.isBefore(startOfDay)).toList();
     }
 
     if (_dateEnd != null) {
@@ -63,7 +67,7 @@ class HistoryProvider extends ChangeNotifier {
         59,
         999,
       );
-      result = result.where((tx) => !tx.date.isAfter(endOfDay)).toList();
+      result = result.where((tx) => !tx.createdAt.isAfter(endOfDay)).toList();
     }
 
     return result;
@@ -72,7 +76,6 @@ class HistoryProvider extends ChangeNotifier {
   HistoryProvider(this._coinsPrices) {
     developer.log('HistoryProvider: Initializing with dummy data');
     _coinsPrices.addListener(_onStreamedCoinsUpdated);
-    // _loadDummyData();
   }
 
   void _onStreamedCoinsUpdated() {
@@ -126,9 +129,9 @@ class HistoryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setTransactionTypeFilter(TransactionType? type) {
-    developer.log('HistoryProvider: Setting transaction type filter to: $type');
-    _selectedTransactionTypeFilter = type;
+  void setStatusFilter(String? status) {
+    developer.log('HistoryProvider: Setting status filter to: $status');
+    _selectedStatusFilter = status;
     notifyListeners();
   }
 
@@ -142,7 +145,7 @@ class HistoryProvider extends ChangeNotifier {
   void clearFilter() {
     developer.log('HistoryProvider: Clearing filter');
     _selectedCoinFilter = null;
-    _selectedTransactionTypeFilter = null;
+    _selectedStatusFilter = null;
     _dateStart = null;
     _dateEnd = null;
     notifyListeners();

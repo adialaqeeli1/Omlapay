@@ -59,12 +59,11 @@ class HistoryView extends StatelessWidget {
                   final provider = providerContext.read<HistoryProvider>();
                   HistoryFilterBottomSheet.show(
                     providerContext,
-                    selectedTransactionType:
-                        provider.selectedTransactionTypeFilter,
+                    selectedStatus: provider.selectedStatusFilter,
                     dateStart: provider.dateStart,
                     dateEnd: provider.dateEnd,
-                    onApply: ({transactionType, dateStart, dateEnd}) {
-                      provider.setTransactionTypeFilter(transactionType);
+                    onApply: ({status, dateStart, dateEnd}) {
+                      provider.setStatusFilter(status);
                       provider.setDateRange(dateStart, dateEnd);
                     },
                   );
@@ -148,7 +147,7 @@ class HistoryView extends StatelessWidget {
   ) {
     // Sort transactions by date (newest first)
     final sorted = List<TransactionModel>.from(transactions)
-      ..sort((a, b) => b.date.compareTo(a.date));
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -159,11 +158,11 @@ class HistoryView extends StatelessWidget {
     final olderTransactions = <DateTime, List<TransactionModel>>{};
 
     for (final tx in sorted) {
-      final txDate = DateTime(tx.date.year, tx.date.month, tx.date.day);
+      final txDate = DateTime(tx.createdAt.year, tx.createdAt.month, tx.createdAt.day);
       if (txDate == today || txDate == yesterday) {
         recentTransactions.add(tx);
       } else {
-        final monthKey = DateTime(tx.date.year, tx.date.month);
+        final monthKey = DateTime(tx.createdAt.year, tx.createdAt.month);
         olderTransactions.putIfAbsent(monthKey, () => []).add(tx);
       }
     }
