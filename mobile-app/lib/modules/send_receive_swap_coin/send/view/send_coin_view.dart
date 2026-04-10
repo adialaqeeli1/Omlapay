@@ -162,6 +162,7 @@ class SendCoinView extends StatelessWidget {
                     symbol: coin.symbol,
                     iconBackgroundColor: _getCoinColor(coin.symbol),
                     radius: 20,
+                    networkIconUrl: coin.networkIconUrl,
                   ),
                   const SizedBox(width: 12),
                   Column(

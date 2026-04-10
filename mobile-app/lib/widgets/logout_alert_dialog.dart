@@ -28,12 +28,12 @@ class LogoutAlertDialog extends StatelessWidget {
       transitionDuration: const Duration(milliseconds: 350),
       pageBuilder: (context, animation, secondaryAnimation) =>
           LogoutAlertDialog(
-        onCancel: () => Navigator.of(context).pop(),
-        onLogout: () {
-          Navigator.of(context).pop();
-          onLogout();
-        },
-      ),
+            onCancel: () => Navigator.of(context).pop(),
+            onLogout: () {
+              Navigator.of(context).pop();
+              onLogout();
+            },
+          ),
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         return FadeTransition(
           opacity: CurvedAnimation(
@@ -87,17 +87,17 @@ class LogoutAlertDialog extends StatelessWidget {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        l10n.logoutDialogMessage,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: textColor.withValues(alpha: 0.85),
-                          height: 1.4,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                      // const SizedBox(height: 12),
+                      // Text(
+                      //   l10n.logoutDialogMessage,
+                      //   style: theme.textTheme.bodyMedium?.copyWith(
+                      //     fontSize: 14,
+                      //     fontWeight: FontWeight.w400,
+                      //     color: textColor.withValues(alpha: 0.85),
+                      //     height: 1.4,
+                      //   ),
+                      //   textAlign: TextAlign.center,
+                      // ),
                     ],
                   ),
                 ),
@@ -153,4 +153,3 @@ class LogoutAlertDialog extends StatelessWidget {
     );
   }
 }
-
