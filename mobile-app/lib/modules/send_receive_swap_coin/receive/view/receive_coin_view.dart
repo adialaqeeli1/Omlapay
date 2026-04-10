@@ -10,6 +10,7 @@ import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../routes/app_router.dart';
+import '../../../../widgets/common_coin_icon.dart';
 import '../../../../widgets/common_loading_indicator.dart';
 import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../../../../widgets/common_back_button.dart';
@@ -253,9 +254,17 @@ class ReceiveCoinView extends StatelessWidget {
             icon: Icons.copy_rounded,
             onTap: canUseActions
                 ? () {
-                    final address = (primaryAddress ?? '').trim();
-                    Clipboard.setData(ClipboardData(text: address));
-                    provider.copyAddress(address);
+                    if (wallet.coins.length > 1) {
+                      _showCoinSelectionForCopy(
+                        context,
+                        wallet: wallet,
+                        provider: provider,
+                      );
+                    } else {
+                      final address = (primaryAddress ?? '').trim();
+                      Clipboard.setData(ClipboardData(text: address));
+                      provider.copyAddress(address);
+                    }
                   }
                 : null,
           ),
@@ -376,6 +385,100 @@ class ReceiveCoinView extends StatelessWidget {
   String _truncateAddress(String address) {
     if (address.length <= 20) return address;
     return '${address.substring(0, 12)}...${address.substring(address.length - 6)}';
+  }
+
+  void _showCoinSelectionForCopy(
+    BuildContext context, {
+    required WalletNetworkModel wallet,
+    required ReciveCoinProvider provider,
+  }) {
+    final l10n = context.l10n!;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.5,
+        ),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: IconButton(
+                      icon: Icon(Icons.close, color: colorScheme.onSurface),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                  Text(
+                    l10n.selectCoinTitle,
+                    style: TextStyle(
+                      color: colorScheme.onSurface,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: wallet.coins.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemBuilder: (context, index) {
+                  final coin = wallet.coins[index];
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: ListTile(
+                      leading: CommonCoinIcon(
+                        symbol: coin.symbol,
+                        networkIconUrl: coin.networkIconUrl,
+                      ),
+                      title: Text(
+                        coin.name,
+                        style: TextStyle(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      subtitle: Text(
+                        coin.symbol,
+                        style: TextStyle(color: colorScheme.onSurfaceVariant),
+                      ),
+                      onTap: () {
+                        final address = (coin.address ?? '').trim();
+                        Clipboard.setData(ClipboardData(text: address));
+                        provider.copyAddress(address);
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
   }
 
   WalletCoinModel? _primaryCoin(WalletNetworkModel wallet) {
