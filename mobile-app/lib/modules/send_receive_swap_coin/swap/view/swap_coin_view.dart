@@ -21,14 +21,21 @@ class SwapCoinView extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<SwapProvider>();
     final l10n = context.l10n!;
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = context.theme;
+    final colorScheme = theme.colorScheme;
 
     if (provider.isLoading) {
       return Scaffold(
         appBar: AppBar(
           elevation: 0,
           leading: CommonBackButton(),
-          title: Text(l10n.swap),
+          title: Text(
+            l10n.swap,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: context.isDarkMode ? Colors.white : Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           centerTitle: true,
         ),
         body: Center(
@@ -41,7 +48,13 @@ class SwapCoinView extends StatelessWidget {
       appBar: AppBar(
         elevation: 0,
         leading: CommonBackButton(),
-        title: Text(l10n.swap),
+        title: Text(
+          l10n.swap,
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: context.isDarkMode ? Colors.white : Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
       ),
       body: CustomScrollView(
