@@ -1205,4 +1205,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get walletAddressNotAvailable => 'العنوان غير متوفر بعد';
+
+  @override
+  String get noAddressFound => 'لم يتم العثور على عنوان';
 }

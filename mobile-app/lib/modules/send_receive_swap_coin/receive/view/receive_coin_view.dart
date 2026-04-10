@@ -241,7 +241,7 @@ class ReceiveCoinView extends StatelessWidget {
             assetPath: 'assets/icons/qr-icon.svg',
             onTap: canUseActions
                 ? () {
-                    context.push(Routes.qrCode, extra: primaryCoin);
+                    context.push(Routes.qrCode, extra: wallet);
                   }
                 : null,
           ),

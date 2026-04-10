@@ -492,5 +492,6 @@
     "failedToLoadSupportRequests": "فشل في تحميل طلبات الدعم",
     "failedToLoadMoreRequests": "فشل في تحميل المزيد من الطلبات",
     "walletAddressMasked": "XXXX XXXX XXXX XXXX",
-    "walletAddressNotAvailable": "العنوان غير متوفر بعد"
+    "walletAddressNotAvailable": "العنوان غير متوفر بعد",
+    "noAddressFound": "لم يتم العثور على عنوان"
 }

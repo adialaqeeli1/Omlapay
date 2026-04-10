@@ -2305,6 +2305,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Address not available yet'**
   String get walletAddressNotAvailable;
+
+  /// No description provided for @noAddressFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No Address Found'**
+  String get noAddressFound;
 }
 
 class _AppLocalizationsDelegate
