@@ -139,43 +139,46 @@ class KycVerificationView extends StatelessWidget {
                         onPressed: form.valid
                             ? () async {
                                 FocusScope.of(context).unfocus();
-                                final kycProvider =
-                                    context.read<KycVerificationProvider>();
-                                final formData =
-                                    kycProvider.validateForm(_form);
+                                final kycProvider = context
+                                    .read<KycVerificationProvider>();
+                                final formData = kycProvider.validateForm(
+                                  _form,
+                                );
                                 if (formData == null) return;
 
-                                // Push email entry; wait for verified result
-                                final emailVerified =
-                                    await context.push<bool>(
-                                  Routes.kycEmailEntry,
-                                );
-                                if (!context.mounted ||
-                                    emailVerified != true) {
-                                  return;
+                                // Skip email verification if user already has an email
+                                final user = context
+                                    .read<AuthProvider>()
+                                    .state
+                                    .user;
+                                final hasEmail =
+                                    user?.email != null &&
+                                    user!.email!.isNotEmpty;
+
+                                if (!hasEmail) {
+                                  final emailVerified = await context
+                                      .push<bool>(Routes.kycEmailEntry);
+                                  if (!context.mounted ||
+                                      emailVerified != true) {
+                                    return;
+                                  }
                                 }
 
                                 // Email verified — launch SumSub
                                 try {
-                                  final result =
-                                      await kycProvider.launchSumSub(
+                                  final result = await kycProvider.launchSumSub(
                                     firstName: formData.firstName,
                                     lastName: formData.lastName,
                                     residentialCountry:
                                         formData.residentialCountry,
-                                    documentCountry:
-                                        formData.documentCountry,
+                                    documentCountry: formData.documentCountry,
                                     city: formData.city,
                                     address: formData.address,
                                     dob: formData.dob,
-                                    locale:
-                                        Localizations.localeOf(context),
-                                    startFailedFallback:
-                                        l10n.requestFailed,
-                                    successFallback:
-                                        l10n.kycStartedSuccess,
-                                    authProvider:
-                                        context.read<AuthProvider>(),
+                                    locale: Localizations.localeOf(context),
+                                    startFailedFallback: l10n.requestFailed,
+                                    successFallback: l10n.kycStartedSuccess,
+                                    authProvider: context.read<AuthProvider>(),
                                   );
                                   if (!context.mounted) return;
                                   if (result.message.isNotEmpty) {
@@ -185,9 +188,7 @@ class KycVerificationView extends StatelessWidget {
                                     );
                                   }
                                   if (result.shouldNavigateBack) {
-                                    context.go(
-                                      entrySource.sourceRoute,
-                                    );
+                                    context.go(entrySource.sourceRoute);
                                   }
                                 } catch (e) {
                                   if (!context.mounted) return;

@@ -1,20 +1,19 @@
+import '../../../core/constants/endpoints.dart';
+import '../../../core/services/api_helper.dart';
 import '../../../core/utils/app_exception.dart';
 
 class KycEmailService {
   KycEmailService._();
 
-  static const String _validOtp = '123456';
-
+  /// Sends an OTP to the given [email] address.
   static Future<void> sendOtp(String email) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    // Mock: always succeeds
+    await ApiHelper.post(Endpoints.emailRequest, {'email': email});
   }
 
-  static Future<bool> verifyOtp(String email, String otp) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    if (otp == _validOtp) {
-      return true;
-    }
-    throw AppException('Invalid OTP code', messageKey: 'invalidOtpTryAgain');
+  /// Verifies the [otp] for the previously requested email.
+  /// Returns `true` on success. Throws [AppException] on failure.
+  static Future<bool> verifyOtp(String otp) async {
+    await ApiHelper.post(Endpoints.emailVerify, {'otp': otp});
+    return true;
   }
 }

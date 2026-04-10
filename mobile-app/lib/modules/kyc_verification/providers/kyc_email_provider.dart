@@ -88,7 +88,7 @@ class KycEmailProvider extends ChangeNotifier {
     _hasError = false;
     notifyListeners();
     try {
-      final result = await KycEmailService.verifyOtp(_email.trim(), _otp);
+      final result = await KycEmailService.verifyOtp(_otp);
       _hasError = !result;
       return result;
     } on AppException {

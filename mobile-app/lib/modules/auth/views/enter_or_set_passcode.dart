@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -183,6 +184,12 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                 ),
               ]
             : null,
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: context.isDarkMode
+              ? Brightness.light
+              : Brightness.dark,
+        ),
       ),
       body: SafeArea(
         child: CustomScrollView(

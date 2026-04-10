@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UserModel {
 
- String? get id;@JsonKey(name: 'mobile_number') String? get fullMobileNumber; String? get status; String get mobileNumber;@JsonKey(readValue: _readCountryCode) String get countryCode; String get password;// 6 digit numeric
+ String? get id;@JsonKey(name: 'mobile_number') String? get fullMobileNumber; String? get status; String? get email; String get mobileNumber;@JsonKey(readValue: _readCountryCode) String get countryCode; String get password;// 6 digit numeric
  String get firstName; String get lastName; bool get isVerified;
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
@@ -29,16 +29,16 @@ $UserModelCopyWith<UserModel> get copyWith => _$UserModelCopyWithImpl<UserModel>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserModel&&(identical(other.id, id) || other.id == id)&&(identical(other.fullMobileNumber, fullMobileNumber) || other.fullMobileNumber == fullMobileNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.countryCode, countryCode) || other.countryCode == countryCode)&&(identical(other.password, password) || other.password == password)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.isVerified, isVerified) || other.isVerified == isVerified));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserModel&&(identical(other.id, id) || other.id == id)&&(identical(other.fullMobileNumber, fullMobileNumber) || other.fullMobileNumber == fullMobileNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.email, email) || other.email == email)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.countryCode, countryCode) || other.countryCode == countryCode)&&(identical(other.password, password) || other.password == password)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.isVerified, isVerified) || other.isVerified == isVerified));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,fullMobileNumber,status,mobileNumber,countryCode,password,firstName,lastName,isVerified);
+int get hashCode => Object.hash(runtimeType,id,fullMobileNumber,status,email,mobileNumber,countryCode,password,firstName,lastName,isVerified);
 
 @override
 String toString() {
-  return 'UserModel(id: $id, fullMobileNumber: $fullMobileNumber, status: $status, mobileNumber: $mobileNumber, countryCode: $countryCode, password: $password, firstName: $firstName, lastName: $lastName, isVerified: $isVerified)';
+  return 'UserModel(id: $id, fullMobileNumber: $fullMobileNumber, status: $status, email: $email, mobileNumber: $mobileNumber, countryCode: $countryCode, password: $password, firstName: $firstName, lastName: $lastName, isVerified: $isVerified)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $UserModelCopyWith<$Res>  {
   factory $UserModelCopyWith(UserModel value, $Res Function(UserModel) _then) = _$UserModelCopyWithImpl;
 @useResult
 $Res call({
- String? id,@JsonKey(name: 'mobile_number') String? fullMobileNumber, String? status, String mobileNumber,@JsonKey(readValue: _readCountryCode) String countryCode, String password, String firstName, String lastName, bool isVerified
+ String? id,@JsonKey(name: 'mobile_number') String? fullMobileNumber, String? status, String? email, String mobileNumber,@JsonKey(readValue: _readCountryCode) String countryCode, String password, String firstName, String lastName, bool isVerified
 });
 
 
@@ -66,11 +66,12 @@ class _$UserModelCopyWithImpl<$Res>
 
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? fullMobileNumber = freezed,Object? status = freezed,Object? mobileNumber = null,Object? countryCode = null,Object? password = null,Object? firstName = null,Object? lastName = null,Object? isVerified = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? fullMobileNumber = freezed,Object? status = freezed,Object? email = freezed,Object? mobileNumber = null,Object? countryCode = null,Object? password = null,Object? firstName = null,Object? lastName = null,Object? isVerified = null,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,fullMobileNumber: freezed == fullMobileNumber ? _self.fullMobileNumber : fullMobileNumber // ignore: cast_nullable_to_non_nullable
 as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String?,mobileNumber: null == mobileNumber ? _self.mobileNumber : mobileNumber // ignore: cast_nullable_to_non_nullable
 as String,countryCode: null == countryCode ? _self.countryCode : countryCode // ignore: cast_nullable_to_non_nullable
 as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
@@ -162,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id, @JsonKey(name: 'mobile_number')  String? fullMobileNumber,  String? status,  String mobileNumber, @JsonKey(readValue: _readCountryCode)  String countryCode,  String password,  String firstName,  String lastName,  bool isVerified)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id, @JsonKey(name: 'mobile_number')  String? fullMobileNumber,  String? status,  String? email,  String mobileNumber, @JsonKey(readValue: _readCountryCode)  String countryCode,  String password,  String firstName,  String lastName,  bool isVerified)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserModel() when $default != null:
-return $default(_that.id,_that.fullMobileNumber,_that.status,_that.mobileNumber,_that.countryCode,_that.password,_that.firstName,_that.lastName,_that.isVerified);case _:
+return $default(_that.id,_that.fullMobileNumber,_that.status,_that.email,_that.mobileNumber,_that.countryCode,_that.password,_that.firstName,_that.lastName,_that.isVerified);case _:
   return orElse();
 
 }
@@ -183,10 +184,10 @@ return $default(_that.id,_that.fullMobileNumber,_that.status,_that.mobileNumber,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id, @JsonKey(name: 'mobile_number')  String? fullMobileNumber,  String? status,  String mobileNumber, @JsonKey(readValue: _readCountryCode)  String countryCode,  String password,  String firstName,  String lastName,  bool isVerified)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id, @JsonKey(name: 'mobile_number')  String? fullMobileNumber,  String? status,  String? email,  String mobileNumber, @JsonKey(readValue: _readCountryCode)  String countryCode,  String password,  String firstName,  String lastName,  bool isVerified)  $default,) {final _that = this;
 switch (_that) {
 case _UserModel():
-return $default(_that.id,_that.fullMobileNumber,_that.status,_that.mobileNumber,_that.countryCode,_that.password,_that.firstName,_that.lastName,_that.isVerified);case _:
+return $default(_that.id,_that.fullMobileNumber,_that.status,_that.email,_that.mobileNumber,_that.countryCode,_that.password,_that.firstName,_that.lastName,_that.isVerified);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +204,10 @@ return $default(_that.id,_that.fullMobileNumber,_that.status,_that.mobileNumber,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id, @JsonKey(name: 'mobile_number')  String? fullMobileNumber,  String? status,  String mobileNumber, @JsonKey(readValue: _readCountryCode)  String countryCode,  String password,  String firstName,  String lastName,  bool isVerified)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id, @JsonKey(name: 'mobile_number')  String? fullMobileNumber,  String? status,  String? email,  String mobileNumber, @JsonKey(readValue: _readCountryCode)  String countryCode,  String password,  String firstName,  String lastName,  bool isVerified)?  $default,) {final _that = this;
 switch (_that) {
 case _UserModel() when $default != null:
-return $default(_that.id,_that.fullMobileNumber,_that.status,_that.mobileNumber,_that.countryCode,_that.password,_that.firstName,_that.lastName,_that.isVerified);case _:
+return $default(_that.id,_that.fullMobileNumber,_that.status,_that.email,_that.mobileNumber,_that.countryCode,_that.password,_that.firstName,_that.lastName,_that.isVerified);case _:
   return null;
 
 }
@@ -218,12 +219,13 @@ return $default(_that.id,_that.fullMobileNumber,_that.status,_that.mobileNumber,
 @JsonSerializable()
 
 class _UserModel extends UserModel {
-  const _UserModel({this.id, @JsonKey(name: 'mobile_number') this.fullMobileNumber, this.status, this.mobileNumber = '', @JsonKey(readValue: _readCountryCode) this.countryCode = '', this.password = '', this.firstName = '', this.lastName = '', this.isVerified = false}): super._();
+  const _UserModel({this.id, @JsonKey(name: 'mobile_number') this.fullMobileNumber, this.status, this.email, this.mobileNumber = '', @JsonKey(readValue: _readCountryCode) this.countryCode = '', this.password = '', this.firstName = '', this.lastName = '', this.isVerified = false}): super._();
   factory _UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
 
 @override final  String? id;
 @override@JsonKey(name: 'mobile_number') final  String? fullMobileNumber;
 @override final  String? status;
+@override final  String? email;
 @override@JsonKey() final  String mobileNumber;
 @override@JsonKey(readValue: _readCountryCode) final  String countryCode;
 @override@JsonKey() final  String password;
@@ -245,16 +247,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserModel&&(identical(other.id, id) || other.id == id)&&(identical(other.fullMobileNumber, fullMobileNumber) || other.fullMobileNumber == fullMobileNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.countryCode, countryCode) || other.countryCode == countryCode)&&(identical(other.password, password) || other.password == password)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.isVerified, isVerified) || other.isVerified == isVerified));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserModel&&(identical(other.id, id) || other.id == id)&&(identical(other.fullMobileNumber, fullMobileNumber) || other.fullMobileNumber == fullMobileNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.email, email) || other.email == email)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.countryCode, countryCode) || other.countryCode == countryCode)&&(identical(other.password, password) || other.password == password)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.isVerified, isVerified) || other.isVerified == isVerified));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,fullMobileNumber,status,mobileNumber,countryCode,password,firstName,lastName,isVerified);
+int get hashCode => Object.hash(runtimeType,id,fullMobileNumber,status,email,mobileNumber,countryCode,password,firstName,lastName,isVerified);
 
 @override
 String toString() {
-  return 'UserModel(id: $id, fullMobileNumber: $fullMobileNumber, status: $status, mobileNumber: $mobileNumber, countryCode: $countryCode, password: $password, firstName: $firstName, lastName: $lastName, isVerified: $isVerified)';
+  return 'UserModel(id: $id, fullMobileNumber: $fullMobileNumber, status: $status, email: $email, mobileNumber: $mobileNumber, countryCode: $countryCode, password: $password, firstName: $firstName, lastName: $lastName, isVerified: $isVerified)';
 }
 
 
@@ -265,7 +267,7 @@ abstract mixin class _$UserModelCopyWith<$Res> implements $UserModelCopyWith<$Re
   factory _$UserModelCopyWith(_UserModel value, $Res Function(_UserModel) _then) = __$UserModelCopyWithImpl;
 @override @useResult
 $Res call({
- String? id,@JsonKey(name: 'mobile_number') String? fullMobileNumber, String? status, String mobileNumber,@JsonKey(readValue: _readCountryCode) String countryCode, String password, String firstName, String lastName, bool isVerified
+ String? id,@JsonKey(name: 'mobile_number') String? fullMobileNumber, String? status, String? email, String mobileNumber,@JsonKey(readValue: _readCountryCode) String countryCode, String password, String firstName, String lastName, bool isVerified
 });
 
 
@@ -282,11 +284,12 @@ class __$UserModelCopyWithImpl<$Res>
 
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? fullMobileNumber = freezed,Object? status = freezed,Object? mobileNumber = null,Object? countryCode = null,Object? password = null,Object? firstName = null,Object? lastName = null,Object? isVerified = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? fullMobileNumber = freezed,Object? status = freezed,Object? email = freezed,Object? mobileNumber = null,Object? countryCode = null,Object? password = null,Object? firstName = null,Object? lastName = null,Object? isVerified = null,}) {
   return _then(_UserModel(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,fullMobileNumber: freezed == fullMobileNumber ? _self.fullMobileNumber : fullMobileNumber // ignore: cast_nullable_to_non_nullable
 as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String?,mobileNumber: null == mobileNumber ? _self.mobileNumber : mobileNumber // ignore: cast_nullable_to_non_nullable
 as String,countryCode: null == countryCode ? _self.countryCode : countryCode // ignore: cast_nullable_to_non_nullable
 as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
