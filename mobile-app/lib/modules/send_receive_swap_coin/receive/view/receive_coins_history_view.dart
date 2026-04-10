@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/extentions/context_extensions.dart';
 import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../../../../widgets/common_back_button.dart';
 import '../../../../widgets/kyc_verification_required_banner.dart';
@@ -25,10 +26,18 @@ class ReceiveCoinsHistoryView extends StatelessWidget {
     final provider = context.watch<ReceiveCoinsHistoryProvider>();
     final tabs = provider.uniqueCoinSymbols;
 
+    final theme = context.theme;
+
     if (provider.isLoading) {
       return Scaffold(
         appBar: AppBar(
-          title: Text(l10n.receive),
+          title: Text(
+            l10n.receive,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: context.isDarkMode ? Colors.white : Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           centerTitle: true,
           leading: const CommonBackButton(),
         ),
@@ -40,7 +49,13 @@ class ReceiveCoinsHistoryView extends StatelessWidget {
       length: tabs.length,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(l10n.receive),
+          title: Text(
+            l10n.receive,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: context.isDarkMode ? Colors.white : Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           centerTitle: true,
           leading: const CommonBackButton(),
           actions: [

@@ -33,9 +33,17 @@ class ReceiveCoinView extends StatelessWidget {
     final showVerificationBanner =
         provider.kycRequired || authProvider.state.user?.isVerified != true;
 
+    final theme = context.theme;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(
+          title,
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: context.isDarkMode ? Colors.white : Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         elevation: 0,
         leading: const CommonBackButton(),
         centerTitle: true,
