@@ -490,5 +490,7 @@
     "failedToMarkNotificationAsRead": "فشل في تحديد الإشعار كمقروء",
     "failedToMarkAllNotificationsAsRead": "فشل في تحديد جميع الإشعارات كمقروءة",
     "failedToLoadSupportRequests": "فشل في تحميل طلبات الدعم",
-    "failedToLoadMoreRequests": "فشل في تحميل المزيد من الطلبات"
+    "failedToLoadMoreRequests": "فشل في تحميل المزيد من الطلبات",
+    "walletAddressMasked": "XXXX XXXX XXXX XXXX",
+    "walletAddressNotAvailable": "العنوان غير متوفر بعد"
 }

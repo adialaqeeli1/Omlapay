@@ -1199,4 +1199,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get failedToLoadMoreRequests => 'فشل في تحميل المزيد من الطلبات';
+
+  @override
+  String get walletAddressMasked => 'XXXX XXXX XXXX XXXX';
+
+  @override
+  String get walletAddressNotAvailable => 'العنوان غير متوفر بعد';
 }

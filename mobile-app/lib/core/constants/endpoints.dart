@@ -91,6 +91,10 @@ class Endpoints {
   /// Legal documents; supports query param `language` (e.g. en, ar).
   static String get legalPrivacy => '$apiVersion/legal/privacy';
   static String get legalTerms => '$apiVersion/legal/terms';
+  static String get twoFactorEnable =>
+      '$apiVersion/user/settings/2fa/enable';
+  static String get twoFactorDisable =>
+      '$apiVersion/user/settings/2fa/disable';
   static String get userSettingsCurrency => '$apiVersion/user/settings/currency';
   static String get userSettingsAppearance =>
       '$apiVersion/user/settings/appearance';

@@ -1209,4 +1209,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get failedToLoadMoreRequests => 'Failed to load more requests';
+
+  @override
+  String get walletAddressMasked => 'XXXX XXXX XXXX XXXX';
+
+  @override
+  String get walletAddressNotAvailable => 'Address not available yet';
 }

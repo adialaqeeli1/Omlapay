@@ -104,9 +104,17 @@ class AuthProvider extends ChangeNotifier {
           user != null &&
           accessToken != null &&
           accessToken.isNotEmpty) {
-        // Keep the entered passcode locally so flows like change-phone can
-        // hard-login again with the new number (API user may omit `password`).
-        final userToPersist = user.copyWith(password: password);
+        // Keep the entered credentials locally so flows like change-phone,
+        // disable-2FA, etc. can hard-login again (API user may omit these fields).
+        final userToPersist = user.copyWith(
+          password: password,
+          countryCode: normalizedCountry.isNotEmpty
+              ? normalizedCountry
+              : user.countryCode,
+          mobileNumber: normalizedPhone.isNotEmpty
+              ? normalizedPhone
+              : user.mobileNumber,
+        );
         _state = state.copyWith(
           authStatus: AuthStatus.authorized,
           user: userToPersist,
@@ -201,6 +209,14 @@ class AuthProvider extends ChangeNotifier {
     await StorageService.remove('refresh_token');
     _state = const AuthState(authStatus: AuthStatus.unauthorized);
     notifyListeners();
+  }
+
+  /// Clears only auth tokens (not user data) so the session can be refreshed
+  /// via [login] without losing stored credentials. Used by flows like
+  /// disable-2FA and change-passcode where the backend revokes the session.
+  Future<void> _clearSessionTokens() async {
+    await StorageService.remove(AppConstants.tokenKey);
+    await StorageService.remove('refresh_token');
   }
 
   /// Returns whether [passcode] matches the stored passcode for the signed-in user
@@ -366,6 +382,11 @@ class AuthProvider extends ChangeNotifier {
         if (email != null && email.isNotEmpty) {
           updatedUser = updatedUser.copyWith(email: email);
         }
+        final twoFactorEnabled = data['twoFactorEnabled'];
+        if (twoFactorEnabled is bool) {
+          updatedUser =
+              updatedUser.copyWith(twoFactorEnabled: twoFactorEnabled);
+        }
 
         if (updatedUser != currentUser) {
           _state = state.copyWith(user: updatedUser);
@@ -378,6 +399,89 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('fetchAccountDetails failed: $e');
+    }
+  }
+
+  /// Toggles two-factor authentication.
+  /// Returns the localized success message from the API.
+  /// When disabling, the backend revokes the session, so we re-login
+  /// automatically using the stored phone + passcode (same as change-passcode).
+  /// Throws on failure so the caller can show an error snackbar.
+  Future<String> toggleTwoFactor(bool enabled) async {
+    try {
+      final currentUser = _state.user;
+      if (currentUser == null || !_state.isAuthenticated) {
+        throw Exception(
+          appLocalizationsFromStoredLocale().somethingWentWrong,
+        );
+      }
+
+      _state = _state.copyWith(isLoading: true, errorMessage: null);
+      notifyListeners();
+
+      final response = enabled
+          ? await AuthService.enableTwoFactor()
+          : await AuthService.disableTwoFactor();
+
+      final l10n = appLocalizationsFromStoredLocale();
+
+      if (!_isApiSuccess(response)) {
+        final errorMsg = _localizedMessageFromRawResponse(
+          response,
+          fallback: l10n.somethingWentWrong,
+        );
+        _state = _state.copyWith(isLoading: false, errorMessage: errorMsg);
+        notifyListeners();
+        throw Exception(errorMsg);
+      }
+
+      final successMessage = _localizedMessageFromRawResponse(
+        response,
+        fallback: enabled
+            ? l10n.twoFactorAuthentication
+            : l10n.twoFactorAuthentication,
+      );
+
+      if (!enabled) {
+        // Session revoked on disable — clear only tokens, keep user data
+        // so login() can use the stored credentials.
+        final phone = currentUser.mobileNumber.replaceAll(
+          RegExp(r'[^0-9]'),
+          '',
+        );
+        final country = currentUser.countryCode.trim();
+        final passcode = currentUser.password;
+
+        await _clearSessionTokens();
+        final loggedIn = await login(phone, country, passcode);
+
+        if (!loggedIn) {
+          final err = _state.errorMessage ?? l10n.loginFailed;
+          _state = _state.copyWith(isLoading: false);
+          notifyListeners();
+          throw Exception(err);
+        }
+
+        return successMessage;
+      }
+
+      // Enable succeeded — just update local state.
+      final updatedUser = currentUser.copyWith(twoFactorEnabled: true);
+      _state = _state.copyWith(
+        user: updatedUser,
+        isLoading: false,
+        errorMessage: null,
+      );
+      await StorageService.setString(
+        AppConstants.userKey,
+        jsonEncode(updatedUser.toJson()),
+      );
+      notifyListeners();
+      return successMessage;
+    } catch (e) {
+      _state = _state.copyWith(isLoading: false, errorMessage: e.toString());
+      notifyListeners();
+      rethrow;
     }
   }
 
@@ -458,7 +562,7 @@ class AuthProvider extends ChangeNotifier {
     }
 
     try {
-      await logout();
+      await _clearSessionTokens();
       return await login(normalizedPhone, normalizedCountry, passcode);
     } catch (_) {
       return false;
@@ -544,7 +648,7 @@ class AuthProvider extends ChangeNotifier {
           mobileNumber.replaceAll(RegExp(r'[^0-9]'), '');
       final normalizedCountry = countryCode.trim();
 
-      await logout();
+      await _clearSessionTokens();
       final loggedIn = await login(
         normalizedPhone,
         normalizedCountry,

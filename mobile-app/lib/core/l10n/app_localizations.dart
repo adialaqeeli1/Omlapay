@@ -2293,6 +2293,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to load more requests'**
   String get failedToLoadMoreRequests;
+
+  /// No description provided for @walletAddressMasked.
+  ///
+  /// In en, this message translates to:
+  /// **'XXXX XXXX XXXX XXXX'**
+  String get walletAddressMasked;
+
+  /// No description provided for @walletAddressNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Address not available yet'**
+  String get walletAddressNotAvailable;
 }
 
 class _AppLocalizationsDelegate

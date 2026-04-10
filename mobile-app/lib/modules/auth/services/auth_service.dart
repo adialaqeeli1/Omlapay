@@ -144,4 +144,12 @@ class AuthService {
   static Future<Map<String, dynamic>> fetchAccountDetails() async {
     return ApiHelper.get(Endpoints.accountDetails);
   }
+
+  static Future<Map<String, dynamic>> enableTwoFactor() async {
+    return ApiHelper.post(Endpoints.twoFactorEnable, {});
+  }
+
+  static Future<Map<String, dynamic>> disableTwoFactor() async {
+    return ApiHelper.post(Endpoints.twoFactorDisable, {});
+  }
 }
