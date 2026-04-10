@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 part 'colors.dart';
@@ -29,6 +30,7 @@ class AppTheme {
         fontWeight: FontWeight.bold,
         fontSize: 16,
       ),
+      systemOverlayStyle: SystemUiOverlayStyle.dark,
     ),
     iconTheme: const IconThemeData(color: AppColors.iconBlack),
     fontFamily: fontFamily,
@@ -69,6 +71,7 @@ class AppTheme {
         fontWeight: FontWeight.bold,
         fontSize: 16,
       ),
+      systemOverlayStyle: SystemUiOverlayStyle.light,
     ),
     iconTheme: const IconThemeData(color: AppColors.iconWhite),
     fontFamily: fontFamily,
