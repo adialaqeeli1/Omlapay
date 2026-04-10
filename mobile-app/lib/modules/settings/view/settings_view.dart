@@ -5,7 +5,10 @@ import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/l10n/app_localizations.dart';
+import '../../../core/models/user_model/user_model.dart';
 import '../../../core/theme/theme.dart';
+import '../../../core/utils/snackbar_helper.dart';
+import '../../../widgets/common_loading_indicator.dart';
 import '../../../modules/auth/providers/login_provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../routes/app_router.dart';
@@ -42,8 +45,8 @@ class SettingsView extends StatelessWidget {
       body: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
           final bool isLoggedIn = authProvider.state.isAuthenticated;
-          final bool isKycVerified =
-              authProvider.state.user?.isVerified == true;
+          final UserModel? user = authProvider.state.user;
+          final bool isKycVerified = user?.isVerified == true;
 
           return SingleChildScrollView(
             physics: AlwaysScrollableScrollPhysics(
@@ -107,14 +110,61 @@ class SettingsView extends StatelessWidget {
                           );
                         },
                       ),
-                      // _buildSimpleSettingOption(
-                      //   context: context,
-                      //   label: l10n.twoFactorAuthentication,
-                      //   screenWidth: screenWidth,
-                      //   onTap: () {
-                      //     // TODO: Navigate to change passcode
-                      //   },
-                      // ),
+                      // if ((user?.email?.trim() ?? '').isNotEmpty)
+                      _buildNotificationToggle(
+                        context: context,
+                        label: l10n.twoFactorAuthentication,
+                        screenWidth: screenWidth,
+                        value: user?.twoFactorEnabled ?? false,
+                        onChanged: (value) async {
+                          final navigator = Navigator.of(
+                            context,
+                            rootNavigator: true,
+                          );
+                          final barrierColor = theme.colorScheme.scrim
+                              .withValues(alpha: 0.45);
+
+                          showDialog<void>(
+                            context: context,
+                            barrierDismissible: false,
+                            barrierColor: barrierColor,
+                            useRootNavigator: true,
+                            builder: (_) => PopScope(
+                              canPop: false,
+                              child: Center(
+                                child: Material(
+                                  color: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: const SizedBox.square(
+                                    dimension: 60,
+                                    child: CommonLoadingIndicator(),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+
+                          try {
+                            final message = await authProvider.toggleTwoFactor(
+                              value,
+                            );
+                            if (navigator.mounted) navigator.pop();
+                            if (context.mounted) {
+                              SnackbarHelper.showSuccess(context, message);
+                            }
+                          } catch (e) {
+                            if (navigator.mounted) navigator.pop();
+                            if (context.mounted) {
+                              SnackbarHelper.showError(
+                                context,
+                                e.toString().replaceAll('Exception: ', ''),
+                              );
+                            }
+                          }
+                        },
+                      ),
                     ],
                   ),
                 ],

@@ -6,22 +6,15 @@ import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/l10n/app_localizations.dart';
+import '../../../core/models/wallet_model/wallet_model.dart';
 import '../../../core/theme/theme.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/wallets_provider.dart';
 import '../../../widgets/common_back_button.dart';
-// import '../../../widgets/theme_aware_icon.dart';
-// import '../../../widgets/theme_aware_icon.dart';
-import '../services/wallet_address_service.dart';
+import '../providers/account_details_provider.dart';
 
-class AccountDetailsView extends StatefulWidget {
+class AccountDetailsView extends StatelessWidget {
   const AccountDetailsView({super.key});
-
-  @override
-  State<AccountDetailsView> createState() => _AccountDetailsViewState();
-}
-
-class _AccountDetailsViewState extends State<AccountDetailsView> {
-  String _selectedWalletType = 'EVM';
 
   @override
   Widget build(BuildContext context) {
@@ -30,76 +23,60 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double horizontalPadding = screenWidth * 0.05;
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: CommonBackButton(onPressed: () => GoRouter.of(context).pop()),
-        title: Text(
-          l10n.accountDetails,
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: theme.brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black,
-            fontWeight: FontWeight.bold,
+    return ChangeNotifierProvider(
+      create: (_) => AccountDetailsProvider(),
+      child: Scaffold(
+        appBar: AppBar(
+          leading: CommonBackButton(onPressed: () => GoRouter.of(context).pop()),
+          title: Text(
+            l10n.accountDetails,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
-      ),
-      body: Consumer<AuthProvider>(
-        builder: (context, authProvider, child) {
-          final user = authProvider.state.user;
-          final loc = context.l10n!;
-          if (user == null) {
-            return Center(child: Text(loc.accountNoUserDataAvailable));
-          }
+        body: Consumer<AuthProvider>(
+          builder: (context, authProvider, child) {
+            final user = authProvider.state.user;
+            final loc = context.l10n!;
+            if (user == null) {
+              return Center(child: Text(loc.accountNoUserDataAvailable));
+            }
 
-          final email = WalletAddressService.getUserEmail(user);
-          final walletAddresses = WalletAddressService.getWalletAddresses(user);
-          final currentAddress = walletAddresses[_selectedWalletType] ?? '';
+            final email = user.email ?? '';
 
-          return SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: ClampingScrollPhysics(),
-            ),
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 24),
-                _buildInfoSection(
-                  context: context,
-                  label: l10n.phoneNumber,
-                  value: user.fullPhoneNumber,
-                  onEdit: () {
-                    // TODO: Navigate to change phone number
-                  },
-                ),
-                if (email.isNotEmpty) ...[
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: ClampingScrollPhysics(),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   const SizedBox(height: 24),
                   _buildInfoSection(
                     context: context,
-                    label: l10n.email,
-                    value: email,
-                    onEdit: () {
-                      // TODO: Navigate to change email
-                    },
+                    label: l10n.phoneNumber,
+                    value: user.fullPhoneNumber,
                   ),
+                  if (email.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    _buildInfoSection(
+                      context: context,
+                      label: l10n.email,
+                      value: email,
+                    ),
+                  ],
+                  const SizedBox(height: 32),
+                  _buildWalletsSection(context: context, l10n: l10n),
                 ],
-                const SizedBox(height: 32),
-                _buildWalletsSection(
-                  context: context,
-                  l10n: l10n,
-                  walletAddresses: walletAddresses,
-                  currentAddress: currentAddress,
-                  selectedType: _selectedWalletType,
-                  onTypeChanged: (type) {
-                    setState(() {
-                      _selectedWalletType = type;
-                    });
-                  },
-                ),
-              ],
-            ),
-          );
-        },
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -108,7 +85,6 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
     required BuildContext context,
     required String label,
     required String value,
-    required VoidCallback onEdit,
   }) {
     final theme = Theme.of(context);
     final textColor =
@@ -142,11 +118,6 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                 ),
               ),
             ),
-            // IconButton(
-            //   icon: ThemeAwareIcon(assetPath: 'assets/icons/edit.svg'),
-            //   onPressed: onEdit,
-            //   padding: EdgeInsets.zero,
-            // ),
           ],
         ),
       ],
@@ -156,16 +127,24 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
   Widget _buildWalletsSection({
     required BuildContext context,
     required AppLocalizations l10n,
-    required Map<String, String> walletAddresses,
-    required String currentAddress,
-    required String selectedType,
-    required ValueChanged<String> onTypeChanged,
   }) {
-    final theme = Theme.of(context);
-    final textColor =
-        theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface;
+    final walletsProvider = context.watch<WalletsProvider>();
+    final accountDetailsProvider = context.watch<AccountDetailsProvider>();
+    final networks = walletsProvider.wallets;
 
-    final walletTypes = ['EVM', 'Bitcoin', 'Tron', 'Solana'];
+    if (walletsProvider.isLoading && networks.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (networks.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final selectedIndex = accountDetailsProvider.selectedNetworkIndex
+        .clamp(0, networks.length - 1);
+    final selectedNetwork = networks[selectedIndex];
+
+    final theme = Theme.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,57 +159,31 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
           ),
         ),
         const SizedBox(height: 16),
-        _buildWalletTypeTabs(
+        _buildNetworkTabs(
           context: context,
-          l10n: l10n,
-          types: walletTypes,
-          selectedType: selectedType,
-          onTypeChanged: onTypeChanged,
+          networks: networks,
+          selectedIndex: selectedIndex,
+          onChanged: (index) =>
+              context.read<AccountDetailsProvider>().selectNetwork(index),
         ),
         const SizedBox(height: 16),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: SelectableText(
-                currentAddress,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  fontFamily: GoogleFonts.poppins().fontFamily,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            IconButton(
-              icon: Icon(Icons.copy, size: 20, color: textColor),
-              onPressed: () {
-                Clipboard.setData(ClipboardData(text: currentAddress));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      l10n.copyLabelValue(l10n.copy, currentAddress),
-                    ),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              },
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            ),
-          ],
+        ...selectedNetwork.coins.map(
+          (coin) => _buildCoinAddressRow(
+            context: context,
+            theme: theme,
+            l10n: l10n,
+            coin: coin,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildWalletTypeTabs({
+  Widget _buildNetworkTabs({
     required BuildContext context,
-    required AppLocalizations l10n,
-    required List<String> types,
-    required String selectedType,
-    required ValueChanged<String> onTypeChanged,
+    required List<WalletNetworkModel> networks,
+    required int selectedIndex,
+    required ValueChanged<int> onChanged,
   }) {
     final theme = Theme.of(context);
     final textColor =
@@ -239,30 +192,18 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: types.map((type) {
-          final isSelected = type == selectedType;
-          String displayText;
-          switch (type) {
-            case 'EVM':
-              displayText = l10n.evm;
-              break;
-            case 'Bitcoin':
-              displayText = l10n.bitcoin;
-              break;
-            case 'Tron':
-              displayText = l10n.tron;
-              break;
-            case 'Solana':
-              displayText = l10n.solana;
-              break;
-            default:
-              displayText = type;
-          }
+        children: networks.asMap().entries.map((entry) {
+          final index = entry.key;
+          final network = entry.value;
+          final isSelected = index == selectedIndex;
+          final displayText = network.networkDisplayName.isNotEmpty
+              ? network.networkDisplayName
+              : network.network;
 
           return GestureDetector(
-            onTap: () => onTypeChanged(type),
+            onTap: () => onChanged(index),
             child: Container(
-              margin: const EdgeInsets.only(right: 24),
+              margin: const EdgeInsetsDirectional.only(end: 24),
               child: Column(
                 children: [
                   Text(
@@ -270,9 +211,8 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                     style: TextStyle(
                       color: isSelected ? textColor : AppColors.textLightGrey,
                       fontSize: 16,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w400,
                       fontFamily: GoogleFonts.poppins().fontFamily,
                     ),
                   ),
@@ -292,6 +232,79 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
             ),
           );
         }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildCoinAddressRow({
+    required BuildContext context,
+    required ThemeData theme,
+    required AppLocalizations l10n,
+    required WalletCoinModel coin,
+  }) {
+    final textColor =
+        theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface;
+    final hasAddress = coin.address != null && coin.address!.isNotEmpty;
+    final displayAddress =
+        hasAddress ? coin.address! : l10n.walletAddressMasked;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${coin.name} (${coin.symbol})',
+            style: TextStyle(
+              color: AppColors.textLightGrey,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              fontFamily: GoogleFonts.poppins().fontFamily,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: SelectableText(
+                  displayAddress,
+                  style: TextStyle(
+                    color: hasAddress ? textColor : AppColors.textLightGrey,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    fontFamily: GoogleFonts.poppins().fontFamily,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              IconButton(
+                icon: Icon(
+                  Icons.copy,
+                  size: 20,
+                  color: hasAddress
+                      ? textColor
+                      : AppColors.textLightGrey.withValues(alpha: 0.4),
+                ),
+                onPressed: hasAddress
+                    ? () {
+                        Clipboard.setData(
+                          ClipboardData(text: coin.address!),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(l10n.addressCopiedToast),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    : null,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

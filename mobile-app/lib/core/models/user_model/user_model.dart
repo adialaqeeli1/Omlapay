@@ -23,6 +23,7 @@ abstract class UserModel with _$UserModel {
     @Default('') String firstName,
     @Default('') String lastName,
     @Default(false) bool isVerified,
+    @Default(false) bool twoFactorEnabled,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>

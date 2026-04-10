@@ -504,5 +504,7 @@
     "failedToMarkNotificationAsRead": "Failed to mark notification as read",
     "failedToMarkAllNotificationsAsRead": "Failed to mark all notifications as read",
     "failedToLoadSupportRequests": "Failed to load support requests",
-    "failedToLoadMoreRequests": "Failed to load more requests"
+    "failedToLoadMoreRequests": "Failed to load more requests",
+    "walletAddressMasked": "XXXX XXXX XXXX XXXX",
+    "walletAddressNotAvailable": "Address not available yet"
 }
