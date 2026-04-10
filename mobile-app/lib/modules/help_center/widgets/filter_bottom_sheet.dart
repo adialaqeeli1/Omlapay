@@ -65,7 +65,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
         case FilterOption.solved:
           return l10n.solved;
         case FilterOption.pending:
-          return l10n.pending;
+          return l10n.open;
         case FilterOption.rejected:
           return l10n.rejected;
       }
