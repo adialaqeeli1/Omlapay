@@ -24,6 +24,11 @@ class AppTheme {
       backgroundColor: AppColors.lightBackground,
       foregroundColor: AppColors.appBarForegroundBlack,
       scrolledUnderElevation: 0,
+      titleTextStyle: GoogleFonts.poppinsTextTheme().titleLarge?.copyWith(
+        color: Colors.black,
+        fontWeight: FontWeight.bold,
+        fontSize: 16,
+      ),
     ),
     iconTheme: const IconThemeData(color: AppColors.iconBlack),
     fontFamily: fontFamily,
@@ -59,6 +64,11 @@ class AppTheme {
       backgroundColor: AppColors.darkBackground,
       foregroundColor: AppColors.appBarForegroundWhite,
       scrolledUnderElevation: 0,
+      titleTextStyle: GoogleFonts.poppinsTextTheme().titleLarge?.copyWith(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+        fontSize: 16,
+      ),
     ),
     iconTheme: const IconThemeData(color: AppColors.iconWhite),
     fontFamily: fontFamily,
