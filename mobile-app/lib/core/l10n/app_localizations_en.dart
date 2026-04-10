@@ -1215,4 +1215,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get walletAddressNotAvailable => 'Address not available yet';
+
+  @override
+  String get noAddressFound => 'No Address Found';
 }

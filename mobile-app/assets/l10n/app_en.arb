@@ -506,5 +506,6 @@
     "failedToLoadSupportRequests": "Failed to load support requests",
     "failedToLoadMoreRequests": "Failed to load more requests",
     "walletAddressMasked": "XXXX XXXX XXXX XXXX",
-    "walletAddressNotAvailable": "Address not available yet"
+    "walletAddressNotAvailable": "Address not available yet",
+    "noAddressFound": "No Address Found"
 }

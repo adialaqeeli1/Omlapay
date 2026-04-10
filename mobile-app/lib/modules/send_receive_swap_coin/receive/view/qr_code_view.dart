@@ -1,45 +1,46 @@
-import 'dart:io';
-import 'dart:ui' as ui;
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:image/image.dart' as img;
-import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
-import '../../../../core/theme/theme.dart';
-import '../../../../widgets/common_back_button.dart';
+
 import '../../../../core/models/wallet_model/wallet_model.dart';
+import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/snackbar_helper.dart';
+import '../../../../widgets/common_back_button.dart';
+import '../../../../widgets/common_coin_icon.dart';
 import '../../../dashboard/history/widgets/image_save_as_bottom_sheet.dart';
+import '../provider/qr_code_provider.dart';
 
-class QrCodeView extends StatefulWidget {
-  final WalletCoinModel wallet;
-
-  const QrCodeView({super.key, required this.wallet});
-
-  @override
-  State<QrCodeView> createState() => _QrCodeViewState();
-}
-
-class _QrCodeViewState extends State<QrCodeView> {
-  final GlobalKey _qrBoundaryKey = GlobalKey();
+class QrCodeView extends StatelessWidget {
+  const QrCodeView({super.key});
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
     final colorScheme = Theme.of(context).colorScheme;
-    final titleStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
-      fontWeight: FontWeight.w600,
-    );
+    final provider = context.watch<QrCodeProvider>();
+    final selectedCoin = provider.selectedCoin;
+
+    final currentAddress = selectedCoin?.address;
+
+    final titleStyle = Theme.of(
+      context,
+    ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600);
+
     return Scaffold(
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_getIconLetter(widget.wallet.symbol), style: titleStyle),
+            Text(
+              selectedCoin != null ? selectedCoin.symbol.substring(0, 1) : '',
+              style: titleStyle,
+            ),
             const SizedBox(width: 4),
-            Text(widget.wallet.name, style: titleStyle),
+            Text(selectedCoin?.name ?? '', style: titleStyle),
           ],
         ),
         elevation: 0,
@@ -54,6 +55,24 @@ class _QrCodeViewState extends State<QrCodeView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (provider.hasMultipleCoins) ...[
+                    Text(
+                      l10n.selectCoinTitle,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: colorScheme.onSurface,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _CoinSelector(
+                      coins: provider.coins,
+                      selectedCoin: selectedCoin,
+                      onCoinSelected: (coin) {
+                        context.read<QrCodeProvider>().selectCoin(coin);
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                  ],
                   Text(
                     l10n.qrCodeLabel,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -63,7 +82,7 @@ class _QrCodeViewState extends State<QrCodeView> {
                   ),
                   const SizedBox(height: 16),
                   RepaintBoundary(
-                    key: _qrBoundaryKey,
+                    key: provider.qrBoundaryKey,
                     child: Center(
                       child: Container(
                         padding: const EdgeInsets.all(20),
@@ -71,20 +90,36 @@ class _QrCodeViewState extends State<QrCodeView> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: QrImageView(
-                          data: widget.wallet.address ?? '',
-                          version: QrVersions.auto,
-                          size: 280,
-                          backgroundColor: Colors.white,
-                          eyeStyle: const QrEyeStyle(
-                            eyeShape: QrEyeShape.square,
-                            color: Colors.black,
-                          ),
-                          dataModuleStyle: const QrDataModuleStyle(
-                            dataModuleShape: QrDataModuleShape.square,
-                            color: Colors.black,
-                          ),
-                        ),
+                        child: currentAddress?.isEmpty == true
+                            ? SizedBox.square(
+                                dimension: 200,
+                                child: Center(
+                                  child: Text(
+                                    l10n.noAddressFound,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall
+                                        ?.copyWith(
+                                          color: colorScheme.onSurface,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                  ),
+                                ),
+                              )
+                            : QrImageView(
+                                data: currentAddress!,
+                                version: QrVersions.auto,
+                                size: 280,
+                                backgroundColor: Colors.white,
+                                eyeStyle: const QrEyeStyle(
+                                  eyeShape: QrEyeShape.square,
+                                  color: Colors.black,
+                                ),
+                                dataModuleStyle: const QrDataModuleStyle(
+                                  dataModuleShape: QrDataModuleShape.square,
+                                  color: Colors.black,
+                                ),
+                              ),
                       ),
                     ),
                   ),
@@ -98,7 +133,7 @@ class _QrCodeViewState extends State<QrCodeView> {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: _onSaveImageTap,
+                    onPressed: () => _onSaveImageTap(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colorScheme.surfaceContainerHigh,
                       foregroundColor: colorScheme.onSurface,
@@ -110,7 +145,7 @@ class _QrCodeViewState extends State<QrCodeView> {
                     ),
                     child: Text(
                       l10n.saveImage,
-                      style: const TextStyle(
+                      style: context.textTheme.bodyMedium?.copyWith(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -120,11 +155,8 @@ class _QrCodeViewState extends State<QrCodeView> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.shareComingSoon)),
-                      );
-                    },
+                    onPressed: () =>
+                        context.read<QrCodeProvider>().shareImage(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.tealColor,
                       foregroundColor: colorScheme.onPrimary,
@@ -136,7 +168,7 @@ class _QrCodeViewState extends State<QrCodeView> {
                     ),
                     child: Text(
                       l10n.shareAction,
-                      style: const TextStyle(
+                      style: context.textTheme.bodyMedium?.copyWith(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -151,63 +183,204 @@ class _QrCodeViewState extends State<QrCodeView> {
     );
   }
 
-  void _onSaveImageTap() {
+  void _onSaveImageTap(BuildContext context) {
+    final provider = context.read<QrCodeProvider>();
+    final l10n = context.l10n!;
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) =>
-          ImageSaveAsBottomSheet(onSave: (format) => _saveImage(format)),
+      builder: (_) => ImageSaveAsBottomSheet(
+        onSave: (format) async {
+          await provider.saveImage(context, format);
+          if (context.mounted) {
+            SnackbarHelper.showSuccess(context, l10n.imageSavedSuccessfully);
+          }
+        },
+      ),
+    );
+  }
+}
+
+/// Coin selector styled like the send/swap module — a tappable container
+/// that opens a bottom sheet with the list of available coins.
+class _CoinSelector extends StatelessWidget {
+  const _CoinSelector({
+    required this.coins,
+    required this.selectedCoin,
+    required this.onCoinSelected,
+  });
+
+  final List<WalletCoinModel> coins;
+  final WalletCoinModel? selectedCoin;
+  final ValueChanged<WalletCoinModel> onCoinSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final coin = selectedCoin;
+
+    return GestureDetector(
+      onTap: () => _showCoinSelectionSheet(context),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: _fieldBoxDecoration(context),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  if (coin != null) ...[
+                    CommonCoinIcon(
+                      symbol: coin.symbol,
+                      radius: 20,
+                      networkIconUrl: coin.networkIconUrl,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            coin.name,
+                            style: TextStyle(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            coin.symbol,
+                            style: TextStyle(
+                              color: colorScheme.onSurfaceVariant,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ] else
+                    Text(
+                      context.l10n!.selectCoinTitle,
+                      style: TextStyle(color: colorScheme.onSurface),
+                    ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_drop_down, color: colorScheme.onSurfaceVariant),
+          ],
+        ),
+      ),
     );
   }
 
-  Future<void> _saveImage(ImageSaveFormat format) async {
-    final boundary =
-        _qrBoundaryKey.currentContext?.findRenderObject()
-            as RenderRepaintBoundary?;
-    if (boundary == null || !mounted) return;
-
+  void _showCoinSelectionSheet(BuildContext context) {
     final l10n = context.l10n!;
-    final pixelRatio = 3.0;
-    final image = await boundary.toImage(pixelRatio: pixelRatio);
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    if (byteData == null || !mounted) return;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    final dir = await getApplicationDocumentsDirectory();
-    final ext = format == ImageSaveFormat.png ? 'png' : 'jpg';
-    final fileName =
-        'qr_${widget.wallet.symbol}_${DateTime.now().millisecondsSinceEpoch}.$ext';
-    final file = File('${dir.path}/$fileName');
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.5,
+        ),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: IconButton(
+                      icon: Icon(Icons.close, color: colorScheme.onSurface),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                  Text(
+                    l10n.selectCoinTitle,
+                    style: TextStyle(
+                      color: colorScheme.onSurface,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: coins.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemBuilder: (context, index) {
+                  final coin = coins[index];
+                  final isSelected = coin == selectedCoin;
 
-    List<int> bytes;
-    if (format == ImageSaveFormat.jpg) {
-      final decoded = img.decodeImage(byteData.buffer.asUint8List());
-      if (decoded == null) return;
-      bytes = img.encodeJpg(decoded, quality: 90);
-    } else {
-      bytes = byteData.buffer.asUint8List();
-    }
-
-    await file.writeAsBytes(bytes);
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.imageSavedSuccessfully)));
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      border: isSelected
+                          ? Border.all(color: AppColors.tealColor)
+                          : null,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: ListTile(
+                      leading: CommonCoinIcon(
+                        symbol: coin.symbol,
+                        networkIconUrl: coin.networkIconUrl,
+                      ),
+                      title: Text(
+                        coin.name,
+                        style: TextStyle(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      subtitle: Text(
+                        coin.symbol,
+                        style: TextStyle(color: colorScheme.onSurfaceVariant),
+                      ),
+                      onTap: () {
+                        onCoinSelected(coin);
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
   }
 
-  String _getIconLetter(String symbol) {
-    switch (symbol) {
-      case 'BTC':
-        return 'B';
-      case 'ETH':
-        return 'E';
-      case 'TRX':
-        return 'T';
-      case 'SOL':
-        return 'S';
-      default:
-        return symbol.substring(0, 1);
+  BoxDecoration _fieldBoxDecoration(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    if (context.isDarkMode) {
+      return BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.outlineVariant),
+      );
     }
+    return BoxDecoration(
+      color: AppColors.lightSurface,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: AppColors.sendFormFieldBorderLight),
+    );
   }
 }

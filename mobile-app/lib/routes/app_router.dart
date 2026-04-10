@@ -59,6 +59,7 @@ import '../modules/send_receive_swap_coin/swap/view/review_order_view.dart';
 import '../modules/send_receive_swap_coin/swap/view/swap_success_view.dart';
 import '../modules/transaction_details/provider/transaction_details_provider.dart';
 import '../modules/transaction_details/view/transaction_details_view.dart';
+import '../modules/send_receive_swap_coin/receive/provider/qr_code_provider.dart';
 import '../modules/send_receive_swap_coin/receive/view/qr_code_view.dart';
 import '../modules/scan/view/qr_scanner_view.dart';
 import '../modules/settings/view/settings_view.dart';
@@ -732,8 +733,12 @@ class AppRouter {
         path: Routes.qrCode,
         name: 'qrCode',
         builder: (context, state) {
-          final wallet = state.extra as WalletCoinModel;
-          return QrCodeView(wallet: wallet);
+          final walletNetwork = state.extra as WalletNetworkModel;
+          return ChangeNotifierProvider(
+            create: (_) =>
+                QrCodeProvider(walletNetwork: walletNetwork),
+            child: const QrCodeView(),
+          );
         },
         redirect: AuthMiddleware.isAuthenticated,
       ),
