@@ -123,3 +123,9 @@ assets/.DS_Store
 .DS_Store
 ios/.DerivedData/
 macos/.DerivedData/
+
+.agents/
+.claude/
+.cursor/
+.vscode/
+docs/superpowers
