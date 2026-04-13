@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart' as ph;
 
 import '../core/extentions/context_extensions.dart';
 import '../core/theme/theme.dart';
+import '../core/utils/utility.dart';
 import '../modules/scan/provider/qr_scanner_provider.dart';
 import 'permission_dialog.dart';
 import 'invalid_qr_code_dialog.dart';
@@ -23,8 +24,11 @@ import 'invalid_qr_code_dialog.dart';
 ///
 /// When [permissionProvider] is provided, permission logic is delegated to it.
 /// Otherwise, the widget manages permission internally.
-/// Validator for scanned QR code. Returns true if valid, false if invalid.
-typedef QrCodeValidator = bool Function(String value);
+/// Async validator for a scanned QR code.
+///
+/// Returns `null` when the value is valid, or a [QrValidationError] describing
+/// why it was rejected so the scanner can show a specific error message.
+typedef QrCodeValidator = Future<QrValidationError?> Function(String value);
 
 class QrScannerWidget extends StatefulWidget {
   /// Callback invoked when a QR code is successfully scanned.
@@ -57,6 +61,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
     with SingleTickerProviderStateMixin {
   MobileScannerController? _controller;
   bool _hasScanned = false;
+  bool _isValidating = false;
   ph.PermissionStatus _permissionStatus = ph.PermissionStatus.denied;
   bool _isCheckingPermission = true;
   bool _torchEnabled = false;
@@ -216,8 +221,8 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
     setState(() => _torchEnabled = !_torchEnabled);
   }
 
-  void _onDetect(BarcodeCapture capture) {
-    if (_hasScanned) return;
+  Future<void> _onDetect(BarcodeCapture capture) async {
+    if (_hasScanned || _isValidating) return;
 
     final barcodes = capture.barcodes;
     if (barcodes.isEmpty) return;
@@ -227,9 +232,21 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
     if (rawValue == null || rawValue.isEmpty) return;
 
     final validator = widget.validator;
-    if (validator != null && !validator(rawValue)) {
-      _showInvalidQrCodeDialog();
-      return;
+    if (validator != null) {
+      setState(() => _isValidating = true);
+      final QrValidationError? error;
+      try {
+        error = await validator(rawValue);
+      } finally {
+        if (mounted) {
+          setState(() => _isValidating = false);
+        }
+      }
+      if (!mounted) return;
+      if (error != null) {
+        await _showInvalidQrCodeDialog(error);
+        return;
+      }
     }
 
     _hasScanned = true;
@@ -240,8 +257,15 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
     widget.onScanned(rawValue);
   }
 
-  Future<void> _showInvalidQrCodeDialog() async {
-    final result = await InvalidQrCodeDialog.show(context);
+  Future<void> _showInvalidQrCodeDialog(QrValidationError error) async {
+    final l10n = context.l10n!;
+    final message = switch (error) {
+      QrValidationError.invalidFormat => l10n.invalidQrCode,
+      QrValidationError.invalidAddress => l10n.qrInvalidWalletAddress,
+      QrValidationError.networkError => l10n.qrAddressVerificationFailed,
+      QrValidationError.addressNotValidated => l10n.qrAddressNotValidated,
+    };
+    final result = await InvalidQrCodeDialog.show(context, message: message);
 
     if (!mounted) return;
     if (result == true) {
@@ -333,7 +357,26 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
             child: _buildTorchButton(),
           ),
         ),
+        if (_isValidating) _buildValidationOverlay(),
       ],
+    );
+  }
+
+  Widget _buildValidationOverlay() {
+    return Positioned.fill(
+      child: ColoredBox(
+        color: Colors.black.withValues(alpha: 0.55),
+        child: const Center(
+          child: SizedBox(
+            width: 48,
+            height: 48,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ),
+        ),
+      ),
     );
   }
 

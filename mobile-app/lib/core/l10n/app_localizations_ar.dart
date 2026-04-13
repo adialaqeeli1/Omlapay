@@ -851,6 +851,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get invalidQrCode => 'رمز QR غير صالح';
 
   @override
+  String get qrInvalidWalletAddress => 'عنوان المحفظة غير صالح';
+
+  @override
+  String get qrAddressVerificationFailed =>
+      'تعذر التحقق من العنوان. تحقق من اتصالك وحاول مرة أخرى.';
+
+  @override
+  String get qrAddressNotValidated => 'تعذر التحقق من صحة هذا العنوان';
+
+  @override
   String get tryAgain => 'حاول مرة أخرى';
 
   @override

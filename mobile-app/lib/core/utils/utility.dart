@@ -1,8 +1,32 @@
+import 'dart:convert';
+import 'dart:developer' as developer;
 import 'dart:math';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path_helper;
+
+import '../constants/endpoints.dart';
+import '../models/wallet_model/wallet_model.dart';
+import '../services/api_helper.dart';
+
+/// Reason a scanned QR code failed validation.
+///
+/// `null` return from [Utility.isValidWalletAddress] means the value is valid;
+/// any non-null value tells the caller which error message to surface.
+enum QrValidationError {
+  /// Payload is not JSON or does not match the expected wallet-coin shape.
+  invalidFormat,
+
+  /// The embedded address failed the client-side format regex.
+  invalidAddress,
+
+  /// Backend validation request failed due to network/connectivity issues.
+  networkError,
+
+  /// Backend explicitly rejected the address.
+  addressNotValidated,
+}
 
 class Utility {
   static RegExp alphaNumericPasswordRegex = RegExp(
@@ -435,32 +459,89 @@ class Utility {
     return "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/${symbol.toLowerCase()}.png";
   }
 
-  /// Validates common crypto wallet address formats.
-  /// Returns true for EVM (0x...), Bitcoin (1, 3, bc1), Tron (T...), Solana (base58).
-  static bool isValidWalletAddress(String value) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty || trimmed.length < 20) return false;
-
-    // EVM: 0x + 40 hex chars
-    if (trimmed.startsWith('0x') && trimmed.length == 42) {
-      return RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(trimmed);
+  /// Validates a scanned QR payload that should encode a [WalletCoinModel].
+  ///
+  /// Returns `null` if the payload is a well-formed wallet JSON, its address
+  /// matches a known chain format, and the backend accepts it. Otherwise
+  /// returns a [QrValidationError] describing what went wrong so callers can
+  /// show a specific error message.
+  ///
+  /// Steps:
+  /// 1. `jsonDecode` the raw value — must be a `Map<String, dynamic>`.
+  /// 2. Parse into [WalletCoinModel] and require non-empty `symbol`/`address`.
+  /// 3. Run client-side regex on the address (cheap local reject).
+  /// 4. Call `GET /v1/send/validate-address?address=...&coin=...` and require
+  ///    a non-null `data` payload.
+  static Future<QrValidationError?> isValidWalletAddress(String value) async {
+    final dynamic decoded;
+    try {
+      decoded = jsonDecode(value);
+    } catch (_) {
+      return QrValidationError.invalidFormat;
+    }
+    if (decoded is! Map<String, dynamic>) {
+      return QrValidationError.invalidFormat;
     }
 
-    // Bitcoin: 1 (P2PKH), 3 (P2SH), or bc1 (Bech32)
-    if (trimmed.startsWith('1') || trimmed.startsWith('3')) {
-      return RegExp(r'^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$').hasMatch(trimmed);
-    }
-    if (trimmed.startsWith('bc1')) {
-      return trimmed.length >= 42 && trimmed.length <= 62;
-    }
-
-    // Tron: T + 33 hex chars
-    if (trimmed.startsWith('T') && trimmed.length == 34) {
-      return RegExp(r'^T[0-9a-fA-F]{33}$').hasMatch(trimmed);
+    final WalletCoinModel wallet;
+    try {
+      wallet = WalletCoinModel.fromJson(decoded);
+    } catch (_) {
+      return QrValidationError.invalidFormat;
     }
 
-    // Solana: base58, typically 32-44 chars
-    if (RegExp(r'^[1-9A-HJ-NP-Za-km-z]{32,44}$').hasMatch(trimmed)) {
+    final symbol = wallet.symbol.trim();
+    final address = wallet.address?.trim() ?? '';
+    if (symbol.isEmpty || address.isEmpty) {
+      return QrValidationError.invalidFormat;
+    }
+
+    if (!_matchesKnownAddressFormat(address)) {
+      return QrValidationError.invalidAddress;
+    }
+
+    try {
+      final response = await ApiHelper.get(
+        Endpoints.sendValidateAddress,
+        queryParameters: {'address': address, 'coin': symbol},
+      );
+      final data = response['data'];
+      if (data is! Map<String, dynamic> || data.isEmpty) {
+        return QrValidationError.addressNotValidated;
+      }
+      return null;
+    } catch (e, stackTrace) {
+      developer.log(
+        'validate-address request failed: $e',
+        name: 'Utility.isValidWalletAddress',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return QrValidationError.networkError;
+    }
+  }
+
+  /// Client-side regex check covering EVM (0x...), Bitcoin (1, 3, bc1),
+  /// Tron (T...), and Solana (base58) address formats.
+  static bool _matchesKnownAddressFormat(String address) {
+    if (address.isEmpty || address.length < 20) return false;
+
+    if (address.startsWith('0x') && address.length == 42) {
+      return RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(address);
+    }
+
+    if (address.startsWith('1') || address.startsWith('3')) {
+      return RegExp(r'^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$').hasMatch(address);
+    }
+    if (address.startsWith('bc1')) {
+      return address.length >= 42 && address.length <= 62;
+    }
+
+    if (address.startsWith('T') && address.length == 34) {
+      return RegExp(r'^T[0-9a-fA-F]{33}$').hasMatch(address);
+    }
+
+    if (RegExp(r'^[1-9A-HJ-NP-Za-km-z]{32,44}$').hasMatch(address)) {
       return true;
     }
 

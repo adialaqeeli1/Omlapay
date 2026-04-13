@@ -372,9 +372,7 @@ class AppRouter {
             create: (_) => ChangeEmailFormProvider(
               currentEmail: WalletAddressService.getUserEmail(user),
             ),
-            child: ChangeEmailEnterNewView(
-              changeEmailToken: changeEmailToken,
-            ),
+            child: ChangeEmailEnterNewView(changeEmailToken: changeEmailToken),
           );
         },
         redirect: AuthMiddleware.isAuthenticated,
@@ -723,13 +721,20 @@ class AppRouter {
       GoRoute(
         path: Routes.sendCoin,
         name: 'sendCoin',
-        builder: (context, state) => ChangeNotifierProvider(
-          create: (_) => SendProvider(
-            context.read<AuthProvider>(),
-            context.read<CoinsPricesProvider>(),
-          ),
-          child: const SendCoinView(),
-        ),
+        builder: (context, state) {
+          final extra = state.extra is SendCoinExtra
+              ? state.extra as SendCoinExtra
+              : null;
+          return ChangeNotifierProvider(
+            create: (_) => SendProvider(
+              context.read<AuthProvider>(),
+              context.read<CoinsPricesProvider>(),
+              initialCoinSymbol: extra?.initialCoinSymbol,
+              initialRecipient: extra?.initialRecipient,
+            ),
+            child: const SendCoinView(),
+          );
+        },
       ),
       GoRoute(
         path: Routes.sendReview,

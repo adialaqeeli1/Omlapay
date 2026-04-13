@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -105,7 +107,7 @@ class QrCodeView extends StatelessWidget {
                                 ),
                               )
                             : QrImageView(
-                                data: currentAddress!,
+                                data: jsonEncode(selectedCoin?.toJson()),
                                 version: QrVersions.auto,
                                 size: 280,
                                 backgroundColor: Colors.white,
@@ -116,6 +118,12 @@ class QrCodeView extends StatelessWidget {
                                 dataModuleStyle: const QrDataModuleStyle(
                                   dataModuleShape: QrDataModuleShape.square,
                                   color: Colors.black,
+                                ),
+                                embeddedImage: const AssetImage(
+                                  'assets/logo/logo-dark.png',
+                                ),
+                                embeddedImageStyle: QrEmbeddedImageStyle(
+                                  size: Size.square(10),
                                 ),
                               ),
                       ),
