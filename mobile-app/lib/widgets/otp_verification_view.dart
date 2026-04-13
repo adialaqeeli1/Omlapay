@@ -61,7 +61,9 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
         await widget.onInitialRequest();
       } catch (e) {
         if (!mounted) return;
-        final message = e is AppException ? e.localizedMessage(context.l10n) : e.toString();
+        final message = e is AppException
+            ? e.localizedMessage(context.l10n)
+            : e.toString();
         SnackbarHelper.showError(context, message);
       }
     });
@@ -176,6 +178,7 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
                     autoFocus: true,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    onTapOutside: (event) => FocusScope.of(context).unfocus(),
                     theme: MaterialPinTheme(
                       shape: MaterialPinShape.outlined,
                       cellSize: cellSize,

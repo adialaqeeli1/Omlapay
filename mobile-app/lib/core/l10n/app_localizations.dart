@@ -338,6 +338,18 @@ abstract class AppLocalizations {
   /// **'A 6-digit verification code was sent to {phone}.'**
   String changePhoneNewOtpSent(String phone);
 
+  /// No description provided for @verifyYourEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your email'**
+  String get verifyYourEmail;
+
+  /// No description provided for @twoFactorEmailOtpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'A 6-digit verification code has been sent to {email}.'**
+  String twoFactorEmailOtpSent(String email);
+
   /// No description provided for @enterValidPhoneNumber.
   ///
   /// In en, this message translates to:

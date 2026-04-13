@@ -4,11 +4,13 @@ part 'change_phone_models.freezed.dart';
 part 'change_phone_models.g.dart';
 
 /// Response from step1-request and step3-request (OTP sent to a phone number).
+/// When 2FA is enabled, step1 also returns [maskedEmail].
 @freezed
 abstract class ChangePhoneRequestData with _$ChangePhoneRequestData {
   const factory ChangePhoneRequestData({
     @JsonKey(name: 'masked_phone') required String maskedMobile,
     @JsonKey(name: 'otp_expiry_seconds') required int otpExpirySeconds,
+    @JsonKey(name: 'masked_email') String? maskedEmail,
   }) = _ChangePhoneRequestData;
 
   factory ChangePhoneRequestData.fromJson(Map<String, dynamic> json) =>

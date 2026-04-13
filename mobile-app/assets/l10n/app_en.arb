@@ -54,6 +54,15 @@
             }
         }
     },
+    "verifyYourEmail": "Verify your email",
+    "twoFactorEmailOtpSent": "A 6-digit verification code has been sent to {email}.",
+    "@twoFactorEmailOtpSent": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
     "enterValidPhoneNumber": "Please enter a valid phone number",
     "phoneNumberChangedSuccessfully": "Your phone number has been changed successfully",
     "changeEmail": "Change Email",

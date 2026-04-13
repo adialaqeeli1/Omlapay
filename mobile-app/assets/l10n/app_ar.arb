@@ -54,6 +54,15 @@
             }
         }
     },
+    "verifyYourEmail": "تحقق من بريدك الإلكتروني",
+    "twoFactorEmailOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام إلى {email}.",
+    "@twoFactorEmailOtpSent": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
     "enterValidPhoneNumber": "يرجى إدخال رقم هاتف صالح",
     "phoneNumberChangedSuccessfully": "تم تغيير رقم هاتفك بنجاح",
     "changeEmail": "تغيير البريد الإلكتروني",

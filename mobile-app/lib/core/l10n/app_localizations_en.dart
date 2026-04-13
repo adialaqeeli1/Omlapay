@@ -142,6 +142,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get verifyYourEmail => 'Verify your email';
+
+  @override
+  String twoFactorEmailOtpSent(String email) {
+    return 'A 6-digit verification code has been sent to $email.';
+  }
+
+  @override
   String get enterValidPhoneNumber => 'Please enter a valid phone number';
 
   @override

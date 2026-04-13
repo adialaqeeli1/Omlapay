@@ -140,6 +140,14 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get verifyYourEmail => 'تحقق من بريدك الإلكتروني';
+
+  @override
+  String twoFactorEmailOtpSent(String email) {
+    return 'تم إرسال رمز تحقق مكون من 6 أرقام إلى $email.';
+  }
+
+  @override
   String get enterValidPhoneNumber => 'يرجى إدخال رقم هاتف صالح';
 
   @override
