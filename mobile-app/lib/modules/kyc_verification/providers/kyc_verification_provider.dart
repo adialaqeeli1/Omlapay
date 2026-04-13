@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -24,24 +25,21 @@ class KycVerificationProvider extends ChangeNotifier {
     String city,
     String address,
     String dob,
-  })? validateForm(FormGroup form) {
+  })?
+  validateForm(FormGroup form) {
     form.markAllAsTouched();
     if (!form.valid) return null;
 
-    final firstName =
-        (form.control('firstName').value ?? '').toString().trim();
-    final lastName =
-        (form.control('lastName').value ?? '').toString().trim();
-    final residentialCountry =
-        (form.control('residentialCountry').value ?? '')
-            .toString()
-            .trim()
-            .toUpperCase();
-    final documentCountry =
-        (form.control('documentCountry').value ?? '')
-            .toString()
-            .trim()
-            .toUpperCase();
+    final firstName = (form.control('firstName').value ?? '').toString().trim();
+    final lastName = (form.control('lastName').value ?? '').toString().trim();
+    final residentialCountry = (form.control('residentialCountry').value ?? '')
+        .toString()
+        .trim()
+        .toUpperCase();
+    final documentCountry = (form.control('documentCountry').value ?? '')
+        .toString()
+        .trim()
+        .toUpperCase();
     final city = (form.control('city').value ?? '').toString().trim();
     final address = (form.control('address').value ?? '').toString().trim();
     final dob = _toIsoDate(
@@ -158,10 +156,10 @@ class KycVerificationProvider extends ChangeNotifier {
       if (result.status == SNSMobileSDKStatus.Approved) {
         try {
           debugPrint('Sumsub approved — starting Binance KYC');
-          await KycVerificationService.startBinanceKyc();
+          unawaited(KycVerificationService.startBinanceKyc());
           debugPrint('Binance KYC started — refreshing account details');
-          await authProvider.fetchAccountDetails();
-          await kycStatusProvider.fetchKycStatus();
+          unawaited(authProvider.fetchAccountDetails());
+          unawaited(kycStatusProvider.fetchKycStatus());
         } catch (e) {
           debugPrint('Post-approval flow error: $e');
         }
