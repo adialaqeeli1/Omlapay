@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/theme/theme.dart';
-import '../../../../providers/auth_provider.dart';
+import '../../../../providers/kyc_status_provider.dart';
 import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_coin_icon.dart';
 import '../../../../widgets/common_loading_indicator.dart';
@@ -27,12 +27,12 @@ class ReceiveCoinView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ReciveCoinProvider>();
-    final authProvider = context.watch<AuthProvider>();
+    final kycProvider = context.watch<KycStatusProvider>();
     final l10n = context.l10n!;
     final colorScheme = Theme.of(context).colorScheme;
     final title = fromReceive ? l10n.receive : l10n.walletsTitle;
     final showVerificationBanner =
-        provider.kycRequired || authProvider.state.user?.isVerified != true;
+        provider.kycRequired || kycProvider.showBanner;
 
     final theme = context.theme;
 
@@ -72,12 +72,8 @@ class ReceiveCoinView extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: provider.isLoading
-                    ? Center(
-                        child: CircularProgressIndicator(
-                          color: colorScheme.primary,
-                        ),
-                      )
+                child: provider.wallets.isEmpty && provider.isLoading
+                    ? Center(child: CommonLoadingIndicator())
                     : _buildWalletsList(
                         context,
                         provider,
@@ -88,12 +84,22 @@ class ReceiveCoinView extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
                   child: KycVerificationRequiredBanner(
-                    messageBody: l10n.receiveKycVerificationRequiredBody,
+                    kycStatus: kycProvider.kycStatus,
                     entrySource: KycVerificationEntrySource.receive,
+                    rejectionReason: kycProvider.rejectionReason,
                   ),
                 ),
             ],
           ),
+
+          // Loading overlay during refresh (when wallets already loaded)
+          if (provider.isLoading && provider.wallets.isNotEmpty)
+            Positioned.fill(
+              child: ColoredBox(
+                color: colorScheme.surface.withValues(alpha: 0.6),
+                child: Center(child: CommonLoadingIndicator()),
+              ),
+            ),
 
           // Copied message overlay
           if (provider.addressCopiedVisible)

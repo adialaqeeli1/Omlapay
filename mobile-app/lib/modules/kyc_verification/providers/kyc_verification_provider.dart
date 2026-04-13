@@ -7,6 +7,7 @@ import 'package:reactive_forms/reactive_forms.dart';
 
 import '../../../core/utils/api_message_helper.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/kyc_status_provider.dart';
 import '../services/kyc_verification_service.dart';
 
 class KycVerificationProvider extends ChangeNotifier {
@@ -70,6 +71,7 @@ class KycVerificationProvider extends ChangeNotifier {
     required String startFailedFallback,
     required String successFallback,
     required AuthProvider authProvider,
+    required KycStatusProvider kycStatusProvider,
   }) async {
     if (_isSubmitting) {
       return (message: '', shouldNavigateBack: false);
@@ -159,6 +161,7 @@ class KycVerificationProvider extends ChangeNotifier {
           await KycVerificationService.startBinanceKyc();
           debugPrint('Binance KYC started — refreshing account details');
           await authProvider.fetchAccountDetails();
+          await kycStatusProvider.fetchKycStatus();
         } catch (e) {
           debugPrint('Post-approval flow error: $e');
         }

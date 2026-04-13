@@ -10,6 +10,7 @@ import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/utility.dart';
 import '../../../../routes/app_router.dart';
+import '../../../../providers/kyc_status_provider.dart';
 import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../../../scan/view/qr_scanner_view.dart';
 import '../../../../widgets/permission_dialog.dart';
@@ -45,6 +46,7 @@ class SendCoinView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SendProvider>();
+    final kycProvider = context.watch<KycStatusProvider>();
     final l10n = context.l10n!;
     final theme = context.theme;
 
@@ -112,11 +114,12 @@ class SendCoinView extends StatelessWidget {
                   ),
 
                   // Verification Warning
-                  if (provider.showVerificationWarning) ...[
+                  if (kycProvider.showBanner) ...[
                     const SizedBox(height: 30),
                     KycVerificationRequiredBanner(
-                      messageBody: l10n.sendKycVerificationRequiredBody,
+                      kycStatus: kycProvider.kycStatus,
                       entrySource: KycVerificationEntrySource.send,
+                      rejectionReason: kycProvider.rejectionReason,
                     ),
                   ],
                 ],

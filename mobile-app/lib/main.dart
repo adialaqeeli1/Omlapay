@@ -13,6 +13,7 @@ import 'providers/coins_prices_provider.dart';
 import 'providers/global_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/wallets_provider.dart';
+import 'providers/kyc_status_provider.dart';
 import 'core/services/coins_prices_stream_service.dart';
 import 'core/services/coins_service.dart';
 import 'core/l10n/app_localizations.dart';
@@ -77,6 +78,12 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<WalletsProvider>(
           create: (context) => WalletsProvider(context.read<GlobalProvider>()),
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, KycStatusProvider>(
+          lazy: false,
+          create: (context) =>
+              KycStatusProvider(context.read<AuthProvider>()),
+          update: (_, auth, previous) => previous ?? KycStatusProvider(auth),
         ),
         ChangeNotifierProvider<NotificationProvider>(
           create: (_) => NotificationProvider(),

@@ -11,14 +11,26 @@ import '../../../routes/app_router.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/kyc_status_provider.dart';
 import '../../../widgets/common_back_button.dart';
 import '../providers/kyc_verification_provider.dart';
+import '../utils/kyc_status.dart';
 import '../utils/kyc_verification_entry_source.dart';
 
-class KycVerificationView extends StatelessWidget {
-  KycVerificationView({super.key, required this.entrySource});
+class KycVerificationView extends StatefulWidget {
+  const KycVerificationView({super.key, required this.entrySource});
 
   final KycVerificationEntrySource entrySource;
+
+  @override
+  State<KycVerificationView> createState() => _KycVerificationViewState();
+}
+
+class _KycVerificationViewState extends State<KycVerificationView> {
+  /// When true, forces the form to show regardless of KYC status
+  /// (e.g. when user taps "Retry Verification" from rejected state).
+  bool _forceShowForm = false;
+
   final FormGroup _form = FormGroup({
     'firstName': FormControl<String>(validators: [Validators.required]),
     'lastName': FormControl<String>(validators: [Validators.required]),
@@ -35,8 +47,8 @@ class KycVerificationView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
     final theme = context.theme;
-    final isDark = context.isDarkMode;
-    final provider = context.watch<KycVerificationProvider>();
+    final kycStatusProvider = context.watch<KycStatusProvider>();
+    final kycStatus = kycStatusProvider.kycStatus;
 
     return Scaffold(
       appBar: AppBar(
@@ -52,180 +64,306 @@ class KycVerificationView extends StatelessWidget {
         ),
       ),
       body: SafeArea(
-        child: ReactiveForm(
-          formGroup: _form,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final isWide = constraints.maxWidth >= 720;
-                        final fieldWidth = isWide
-                            ? (constraints.maxWidth - 16) / 2
-                            : constraints.maxWidth;
-
-                        return Wrap(
-                          spacing: 16,
-                          runSpacing: 16,
-                          children: [
-                            SizedBox(
-                              width: fieldWidth,
-                              child: _KycTextField(
-                                formControlName: 'firstName',
-                                label: l10n.kycFirstNameLabel,
-                              ),
-                            ),
-                            SizedBox(
-                              width: fieldWidth,
-                              child: _KycTextField(
-                                formControlName: 'lastName',
-                                label: l10n.kycLastNameLabel,
-                              ),
-                            ),
-                            SizedBox(
-                              width: fieldWidth,
-                              child: _KycDateField(
-                                formControlName: 'dateOfBirth',
-                                label: l10n.kycDateOfBirthLabel,
-                                hint: l10n.kycSelectDateHint,
-                                form: _form,
-                              ),
-                            ),
-                            SizedBox(
-                              width: fieldWidth,
-                              child: _KycCountryField(
-                                formControlName: 'residentialCountry',
-                                label: l10n.kycResidentialCountryLabel,
-                                hint: l10n.kycCountryCodeHint,
-                              ),
-                            ),
-                            SizedBox(
-                              width: fieldWidth,
-                              child: _KycCountryField(
-                                formControlName: 'documentCountry',
-                                label: l10n.kycDocumentCountryLabel,
-                                hint: l10n.kycCountryCodeHint,
-                              ),
-                            ),
-                            SizedBox(
-                              width: fieldWidth,
-                              child: _KycTextField(
-                                formControlName: 'city',
-                                label: l10n.kycCityLabel,
-                              ),
-                            ),
-                            SizedBox(
-                              width: constraints.maxWidth,
-                              child: _KycTextField(
-                                formControlName: 'address',
-                                label: l10n.kycAddressLabel,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
+        child: _forceShowForm
+            ? _KycFormBody(form: _form, entrySource: widget.entrySource)
+            : switch (kycStatus) {
+                KycStatus.pending => _KycPendingBody(),
+                KycStatus.rejected => _KycRejectedBody(
+                  rejectionReason: kycStatusProvider.rejectionReason,
+                  onRetry: () => setState(() => _forceShowForm = true),
                 ),
-                const SizedBox(height: 12),
-                ReactiveFormConsumer(
-                  builder: (context, form, child) {
-                    return SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: form.valid
-                            ? () async {
-                                FocusScope.of(context).unfocus();
-                                final kycProvider = context
-                                    .read<KycVerificationProvider>();
-                                final formData = kycProvider.validateForm(
-                                  _form,
-                                );
-                                if (formData == null) return;
+                _ => _KycFormBody(form: _form, entrySource: widget.entrySource),
+              },
+      ),
+    );
+  }
+}
 
-                                // Skip email verification if user already has an email
-                                final user = context
-                                    .read<AuthProvider>()
-                                    .state
-                                    .user;
-                                final hasEmail =
-                                    user?.email != null &&
-                                    user!.email!.isNotEmpty;
+/// Shown when KYC is submitted and under review.
+class _KycPendingBody extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n!;
+    final theme = context.theme;
+    final colorScheme = theme.colorScheme;
 
-                                if (!hasEmail) {
-                                  final emailVerified = await context
-                                      .push<bool>(Routes.emailEntry);
-                                  if (!context.mounted ||
-                                      emailVerified != true) {
-                                    return;
-                                  }
-                                }
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.hourglass_top_rounded,
+              size: 64,
+              color: colorScheme.primary,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              l10n.kyc_submitted_under_review,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: colorScheme.onSurface,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              l10n.kyc_pending_subtitle,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-                                // Email verified — launch SumSub
-                                try {
-                                  final result = await kycProvider.launchSumSub(
-                                    firstName: formData.firstName,
-                                    lastName: formData.lastName,
-                                    residentialCountry:
-                                        formData.residentialCountry,
-                                    documentCountry: formData.documentCountry,
-                                    city: formData.city,
-                                    address: formData.address,
-                                    dob: formData.dob,
-                                    locale: Localizations.localeOf(context),
-                                    startFailedFallback: l10n.requestFailed,
-                                    successFallback: l10n.kycStartedSuccess,
-                                    authProvider: context.read<AuthProvider>(),
-                                  );
-                                  if (!context.mounted) return;
-                                  if (result.message.isNotEmpty) {
-                                    SnackbarHelper.showSuccess(
-                                      context,
-                                      result.message,
-                                    );
-                                  }
-                                  if (result.shouldNavigateBack) {
-                                    context.go(entrySource.sourceRoute);
-                                  }
-                                } catch (e) {
-                                  if (!context.mounted) return;
-                                  SnackbarHelper.showError(
-                                    context,
-                                    e.toString(),
-                                  );
-                                }
-                              }
-                            : null,
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size.fromHeight(52),
-                          backgroundColor: AppColors.primaryColor,
-                          foregroundColor: isDark
-                              ? AppColors.darkSurface
-                              : AppColors.white,
-                          disabledBackgroundColor:
-                              theme.colorScheme.surfaceContainerHighest,
-                          disabledForegroundColor: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.6),
+/// Shown when KYC is rejected — displays reason and retry button.
+class _KycRejectedBody extends StatelessWidget {
+  const _KycRejectedBody({
+    required this.rejectionReason,
+    required this.onRetry,
+  });
+
+  final String? rejectionReason;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n!;
+    final theme = context.theme;
+    final colorScheme = theme.colorScheme;
+    final isDark = context.isDarkMode;
+
+    final message = rejectionReason != null && rejectionReason!.isNotEmpty
+        ? l10n.kyc_rejected_with_reason(rejectionReason!)
+        : l10n.kyc_rejected;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.cancel_outlined,
+              size: 64,
+              color: AppColors.kycBannerAccent,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              message,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: colorScheme.onSurface,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: onRetry,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                  backgroundColor: AppColors.primaryColor,
+                  foregroundColor: isDark
+                      ? AppColors.darkSurface
+                      : AppColors.white,
+                ),
+                child: Text(l10n.kyc_retry_button),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The original KYC form for users who haven't started verification.
+class _KycFormBody extends StatelessWidget {
+  const _KycFormBody({required this.form, required this.entrySource});
+
+  final FormGroup form;
+  final KycVerificationEntrySource entrySource;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n!;
+    final theme = context.theme;
+    final isDark = context.isDarkMode;
+    final provider = context.watch<KycVerificationProvider>();
+
+    return ReactiveForm(
+      formGroup: form,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isWide = constraints.maxWidth >= 720;
+                    final fieldWidth = isWide
+                        ? (constraints.maxWidth - 16) / 2
+                        : constraints.maxWidth;
+
+                    return Wrap(
+                      spacing: 16,
+                      runSpacing: 16,
+                      children: [
+                        SizedBox(
+                          width: fieldWidth,
+                          child: _KycTextField(
+                            formControlName: 'firstName',
+                            label: l10n.kycFirstNameLabel,
+                          ),
                         ),
-                        child: provider.isSubmitting
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(l10n.kycSubmitButton),
-                      ),
+                        SizedBox(
+                          width: fieldWidth,
+                          child: _KycTextField(
+                            formControlName: 'lastName',
+                            label: l10n.kycLastNameLabel,
+                          ),
+                        ),
+                        SizedBox(
+                          width: fieldWidth,
+                          child: _KycDateField(
+                            formControlName: 'dateOfBirth',
+                            label: l10n.kycDateOfBirthLabel,
+                            hint: l10n.kycSelectDateHint,
+                            form: form,
+                          ),
+                        ),
+                        SizedBox(
+                          width: fieldWidth,
+                          child: _KycCountryField(
+                            formControlName: 'residentialCountry',
+                            label: l10n.kycResidentialCountryLabel,
+                            hint: l10n.kycCountryCodeHint,
+                          ),
+                        ),
+                        SizedBox(
+                          width: fieldWidth,
+                          child: _KycCountryField(
+                            formControlName: 'documentCountry',
+                            label: l10n.kycDocumentCountryLabel,
+                            hint: l10n.kycCountryCodeHint,
+                          ),
+                        ),
+                        SizedBox(
+                          width: fieldWidth,
+                          child: _KycTextField(
+                            formControlName: 'city',
+                            label: l10n.kycCityLabel,
+                          ),
+                        ),
+                        SizedBox(
+                          width: constraints.maxWidth,
+                          child: _KycTextField(
+                            formControlName: 'address',
+                            label: l10n.kycAddressLabel,
+                          ),
+                        ),
+                      ],
                     );
                   },
                 ),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(height: 12),
+            ReactiveFormConsumer(
+              builder: (context, formState, child) {
+                return SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: formState.valid
+                        ? () async {
+                            FocusScope.of(context).unfocus();
+                            final kycProvider = context
+                                .read<KycVerificationProvider>();
+                            final formData = kycProvider.validateForm(form);
+                            if (formData == null) return;
+
+                            // Skip email verification if user already has an email
+                            final user = context
+                                .read<AuthProvider>()
+                                .state
+                                .user;
+                            final hasEmail =
+                                user?.email != null && user!.email!.isNotEmpty;
+
+                            if (!hasEmail) {
+                              final emailVerified = await context.push<bool>(
+                                Routes.emailEntry,
+                              );
+                              if (!context.mounted || emailVerified != true) {
+                                return;
+                              }
+                            }
+
+                            // Email verified — launch SumSub
+                            try {
+                              final result = await kycProvider.launchSumSub(
+                                firstName: formData.firstName,
+                                lastName: formData.lastName,
+                                residentialCountry: formData.residentialCountry,
+                                documentCountry: formData.documentCountry,
+                                city: formData.city,
+                                address: formData.address,
+                                dob: formData.dob,
+                                locale: Localizations.localeOf(context),
+                                startFailedFallback: l10n.requestFailed,
+                                successFallback: l10n.kycStartedSuccess,
+                                authProvider: context.read<AuthProvider>(),
+                                kycStatusProvider: context
+                                    .read<KycStatusProvider>(),
+                              );
+                              if (!context.mounted) return;
+                              if (result.message.isNotEmpty) {
+                                SnackbarHelper.showSuccess(
+                                  context,
+                                  result.message,
+                                );
+                              }
+                              if (result.shouldNavigateBack) {
+                                context.go(entrySource.sourceRoute);
+                              }
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              SnackbarHelper.showError(context, e.toString());
+                            }
+                          }
+                        : null,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(52),
+                      backgroundColor: AppColors.primaryColor,
+                      foregroundColor: isDark
+                          ? AppColors.darkSurface
+                          : AppColors.white,
+                      disabledBackgroundColor:
+                          theme.colorScheme.surfaceContainerHighest,
+                      disabledForegroundColor: theme.colorScheme.onSurface
+                          .withValues(alpha: 0.6),
+                    ),
+                    child: provider.isSubmitting
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(l10n.kycSubmitButton),
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );

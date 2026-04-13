@@ -1970,6 +1970,36 @@ abstract class AppLocalizations {
   /// **'Identity verification is required to receive coins. Please complete your KYC profile to enable transfers. '**
   String get receiveKycVerificationRequiredBody;
 
+  /// No description provided for @kyc_submitted_under_review.
+  ///
+  /// In en, this message translates to:
+  /// **'Your KYC has been submitted and is under review.'**
+  String get kyc_submitted_under_review;
+
+  /// No description provided for @kyc_pending_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We are reviewing your documents. This usually takes a few minutes. You will be notified once the review is complete.'**
+  String get kyc_pending_subtitle;
+
+  /// No description provided for @kyc_rejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Your KYC verification has been rejected.'**
+  String get kyc_rejected;
+
+  /// No description provided for @kyc_rejected_with_reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Your KYC verification has been rejected: {reason}'**
+  String kyc_rejected_with_reason(String reason);
+
+  /// No description provided for @kyc_retry_button.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry Verification'**
+  String get kyc_retry_button;
+
   /// No description provided for @swapFeesTitle.
   ///
   /// In en, this message translates to:

@@ -1025,6 +1025,25 @@ class AppLocalizationsAr extends AppLocalizations {
       'التحقق من الهوية مطلوب لاستلام العملات. يُرجى إكمال ملف التحقق من الهوية (KYC) لتفعيل التحويلات. ';
 
   @override
+  String get kyc_submitted_under_review =>
+      'تم تقديم التحقق من هويتك وهو قيد المراجعة.';
+
+  @override
+  String get kyc_pending_subtitle =>
+      'نحن نراجع مستنداتك. يستغرق هذا عادةً بضع دقائق. سيتم إعلامك عند اكتمال المراجعة.';
+
+  @override
+  String get kyc_rejected => 'تم رفض التحقق من هويتك.';
+
+  @override
+  String kyc_rejected_with_reason(String reason) {
+    return 'تم رفض التحقق من هويتك: $reason';
+  }
+
+  @override
+  String get kyc_retry_button => 'إعادة التحقق';
+
+  @override
   String get swapFeesTitle => 'رسوم المبادلة';
 
   @override

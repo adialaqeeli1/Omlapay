@@ -423,6 +423,18 @@
     "sendKycVerificationRequiredBody": "Identity verification is required to send coins. Please complete your KYC profile to enable transfers. ",
     "swapKycVerificationRequiredBody": "Identity verification is required to swap coins. Please complete your KYC profile to enable transfers. ",
     "receiveKycVerificationRequiredBody": "Identity verification is required to receive coins. Please complete your KYC profile to enable transfers. ",
+    "kyc_submitted_under_review": "Your KYC has been submitted and is under review.",
+    "kyc_pending_subtitle": "We are reviewing your documents. This usually takes a few minutes. You will be notified once the review is complete.",
+    "kyc_rejected": "Your KYC verification has been rejected.",
+    "kyc_rejected_with_reason": "Your KYC verification has been rejected: {reason}",
+    "@kyc_rejected_with_reason": {
+        "placeholders": {
+            "reason": {
+                "type": "String"
+            }
+        }
+    },
+    "kyc_retry_button": "Retry Verification",
     "swapFeesTitle": "Swap Fees",
     "transferToLabel": "To",
     "addressCopiedToast": "Copied",
