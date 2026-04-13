@@ -507,5 +507,29 @@
     "failedToLoadMoreRequests": "Failed to load more requests",
     "walletAddressMasked": "XXXX XXXX XXXX XXXX",
     "walletAddressNotAvailable": "Address not available yet",
-    "noAddressFound": "No Address Found"
+    "noAddressFound": "No Address Found",
+    "issueNotResolved": "Issue not resolved?",
+    "reopenTicket": "Re-open Ticket",
+    "createdOn": "Created on {date}",
+    "@createdOn": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "requestReopened": "Ticket reopened successfully",
+    "failedToReopenRequest": "Failed to reopen ticket",
+    "failedToLoadRequestDetail": "Failed to load request details",
+    "inReview": "In review",
+    "resolvesBy": "Resolves by {date}",
+    "@resolvesBy": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "resolvedStatus": "Resolved",
+    "rejectedStatus": "Rejected"
 }

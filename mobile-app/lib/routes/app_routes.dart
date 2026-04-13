@@ -31,6 +31,7 @@ class Routes {
   static const String helpCenter = _Paths.helpCenter;
   static const String sendRequest = _Paths.sendRequest;
   static const String pastRequests = _Paths.pastRequests;
+  static const String requestDetail = _Paths.requestDetail;
   static const String coinDetails = _Paths.coinDetails;
   static const String transactionDetail = _Paths.transactionDetail;
   static const String sendCoin = _Paths.sendCoin;
@@ -83,6 +84,7 @@ abstract class _Paths {
   static const String helpCenter = '/help-center';
   static const String sendRequest = '/send-request';
   static const String pastRequests = '/past-requests';
+  static const String requestDetail = '/request-detail';
   static const String coinDetails = '/coin-details';
   static const String transactionDetail = '/transaction-detail';
   static const String sendCoin = '/send-coin';

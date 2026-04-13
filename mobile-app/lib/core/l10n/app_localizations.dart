@@ -2311,6 +2311,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No Address Found'**
   String get noAddressFound;
+
+  /// No description provided for @issueNotResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue not resolved?'**
+  String get issueNotResolved;
+
+  /// No description provided for @reopenTicket.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-open Ticket'**
+  String get reopenTicket;
+
+  /// No description provided for @createdOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Created on {date}'**
+  String createdOn(String date);
+
+  /// No description provided for @requestReopened.
+  ///
+  /// In en, this message translates to:
+  /// **'Ticket reopened successfully'**
+  String get requestReopened;
+
+  /// No description provided for @failedToReopenRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to reopen ticket'**
+  String get failedToReopenRequest;
+
+  /// No description provided for @failedToLoadRequestDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load request details'**
+  String get failedToLoadRequestDetail;
+
+  /// No description provided for @inReview.
+  ///
+  /// In en, this message translates to:
+  /// **'In review'**
+  String get inReview;
+
+  /// No description provided for @resolvesBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolves by {date}'**
+  String resolvesBy(String date);
+
+  /// No description provided for @resolvedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get resolvedStatus;
+
+  /// No description provided for @rejectedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get rejectedStatus;
 }
 
 class _AppLocalizationsDelegate

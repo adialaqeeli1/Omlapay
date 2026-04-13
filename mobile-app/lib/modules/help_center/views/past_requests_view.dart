@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../routes/app_router.dart';
 import '../../../core/utils/app_exception.dart';
 import '../../../core/theme/theme.dart';
 import '../../../widgets/common_back_button.dart';
@@ -151,47 +152,53 @@ class _RequestItem extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  request.title,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: isDark ? AppColors.textWhite : AppColors.textBlack,
-                    fontWeight: FontWeight.w600,
+    return InkWell(
+      onTap: () => GoRouter.of(context).push(
+        Routes.requestDetail,
+        extra: request.id,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    request.title,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: isDark ? AppColors.textWhite : AppColors.textBlack,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  DateFormat(
-                    'yyyy-MM-dd HH:mm:ss',
-                  ).format(request.createdAt.toLocal()),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: AppColors.textLightGrey,
+                  const SizedBox(height: 4),
+                  Text(
+                    DateFormat(
+                      'yyyy-MM-dd HH:mm:ss',
+                    ).format(request.createdAt.toLocal()),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: AppColors.textLightGrey,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Padding(
-            padding: const EdgeInsets.only(top: 2),
-            child: Text(
-              _getStatusLabel(request.status, l10n),
-              style: TextStyle(
-                color: _getStatusColor(request.status, request.statusColor),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+                ],
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 12),
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                _getStatusLabel(request.status, l10n),
+                style: TextStyle(
+                  color: _getStatusColor(request.status, request.statusColor),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

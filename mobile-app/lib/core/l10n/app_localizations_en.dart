@@ -1218,4 +1218,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noAddressFound => 'No Address Found';
+
+  @override
+  String get issueNotResolved => 'Issue not resolved?';
+
+  @override
+  String get reopenTicket => 'Re-open Ticket';
+
+  @override
+  String createdOn(String date) {
+    return 'Created on $date';
+  }
+
+  @override
+  String get requestReopened => 'Ticket reopened successfully';
+
+  @override
+  String get failedToReopenRequest => 'Failed to reopen ticket';
+
+  @override
+  String get failedToLoadRequestDetail => 'Failed to load request details';
+
+  @override
+  String get inReview => 'In review';
+
+  @override
+  String resolvesBy(String date) {
+    return 'Resolves by $date';
+  }
+
+  @override
+  String get resolvedStatus => 'Resolved';
+
+  @override
+  String get rejectedStatus => 'Rejected';
 }
