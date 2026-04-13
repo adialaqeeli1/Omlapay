@@ -1646,6 +1646,24 @@ abstract class AppLocalizations {
   /// **'Invalid QR code'**
   String get invalidQrCode;
 
+  /// No description provided for @qrInvalidWalletAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid wallet address'**
+  String get qrInvalidWalletAddress;
+
+  /// No description provided for @qrAddressVerificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t verify the address. Check your connection and try again.'**
+  String get qrAddressVerificationFailed;
+
+  /// No description provided for @qrAddressNotValidated.
+  ///
+  /// In en, this message translates to:
+  /// **'This address could not be validated'**
+  String get qrAddressNotValidated;
+
   /// No description provided for @tryAgain.
   ///
   /// In en, this message translates to:

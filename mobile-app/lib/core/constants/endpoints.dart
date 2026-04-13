@@ -68,6 +68,11 @@ class Endpoints {
   /// Receive wallets grouped by network and coin addresses.
   static String get receiveWallets => '$apiVersion/receive/wallets';
 
+  /// Validates a wallet address for a given coin before sending.
+  /// Query params: `address` (required), `coin` (required).
+  static String get sendValidateAddress =>
+      '$apiVersion/send/validate-address';
+
   /// KYC start endpoint; returns Sumsub access token.
   static String get kycStart => '$apiVersion/user/kyc/start';
 

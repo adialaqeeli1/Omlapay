@@ -9,21 +9,35 @@ abstract class TransactionModel with _$TransactionModel {
 
   const factory TransactionModel({
     required String id,
-    required String assetSymbol,
-    required String assetName,
+    @JsonKey(name: 'coin_symbol') required String assetSymbol,
+    @JsonKey(name: 'coinName') String? assetName,
     String? assetIconUrl,
     required String amount,
     String? network,
     required DateTime createdAt,
     String? txHash,
     required String status,
+    String? direction,
+    String? type,
   }) = _TransactionModel;
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) =>
       _$TransactionModelFromJson(json);
 
-  bool get isReceived => amount.startsWith('+');
-  bool get isSent => amount.startsWith('-');
+  bool get isReceived {
+    final d = direction?.toUpperCase();
+    if (d == 'IN' || d == 'RECEIVED') return true;
+    if (d == 'OUT' || d == 'SENT') return false;
+    return amount.startsWith('+');
+  }
+
+  bool get isSent {
+    final d = direction?.toUpperCase();
+    if (d == 'OUT' || d == 'SENT') return true;
+    if (d == 'IN' || d == 'RECEIVED') return false;
+    return amount.startsWith('-');
+  }
+
   bool get isCompleted => status.toUpperCase() == 'COMPLETED';
   bool get isPending => status.toUpperCase() == 'PENDING';
   bool get isFailed => status.toUpperCase() == 'FAILED';

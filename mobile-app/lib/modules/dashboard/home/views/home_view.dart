@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:badges/badges.dart' as badges;
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,7 +13,9 @@ import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
+import '../../../../core/models/wallet_model/wallet_model.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/utility.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_grid_bg_wrapper.dart';
@@ -26,6 +30,8 @@ import '../../../../widgets/receive_send_swap_actions.dart';
 import '../../../../providers/coins_prices_provider.dart';
 import '../../../../providers/global_provider.dart';
 import '../../../../providers/wallets_provider.dart';
+import '../../../scan/view/qr_scanner_view.dart';
+import '../../../send_receive_swap_coin/send/view/send_coin_view.dart';
 import '../providers/home_provider.dart';
 import '../widgets/currency_selection_dialog.dart';
 
@@ -149,7 +155,24 @@ class HomeView extends StatelessWidget {
           iconPath: 'assets/icons/scan-icon.svg',
           iconSize: iconSize,
           iconPadding: iconPadding,
-          onTap: () => context.push(Routes.qrScanner),
+          onTap: () async {
+            final scanned = await context.push<String>(
+              Routes.qrScanner,
+              extra: const QrScannerExtra(
+                validator: Utility.isValidWalletAddress,
+              ),
+            );
+            if (scanned == null || !context.mounted) return;
+            final wallet = _parseScannedWallet(scanned);
+            if (wallet == null) return;
+            context.push(
+              Routes.sendCoin,
+              extra: SendCoinExtra(
+                initialCoinSymbol: wallet.symbol.isEmpty ? null : wallet.symbol,
+                initialRecipient: wallet.address,
+              ),
+            );
+          },
         ),
       ],
       headerChild: _totalBalanceDropdown(
@@ -420,7 +443,7 @@ class HomeView extends StatelessWidget {
                 Text(
                   transaction.isFailed
                       ? context.l10n!.failed
-                      : '${transaction.amount} ${transaction.assetSymbol}',
+                      : '${double.tryParse(transaction.amount)?.toStringAsFixed(2) ?? transaction.amount} ${transaction.assetSymbol}',
                   style: context.textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: getAmountColor(),
@@ -700,5 +723,19 @@ class HomeView extends StatelessWidget {
         ? normalizedCountry
         : '+$normalizedCountry';
     return '$countryWithPlus $normalizedMobile'.trim();
+  }
+
+  /// Defensive parse of a scanned QR payload back into a [WalletCoinModel].
+  ///
+  /// The scanner's validator already accepted the value, so a parse failure
+  /// here would mean someone bypassed validation; we just bail out silently.
+  WalletCoinModel? _parseScannedWallet(String value) {
+    try {
+      final decoded = jsonDecode(value);
+      if (decoded is! Map<String, dynamic>) return null;
+      return WalletCoinModel.fromJson(decoded);
+    } catch (_) {
+      return null;
+    }
   }
 }

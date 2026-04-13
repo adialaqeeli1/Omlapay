@@ -859,6 +859,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invalidQrCode => 'Invalid QR code';
 
   @override
+  String get qrInvalidWalletAddress => 'Invalid wallet address';
+
+  @override
+  String get qrAddressVerificationFailed =>
+      'Couldn\'t verify the address. Check your connection and try again.';
+
+  @override
+  String get qrAddressNotValidated => 'This address could not be validated';
+
+  @override
   String get tryAgain => 'Try Again';
 
   @override

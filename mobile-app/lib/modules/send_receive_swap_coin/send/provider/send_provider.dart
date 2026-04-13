@@ -5,9 +5,26 @@ import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/contact_model/contact_model.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/coins_prices_provider.dart';
+
 class SendProvider extends ChangeNotifier {
-  SendProvider(this.authProvider, this._coinsPricesProvider) {
+  SendProvider(
+    this.authProvider,
+    this._coinsPricesProvider, {
+    String? initialCoinSymbol,
+    String? initialRecipient,
+  }) {
     networkController = TextEditingController();
+
+    // Apply initial state before syncing coins so the first sync picks the
+    // pre-selected coin instead of defaulting to the first entry.
+    final trimmedSymbol = initialCoinSymbol?.trim() ?? '';
+    if (trimmedSymbol.isNotEmpty) {
+      _userPickedCoin = true;
+      _userPickedSymbol = trimmedSymbol.toUpperCase();
+    }
+    if (initialRecipient != null && initialRecipient.isNotEmpty) {
+      recipientController.text = initialRecipient;
+    }
 
     authProvider.addListener(notifyListeners);
     _coinsPricesProvider.addListener(_onStreamedCoinsUpdated);

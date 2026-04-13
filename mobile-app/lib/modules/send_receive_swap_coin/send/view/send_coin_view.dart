@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -6,7 +8,9 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/l10n/app_localizations.dart';
+import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
+import '../../../../core/models/wallet_model/wallet_model.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/utility.dart';
 import '../../../../routes/app_router.dart';
@@ -20,6 +24,18 @@ import '../../../../widgets/kyc_verification_required_banner.dart';
 import '../../../../widgets/coin_selection_sheet.dart';
 import '../provider/send_provider.dart';
 import '../widgets/contact_selection_sheet.dart';
+
+/// Route extra for [Routes.sendCoin] used to pre-fill the send form.
+///
+/// Both fields are optional; providing them causes [SendProvider] to
+/// auto-select the matching coin (and therefore its network) and to
+/// populate the recipient field on construction.
+class SendCoinExtra {
+  const SendCoinExtra({this.initialCoinSymbol, this.initialRecipient});
+
+  final String? initialCoinSymbol;
+  final String? initialRecipient;
+}
 
 class SendCoinView extends StatelessWidget {
   const SendCoinView({super.key});
@@ -441,11 +457,43 @@ class SendCoinView extends StatelessWidget {
   ) async {
     final result = await context.push<String>(
       Routes.qrScanner,
-      extra: QrScannerExtra(validator: Utility.isValidWalletAddress),
+      extra: const QrScannerExtra(
+        validator: Utility.isValidWalletAddress,
+      ),
     );
-    if (result != null && context.mounted) {
-      provider.recipientController.text = result;
+    if (result == null || !context.mounted) return;
+
+    final wallet = _parseScannedWallet(result);
+    if (wallet == null) return;
+
+    final address = wallet.address?.trim() ?? '';
+    if (address.isNotEmpty) {
+      provider.recipientController.text = address;
     }
+
+    final symbol = wallet.symbol.trim().toUpperCase();
+    if (symbol.isEmpty) return;
+    final match = _findCoinBySymbol(provider.coins, symbol);
+    if (match != null) {
+      provider.setSelectedCoin(match);
+    }
+  }
+
+  WalletCoinModel? _parseScannedWallet(String value) {
+    try {
+      final decoded = jsonDecode(value);
+      if (decoded is! Map<String, dynamic>) return null;
+      return WalletCoinModel.fromJson(decoded);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  CoinModel? _findCoinBySymbol(List<CoinModel> coins, String symbol) {
+    for (final coin in coins) {
+      if (coin.symbol.toUpperCase() == symbol) return coin;
+    }
+    return null;
   }
 
   Future<void> _showContactSelection(
