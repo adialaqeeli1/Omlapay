@@ -4,7 +4,6 @@ import '../../../../core/l10n/app_localizations_from_storage.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/coins_prices_provider.dart';
-
 class SwapProvider extends ChangeNotifier {
   final AuthProvider authProvider;
   final CoinsPricesProvider _coinsPricesProvider;

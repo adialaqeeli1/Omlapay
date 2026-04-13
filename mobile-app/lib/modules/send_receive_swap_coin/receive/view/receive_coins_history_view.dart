@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
+import '../../../../providers/kyc_status_provider.dart';
 import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../../../../widgets/common_back_button.dart';
 import '../../../../widgets/kyc_verification_required_banner.dart';
@@ -24,6 +25,7 @@ class ReceiveCoinsHistoryView extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final provider = context.watch<ReceiveCoinsHistoryProvider>();
+    final kycProvider = context.watch<KycStatusProvider>();
     final tabs = provider.uniqueCoinSymbols;
 
     final theme = context.theme;
@@ -90,12 +92,13 @@ class ReceiveCoinsHistoryView extends StatelessWidget {
         ),
         body: Column(
           children: [
-            if (provider.showVerificationWarning)
+            if (kycProvider.showBanner)
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 child: KycVerificationRequiredBanner(
-                  messageBody: l10n.receiveKycVerificationRequiredBody,
+                  kycStatus: kycProvider.kycStatus,
                   entrySource: KycVerificationEntrySource.receiveHistory,
+                  rejectionReason: kycProvider.rejectionReason,
                 ),
               ),
             Expanded(

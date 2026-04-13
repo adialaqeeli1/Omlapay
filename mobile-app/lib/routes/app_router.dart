@@ -749,8 +749,7 @@ class AppRouter {
         builder: (context, state) {
           final walletNetwork = state.extra as WalletNetworkModel;
           return ChangeNotifierProvider(
-            create: (_) =>
-                QrCodeProvider(walletNetwork: walletNetwork),
+            create: (_) => QrCodeProvider(walletNetwork: walletNetwork),
             child: const QrCodeView(),
           );
         },

@@ -1033,6 +1033,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'Identity verification is required to receive coins. Please complete your KYC profile to enable transfers. ';
 
   @override
+  String get kyc_submitted_under_review =>
+      'Your KYC has been submitted and is under review.';
+
+  @override
+  String get kyc_pending_subtitle =>
+      'We are reviewing your documents. This usually takes a few minutes. You will be notified once the review is complete.';
+
+  @override
+  String get kyc_rejected => 'Your KYC verification has been rejected.';
+
+  @override
+  String kyc_rejected_with_reason(String reason) {
+    return 'Your KYC verification has been rejected: $reason';
+  }
+
+  @override
+  String get kyc_retry_button => 'Retry Verification';
+
+  @override
   String get swapFeesTitle => 'Swap Fees';
 
   @override

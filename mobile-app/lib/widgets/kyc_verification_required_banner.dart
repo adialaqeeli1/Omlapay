@@ -3,34 +3,64 @@ import 'package:go_router/go_router.dart';
 
 import '../core/extentions/context_extensions.dart';
 import '../core/theme/theme.dart';
-import '../routes/app_router.dart';
+import '../modules/kyc_verification/utils/kyc_status.dart';
 import '../modules/kyc_verification/utils/kyc_verification_entry_source.dart';
+import '../routes/app_router.dart';
 
-/// Shared warning banner when the user must complete KYC before using
-/// send / receive / swap (or similar) flows.
+/// Shared KYC banner shown across send / receive / swap flows.
+///
+/// Supports three visual states based on [kycStatus]:
+/// - [KycStatus.notStarted] — red warning + "Verify Now" action.
+/// - [KycStatus.pending] — informational banner, no action.
+/// - [KycStatus.rejected] — red warning + rejection reason + "Verify Now" action.
 class KycVerificationRequiredBanner extends StatelessWidget {
   const KycVerificationRequiredBanner({
     super.key,
-    required this.messageBody,
+    required this.kycStatus,
     required this.entrySource,
+    this.rejectionReason,
   });
 
-  /// Localized sentence before the “Verify now” action (includes trailing space if needed).
-  final String messageBody;
-
-  /// Screen that surfaced this banner (used for KYC flow analytics / return context).
+  final KycStatus kycStatus;
   final KycVerificationEntrySource entrySource;
+  final String? rejectionReason;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
     final isDark = context.isDarkMode;
+
+    final String messageBody;
+    final bool showAction;
+    final IconData icon;
+
     final backgroundColor = isDark
         ? AppColors.kycVerificationBannerBackgroundDark
         : AppColors.kycVerificationBannerBackgroundLight;
     final foregroundColor = isDark
         ? AppColors.white
         : AppColors.kycBannerAccent;
+
+    switch (kycStatus) {
+      case KycStatus.notStarted:
+        messageBody = _notStartedMessage(context);
+        showAction = true;
+        icon = Icons.error_outline;
+      case KycStatus.pending:
+        messageBody = l10n.kyc_submitted_under_review;
+        showAction = false;
+        icon = Icons.hourglass_top_rounded;
+      case KycStatus.rejected:
+        messageBody = rejectionReason != null && rejectionReason!.isNotEmpty
+            ? l10n.kyc_rejected_with_reason(rejectionReason!)
+            : l10n.kyc_rejected;
+        showAction = true;
+        icon = Icons.error_outline;
+      case KycStatus.approved:
+        // Should not be displayed, but handle gracefully.
+        return const SizedBox.shrink();
+    }
+
     final baseStyle = TextStyle(
       color: foregroundColor,
       fontSize: 13,
@@ -46,7 +76,7 @@ class KycVerificationRequiredBanner extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.error_outline, color: foregroundColor, size: 20),
+          Icon(icon, color: foregroundColor, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: RichText(
@@ -54,23 +84,26 @@ class KycVerificationRequiredBanner extends StatelessWidget {
                 style: baseStyle,
                 children: [
                   TextSpan(text: messageBody),
-                  WidgetSpan(
-                    child: InkWell(
-                      onTap: () {
-                        context.push(
-                          Routes.kycVerification,
-                          extra: entrySource,
-                        );
-                      },
-                      child: Text(
-                        l10n.verifyNowButton,
-                        style: baseStyle.copyWith(
-                          decoration: TextDecoration.underline,
-                          fontWeight: FontWeight.bold,
+                  if (showAction) ...[
+                    const TextSpan(text: ' '),
+                    WidgetSpan(
+                      child: InkWell(
+                        onTap: () {
+                          context.push(
+                            Routes.kycVerification,
+                            extra: entrySource,
+                          );
+                        },
+                        child: Text(
+                          l10n.verifyNowButton,
+                          style: baseStyle.copyWith(
+                            decoration: TextDecoration.underline,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -78,5 +111,22 @@ class KycVerificationRequiredBanner extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Returns the module-specific "not started" message based on [entrySource].
+  String _notStartedMessage(BuildContext context) {
+    final l10n = context.l10n!;
+    switch (entrySource) {
+      case KycVerificationEntrySource.send:
+        return l10n.sendKycVerificationRequiredBody;
+      case KycVerificationEntrySource.swap:
+        return l10n.swapKycVerificationRequiredBody;
+      case KycVerificationEntrySource.receive:
+      case KycVerificationEntrySource.receiveHistory:
+        return l10n.receiveKycVerificationRequiredBody;
+      case KycVerificationEntrySource.profile:
+      case KycVerificationEntrySource.unknown:
+        return l10n.sendKycVerificationRequiredBody;
+    }
   }
 }

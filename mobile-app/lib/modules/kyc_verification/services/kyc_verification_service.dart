@@ -1,5 +1,6 @@
 import '../../../core/constants/endpoints.dart';
 import '../../../core/services/api_helper.dart';
+import '../models/kyc_status_response.dart';
 
 class KycVerificationService {
   KycVerificationService._();
@@ -26,5 +27,14 @@ class KycVerificationService {
 
   static Future<Map<String, dynamic>> startBinanceKyc() async {
     return ApiHelper.post(Endpoints.kycBinanceStart, {});
+  }
+
+  static Future<KycStatusResponse> fetchKycStatus() async {
+    final response = await ApiHelper.get(Endpoints.kycStatus);
+    final data = response['data'];
+    if (data is Map<String, dynamic>) {
+      return KycStatusResponse.fromJson(data);
+    }
+    return const KycStatusResponse();
   }
 }

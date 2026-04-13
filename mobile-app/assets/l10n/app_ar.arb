@@ -423,6 +423,18 @@
     "sendKycVerificationRequiredBody": "التحقق من الهوية مطلوب لإرسال العملات. يُرجى إكمال ملف التحقق من الهوية (KYC) لتفعيل التحويلات. ",
     "swapKycVerificationRequiredBody": "التحقق من الهوية مطلوب لمبادلة العملات. يُرجى إكمال ملف التحقق من الهوية (KYC) لتفعيل التحويلات. ",
     "receiveKycVerificationRequiredBody": "التحقق من الهوية مطلوب لاستلام العملات. يُرجى إكمال ملف التحقق من الهوية (KYC) لتفعيل التحويلات. ",
+    "kyc_submitted_under_review": "تم تقديم التحقق من هويتك وهو قيد المراجعة.",
+    "kyc_pending_subtitle": "نحن نراجع مستنداتك. يستغرق هذا عادةً بضع دقائق. سيتم إعلامك عند اكتمال المراجعة.",
+    "kyc_rejected": "تم رفض التحقق من هويتك.",
+    "kyc_rejected_with_reason": "تم رفض التحقق من هويتك: {reason}",
+    "@kyc_rejected_with_reason": {
+        "placeholders": {
+            "reason": {
+                "type": "String"
+            }
+        }
+    },
+    "kyc_retry_button": "إعادة التحقق",
     "swapFeesTitle": "رسوم المبادلة",
     "transferToLabel": "إلى",
     "addressCopiedToast": "تم النسخ",

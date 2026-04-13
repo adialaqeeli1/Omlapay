@@ -5,7 +5,6 @@ import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/contact_model/contact_model.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/coins_prices_provider.dart';
-
 class SendProvider extends ChangeNotifier {
   SendProvider(this.authProvider, this._coinsPricesProvider) {
     networkController = TextEditingController();
