@@ -16,12 +16,18 @@ class ChangePhoneService {
   }
 
   /// Step 2: Verify current phone OTP. Returns a [change_phone_token].
+  /// When 2FA is enabled, [emailOtp] must also be provided.
   static Future<ChangePhoneStep2Data> step2Verify({
     required String otp,
+    String? emailOtp,
   }) async {
+    final body = <String, dynamic>{'otp': otp.trim()};
+    if (emailOtp != null && emailOtp.trim().isNotEmpty) {
+      body['email_otp'] = emailOtp.trim();
+    }
     final response = await ApiHelper.post(
       Endpoints.changePhoneStep2Verify,
-      {'otp': otp.trim()},
+      body,
     );
     return _parseData(response, ChangePhoneStep2Data.fromJson);
   }

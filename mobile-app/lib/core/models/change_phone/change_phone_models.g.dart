@@ -11,6 +11,7 @@ _ChangePhoneRequestData _$ChangePhoneRequestDataFromJson(
 ) => _ChangePhoneRequestData(
   maskedMobile: json['masked_phone'] as String,
   otpExpirySeconds: (json['otp_expiry_seconds'] as num).toInt(),
+  maskedEmail: json['masked_email'] as String?,
 );
 
 Map<String, dynamic> _$ChangePhoneRequestDataToJson(
@@ -18,6 +19,7 @@ Map<String, dynamic> _$ChangePhoneRequestDataToJson(
 ) => <String, dynamic>{
   'masked_phone': instance.maskedMobile,
   'otp_expiry_seconds': instance.otpExpirySeconds,
+  'masked_email': instance.maskedEmail,
 };
 
 _ChangePhoneStep2Data _$ChangePhoneStep2DataFromJson(

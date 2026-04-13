@@ -4,11 +4,13 @@ part 'change_email_models.freezed.dart';
 part 'change_email_models.g.dart';
 
 /// Response from step1-request (OTP sent to current phone).
+/// When 2FA is enabled, step1 also returns [maskedEmail].
 @freezed
 abstract class ChangeEmailStep1Data with _$ChangeEmailStep1Data {
   const factory ChangeEmailStep1Data({
     @JsonKey(name: 'masked_phone') required String maskedPhone,
     @JsonKey(name: 'otp_expiry_seconds') required int otpExpirySeconds,
+    @JsonKey(name: 'masked_email') String? maskedEmail,
   }) = _ChangeEmailStep1Data;
 
   factory ChangeEmailStep1Data.fromJson(Map<String, dynamic> json) =>

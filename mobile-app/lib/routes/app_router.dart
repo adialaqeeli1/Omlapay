@@ -88,6 +88,7 @@ import '../providers/auth_provider.dart';
 import '../providers/coins_prices_provider.dart';
 import 'middlewares/auth_middleware.dart';
 import '../modules/kyc_verification/utils/kyc_verification_entry_source.dart';
+import '../widgets/two_factor_otp_verification_view.dart';
 
 part 'app_routes.dart';
 
@@ -284,17 +285,62 @@ class AppRouter {
         name: 'changeEmailVerifyPhone',
         builder: (context, state) {
           final l10n = AppLocalizations.of(context)!;
+          final user = context.read<AuthProvider>().state.user;
+          final twoFactorEnabled = user?.twoFactorEnabled ?? false;
           return ChangeNotifierProvider(
-            create: (_) => ChangeEmailPhoneOtpProvider(),
+            create: (_) => ChangeEmailPhoneOtpProvider(
+              twoFactorEnabled: twoFactorEnabled,
+              fallbackMaskedEmail: user?.email != null
+                  ? maskedEmailForDisplay(user!.email!)
+                  : null,
+            ),
             child: Builder(
               builder: (ctx) {
                 final provider = ctx.watch<ChangeEmailPhoneOtpProvider>();
+                final phoneSubtitle = provider.maskedPhone.isNotEmpty
+                    ? l10n.changeEmailPhoneOtpSent(provider.maskedPhone)
+                    : l10n.changeEmailPhoneOtpSent('...');
+
+                void navigateToEnterNew(BuildContext innerCtx) {
+                  innerCtx.push(
+                    Routes.changeEmailEnterNew,
+                    extra: {
+                      LoginProvider.extraChangeEmailTokenKey:
+                          provider.changeEmailToken,
+                    },
+                  );
+                }
+
+                if (twoFactorEnabled) {
+                  return TwoFactorOtpVerificationView(
+                    appBarTitle: l10n.changeEmail,
+                    phoneTitle: l10n.verifyYourPhoneNumber,
+                    phoneSubtitle: phoneSubtitle,
+                    emailTitle: l10n.verifyYourEmail,
+                    emailSubtitle: provider.maskedEmail.isNotEmpty
+                        ? l10n.twoFactorEmailOtpSent(provider.maskedEmail)
+                        : l10n.twoFactorEmailOtpSent('...'),
+                    otpLength: ChangeEmailPhoneOtpProvider.otpLength,
+                    countdownSeconds: provider.countdownSeconds,
+                    canResend: provider.canResend,
+                    phoneHasError: provider.hasError,
+                    emailHasError: provider.emailHasError,
+                    onInitialRequest: provider.requestOtp,
+                    onPhoneOtpChanged: provider.setOtp,
+                    onEmailOtpChanged: provider.setEmailOtp,
+                    onBothOtpCompleted: () async {
+                      final valid = await provider.verifyOtp();
+                      if (!ctx.mounted || !valid) return;
+                      navigateToEnterNew(ctx);
+                    },
+                    onResend: provider.resendOtp,
+                  );
+                }
+
                 return ChangeEmailVerifyOtpView(
                   appBarTitle: l10n.changeEmail,
                   title: l10n.verifyCurrentPhoneNumber,
-                  subtitle: provider.maskedPhone.isNotEmpty
-                      ? l10n.changeEmailPhoneOtpSent(provider.maskedPhone)
-                      : l10n.changeEmailPhoneOtpSent('...'),
+                  subtitle: phoneSubtitle,
                   otpLength: ChangeEmailPhoneOtpProvider.otpLength,
                   countdownSeconds: provider.countdownSeconds,
                   canResend: provider.canResend,
@@ -304,13 +350,7 @@ class AppRouter {
                   onOtpCompleted: (innerCtx) async {
                     final valid = await provider.verifyOtp();
                     if (!innerCtx.mounted || !valid) return;
-                    innerCtx.push(
-                      Routes.changeEmailEnterNew,
-                      extra: {
-                        LoginProvider.extraChangeEmailTokenKey:
-                            provider.changeEmailToken,
-                      },
-                    );
+                    navigateToEnterNew(innerCtx);
                   },
                   onResend: provider.resendOtp,
                 );
@@ -413,10 +453,16 @@ class AppRouter {
               extra?[LoginProvider.extraMaskedMobileKey] as String? ?? '';
           final otpExpiry =
               extra?[LoginProvider.extraOtpExpirySecondsKey] as int?;
+          final user = context.read<AuthProvider>().state.user;
+          final twoFactorEnabled = user?.twoFactorEnabled ?? false;
           final l10n = AppLocalizations.of(context)!;
           return ChangeNotifierProvider(
             create: (_) => ChangePhoneCurrentOtpProvider(
               maskedMobile: maskedMobile,
+              twoFactorEnabled: twoFactorEnabled,
+              fallbackMaskedEmail: user?.email != null
+                  ? maskedEmailForDisplay(user!.email!)
+                  : null,
               initialOtpExpirySeconds: otpExpiry,
             ),
             child: ChangePhoneVerifyCurrentOtpView(

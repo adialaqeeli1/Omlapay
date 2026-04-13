@@ -94,6 +94,17 @@ extension StringExt on String {
   Color? get hexToColor => Utility.hexStringToColor(this);
 }
 
+/// Masked email for display, e.g. `g***@gmail.com`.
+String maskedEmailForDisplay(String email) {
+  if (email.isEmpty) return '';
+  final atIndex = email.indexOf('@');
+  if (atIndex <= 0) return email;
+  final localPart = email.substring(0, atIndex);
+  final domain = email.substring(atIndex);
+  if (localPart.length <= 1) return '$localPart***$domain';
+  return '${localPart[0]}***$domain';
+}
+
 /// Masked national number for OTP screens, e.g. `+966 XXX XXX 1234`.
 String maskedPhoneForDisplay(String countryCode, String digitsOnlyPhone) {
   final cc = countryCode.trim();

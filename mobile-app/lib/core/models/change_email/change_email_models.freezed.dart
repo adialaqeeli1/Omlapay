@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ChangeEmailStep1Data {
 
-@JsonKey(name: 'masked_phone') String get maskedPhone;@JsonKey(name: 'otp_expiry_seconds') int get otpExpirySeconds;
+@JsonKey(name: 'masked_phone') String get maskedPhone;@JsonKey(name: 'otp_expiry_seconds') int get otpExpirySeconds;@JsonKey(name: 'masked_email') String? get maskedEmail;
 /// Create a copy of ChangeEmailStep1Data
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ChangeEmailStep1DataCopyWith<ChangeEmailStep1Data> get copyWith => _$ChangeEmai
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChangeEmailStep1Data&&(identical(other.maskedPhone, maskedPhone) || other.maskedPhone == maskedPhone)&&(identical(other.otpExpirySeconds, otpExpirySeconds) || other.otpExpirySeconds == otpExpirySeconds));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChangeEmailStep1Data&&(identical(other.maskedPhone, maskedPhone) || other.maskedPhone == maskedPhone)&&(identical(other.otpExpirySeconds, otpExpirySeconds) || other.otpExpirySeconds == otpExpirySeconds)&&(identical(other.maskedEmail, maskedEmail) || other.maskedEmail == maskedEmail));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,maskedPhone,otpExpirySeconds);
+int get hashCode => Object.hash(runtimeType,maskedPhone,otpExpirySeconds,maskedEmail);
 
 @override
 String toString() {
-  return 'ChangeEmailStep1Data(maskedPhone: $maskedPhone, otpExpirySeconds: $otpExpirySeconds)';
+  return 'ChangeEmailStep1Data(maskedPhone: $maskedPhone, otpExpirySeconds: $otpExpirySeconds, maskedEmail: $maskedEmail)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ChangeEmailStep1DataCopyWith<$Res>  {
   factory $ChangeEmailStep1DataCopyWith(ChangeEmailStep1Data value, $Res Function(ChangeEmailStep1Data) _then) = _$ChangeEmailStep1DataCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'masked_phone') String maskedPhone,@JsonKey(name: 'otp_expiry_seconds') int otpExpirySeconds
+@JsonKey(name: 'masked_phone') String maskedPhone,@JsonKey(name: 'otp_expiry_seconds') int otpExpirySeconds,@JsonKey(name: 'masked_email') String? maskedEmail
 });
 
 
@@ -65,11 +65,12 @@ class _$ChangeEmailStep1DataCopyWithImpl<$Res>
 
 /// Create a copy of ChangeEmailStep1Data
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? maskedPhone = null,Object? otpExpirySeconds = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? maskedPhone = null,Object? otpExpirySeconds = null,Object? maskedEmail = freezed,}) {
   return _then(_self.copyWith(
 maskedPhone: null == maskedPhone ? _self.maskedPhone : maskedPhone // ignore: cast_nullable_to_non_nullable
 as String,otpExpirySeconds: null == otpExpirySeconds ? _self.otpExpirySeconds : otpExpirySeconds // ignore: cast_nullable_to_non_nullable
-as int,
+as int,maskedEmail: freezed == maskedEmail ? _self.maskedEmail : maskedEmail // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -154,10 +155,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'masked_phone')  String maskedPhone, @JsonKey(name: 'otp_expiry_seconds')  int otpExpirySeconds)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'masked_phone')  String maskedPhone, @JsonKey(name: 'otp_expiry_seconds')  int otpExpirySeconds, @JsonKey(name: 'masked_email')  String? maskedEmail)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ChangeEmailStep1Data() when $default != null:
-return $default(_that.maskedPhone,_that.otpExpirySeconds);case _:
+return $default(_that.maskedPhone,_that.otpExpirySeconds,_that.maskedEmail);case _:
   return orElse();
 
 }
@@ -175,10 +176,10 @@ return $default(_that.maskedPhone,_that.otpExpirySeconds);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'masked_phone')  String maskedPhone, @JsonKey(name: 'otp_expiry_seconds')  int otpExpirySeconds)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'masked_phone')  String maskedPhone, @JsonKey(name: 'otp_expiry_seconds')  int otpExpirySeconds, @JsonKey(name: 'masked_email')  String? maskedEmail)  $default,) {final _that = this;
 switch (_that) {
 case _ChangeEmailStep1Data():
-return $default(_that.maskedPhone,_that.otpExpirySeconds);case _:
+return $default(_that.maskedPhone,_that.otpExpirySeconds,_that.maskedEmail);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +196,10 @@ return $default(_that.maskedPhone,_that.otpExpirySeconds);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'masked_phone')  String maskedPhone, @JsonKey(name: 'otp_expiry_seconds')  int otpExpirySeconds)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'masked_phone')  String maskedPhone, @JsonKey(name: 'otp_expiry_seconds')  int otpExpirySeconds, @JsonKey(name: 'masked_email')  String? maskedEmail)?  $default,) {final _that = this;
 switch (_that) {
 case _ChangeEmailStep1Data() when $default != null:
-return $default(_that.maskedPhone,_that.otpExpirySeconds);case _:
+return $default(_that.maskedPhone,_that.otpExpirySeconds,_that.maskedEmail);case _:
   return null;
 
 }
@@ -210,11 +211,12 @@ return $default(_that.maskedPhone,_that.otpExpirySeconds);case _:
 @JsonSerializable()
 
 class _ChangeEmailStep1Data implements ChangeEmailStep1Data {
-  const _ChangeEmailStep1Data({@JsonKey(name: 'masked_phone') required this.maskedPhone, @JsonKey(name: 'otp_expiry_seconds') required this.otpExpirySeconds});
+  const _ChangeEmailStep1Data({@JsonKey(name: 'masked_phone') required this.maskedPhone, @JsonKey(name: 'otp_expiry_seconds') required this.otpExpirySeconds, @JsonKey(name: 'masked_email') this.maskedEmail});
   factory _ChangeEmailStep1Data.fromJson(Map<String, dynamic> json) => _$ChangeEmailStep1DataFromJson(json);
 
 @override@JsonKey(name: 'masked_phone') final  String maskedPhone;
 @override@JsonKey(name: 'otp_expiry_seconds') final  int otpExpirySeconds;
+@override@JsonKey(name: 'masked_email') final  String? maskedEmail;
 
 /// Create a copy of ChangeEmailStep1Data
 /// with the given fields replaced by the non-null parameter values.
@@ -229,16 +231,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChangeEmailStep1Data&&(identical(other.maskedPhone, maskedPhone) || other.maskedPhone == maskedPhone)&&(identical(other.otpExpirySeconds, otpExpirySeconds) || other.otpExpirySeconds == otpExpirySeconds));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChangeEmailStep1Data&&(identical(other.maskedPhone, maskedPhone) || other.maskedPhone == maskedPhone)&&(identical(other.otpExpirySeconds, otpExpirySeconds) || other.otpExpirySeconds == otpExpirySeconds)&&(identical(other.maskedEmail, maskedEmail) || other.maskedEmail == maskedEmail));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,maskedPhone,otpExpirySeconds);
+int get hashCode => Object.hash(runtimeType,maskedPhone,otpExpirySeconds,maskedEmail);
 
 @override
 String toString() {
-  return 'ChangeEmailStep1Data(maskedPhone: $maskedPhone, otpExpirySeconds: $otpExpirySeconds)';
+  return 'ChangeEmailStep1Data(maskedPhone: $maskedPhone, otpExpirySeconds: $otpExpirySeconds, maskedEmail: $maskedEmail)';
 }
 
 
@@ -249,7 +251,7 @@ abstract mixin class _$ChangeEmailStep1DataCopyWith<$Res> implements $ChangeEmai
   factory _$ChangeEmailStep1DataCopyWith(_ChangeEmailStep1Data value, $Res Function(_ChangeEmailStep1Data) _then) = __$ChangeEmailStep1DataCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'masked_phone') String maskedPhone,@JsonKey(name: 'otp_expiry_seconds') int otpExpirySeconds
+@JsonKey(name: 'masked_phone') String maskedPhone,@JsonKey(name: 'otp_expiry_seconds') int otpExpirySeconds,@JsonKey(name: 'masked_email') String? maskedEmail
 });
 
 
@@ -266,11 +268,12 @@ class __$ChangeEmailStep1DataCopyWithImpl<$Res>
 
 /// Create a copy of ChangeEmailStep1Data
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? maskedPhone = null,Object? otpExpirySeconds = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? maskedPhone = null,Object? otpExpirySeconds = null,Object? maskedEmail = freezed,}) {
   return _then(_ChangeEmailStep1Data(
 maskedPhone: null == maskedPhone ? _self.maskedPhone : maskedPhone // ignore: cast_nullable_to_non_nullable
 as String,otpExpirySeconds: null == otpExpirySeconds ? _self.otpExpirySeconds : otpExpirySeconds // ignore: cast_nullable_to_non_nullable
-as int,
+as int,maskedEmail: freezed == maskedEmail ? _self.maskedEmail : maskedEmail // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

@@ -11,6 +11,7 @@ _ChangeEmailStep1Data _$ChangeEmailStep1DataFromJson(
 ) => _ChangeEmailStep1Data(
   maskedPhone: json['masked_phone'] as String,
   otpExpirySeconds: (json['otp_expiry_seconds'] as num).toInt(),
+  maskedEmail: json['masked_email'] as String?,
 );
 
 Map<String, dynamic> _$ChangeEmailStep1DataToJson(
@@ -18,6 +19,7 @@ Map<String, dynamic> _$ChangeEmailStep1DataToJson(
 ) => <String, dynamic>{
   'masked_phone': instance.maskedPhone,
   'otp_expiry_seconds': instance.otpExpirySeconds,
+  'masked_email': instance.maskedEmail,
 };
 
 _ChangeEmailStep2Data _$ChangeEmailStep2DataFromJson(
