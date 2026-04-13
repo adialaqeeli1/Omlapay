@@ -4,6 +4,7 @@ import '../../../core/constants/endpoints.dart';
 import '../../../core/services/api_helper.dart';
 import '../../../core/utils/app_exception.dart';
 import '../models/support_request_model.dart';
+import '../models/support_request_detail_model.dart';
 
 class HelpCenterService {
   Future<SupportRequestsResponse> fetchSupportRequests({
@@ -75,5 +76,38 @@ class HelpCenterService {
     }
 
     await ApiHelper.post(Endpoints.supportRequests, body);
+  }
+
+  Future<SupportRequestDetailModel> fetchRequestDetail(
+    String requestId,
+  ) async {
+    final response = await ApiHelper.get(
+      Endpoints.supportRequestDetail(requestId),
+    );
+
+    final dynamic data = response['data'];
+    if (data is! Map<String, dynamic>) {
+      throw AppException(
+        'Invalid request detail response',
+        messageKey: 'requestFailed',
+      );
+    }
+
+    final request = data['request'];
+    if (request is! Map<String, dynamic>) {
+      throw AppException(
+        'Invalid request detail response',
+        messageKey: 'requestFailed',
+      );
+    }
+
+    return SupportRequestDetailModel.fromJson(request);
+  }
+
+  Future<void> reopenRequest(String requestId) async {
+    await ApiHelper.post(
+      Endpoints.supportRequestReopen(requestId),
+      {},
+    );
   }
 }

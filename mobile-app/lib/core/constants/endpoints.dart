@@ -106,4 +106,12 @@ class Endpoints {
 
   /// Support requests; supports query params `status`, `page`, `limit`.
   static String get supportRequests => '$apiVersion/user/support-requests';
+
+  /// Single support request detail; path param {id}.
+  static String supportRequestDetail(String id) =>
+      '$apiVersion/user/support-requests/$id';
+
+  /// Reopen a support request; path param {id}.
+  static String supportRequestReopen(String id) =>
+      '$apiVersion/user/support-requests/$id/reopen';
 }

@@ -41,6 +41,8 @@ import '../modules/auth/views/email_entry_view.dart';
 import '../modules/auth/views/email_otp_view.dart';
 import '../modules/help_center/views/past_requests_view.dart';
 import '../modules/help_center/views/send_request_view.dart';
+import '../modules/help_center/providers/request_detail_provider.dart';
+import '../modules/help_center/views/request_detail_view.dart';
 import '../modules/dashboard/profile/profile_view.dart';
 import '../modules/onboarding/onboarding_view.dart';
 import 'package:provider/provider.dart';
@@ -588,6 +590,18 @@ class AppRouter {
           create: (_) => HelpCenterProvider(),
           child: const PastRequestsView(),
         ),
+        redirect: AuthMiddleware.isAuthenticated,
+      ),
+      GoRoute(
+        path: Routes.requestDetail,
+        name: 'requestDetail',
+        builder: (context, state) {
+          final requestId = state.extra as String;
+          return ChangeNotifierProvider(
+            create: (_) => RequestDetailProvider(requestId: requestId),
+            child: const RequestDetailView(),
+          );
+        },
         redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(

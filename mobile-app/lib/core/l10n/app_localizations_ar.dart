@@ -1208,4 +1208,38 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get noAddressFound => 'لم يتم العثور على عنوان';
+
+  @override
+  String get issueNotResolved => 'المشكلة لم تحل؟';
+
+  @override
+  String get reopenTicket => 'إعادة فتح التذكرة';
+
+  @override
+  String createdOn(String date) {
+    return 'تم الإنشاء في $date';
+  }
+
+  @override
+  String get requestReopened => 'تم إعادة فتح التذكرة بنجاح';
+
+  @override
+  String get failedToReopenRequest => 'فشل في إعادة فتح التذكرة';
+
+  @override
+  String get failedToLoadRequestDetail => 'فشل في تحميل تفاصيل الطلب';
+
+  @override
+  String get inReview => 'قيد المراجعة';
+
+  @override
+  String resolvesBy(String date) {
+    return 'يُحل بحلول $date';
+  }
+
+  @override
+  String get resolvedStatus => 'تم الحل';
+
+  @override
+  String get rejectedStatus => 'مرفوض';
 }

@@ -493,5 +493,29 @@
     "failedToLoadMoreRequests": "فشل في تحميل المزيد من الطلبات",
     "walletAddressMasked": "XXXX XXXX XXXX XXXX",
     "walletAddressNotAvailable": "العنوان غير متوفر بعد",
-    "noAddressFound": "لم يتم العثور على عنوان"
+    "noAddressFound": "لم يتم العثور على عنوان",
+    "issueNotResolved": "المشكلة لم تحل؟",
+    "reopenTicket": "إعادة فتح التذكرة",
+    "createdOn": "تم الإنشاء في {date}",
+    "@createdOn": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "requestReopened": "تم إعادة فتح التذكرة بنجاح",
+    "failedToReopenRequest": "فشل في إعادة فتح التذكرة",
+    "failedToLoadRequestDetail": "فشل في تحميل تفاصيل الطلب",
+    "inReview": "قيد المراجعة",
+    "resolvesBy": "يُحل بحلول {date}",
+    "@resolvesBy": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "resolvedStatus": "تم الحل",
+    "rejectedStatus": "مرفوض"
 }
