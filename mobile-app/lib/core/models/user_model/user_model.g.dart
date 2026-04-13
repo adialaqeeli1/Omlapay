@@ -18,6 +18,11 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
   lastName: json['lastName'] as String? ?? '',
   isVerified: json['isVerified'] as bool? ?? false,
   twoFactorEnabled: json['twoFactorEnabled'] as bool? ?? false,
+  wallets:
+      (json['wallets'] as List<dynamic>?)
+          ?.map((e) => WalletNetworkModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
@@ -33,4 +38,5 @@ Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
       'lastName': instance.lastName,
       'isVerified': instance.isVerified,
       'twoFactorEnabled': instance.twoFactorEnabled,
+      'wallets': instance.wallets,
     };

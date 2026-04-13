@@ -4,14 +4,22 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/app_exception.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../modules/auth/providers/login_provider.dart';
 import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_text_field.dart';
 import '../../providers/change_email_form_provider.dart';
+import '../../services/change_email_service.dart';
 import '../widgets/change_detail_enter_new_view.dart';
 
 class ChangeEmailEnterNewView extends StatelessWidget {
-  const ChangeEmailEnterNewView({super.key});
+  const ChangeEmailEnterNewView({
+    super.key,
+    required this.changeEmailToken,
+  });
+
+  final String changeEmailToken;
 
   @override
   Widget build(BuildContext context) {
@@ -44,13 +52,30 @@ class ChangeEmailEnterNewView extends StatelessWidget {
         l10n,
       ),
       continueLabel: l10n.continueButton,
-      onContinue: () {
+      onContinue: () async {
         provider.markSubmitted();
         if (!provider.canContinue) return;
-        context.push(
-          Routes.changeEmailVerifyNewEmail,
-          extra: {LoginProvider.extraPendingEmailKey: provider.email.trim()},
-        );
+        try {
+          final result = await ChangeEmailService.step3Request(
+            changeEmailToken: changeEmailToken,
+            newEmail: provider.normalizedEmail,
+          );
+          if (!context.mounted) return;
+          context.push(
+            Routes.changeEmailVerifyNewEmail,
+            extra: {
+              LoginProvider.extraPendingEmailKey: provider.normalizedEmail,
+              LoginProvider.extraChangeEmailTokenKey:
+                  result.changeEmailToken,
+              LoginProvider.extraOtpExpirySecondsKey:
+                  result.otpExpirySeconds,
+            },
+          );
+        } on AppException catch (e) {
+          if (context.mounted) {
+            SnackbarHelper.showError(context, e.localizedMessage(context.l10n));
+          }
+        }
       },
     );
   }

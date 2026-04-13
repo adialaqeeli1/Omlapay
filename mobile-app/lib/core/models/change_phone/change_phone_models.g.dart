@@ -9,14 +9,14 @@ part of 'change_phone_models.dart';
 _ChangePhoneRequestData _$ChangePhoneRequestDataFromJson(
   Map<String, dynamic> json,
 ) => _ChangePhoneRequestData(
-  maskedMobile: json['masked_mobile'] as String,
+  maskedMobile: json['masked_phone'] as String,
   otpExpirySeconds: (json['otp_expiry_seconds'] as num).toInt(),
 );
 
 Map<String, dynamic> _$ChangePhoneRequestDataToJson(
   _ChangePhoneRequestData instance,
 ) => <String, dynamic>{
-  'masked_mobile': instance.maskedMobile,
+  'masked_phone': instance.maskedMobile,
   'otp_expiry_seconds': instance.otpExpirySeconds,
 };
 

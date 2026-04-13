@@ -1,43 +1,58 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/utils/app_exception.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../widgets/otp_verification_view.dart';
-import '../../providers/change_email_otp_provider.dart';
 
+/// Generic OTP verification screen for the change-email flow.
+///
+/// Used for both phone-OTP (step 1–2) and email-OTP (step 3–4).
+/// The caller provides the OTP state and callbacks.
 class ChangeEmailVerifyOtpView extends StatelessWidget {
   const ChangeEmailVerifyOtpView({
     super.key,
     required this.appBarTitle,
     required this.title,
     required this.subtitle,
-    required this.onVerified,
+    required this.otpLength,
+    required this.countdownSeconds,
+    required this.canResend,
+    required this.hasError,
+    required this.onInitialRequest,
+    required this.onOtpChanged,
+    required this.onOtpCompleted,
+    required this.onResend,
   });
 
   final String appBarTitle;
   final String title;
   final String subtitle;
-  final Future<void> Function(BuildContext context) onVerified;
+  final int otpLength;
+  final int countdownSeconds;
+  final bool canResend;
+  final bool hasError;
+  final Future<void> Function() onInitialRequest;
+  final void Function(String value) onOtpChanged;
+  final Future<void> Function(BuildContext context) onOtpCompleted;
+  final Future<void> Function() onResend;
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<ChangeEmailOtpProvider>();
-    final l10n = context.l10n!;
     final theme = context.theme;
+    final l10n = context.l10n!;
     return OtpVerificationView(
       appBarTitle: appBarTitle,
       title: title,
       subtitle: subtitle,
-      otpLength: ChangeEmailOtpProvider.otpLength,
-      countdownSeconds: provider.countdownSeconds,
-      canResend: provider.canResend,
-      hasError: provider.hasError,
-      onInitialRequest: provider.requestOtp,
-      onOtpChanged: provider.setOtp,
-      onOtpCompleted: () => _verify(context, provider),
-      onResend: () => _resend(context, provider),
+      otpLength: otpLength,
+      countdownSeconds: countdownSeconds,
+      canResend: canResend,
+      hasError: hasError,
+      onInitialRequest: onInitialRequest,
+      onOtpChanged: onOtpChanged,
+      onOtpCompleted: () => _verify(context),
+      onResend: () => _resend(context),
       bottomSection: Text(
         l10n.needHelpContactSupport,
         style: theme.textTheme.bodyMedium?.copyWith(
@@ -48,15 +63,9 @@ class ChangeEmailVerifyOtpView extends StatelessWidget {
     );
   }
 
-  Future<void> _verify(
-    BuildContext context,
-    ChangeEmailOtpProvider provider,
-  ) async {
+  Future<void> _verify(BuildContext context) async {
     try {
-      final valid = await provider.verifyOtp();
-      if (!context.mounted) return;
-      if (!valid) return;
-      await onVerified(context);
+      await onOtpCompleted(context);
     } on AppException catch (e) {
       if (context.mounted) {
         SnackbarHelper.showError(context, e.localizedMessage(context.l10n));
@@ -64,12 +73,9 @@ class ChangeEmailVerifyOtpView extends StatelessWidget {
     }
   }
 
-  Future<void> _resend(
-    BuildContext context,
-    ChangeEmailOtpProvider provider,
-  ) async {
+  Future<void> _resend(BuildContext context) async {
     try {
-      await provider.resendOtp();
+      await onResend();
     } on AppException catch (e) {
       if (context.mounted) {
         SnackbarHelper.showError(context, e.localizedMessage(context.l10n));

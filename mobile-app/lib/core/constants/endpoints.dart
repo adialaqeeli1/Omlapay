@@ -44,11 +44,17 @@ class Endpoints {
   static String get changePhoneStep4Verify =>
       '$apiVersion/user/settings/change-phone/step4-verify';
 
-  /// Settings → change email: send OTP to new address, then verify.
-  static String get changeEmailRequest =>
-      '$apiVersion/user/settings/change-email/request';
-  static String get changeEmailVerify =>
-      '$apiVersion/user/settings/change-email/verify';
+  /// Settings → change email (5-step flow).
+  static String get changeEmailStep1Request =>
+      '$apiVersion/user/settings/change-email/step1-request';
+  static String get changeEmailStep2Verify =>
+      '$apiVersion/user/settings/change-email/step2-verify';
+  static String get changeEmailStep3Request =>
+      '$apiVersion/user/settings/change-email/step3-request';
+  static String get changeEmailStep4Verify =>
+      '$apiVersion/user/settings/change-email/step4-verify';
+  static String get changeEmailStep5Confirm =>
+      '$apiVersion/user/settings/change-email/step5-confirm';
 
   /// List coins with prices; supports query param `currency` (e.g. /v1/coins?currency=usd).
   static String get coins => '$apiVersion/coins';

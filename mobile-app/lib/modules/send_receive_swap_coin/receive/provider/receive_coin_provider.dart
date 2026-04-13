@@ -4,10 +4,10 @@ import '../../../../providers/wallets_provider.dart';
 
 class ReciveCoinProvider extends ChangeNotifier {
   ReciveCoinProvider({required WalletsProvider walletsProvider})
-      : _walletsProvider = walletsProvider {
+    : _walletsProvider = walletsProvider {
     _walletsProvider.addListener(_onWalletsUpdated);
     // Refresh wallets every time the receive screen opens.
-    _walletsProvider.refreshWallets();
+    Future.microtask(() => _walletsProvider.refreshWallets());
   }
 
   final WalletsProvider _walletsProvider;

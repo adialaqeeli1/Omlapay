@@ -6,11 +6,20 @@ class AppException implements Exception {
 
   AppException(this.message, {this.messageKey});
 
-  /// Resolves [messageKey] to a localized string using the given [l10n].
-  /// Falls back to [message] if [messageKey] is null or not found.
+  /// Returns the best user-facing error text.
+  ///
+  /// Priority:
+  /// 1. The server-provided [message] (already locale-aware via ApiHelper)
+  ///    — used when it differs from the generic [messageKey] resolution.
+  /// 2. The ARB string resolved from [messageKey] — used as fallback when
+  ///    [message] is empty or looks like a raw network/framework string.
   String localizedMessage(AppLocalizations? l10n) {
-    if (l10n == null || messageKey == null) return message;
-    return resolveErrorKey(l10n, messageKey!) ?? message;
+    final resolvedKey =
+        (l10n != null && messageKey != null) ? resolveErrorKey(l10n, messageKey!) : null;
+    // If the server provided a meaningful message, prefer it over the generic
+    // ARB key string. Fall back to the ARB key when message is absent.
+    if (message.trim().isNotEmpty) return message;
+    return resolvedKey ?? message;
   }
 
   /// Resolves an error key string to a localized message.

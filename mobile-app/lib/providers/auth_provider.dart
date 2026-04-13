@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -384,8 +385,9 @@ class AuthProvider extends ChangeNotifier {
         }
         final twoFactorEnabled = data['twoFactorEnabled'];
         if (twoFactorEnabled is bool) {
-          updatedUser =
-              updatedUser.copyWith(twoFactorEnabled: twoFactorEnabled);
+          updatedUser = updatedUser.copyWith(
+            twoFactorEnabled: twoFactorEnabled,
+          );
         }
 
         if (updatedUser != currentUser) {
@@ -411,9 +413,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       final currentUser = _state.user;
       if (currentUser == null || !_state.isAuthenticated) {
-        throw Exception(
-          appLocalizationsFromStoredLocale().somethingWentWrong,
-        );
+        throw Exception(appLocalizationsFromStoredLocale().somethingWentWrong);
       }
 
       _state = _state.copyWith(isLoading: true, errorMessage: null);
@@ -465,7 +465,7 @@ class AuthProvider extends ChangeNotifier {
         return successMessage;
       }
 
-      // Enable succeeded — just update local state.
+      // Enable succeeded — update local state and refresh from backend.
       final updatedUser = currentUser.copyWith(twoFactorEnabled: true);
       _state = _state.copyWith(
         user: updatedUser,
@@ -477,6 +477,7 @@ class AuthProvider extends ChangeNotifier {
         jsonEncode(updatedUser.toJson()),
       );
       notifyListeners();
+      unawaited(fetchAccountDetails());
       return successMessage;
     } catch (e) {
       _state = _state.copyWith(isLoading: false, errorMessage: e.toString());
@@ -644,8 +645,7 @@ class AuthProvider extends ChangeNotifier {
         fallback: l10n.passcodeChangedSuccessfully,
       );
 
-      final normalizedPhone =
-          mobileNumber.replaceAll(RegExp(r'[^0-9]'), '');
+      final normalizedPhone = mobileNumber.replaceAll(RegExp(r'[^0-9]'), '');
       final normalizedCountry = countryCode.trim();
 
       await _clearSessionTokens();

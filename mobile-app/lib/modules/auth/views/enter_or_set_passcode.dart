@@ -16,6 +16,7 @@ import '../../../widgets/logout_alert_dialog.dart';
 import '../providers/login_provider.dart';
 import '../providers/passcode_provider.dart';
 import '../services/forgot_passcode_service.dart';
+import '../../settings/services/change_email_service.dart';
 
 class EnterOrSetPasscodeScreen extends StatelessWidget {
   /// Prevents overlapping forgot-passcode OTP requests before the loading overlay
@@ -33,6 +34,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     this.pendingPasscode,
     this.resetToken,
     this.pendingEmail,
+    this.changeEmailToken,
     this.registrationToken,
   });
 
@@ -42,6 +44,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
   final String? pendingPasscode;
   final String? resetToken;
   final String? pendingEmail;
+  final String? changeEmailToken;
   final String? registrationToken;
 
   @override
@@ -389,9 +392,13 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     return CommonBackButton(
       onPressed: () {
         final email = pendingEmail?.trim() ?? '';
+        final token = changeEmailToken?.trim() ?? '';
         context.go(
           Routes.changeEmailVerifyNewEmail,
-          extra: {LoginProvider.extraPendingEmailKey: email},
+          extra: {
+            LoginProvider.extraPendingEmailKey: email,
+            LoginProvider.extraChangeEmailTokenKey: token,
+          },
         );
       },
     );
@@ -743,8 +750,8 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
       }
 
       if (mode == LoginProvider.modeChangeEmailConfirmPasscode) {
-        final email = pendingEmail?.trim() ?? '';
-        if (email.isEmpty) {
+        final token = changeEmailToken?.trim() ?? '';
+        if (token.isEmpty) {
           return;
         }
         final isValid = await provider.verify(
@@ -753,11 +760,16 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                 required String phoneNumber,
                 required String countryCode,
                 required String passcode,
-              }) => authProvider.verifyStoredPasscodeForCurrentUser(passcode),
+              }) async {
+            final result = await ChangeEmailService.step5Confirm(
+              changeEmailToken: token,
+              passcode: passcode,
+            );
+            await authProvider.updateEmailForCurrentUser(result.email);
+            return true;
+          },
         );
         if (!context.mounted || !isValid) return;
-        final updated = await authProvider.updateEmailForCurrentUser(email);
-        if (!context.mounted || !updated) return;
         context.go(Routes.changeEmailSuccess);
         return;
       }

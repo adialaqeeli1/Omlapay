@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ChangePhoneRequestData {
 
-@JsonKey(name: 'masked_mobile') String get maskedMobile;@JsonKey(name: 'otp_expiry_seconds') int get otpExpirySeconds;
+@JsonKey(name: 'masked_phone') String get maskedMobile;@JsonKey(name: 'otp_expiry_seconds') int get otpExpirySeconds;
 /// Create a copy of ChangePhoneRequestData
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ChangePhoneRequestDataCopyWith<$Res>  {
   factory $ChangePhoneRequestDataCopyWith(ChangePhoneRequestData value, $Res Function(ChangePhoneRequestData) _then) = _$ChangePhoneRequestDataCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'masked_mobile') String maskedMobile,@JsonKey(name: 'otp_expiry_seconds') int otpExpirySeconds
+@JsonKey(name: 'masked_phone') String maskedMobile,@JsonKey(name: 'otp_expiry_seconds') int otpExpirySeconds
 });
 
 
@@ -154,7 +154,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'masked_mobile')  String maskedMobile, @JsonKey(name: 'otp_expiry_seconds')  int otpExpirySeconds)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'masked_phone')  String maskedMobile, @JsonKey(name: 'otp_expiry_seconds')  int otpExpirySeconds)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ChangePhoneRequestData() when $default != null:
 return $default(_that.maskedMobile,_that.otpExpirySeconds);case _:
@@ -175,7 +175,7 @@ return $default(_that.maskedMobile,_that.otpExpirySeconds);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'masked_mobile')  String maskedMobile, @JsonKey(name: 'otp_expiry_seconds')  int otpExpirySeconds)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'masked_phone')  String maskedMobile, @JsonKey(name: 'otp_expiry_seconds')  int otpExpirySeconds)  $default,) {final _that = this;
 switch (_that) {
 case _ChangePhoneRequestData():
 return $default(_that.maskedMobile,_that.otpExpirySeconds);case _:
@@ -195,7 +195,7 @@ return $default(_that.maskedMobile,_that.otpExpirySeconds);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'masked_mobile')  String maskedMobile, @JsonKey(name: 'otp_expiry_seconds')  int otpExpirySeconds)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'masked_phone')  String maskedMobile, @JsonKey(name: 'otp_expiry_seconds')  int otpExpirySeconds)?  $default,) {final _that = this;
 switch (_that) {
 case _ChangePhoneRequestData() when $default != null:
 return $default(_that.maskedMobile,_that.otpExpirySeconds);case _:
@@ -210,10 +210,10 @@ return $default(_that.maskedMobile,_that.otpExpirySeconds);case _:
 @JsonSerializable()
 
 class _ChangePhoneRequestData implements ChangePhoneRequestData {
-  const _ChangePhoneRequestData({@JsonKey(name: 'masked_mobile') required this.maskedMobile, @JsonKey(name: 'otp_expiry_seconds') required this.otpExpirySeconds});
+  const _ChangePhoneRequestData({@JsonKey(name: 'masked_phone') required this.maskedMobile, @JsonKey(name: 'otp_expiry_seconds') required this.otpExpirySeconds});
   factory _ChangePhoneRequestData.fromJson(Map<String, dynamic> json) => _$ChangePhoneRequestDataFromJson(json);
 
-@override@JsonKey(name: 'masked_mobile') final  String maskedMobile;
+@override@JsonKey(name: 'masked_phone') final  String maskedMobile;
 @override@JsonKey(name: 'otp_expiry_seconds') final  int otpExpirySeconds;
 
 /// Create a copy of ChangePhoneRequestData
@@ -249,7 +249,7 @@ abstract mixin class _$ChangePhoneRequestDataCopyWith<$Res> implements $ChangePh
   factory _$ChangePhoneRequestDataCopyWith(_ChangePhoneRequestData value, $Res Function(_ChangePhoneRequestData) _then) = __$ChangePhoneRequestDataCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'masked_mobile') String maskedMobile,@JsonKey(name: 'otp_expiry_seconds') int otpExpirySeconds
+@JsonKey(name: 'masked_phone') String maskedMobile,@JsonKey(name: 'otp_expiry_seconds') int otpExpirySeconds
 });
 
 
