@@ -3,94 +3,58 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/utils/app_exception.dart';
-import '../../auth/services/forgot_passcode_service.dart';
 import '../services/change_email_service.dart';
 
-class ChangeEmailOtpProvider extends ChangeNotifier {
-  ChangeEmailOtpProvider._({
-    String? newEmail,
-    String? phoneCountryCode,
-    String? phoneMobileNumber,
-  }) : _newEmail = newEmail,
-       _phoneCountryCode = phoneCountryCode,
-       _phoneMobileNumber = phoneMobileNumber;
-
-  factory ChangeEmailOtpProvider.forNewEmail(String email) {
-    final trimmed = email.trim();
-    if (trimmed.isEmpty) {
-      throw ArgumentError.value(email, 'email', 'must not be empty');
-    }
-    return ChangeEmailOtpProvider._(newEmail: trimmed);
-  }
-
-  factory ChangeEmailOtpProvider.forPhone({
-    required String countryCode,
-    required String mobileNumber,
-  }) {
-    return ChangeEmailOtpProvider._(
-      phoneCountryCode: countryCode.trim(),
-      phoneMobileNumber: mobileNumber.replaceAll(RegExp(r'[^0-9]'), ''),
-    );
-  }
-
+/// OTP provider for change-email step1/step2 (verify current phone).
+class ChangeEmailPhoneOtpProvider extends ChangeNotifier {
   static const int otpLength = 6;
-  static const int countdownStartSeconds = 5;
-
-  final String? _newEmail;
-  final String? _phoneCountryCode;
-  final String? _phoneMobileNumber;
-
-  bool get _isNewEmailFlow {
-    final e = _newEmail;
-    return e != null && e.isNotEmpty;
-  }
 
   String _otp = '';
+  String _maskedPhone = '';
   int _countdownSeconds = 0;
   Timer? _timer;
   bool _isRequestingOtp = false;
   bool _isVerifying = false;
   bool _hasError = false;
-  bool _phoneOtpEverRequested = false;
+  String? _changeEmailToken;
 
   String get otp => _otp;
+  String get maskedPhone => _maskedPhone;
   int get countdownSeconds => _countdownSeconds;
   bool get canResend => _countdownSeconds <= 0 && !_isRequestingOtp;
   bool get isRequestingOtp => _isRequestingOtp;
   bool get isVerifying => _isVerifying;
   bool get hasError => _hasError;
   bool get isComplete => _otp.length == otpLength;
+  String? get changeEmailToken => _changeEmailToken;
 
   void setOtp(String value) {
     final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
-    final truncated = digits.length > otpLength
-        ? digits.substring(0, otpLength)
-        : digits;
+    final truncated =
+        digits.length > otpLength ? digits.substring(0, otpLength) : digits;
     if (_otp == truncated) return;
     _otp = truncated;
     _hasError = false;
     notifyListeners();
   }
 
+  void _startCountdown(int seconds) {
+    final safe = seconds <= 0 ? 60 : seconds;
+    _timer?.cancel();
+    _countdownSeconds = safe;
+    _timer = Timer.periodic(const Duration(seconds: 1), _tick);
+    notifyListeners();
+  }
+
+  /// Calls step1-request to send OTP to the user's current phone.
   Future<void> requestOtp() async {
     if (_isRequestingOtp) return;
     _isRequestingOtp = true;
     notifyListeners();
     try {
-      if (_isNewEmailFlow) {
-        final email = _newEmail!;
-        final expiry = await ChangeEmailService.requestChange(newEmail: email);
-        _countdownSeconds = expiry > 0 ? expiry : countdownStartSeconds;
-      } else {
-        await ForgotPasscodeService.requestOtp(
-          _phoneMobileNumber!,
-          _phoneCountryCode!,
-        );
-        _phoneOtpEverRequested = true;
-        _countdownSeconds = countdownStartSeconds;
-      }
-      _timer?.cancel();
-      _timer = Timer.periodic(const Duration(seconds: 1), _tick);
+      final result = await ChangeEmailService.step1Request();
+      _maskedPhone = result.maskedPhone;
+      _startCountdown(result.otpExpirySeconds);
     } finally {
       _isRequestingOtp = false;
       notifyListeners();
@@ -99,58 +63,136 @@ class ChangeEmailOtpProvider extends ChangeNotifier {
 
   Future<void> resendOtp() async {
     if (!canResend) return;
-    _isRequestingOtp = true;
-    notifyListeners();
-    try {
-      if (_isNewEmailFlow) {
-        final email = _newEmail!;
-        final expiry = await ChangeEmailService.requestChange(newEmail: email);
-        _countdownSeconds = expiry > 0 ? expiry : countdownStartSeconds;
-      } else if (_phoneOtpEverRequested) {
-        await ForgotPasscodeService.resendOtp(
-          _phoneMobileNumber!,
-          _phoneCountryCode!,
-        );
-        _countdownSeconds = countdownStartSeconds;
-      } else {
-        await ForgotPasscodeService.requestOtp(
-          _phoneMobileNumber!,
-          _phoneCountryCode!,
-        );
-        _phoneOtpEverRequested = true;
-        _countdownSeconds = countdownStartSeconds;
-      }
-      _timer?.cancel();
-      _timer = Timer.periodic(const Duration(seconds: 1), _tick);
-    } finally {
-      _isRequestingOtp = false;
-      notifyListeners();
-    }
+    await requestOtp();
   }
 
-  /// Returns true on success. Throws [AppException] with a localized API
-  /// message on failure. Forgot-passcode verify returns false when the server
-  /// rejects OTP without throwing.
+  /// Calls step2-verify. Returns true on success and stores [changeEmailToken].
   Future<bool> verifyOtp() async {
     if (!isComplete || _isVerifying) return false;
     _isVerifying = true;
     _hasError = false;
     notifyListeners();
     try {
-      if (_isNewEmailFlow) {
-        await ChangeEmailService.verifyChange(newEmail: _newEmail!, otp: _otp);
-        _hasError = false;
-        return true;
-      }
-      final isValid = await ForgotPasscodeService.verifyOtp(
-        _phoneMobileNumber!,
-        _phoneCountryCode!,
-        _otp,
-        requireResetToken: false,
-      );
-      _hasError = !isValid;
-      return isValid;
+      final result = await ChangeEmailService.step2Verify(otp: _otp);
+      _changeEmailToken = result.changeEmailToken;
+      return true;
     } on AppException {
+      _hasError = true;
+      rethrow;
+    } finally {
+      _isVerifying = false;
+      notifyListeners();
+    }
+  }
+
+  void _tick(Timer timer) {
+    if (_countdownSeconds <= 1) {
+      _timer?.cancel();
+      _timer = null;
+      _countdownSeconds = 0;
+    } else {
+      _countdownSeconds--;
+    }
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+}
+
+/// OTP provider for change-email step3/step4 (verify new email).
+class ChangeEmailNewEmailOtpProvider extends ChangeNotifier {
+  ChangeEmailNewEmailOtpProvider({
+    required this.changeEmailToken,
+    required this.newEmail,
+    int? initialOtpExpirySeconds,
+  }) : _pendingInitialExpiry = initialOtpExpirySeconds;
+
+  static const int otpLength = 6;
+
+  String changeEmailToken;
+  final String newEmail;
+
+  int? _pendingInitialExpiry;
+
+  String _otp = '';
+  int _countdownSeconds = 0;
+  Timer? _timer;
+  bool _isRequestingOtp = false;
+  bool _isVerifying = false;
+  bool _hasError = false;
+
+  String get otp => _otp;
+  int get countdownSeconds => _countdownSeconds;
+  bool get canResend => _countdownSeconds <= 0 && !_isRequestingOtp;
+  bool get hasError => _hasError;
+  bool get isComplete => _otp.length == otpLength;
+
+  void setOtp(String value) {
+    final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
+    final truncated =
+        digits.length > otpLength ? digits.substring(0, otpLength) : digits;
+    if (_otp == truncated) return;
+    _otp = truncated;
+    _hasError = false;
+    notifyListeners();
+  }
+
+  void _startCountdown(int seconds) {
+    final safe = seconds <= 0 ? 60 : seconds;
+    _timer?.cancel();
+    _countdownSeconds = safe;
+    _timer = Timer.periodic(const Duration(seconds: 1), _tick);
+    notifyListeners();
+  }
+
+  /// Calls step3-request to send OTP to the new email address.
+  Future<void> requestOtp() async {
+    if (_isRequestingOtp) return;
+    _isRequestingOtp = true;
+    notifyListeners();
+    try {
+      if (_pendingInitialExpiry != null) {
+        final seconds = _pendingInitialExpiry!;
+        _pendingInitialExpiry = null;
+        _startCountdown(seconds);
+        return;
+      }
+      final result = await ChangeEmailService.step3Request(
+        changeEmailToken: changeEmailToken,
+        newEmail: newEmail,
+      );
+      changeEmailToken = result.changeEmailToken;
+      _startCountdown(result.otpExpirySeconds);
+    } finally {
+      _isRequestingOtp = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> resendOtp() async {
+    if (!canResend) return;
+    await requestOtp();
+  }
+
+  /// Calls step4-verify. Returns true on success and updates [changeEmailToken].
+  Future<bool> verifyOtp() async {
+    if (!isComplete || _isVerifying) return false;
+    _isVerifying = true;
+    _hasError = false;
+    notifyListeners();
+    try {
+      final result = await ChangeEmailService.step4Verify(
+        changeEmailToken: changeEmailToken,
+        otp: _otp,
+      );
+      changeEmailToken = result.changeEmailToken;
+      return true;
+    } on AppException {
+      _hasError = true;
       rethrow;
     } finally {
       _isVerifying = false;

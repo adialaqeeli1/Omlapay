@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../wallet_model/wallet_model.dart';
+
 part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
@@ -24,12 +26,14 @@ abstract class UserModel with _$UserModel {
     @Default('') String lastName,
     @Default(false) bool isVerified,
     @Default(false) bool twoFactorEnabled,
+    @Default([]) List<WalletNetworkModel> wallets,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);
 
-  String get fullPhoneNumber =>
-      fullMobileNumber?.isNotEmpty == true ? fullMobileNumber! : '$countryCode$mobileNumber';
+  String get fullPhoneNumber => fullMobileNumber?.isNotEmpty == true
+      ? fullMobileNumber!
+      : '$countryCode$mobileNumber';
   String get fullName => '$firstName $lastName';
 }

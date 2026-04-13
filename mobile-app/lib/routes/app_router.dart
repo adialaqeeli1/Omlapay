@@ -166,6 +166,9 @@ class AppRouter {
           final pendingEmail = routePayload is Map<String, dynamic>
               ? routePayload[LoginProvider.extraPendingEmailKey] as String?
               : null;
+          final changeEmailToken = routePayload is Map<String, dynamic>
+              ? routePayload[LoginProvider.extraChangeEmailTokenKey] as String?
+              : null;
           final registrationToken = routePayload is Map<String, dynamic>
               ? routePayload[LoginProvider.extraRegistrationTokenKey] as String?
               : null;
@@ -198,6 +201,7 @@ class AppRouter {
               pendingPasscode: pendingPasscode,
               resetToken: resetToken,
               pendingEmail: pendingEmail,
+              changeEmailToken: changeEmailToken,
               registrationToken: registrationToken,
             ),
           );
@@ -279,21 +283,37 @@ class AppRouter {
         path: Routes.changeEmailVerifyPhone,
         name: 'changeEmailVerifyPhone',
         builder: (context, state) {
-          final user = context.read<AuthProvider>().state.user!;
           final l10n = AppLocalizations.of(context)!;
           return ChangeNotifierProvider(
-            create: (_) => ChangeEmailOtpProvider.forPhone(
-              countryCode: user.countryCode,
-              mobileNumber: user.mobileNumber,
-            ),
-            child: ChangeEmailVerifyOtpView(
-              appBarTitle: l10n.changeEmail,
-              title: l10n.verifyCurrentPhoneNumber,
-              subtitle: l10n.changeEmailPhoneOtpSent(
-                maskedPhoneForDisplay(user.countryCode, user.mobileNumber),
-              ),
-              onVerified: (ctx) async {
-                ctx.push(Routes.changeEmailEnterNew);
+            create: (_) => ChangeEmailPhoneOtpProvider(),
+            child: Builder(
+              builder: (ctx) {
+                final provider = ctx.watch<ChangeEmailPhoneOtpProvider>();
+                return ChangeEmailVerifyOtpView(
+                  appBarTitle: l10n.changeEmail,
+                  title: l10n.verifyCurrentPhoneNumber,
+                  subtitle: provider.maskedPhone.isNotEmpty
+                      ? l10n.changeEmailPhoneOtpSent(provider.maskedPhone)
+                      : l10n.changeEmailPhoneOtpSent('...'),
+                  otpLength: ChangeEmailPhoneOtpProvider.otpLength,
+                  countdownSeconds: provider.countdownSeconds,
+                  canResend: provider.canResend,
+                  hasError: provider.hasError,
+                  onInitialRequest: provider.requestOtp,
+                  onOtpChanged: provider.setOtp,
+                  onOtpCompleted: (innerCtx) async {
+                    final valid = await provider.verifyOtp();
+                    if (!innerCtx.mounted || !valid) return;
+                    innerCtx.push(
+                      Routes.changeEmailEnterNew,
+                      extra: {
+                        LoginProvider.extraChangeEmailTokenKey:
+                            provider.changeEmailToken,
+                      },
+                    );
+                  },
+                  onResend: provider.resendOtp,
+                );
               },
             ),
           );
@@ -305,11 +325,16 @@ class AppRouter {
         name: 'changeEmailEnterNew',
         builder: (context, state) {
           final user = context.read<AuthProvider>().state.user!;
+          final extra = state.extra as Map<String, dynamic>?;
+          final changeEmailToken =
+              extra?[LoginProvider.extraChangeEmailTokenKey] as String? ?? '';
           return ChangeNotifierProvider(
             create: (_) => ChangeEmailFormProvider(
               currentEmail: WalletAddressService.getUserEmail(user),
             ),
-            child: const ChangeEmailEnterNewView(),
+            child: ChangeEmailEnterNewView(
+              changeEmailToken: changeEmailToken,
+            ),
           );
         },
         redirect: AuthMiddleware.isAuthenticated,
@@ -321,24 +346,45 @@ class AppRouter {
           final extra = state.extra as Map<String, dynamic>?;
           final pendingEmail =
               extra?[LoginProvider.extraPendingEmailKey] as String? ?? '';
+          final changeEmailToken =
+              extra?[LoginProvider.extraChangeEmailTokenKey] as String? ?? '';
+          final otpExpiry =
+              extra?[LoginProvider.extraOtpExpirySecondsKey] as int?;
           final l10n = AppLocalizations.of(context)!;
           return ChangeNotifierProvider(
-            create: (_) => ChangeEmailOtpProvider.forNewEmail(pendingEmail),
-            child: ChangeEmailVerifyOtpView(
-              appBarTitle: l10n.changeEmail,
-              title: l10n.verifyNewEmailAddress,
-              subtitle: l10n.changeEmailEmailOtpSent(pendingEmail),
-              onVerified: (ctx) async {
-                final user = ctx.read<AuthProvider>().state.user!;
-                ctx.go(
-                  Routes.enterOrSetPasscode,
-                  extra: {
-                    LoginProvider.extraModeKey:
-                        LoginProvider.modeChangeEmailConfirmPasscode,
-                    LoginProvider.extraCountryCodeKey: user.countryCode,
-                    LoginProvider.extraPhoneNumberKey: user.mobileNumber,
-                    LoginProvider.extraPendingEmailKey: pendingEmail,
+            create: (_) => ChangeEmailNewEmailOtpProvider(
+              changeEmailToken: changeEmailToken,
+              newEmail: pendingEmail,
+              initialOtpExpirySeconds: otpExpiry,
+            ),
+            child: Builder(
+              builder: (ctx) {
+                final provider = ctx.watch<ChangeEmailNewEmailOtpProvider>();
+                return ChangeEmailVerifyOtpView(
+                  appBarTitle: l10n.changeEmail,
+                  title: l10n.verifyNewEmailAddress,
+                  subtitle: l10n.changeEmailEmailOtpSent(pendingEmail),
+                  otpLength: ChangeEmailNewEmailOtpProvider.otpLength,
+                  countdownSeconds: provider.countdownSeconds,
+                  canResend: provider.canResend,
+                  hasError: provider.hasError,
+                  onInitialRequest: provider.requestOtp,
+                  onOtpChanged: provider.setOtp,
+                  onOtpCompleted: (innerCtx) async {
+                    final valid = await provider.verifyOtp();
+                    if (!innerCtx.mounted || !valid) return;
+                    innerCtx.go(
+                      Routes.enterOrSetPasscode,
+                      extra: {
+                        LoginProvider.extraModeKey:
+                            LoginProvider.modeChangeEmailConfirmPasscode,
+                        LoginProvider.extraPendingEmailKey: pendingEmail,
+                        LoginProvider.extraChangeEmailTokenKey:
+                            provider.changeEmailToken,
+                      },
+                    );
                   },
+                  onResend: provider.resendOtp,
                 );
               },
             ),

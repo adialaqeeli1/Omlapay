@@ -7,7 +7,7 @@ part 'change_phone_models.g.dart';
 @freezed
 abstract class ChangePhoneRequestData with _$ChangePhoneRequestData {
   const factory ChangePhoneRequestData({
-    @JsonKey(name: 'masked_mobile') required String maskedMobile,
+    @JsonKey(name: 'masked_phone') required String maskedMobile,
     @JsonKey(name: 'otp_expiry_seconds') required int otpExpirySeconds,
   }) = _ChangePhoneRequestData;
 
