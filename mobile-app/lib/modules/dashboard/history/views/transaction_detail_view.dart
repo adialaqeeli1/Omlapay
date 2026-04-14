@@ -12,7 +12,9 @@ import '../../../transaction_details/provider/transaction_details_provider.dart'
 import '../widgets/save_as_bottom_sheet.dart';
 
 class TransactionDetailView extends StatefulWidget {
-  const TransactionDetailView({super.key});
+  const TransactionDetailView({super.key, this.showTransactionType = false});
+
+  final bool showTransactionType;
 
   @override
   State<TransactionDetailView> createState() => _TransactionDetailViewState();
@@ -90,7 +92,9 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
       appBar: AppBar(
         leading: const CommonBackButton(),
         title: Text(
-          isSent ? l10n.sent : l10n.receive,
+          widget.showTransactionType
+              ? (isSent ? l10n.sent : l10n.receive)
+              : l10n.transactionDetails,
           style: context.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
             color: isDarkMode ? AppColors.white : AppColors.textBlack,
@@ -171,7 +175,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                       context,
                       l10n.date,
                       DateFormat(
-                        'yyyy-MM-dd HH:mm:ss',
+                        'yyyy-MM-dd hh:mm:ss a',
                       ).format(transaction.createdAt),
                     ),
                     const SizedBox(height: 16),
@@ -186,7 +190,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                       _buildDetailRow(
                         context,
                         l10n.address,
-                        transaction.txHash!,
+                        transaction.senderAddress ?? '',
                         isAddress: true,
                       ),
                     ],
