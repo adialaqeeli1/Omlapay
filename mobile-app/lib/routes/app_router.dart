@@ -53,6 +53,7 @@ import '../modules/send_receive_swap_coin/receive/view/receive_coin_view.dart';
 import '../modules/send_receive_swap_coin/send/view/send_coin_view.dart';
 import '../modules/send_receive_swap_coin/send/view/review_send_view.dart';
 import '../modules/send_receive_swap_coin/send/view/send_success_view.dart';
+import '../modules/send_receive_swap_coin/send/view/send_verification_view.dart';
 import '../modules/send_receive_swap_coin/send/provider/send_provider.dart';
 import '../modules/send_receive_swap_coin/swap/view/swap_coin_view.dart';
 import '../modules/send_receive_swap_coin/swap/provider/swap_provider.dart';
@@ -760,6 +761,18 @@ class AppRouter {
             child: const ReviewSendView(),
           );
         },
+      ),
+      GoRoute(
+        path: Routes.sendVerification,
+        name: 'sendVerification',
+        builder: (context, state) {
+          final provider = state.extra as SendProvider;
+          return ChangeNotifierProvider.value(
+            value: provider,
+            child: const SendVerificationView(),
+          );
+        },
+        redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
         path: Routes.sendSuccess,

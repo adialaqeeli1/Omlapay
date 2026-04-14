@@ -875,7 +875,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get twoFactorAuthentication => 'Two Factor Authentication';
 
   @override
-  String get sendFlowReviewTitle => 'Review';
+  String get sendFlowReviewTitle => 'Confirmation';
 
   @override
   String get sendFlowSendingTitle => 'Sending';
@@ -943,6 +943,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get youAreSending => 'You are sending';
+
+  @override
+  String get youWillSend => 'You will send';
+
+  @override
+  String get walletAddress => 'Wallet Address';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get confirmationWarning =>
+      'Make sure that the address and network are correct, the transaction cannot be canceled after you confirm it.';
+
+  @override
+  String get sendInProgress => 'Send in progress';
+
+  @override
+  String get estimatedTimeOfExecution => 'Estimated time of execution';
+
+  @override
+  String get sendCompletionNotification =>
+      'Upon completion, you will receive a confirmation Notification';
+
+  @override
+  String get verifyAccount => 'Verify Account';
 
   @override
   String get reviewOrderTitle => 'Review Order';

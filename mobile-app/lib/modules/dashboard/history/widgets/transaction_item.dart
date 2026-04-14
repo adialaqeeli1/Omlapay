@@ -124,6 +124,6 @@ class TransactionItem extends StatelessWidget {
   }
 
   String _formatDateTime(DateTime date) {
-    return DateFormat('yyyy-MM-dd HH:mm:ss').format(date);
+    return DateFormat('yyyy-MM-dd h:mm a').format(date.toLocal());
   }
 }

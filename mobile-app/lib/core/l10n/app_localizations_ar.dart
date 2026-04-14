@@ -867,7 +867,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get twoFactorAuthentication => 'المصادقة الثنائية';
 
   @override
-  String get sendFlowReviewTitle => 'مراجعة';
+  String get sendFlowReviewTitle => 'تأكيد';
 
   @override
   String get sendFlowSendingTitle => 'جاري الإرسال';
@@ -935,6 +935,31 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get youAreSending => 'أنت ترسل';
+
+  @override
+  String get youWillSend => 'ستقوم بإرسال';
+
+  @override
+  String get walletAddress => 'عنوان المحفظة';
+
+  @override
+  String get confirm => 'تأكيد';
+
+  @override
+  String get confirmationWarning =>
+      'تأكد من صحة العنوان والشبكة، لا يمكن إلغاء المعاملة بعد التأكيد.';
+
+  @override
+  String get sendInProgress => 'جارٍ الإرسال';
+
+  @override
+  String get estimatedTimeOfExecution => 'الوقت التقديري للتنفيذ';
+
+  @override
+  String get sendCompletionNotification => 'عند الاكتمال، ستتلقى إشعار تأكيد';
+
+  @override
+  String get verifyAccount => 'التحقق من الحساب';
 
   @override
   String get reviewOrderTitle => 'مراجعة الطلب';

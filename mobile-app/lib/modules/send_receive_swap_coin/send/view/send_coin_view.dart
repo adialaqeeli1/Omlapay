@@ -12,6 +12,7 @@ import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/models/wallet_model/wallet_model.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../core/utils/utility.dart';
 import '../../../../routes/app_router.dart';
 import '../../../../providers/kyc_status_provider.dart';
@@ -446,7 +447,7 @@ class SendCoinView extends StatelessWidget {
     BuildContext context,
     SendProvider provider,
   ) async {
-    final messenger = ScaffoldMessenger.of(context);
+    FocusManager.instance.primaryFocus?.unfocus();
     final ok = await provider.prepareSendReview();
     if (!context.mounted) return;
     if (ok) {
@@ -455,7 +456,7 @@ class SendCoinView extends StatelessWidget {
     }
     final error = provider.submitError;
     if (error != null && error.isNotEmpty) {
-      messenger.showSnackBar(SnackBar(content: Text(error)));
+      SnackbarHelper.showError(context, error);
       provider.clearSubmitError();
     }
   }
