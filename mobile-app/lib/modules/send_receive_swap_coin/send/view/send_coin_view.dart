@@ -121,7 +121,8 @@ class SendCoinView extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${provider.selectedCoin != null ? context.watch<WalletsProvider>().balanceForCoin(provider.selectedCoin!.symbol) : '0'} ${provider.selectedCoin?.localizedCoinTicker(context) ?? ''}'.trim(),
+                        '${provider.selectedCoin != null ? context.watch<WalletsProvider>().balanceForCoin(provider.selectedCoin!.symbol) : '0'} ${provider.selectedCoin?.localizedCoinTicker(context) ?? ''}'
+                            .trim(),
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 12,
@@ -400,10 +401,8 @@ class SendCoinView extends StatelessWidget {
                 width: 140,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: provider.canSend
-                      ? () {
-                          context.push(Routes.sendReview, extra: provider);
-                        }
+                  onPressed: (provider.canSend && !provider.isSubmitting)
+                      ? () => _onSendPressed(context, provider)
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: provider.canSend
@@ -422,7 +421,18 @@ class SendCoinView extends StatelessWidget {
                     ),
                     elevation: 0,
                   ),
-                  child: Text(l10n.send, style: const TextStyle(fontSize: 16)),
+                  child: provider.isSubmitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.white,
+                            ),
+                          ),
+                        )
+                      : Text(l10n.send, style: const TextStyle(fontSize: 16)),
                 ),
               ),
             ],
@@ -430,6 +440,24 @@ class SendCoinView extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _onSendPressed(
+    BuildContext context,
+    SendProvider provider,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final ok = await provider.prepareSendReview();
+    if (!context.mounted) return;
+    if (ok) {
+      context.push(Routes.sendReview, extra: provider);
+      return;
+    }
+    final error = provider.submitError;
+    if (error != null && error.isNotEmpty) {
+      messenger.showSnackBar(SnackBar(content: Text(error)));
+      provider.clearSubmitError();
+    }
   }
 
   void _showCoinSelection(BuildContext context, SendProvider provider) {
@@ -458,9 +486,7 @@ class SendCoinView extends StatelessWidget {
   ) async {
     final result = await context.push<String>(
       Routes.qrScanner,
-      extra: const QrScannerExtra(
-        validator: Utility.isValidWalletAddress,
-      ),
+      extra: const QrScannerExtra(validator: Utility.isValidWalletAddress),
     );
     if (result == null || !context.mounted) return;
 

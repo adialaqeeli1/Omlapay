@@ -10,7 +10,7 @@ import 'global_provider.dart';
 /// whenever the selected currency changes in [GlobalProvider].
 class WalletsProvider extends ChangeNotifier {
   WalletsProvider(this._globalProvider, {ReceiveWalletsService? walletsService})
-      : _walletsService = walletsService ?? ReceiveWalletsService() {
+    : _walletsService = walletsService ?? ReceiveWalletsService() {
     _activeCurrency = _globalProvider.selectedCurrency;
     _globalProvider.addListener(_onCurrencyUpdated);
     _fetchWallets();
@@ -42,7 +42,27 @@ class WalletsProvider extends ChangeNotifier {
     for (final network in _wallets) {
       for (final coin in network.coins) {
         if (coin.symbol.toUpperCase() == key) {
-          final balance = _globalProvider.selectedCurrency.toUpperCase() == 'SAR'
+          final balance = coin.balance;
+          return balance.toStringAsFixed(2);
+        }
+      }
+    }
+    return '0.00';
+  }
+
+  /// Returns the fiat balance for a coin symbol based on the selected currency.
+  ///
+  /// Searches across all networks. Returns `currentBalance` when USD is
+  /// selected, `currentBalanceSar` when SAR is selected.
+  String balanceForCoinConverted(String symbol) {
+    final key = symbol.trim().toUpperCase();
+    if (key.isEmpty) return '0.00';
+
+    for (final network in _wallets) {
+      for (final coin in network.coins) {
+        if (coin.symbol.toUpperCase() == key) {
+          final balance =
+              _globalProvider.selectedCurrency.toUpperCase() == 'SAR'
               ? coin.currentBalanceSar
               : coin.currentBalance;
           return balance.toStringAsFixed(2);

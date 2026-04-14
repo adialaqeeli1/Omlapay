@@ -87,8 +87,10 @@ class SwapCoinView extends StatelessWidget {
                                   context,
                                 ) ??
                                 l10n.selectCoinPlaceholder,
-                            amount: provider.fromCoin != null 
-                                ? context.watch<WalletsProvider>().balanceForCoin(provider.fromCoin!.symbol) 
+                            amount: provider.fromCoin != null
+                                ? context
+                                      .watch<WalletsProvider>()
+                                      .balanceForCoin(provider.fromCoin!.symbol)
                                 : '0',
                             controller: provider.fromAmountController,
                             isFrom: true,
@@ -140,8 +142,10 @@ class SwapCoinView extends StatelessWidget {
                                   context,
                                 ) ??
                                 l10n.selectCoinPlaceholder,
-                            amount: provider.toCoin != null 
-                                ? context.watch<WalletsProvider>().balanceForCoin(provider.toCoin!.symbol) 
+                            amount: provider.toCoin != null
+                                ? context
+                                      .watch<WalletsProvider>()
+                                      .balanceForCoin(provider.toCoin!.symbol)
                                 : '0',
                             controller: provider.toAmountController,
                             isFrom: false,

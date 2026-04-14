@@ -26,21 +26,34 @@ class QrCodeView extends StatelessWidget {
 
     final currentAddress = selectedCoin?.address;
 
-    final titleStyle = Theme.of(
-      context,
-    ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600);
+    final WalletCoinModel? headerCoin = selectedCoin;
 
     return Scaffold(
       appBar: AppBar(
         title: Row(
+          spacing: 14,
+          crossAxisAlignment: .center,
+          mainAxisAlignment: .center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              selectedCoin != null ? selectedCoin.symbol.substring(0, 1) : '',
-              style: titleStyle,
+            CommonCoinIcon(
+              symbol: headerCoin?.symbol ?? '',
+              radius: 16,
+              networkIconUrl: headerCoin?.networkIconUrl,
             ),
-            const SizedBox(width: 4),
-            Text(selectedCoin?.name ?? '', style: titleStyle),
+            Flexible(
+              child: Text(
+                headerCoin?.name ?? '',
+                overflow: TextOverflow.ellipsis,
+                style: context.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: context.isDarkMode
+                      ? AppColors.white
+                      : AppColors.textBlack,
+                  fontSize: 18.0,
+                ),
+              ),
+            ),
           ],
         ),
         elevation: 0,

@@ -50,7 +50,7 @@ class CurrencyInputCard extends StatelessWidget {
     final l10n = context.l10n!;
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final displaySymbol = coinSymbolLabel ?? coinSymbol;
+    final displaySymbol = coinSymbol;
 
     final fieldFill = isDark
         ? colorScheme.surfaceContainerHighest

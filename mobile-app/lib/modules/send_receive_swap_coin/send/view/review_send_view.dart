@@ -16,6 +16,13 @@ class ReviewSendView extends StatelessWidget {
     final provider = context.watch<SendProvider>();
     final l10n = context.l10n!;
     final colorScheme = Theme.of(context).colorScheme;
+    final quote = provider.quote;
+    final ticker =
+        quote?.coin ?? provider.selectedCoin?.localizedCoinTicker(context) ?? '';
+    final displayAmount = quote?.amount ?? provider.amountController.text;
+    final displayNetwork = quote?.network ?? provider.network;
+    final displayFee = quote?.fee ?? '';
+    final displayTotal = quote?.sentAmount ?? provider.amountController.text;
 
     return Scaffold(
       appBar: AppBar(
@@ -41,7 +48,7 @@ class ReviewSendView extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${provider.amountController.text} ${provider.selectedCoin?.localizedCoinTicker(context) ?? ''}',
+                    '$displayAmount $ticker',
                     style: TextStyle(
                       color: colorScheme.onSurface,
                       fontSize: 32,
@@ -64,22 +71,23 @@ class ReviewSendView extends StatelessWidget {
                   _buildDetailRow(
                     context,
                     l10n.transferToLabel,
-                    provider.selectedContact?.name ??
+                    quote?.recipientName ??
+                        provider.selectedContact?.name ??
                         provider.recipientController.text,
                   ),
                   Divider(color: colorScheme.outlineVariant, height: 30),
-                  _buildDetailRow(context, l10n.network, provider.network),
+                  _buildDetailRow(context, l10n.network, displayNetwork),
                   Divider(color: colorScheme.outlineVariant, height: 30),
                   _buildDetailRow(
                     context,
                     l10n.networkFeeLabel,
-                    '1.00 USDT',
-                  ), // Mock fee
+                    '$displayFee $ticker'.trim(),
+                  ),
                   Divider(color: colorScheme.outlineVariant, height: 30),
                   _buildDetailRow(
                     context,
                     l10n.total,
-                    '${(double.tryParse(provider.amountController.text) ?? 0) + 1} ${provider.selectedCoin?.localizedCoinTicker(context) ?? ''}',
+                    '$displayTotal $ticker'.trim(),
                     isTotal: true,
                   ),
                 ],

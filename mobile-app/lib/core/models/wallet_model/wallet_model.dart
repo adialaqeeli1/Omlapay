@@ -33,6 +33,9 @@ abstract class WalletCoinModel with _$WalletCoinModel {
     @Default('') String network,
     @Default('') String networkDisplayName,
     @Default('') String networkIconUrl,
+    @JsonKey(name: 'balance', fromJson: _parseDouble)
+    @Default(0)
+    double balance,
     @JsonKey(name: 'currentBalance', fromJson: _parseDouble)
     @Default(0)
     double currentBalance,
