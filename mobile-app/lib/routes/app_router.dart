@@ -24,7 +24,6 @@ import '../modules/coin_details/views/coin_details_view.dart';
 import '../modules/coin_details/providers/coin_details_provider.dart';
 import '../modules/dashboard/dashboard_view.dart';
 import '../modules/dashboard/history/views/history_view.dart';
-import '../modules/dashboard/history/views/transaction_detail_view.dart';
 import '../modules/dashboard/home/views/home_view.dart';
 import '../modules/dashboard/home/providers/home_provider.dart';
 import '../modules/dashboard/profile/about/about_view.dart';
@@ -723,12 +722,11 @@ class AppRouter {
           } else {
             id = '';
           }
-          final showType =
-              state.uri.queryParameters['showType'] == 'true';
+          final showType = state.uri.queryParameters['showType'] == 'true';
           return ChangeNotifierProvider(
             create: (_) =>
                 TransactionDetailsProvider(transactionId: id, seed: seed),
-            child: TransactionDetailView(showTransactionType: showType),
+            child: TransactionDetailsView(showTransactionType: showType),
           );
         },
         redirect: AuthMiddleware.isAuthenticated,
@@ -763,11 +761,6 @@ class AppRouter {
           );
         },
       ),
-      // GoRoute(
-      //   path: Routes.sendVerification,
-      //   name: 'sendVerification',
-      //   builder: (context, state) => const SendVerificationView(),
-      // ),
       GoRoute(
         path: Routes.sendSuccess,
         name: 'sendSuccess',
@@ -844,31 +837,6 @@ class AppRouter {
         redirect: AuthMiddleware.isAuthenticated,
       ),
 
-      // GoRoute(
-      //   path: Routes.transactionDetails,
-      //   name: 'transactionDetails',
-      //   builder: (context, state) {
-      //     final extra = state.extra;
-      //     final String id;
-      //     TransactionModel? seed;
-      //     if (extra is TransactionModel) {
-      //       id = extra.id;
-      //       seed = extra;
-      //     } else if (extra is String) {
-      //       id = extra;
-      //     } else {
-      //       id = '';
-      //     }
-      //     return ChangeNotifierProvider(
-      //       create: (_) => TransactionDetailsProvider(
-      //         transactionId: id,
-      //         seed: seed,
-      //       ),
-      //       child: const TransactionDetailsView(),
-      //     );
-      //   },
-      //   redirect: AuthMiddleware.isAuthenticated,
-      // ),
       GoRoute(
         path: Routes.qrCode,
         name: 'qrCode',
