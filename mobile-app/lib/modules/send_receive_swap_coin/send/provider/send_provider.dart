@@ -5,11 +5,13 @@ import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/contact_model/contact_model.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/coins_prices_provider.dart';
+import '../../../../providers/wallets_provider.dart';
 
 class SendProvider extends ChangeNotifier {
   SendProvider(
     this.authProvider,
-    this._coinsPricesProvider, {
+    this._coinsPricesProvider,
+    this.walletsProvider, {
     String? initialCoinSymbol,
     String? initialRecipient,
   }) {
@@ -41,6 +43,7 @@ class SendProvider extends ChangeNotifier {
 
   final AuthProvider authProvider;
   final CoinsPricesProvider _coinsPricesProvider;
+  final WalletsProvider walletsProvider;
 
   List<CoinModel> _coins = [];
   bool _isLoading = false;
@@ -79,7 +82,7 @@ class SendProvider extends ChangeNotifier {
   bool get canSend =>
       _error == null &&
       amountController.text.isNotEmpty &&
-      _selectedContact != null &&
+      recipientController.text.trim().isNotEmpty &&
       isVerified;
 
   void _onStreamedCoinsUpdated() {
@@ -163,7 +166,9 @@ class SendProvider extends ChangeNotifier {
     if (amount == null) {
       _error = l10n.sendValidationInvalidAmount;
     } else if (_selectedCoin != null) {
-      final balanceStr = _selectedCoin!.amount.replaceAll(',', '');
+      final balanceStr = walletsProvider
+          .balanceForCoin(_selectedCoin!.symbol)
+          .replaceAll(',', '');
       final balance = double.tryParse(balanceStr) ?? 0.0;
 
       if (amount > balance) {

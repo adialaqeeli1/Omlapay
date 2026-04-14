@@ -75,7 +75,7 @@ class TransactionItem extends StatelessWidget {
               child: Text(
                 transaction.isFailed
                     ? context.l10n!.failed
-                    : '${transaction.amount} ${transaction.assetSymbol}',
+                    : '${(double.tryParse(transaction.amount) ?? 0).toStringAsFixed(2)} ${transaction.assetSymbol}',
                 style: context.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: transaction.isFailed

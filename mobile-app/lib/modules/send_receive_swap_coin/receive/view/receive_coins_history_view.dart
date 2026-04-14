@@ -17,8 +17,65 @@ import '../../../../core/models/transaction_model/transaction_model.dart';
 import '../../../../widgets/theme_aware_icon.dart';
 import '../provider/receive_coins_history_provider.dart';
 
-class ReceiveCoinsHistoryView extends StatelessWidget {
+class ReceiveCoinsHistoryView extends StatefulWidget {
   const ReceiveCoinsHistoryView({super.key});
+
+  @override
+  State<ReceiveCoinsHistoryView> createState() =>
+      _ReceiveCoinsHistoryViewState();
+}
+
+class _ReceiveCoinsHistoryViewState extends State<ReceiveCoinsHistoryView>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
+  late List<String> _tabs;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabs = context.read<ReceiveCoinsHistoryProvider>().uniqueCoinSymbols;
+    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController.addListener(_onTabChanged);
+  }
+
+  void _onTabChanged() {
+    if (_tabController.indexIsChanging) return;
+    if (!mounted) return;
+    final coin = _tabs[_tabController.index];
+    context.read<ReceiveCoinsHistoryProvider>().setCoinFilter(coin);
+  }
+
+  void _syncTabsIfNeeded(List<String> newTabs) {
+    if (_tabsEqual(_tabs, newTabs)) return;
+    final currentCoin = _tabs.isNotEmpty && _tabController.index < _tabs.length
+        ? _tabs[_tabController.index]
+        : 'All';
+    _tabController.removeListener(_onTabChanged);
+    _tabController.dispose();
+    _tabs = newTabs;
+    final newIndex = _tabs.indexOf(currentCoin);
+    _tabController = TabController(
+      length: _tabs.length,
+      vsync: this,
+      initialIndex: newIndex >= 0 ? newIndex : 0,
+    );
+    _tabController.addListener(_onTabChanged);
+  }
+
+  bool _tabsEqual(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_onTabChanged);
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,113 +83,86 @@ class ReceiveCoinsHistoryView extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final provider = context.watch<ReceiveCoinsHistoryProvider>();
     final kycProvider = context.watch<KycStatusProvider>();
-    final tabs = provider.uniqueCoinSymbols;
+    _syncTabsIfNeeded(provider.uniqueCoinSymbols);
 
     final theme = context.theme;
 
-    if (provider.isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            l10n.receive,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: context.isDarkMode ? Colors.white : Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          centerTitle: true,
-          leading: const CommonBackButton(),
-        ),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    return DefaultTabController(
-      length: tabs.length,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            l10n.receive,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: context.isDarkMode ? Colors.white : Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          centerTitle: true,
-          leading: const CommonBackButton(),
-          actions: [
-            IconButton(
-              icon: ThemeAwareIcon(
-                assetPath: "assets/icons/notifications-icon.svg",
-                width: 24,
-                height: 24,
-              ),
-              onPressed: () => context.pushNamed('notifications'),
-              constraints: BoxConstraints.loose(const Size(24, 24)),
-              padding: EdgeInsets.zero,
-            ),
-          ],
-          bottom: TabBar(
-            isScrollable: tabs.length > 4,
-            tabAlignment: tabs.length > 4
-                ? TabAlignment.start
-                : TabAlignment.fill,
-            indicatorWeight: 0.1,
-            indicatorPadding: const EdgeInsets.symmetric(horizontal: 4),
-            indicatorAnimation: TabIndicatorAnimation.linear,
-            automaticIndicatorColorAdjustment: true,
-            indicatorColor: colorScheme.primary,
-            indicatorSize: TabBarIndicatorSize.tab,
-            labelColor: colorScheme.primary,
-            unselectedLabelColor: colorScheme.onSurfaceVariant,
-            labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-            dividerColor: Colors.transparent,
-            tabs: tabs.map((e) => Tab(text: e)).toList(),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          l10n.receive,
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: context.isDarkMode ? Colors.white : Colors.black,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        body: Column(
-          children: [
-            if (kycProvider.showBanner)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: KycVerificationRequiredBanner(
-                  kycStatus: kycProvider.kycStatus,
-                  entrySource: KycVerificationEntrySource.receiveHistory,
-                  rejectionReason: kycProvider.rejectionReason,
-                ),
-              ),
-            Expanded(
-              child: TabBarView(
-                // physics: const NeverScrollableScrollPhysics(),
-                children: tabs
-                    .map((e) => _TransactionList(coinSymbol: e))
-                    .toList(),
+        centerTitle: true,
+        leading: const CommonBackButton(),
+        actions: [
+          IconButton(
+            icon: ThemeAwareIcon(
+              assetPath: "assets/icons/notifications-icon.svg",
+              width: 24,
+              height: 24,
+            ),
+            onPressed: () => context.pushNamed('notifications'),
+            constraints: BoxConstraints.loose(const Size(24, 24)),
+            padding: EdgeInsets.zero,
+          ),
+        ],
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: _tabs.length > 4,
+          tabAlignment: _tabs.length > 4
+              ? TabAlignment.start
+              : TabAlignment.fill,
+          indicatorWeight: 0.1,
+          indicatorPadding: const EdgeInsets.symmetric(horizontal: 4),
+          indicatorAnimation: TabIndicatorAnimation.linear,
+          automaticIndicatorColorAdjustment: true,
+          indicatorColor: colorScheme.primary,
+          indicatorSize: TabBarIndicatorSize.tab,
+          labelColor: colorScheme.primary,
+          unselectedLabelColor: colorScheme.onSurfaceVariant,
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+          dividerColor: Colors.transparent,
+          tabs: _tabs.map((e) => Tab(text: e)).toList(),
+        ),
+      ),
+      body: Column(
+        children: [
+          if (kycProvider.showBanner)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: KycVerificationRequiredBanner(
+                kycStatus: kycProvider.kycStatus,
+                entrySource: KycVerificationEntrySource.receiveHistory,
+                rejectionReason: kycProvider.rejectionReason,
               ),
             ),
-          ],
-        ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: _tabs.map((_) => const _TransactionList()).toList(),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
 class _TransactionList extends StatelessWidget {
-  final String coinSymbol;
-
-  const _TransactionList({required this.coinSymbol});
+  const _TransactionList();
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ReceiveCoinsHistoryProvider>();
-    // Note: getTransactionsForCoin is not reactive if we don't watch the list,
-    // but we watched the provider globally in parent.
-    // However, clean logic is to watch here or select data.
-    // Provider notifyListeners() rebuilds consumers.
-    // Since we are inside Consumer (via watch above), it rebuilds this widget.
+    final transactions = provider.transactions;
 
-    final List<TransactionModel> transactions = provider.getTransactionsForCoin(
-      coinSymbol,
-    );
+    if (provider.isLoading && transactions.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     if (transactions.isEmpty) {
       return const Center(child: NoTransactionsFound());
@@ -142,33 +172,55 @@ class _TransactionList extends StatelessWidget {
     final grouped = _groupTransactions(transactions, l10n);
 
     final colorScheme = Theme.of(context).colorScheme;
+    final isLoadingMore = provider.isLoadingMore;
+    final hasMore = provider.hasMore;
 
-    return CustomScrollView(
-      physics: const AlwaysScrollableScrollPhysics(
-        parent: ClampingScrollPhysics(),
-      ),
-      slivers: grouped.entries.expand((entry) {
-        return [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                entry.key,
-                style: TextStyle(
-                  color: colorScheme.onSurfaceVariant,
-                  fontSize: 14,
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification.metrics.axis != Axis.vertical) return false;
+        if (!hasMore || isLoadingMore) return false;
+        if (notification.metrics.pixels >=
+            notification.metrics.maxScrollExtent - 200) {
+          context.read<ReceiveCoinsHistoryProvider>().loadMore();
+        }
+        return false;
+      },
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: ClampingScrollPhysics(),
+        ),
+        slivers: [
+          ...grouped.entries.expand((entry) {
+            return [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Text(
+                    entry.key,
+                    style: TextStyle(
+                      color: colorScheme.onSurfaceVariant,
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
               ),
+              SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final tx = entry.value[index];
+                  return _TransactionItem(transaction: tx);
+                }, childCount: entry.value.length),
+              ),
+            ];
+          }),
+          if (isLoadingMore)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(child: CircularProgressIndicator()),
+              ),
             ),
-          ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              final tx = entry.value[index];
-              return _TransactionItem(transaction: tx);
-            }, childCount: entry.value.length),
-          ),
-        ];
-      }).toList(),
+        ],
+      ),
     );
   }
 

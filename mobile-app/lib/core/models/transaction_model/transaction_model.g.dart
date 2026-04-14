@@ -11,6 +11,7 @@ _TransactionModel _$TransactionModelFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       assetSymbol: json['coin_symbol'] as String,
       assetName: json['coinName'] as String?,
+      assetNameAr: json['coinName_ar'] as String?,
       assetIconUrl: json['assetIconUrl'] as String?,
       amount: json['amount'] as String,
       network: json['network'] as String?,
@@ -19,6 +20,7 @@ _TransactionModel _$TransactionModelFromJson(Map<String, dynamic> json) =>
       status: json['status'] as String,
       direction: json['direction'] as String?,
       type: json['type'] as String?,
+      networkIconUrl: json['networkIconUrl'] as String?,
     );
 
 Map<String, dynamic> _$TransactionModelToJson(_TransactionModel instance) =>
@@ -26,6 +28,7 @@ Map<String, dynamic> _$TransactionModelToJson(_TransactionModel instance) =>
       'id': instance.id,
       'coin_symbol': instance.assetSymbol,
       'coinName': instance.assetName,
+      'coinName_ar': instance.assetNameAr,
       'assetIconUrl': instance.assetIconUrl,
       'amount': instance.amount,
       'network': instance.network,
@@ -34,4 +37,5 @@ Map<String, dynamic> _$TransactionModelToJson(_TransactionModel instance) =>
       'status': instance.status,
       'direction': instance.direction,
       'type': instance.type,
+      'networkIconUrl': instance.networkIconUrl,
     };

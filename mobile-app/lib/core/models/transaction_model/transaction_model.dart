@@ -11,6 +11,7 @@ abstract class TransactionModel with _$TransactionModel {
     required String id,
     @JsonKey(name: 'coin_symbol') required String assetSymbol,
     @JsonKey(name: 'coinName') String? assetName,
+    @JsonKey(name: 'coinName_ar') String? assetNameAr,
     String? assetIconUrl,
     required String amount,
     String? network,
@@ -19,6 +20,7 @@ abstract class TransactionModel with _$TransactionModel {
     required String status,
     String? direction,
     String? type,
+    @JsonKey(name: 'networkIconUrl') String? networkIconUrl,
   }) = _TransactionModel;
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) =>

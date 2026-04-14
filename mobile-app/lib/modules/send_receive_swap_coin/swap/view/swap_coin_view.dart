@@ -13,6 +13,7 @@ import '../../../../widgets/coin_selection_sheet.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../routes/app_router.dart';
 import '../../../../providers/kyc_status_provider.dart';
+import '../../../../providers/wallets_provider.dart';
 import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
 
 class SwapCoinView extends StatelessWidget {
@@ -86,7 +87,9 @@ class SwapCoinView extends StatelessWidget {
                                   context,
                                 ) ??
                                 l10n.selectCoinPlaceholder,
-                            amount: provider.fromCoin?.amount ?? '0',
+                            amount: provider.fromCoin != null 
+                                ? context.watch<WalletsProvider>().balanceForCoin(provider.fromCoin!.symbol) 
+                                : '0',
                             controller: provider.fromAmountController,
                             isFrom: true,
                             errorText: provider.error,
@@ -137,7 +140,9 @@ class SwapCoinView extends StatelessWidget {
                                   context,
                                 ) ??
                                 l10n.selectCoinPlaceholder,
-                            amount: provider.toCoin?.amount ?? '0',
+                            amount: provider.toCoin != null 
+                                ? context.watch<WalletsProvider>().balanceForCoin(provider.toCoin!.symbol) 
+                                : '0',
                             controller: provider.toAmountController,
                             isFrom: false,
                             readOnly: true,

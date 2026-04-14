@@ -22,6 +22,7 @@ import '../../../../widgets/common_back_button.dart';
 import '../../../../widgets/common_coin_icon.dart';
 import '../../../../widgets/kyc_verification_required_banner.dart';
 import '../../../../widgets/coin_selection_sheet.dart';
+import '../../../../providers/wallets_provider.dart';
 import '../provider/send_provider.dart';
 import '../widgets/contact_selection_sheet.dart';
 
@@ -120,7 +121,7 @@ class SendCoinView extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${provider.selectedCoin?.amount ?? '0'} ${provider.selectedCoin?.localizedCoinTicker(context) ?? ''}',
+                        '${provider.selectedCoin != null ? context.watch<WalletsProvider>().balanceForCoin(provider.selectedCoin!.symbol) : '0'} ${provider.selectedCoin?.localizedCoinTicker(context) ?? ''}'.trim(),
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 12,

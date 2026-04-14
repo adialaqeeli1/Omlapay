@@ -729,6 +729,7 @@ class AppRouter {
             create: (_) => SendProvider(
               context.read<AuthProvider>(),
               context.read<CoinsPricesProvider>(),
+              context.read<WalletsProvider>(),
               initialCoinSymbol: extra?.initialCoinSymbol,
               initialRecipient: extra?.initialRecipient,
             ),
@@ -797,6 +798,7 @@ class AppRouter {
           create: (_) => SwapProvider(
             context.read<AuthProvider>(),
             context.read<CoinsPricesProvider>(),
+            context.read<WalletsProvider>(),
           ),
           child: const SwapCoinView(),
         ),
