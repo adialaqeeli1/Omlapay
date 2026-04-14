@@ -83,6 +83,10 @@ class Endpoints {
   static String get sendValidateAddress =>
       '$apiVersion/send/validate-address';
 
+  /// Returns authoritative fee/amount quote for a prospective send.
+  /// Query params: `coin`, `recipient`, `amount` (all required).
+  static String get sendQuote => '$apiVersion/send/quote';
+
   /// KYC start endpoint; returns Sumsub access token.
   static String get kycStart => '$apiVersion/user/kyc/start';
 

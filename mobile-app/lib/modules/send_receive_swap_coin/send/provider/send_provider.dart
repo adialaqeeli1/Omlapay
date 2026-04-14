@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import '../../../../core/l10n/app_localizations_from_storage.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/contact_model/contact_model.dart';
+import '../../../../core/models/send_quote_model/send_quote_model.dart';
+import '../../../../core/utils/app_exception.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/coins_prices_provider.dart';
 import '../../../../providers/wallets_provider.dart';
+import '../services/send_service.dart';
 
 class SendProvider extends ChangeNotifier {
   SendProvider(
@@ -51,6 +54,10 @@ class SendProvider extends ChangeNotifier {
   CoinModel? _selectedCoin;
   ContactModel? _selectedContact;
 
+  bool _isSubmitting = false;
+  String? _submitError;
+  SendQuoteModel? _quote;
+
   /// After the user picks a coin in the sheet, we keep that symbol across SSE updates.
   bool _userPickedCoin = false;
   String? _userPickedSymbol;
@@ -69,6 +76,9 @@ class SendProvider extends ChangeNotifier {
   String? get error => _error;
   bool get isVerified => authProvider.state.user?.isVerified ?? false;
   String get network => networkController.text;
+  bool get isSubmitting => _isSubmitting;
+  String? get submitError => _submitError;
+  SendQuoteModel? get quote => _quote;
 
   // Logic for showing warning:
   // Show if the user has NOT completed verification
@@ -151,6 +161,51 @@ class SendProvider extends ChangeNotifier {
       amountController.text = _selectedCoin!.amount.replaceAll(',', '');
       _validate();
     }
+  }
+
+  /// Runs the send pre-flight: validate-address then fetch-quote.
+  ///
+  /// Returns `true` when the review screen is safe to open. On failure the
+  /// backend's localized message is exposed via [submitError] so the caller
+  /// can surface it (e.g. via a snackbar) and stay on the send form.
+  Future<bool> prepareSendReview() async {
+    if (_isSubmitting) return false;
+    final coin = _selectedCoin;
+    if (coin == null) return false;
+
+    final recipient = recipientController.text.trim();
+    final amount = amountController.text.trim();
+    if (recipient.isEmpty || amount.isEmpty) return false;
+
+    _submitError = null;
+    _isSubmitting = true;
+    notifyListeners();
+
+    try {
+      await SendService.validateAddress(coin: coin.symbol, address: recipient);
+      _quote = await SendService.fetchQuote(
+        coin: coin.symbol,
+        recipient: recipient,
+        amount: amount,
+      );
+      return true;
+    } on AppException catch (e) {
+      final l10n = appLocalizationsFromStoredLocale();
+      _submitError = e.localizedMessage(l10n);
+      return false;
+    } catch (_) {
+      _submitError = appLocalizationsFromStoredLocale().unknownError;
+      return false;
+    } finally {
+      _isSubmitting = false;
+      notifyListeners();
+    }
+  }
+
+  void clearSubmitError() {
+    if (_submitError == null) return;
+    _submitError = null;
+    notifyListeners();
   }
 
   void _validate() {

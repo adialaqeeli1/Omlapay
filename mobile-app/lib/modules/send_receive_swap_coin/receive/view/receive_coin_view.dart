@@ -153,18 +153,24 @@ class ReceiveCoinView extends StatelessWidget {
     ReciveCoinProvider provider,
     bool showVerificationBanner,
   ) {
+    final items = <({WalletNetworkModel wallet, WalletCoinModel coin})>[
+      for (final wallet in provider.wallets)
+        for (final coin in wallet.coins) (wallet: wallet, coin: coin),
+    ];
+
     final listView = ListView.separated(
       physics: const AlwaysScrollableScrollPhysics(
         parent: ClampingScrollPhysics(),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: provider.wallets.length,
+      itemCount: items.length,
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        final wallet = provider.wallets[index];
+        final item = items[index];
         return _buildWalletItem(
           context,
-          wallet,
+          item.wallet,
+          item.coin,
           provider,
           showVerificationBanner,
         );
@@ -192,16 +198,22 @@ class ReceiveCoinView extends StatelessWidget {
   Widget _buildWalletItem(
     BuildContext context,
     WalletNetworkModel wallet,
+    WalletCoinModel coin,
     ReciveCoinProvider provider,
     bool showVerificationBanner,
   ) {
-    final primaryCoin = _primaryCoin(wallet);
-    final primaryAddress = primaryCoin?.address;
-    final hasAddress = _hasValidAddress(primaryAddress);
+    final hasAddress = _hasValidAddress(coin.address);
     final canUseActions = !showVerificationBanner && hasAddress;
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    final networkLabel = wallet.networkDisplayName.isNotEmpty
+        ? wallet.networkDisplayName
+        : wallet.network;
+    final title = wallet.coins.length > 1
+        ? '$networkLabel (${coin.symbol})'
+        : networkLabel;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -212,19 +224,17 @@ class ReceiveCoinView extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Wallet Icon
+          // Network icon
           _buildWalletIcon(wallet),
           const SizedBox(width: 12),
 
-          // Wallet info
+          // Coin info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  wallet.networkDisplayName.isNotEmpty
-                      ? wallet.networkDisplayName
-                      : wallet.network,
+                  title,
                   style: textTheme.titleSmall?.copyWith(
                     color: colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
@@ -232,7 +242,7 @@ class ReceiveCoinView extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  _displayAddress(primaryAddress),
+                  _displayAddress(coin.address),
                   style: textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                     fontSize: 12,
@@ -248,7 +258,10 @@ class ReceiveCoinView extends StatelessWidget {
             assetPath: 'assets/icons/qr-icon.svg',
             onTap: canUseActions
                 ? () {
-                    context.push(Routes.qrCode, extra: wallet);
+                    context.push(
+                      Routes.qrCode,
+                      extra: wallet.copyWith(coins: [coin]),
+                    );
                   }
                 : null,
           ),
@@ -260,17 +273,9 @@ class ReceiveCoinView extends StatelessWidget {
             icon: Icons.copy_rounded,
             onTap: canUseActions
                 ? () {
-                    if (wallet.coins.length > 1) {
-                      _showCoinSelectionForCopy(
-                        context,
-                        wallet: wallet,
-                        provider: provider,
-                      );
-                    } else {
-                      final address = (primaryAddress ?? '').trim();
-                      Clipboard.setData(ClipboardData(text: address));
-                      provider.copyAddress(address);
-                    }
+                    final address = (coin.address ?? '').trim();
+                    Clipboard.setData(ClipboardData(text: address));
+                    provider.copyAddress(address);
                   }
                 : null,
           ),
@@ -393,6 +398,7 @@ class ReceiveCoinView extends StatelessWidget {
     return '${address.substring(0, 12)}...${address.substring(address.length - 6)}';
   }
 
+  // ignore: unused_element
   void _showCoinSelectionForCopy(
     BuildContext context, {
     required WalletNetworkModel wallet,
@@ -487,15 +493,4 @@ class ReceiveCoinView extends StatelessWidget {
     );
   }
 
-  WalletCoinModel? _primaryCoin(WalletNetworkModel wallet) {
-    for (final coin in wallet.coins) {
-      if (_hasValidAddress(coin.address)) {
-        return coin;
-      }
-    }
-    if (wallet.coins.isEmpty) {
-      return null;
-    }
-    return wallet.coins.first;
-  }
 }
