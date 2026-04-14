@@ -5,6 +5,7 @@ import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/coins_prices_provider.dart';
 import '../../../../providers/wallets_provider.dart';
+import '../services/swap_service.dart';
 
 class SwapProvider extends ChangeNotifier {
   final AuthProvider authProvider;
@@ -13,6 +14,7 @@ class SwapProvider extends ChangeNotifier {
 
   List<CoinModel> _coins = [];
   bool _isLoading = false;
+  bool _isSubmitting = false;
 
   CoinModel? _fromCoin;
   CoinModel? _toCoin;
@@ -24,6 +26,7 @@ class SwapProvider extends ChangeNotifier {
 
   List<CoinModel> get coins => _coins;
   bool get isLoading => _isLoading;
+  bool get isSubmitting => _isSubmitting;
   CoinModel? get fromCoin => _fromCoin;
   CoinModel? get toCoin => _toCoin;
   String? get error => _error;
@@ -189,6 +192,28 @@ class SwapProvider extends ChangeNotifier {
       toAmountController.text = formattedTo;
     }
     notifyListeners();
+  }
+
+  /// Calls the swap quote API. Rethrows exceptions so the UI layer
+  /// can display appropriate error snackbars.
+  Future<void> getSwapQuote() async {
+    if (_isSubmitting) return;
+    if (_fromCoin == null || _toCoin == null) return;
+
+    _isSubmitting = true;
+    notifyListeners();
+
+    try {
+      await SwapService.fetchSwapQuote(
+        fromCoin: _fromCoin!.symbol,
+        toCoin: _toCoin!.symbol,
+        amount: fromAmountController.text.trim(),
+      );
+      // TODO: Handle success data when the API starts returning it.
+    } finally {
+      _isSubmitting = false;
+      notifyListeners();
+    }
   }
 
   @override

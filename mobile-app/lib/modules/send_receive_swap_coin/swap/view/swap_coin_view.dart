@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/app_exception.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../widgets/common_back_button.dart';
 import '../../../../widgets/kyc_verification_required_banner.dart';
 import '../provider/swap_provider.dart';
@@ -216,10 +218,8 @@ class SwapCoinView extends StatelessWidget {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: provider.canSwap
-                          ? () {
-                              context.push(Routes.swapReview, extra: provider);
-                            }
+                      onPressed: (provider.canSwap && !provider.isSubmitting)
+                          ? () => _onConfirmSwapPressed(context, provider)
                           : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: provider.canSwap
@@ -228,8 +228,9 @@ class SwapCoinView extends StatelessWidget {
                         foregroundColor: provider.canSwap
                             ? AppColors.white
                             : colorScheme.onSurface.withValues(alpha: 0.38),
-                        disabledBackgroundColor:
-                            colorScheme.surfaceContainerHighest,
+                        disabledBackgroundColor: provider.isSubmitting
+                            ? AppColors.tealColor.withValues(alpha: 0.5)
+                            : colorScheme.surfaceContainerHighest,
                         disabledForegroundColor: colorScheme.onSurface
                             .withValues(alpha: 0.38),
                         shape: RoundedRectangleBorder(
@@ -237,13 +238,24 @@ class SwapCoinView extends StatelessWidget {
                         ),
                         elevation: 0,
                       ),
-                      child: Text(
-                        l10n.confirmSwapButton,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: provider.isSubmitting
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.4,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                          : Text(
+                              l10n.confirmSwapButton,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 30), // Bottom padding
@@ -254,6 +266,24 @@ class SwapCoinView extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _onConfirmSwapPressed(
+    BuildContext context,
+    SwapProvider provider,
+  ) async {
+    final l10n = context.l10n!;
+    try {
+      await provider.getSwapQuote();
+      if (!context.mounted) return;
+      context.push(Routes.swapReview, extra: provider);
+    } on AppException catch (e) {
+      if (!context.mounted) return;
+      SnackbarHelper.showError(context, e.localizedMessage(context.l10n));
+    } catch (_) {
+      if (!context.mounted) return;
+      SnackbarHelper.showError(context, l10n.unknownError);
+    }
   }
 
   void _showCoinSelection(

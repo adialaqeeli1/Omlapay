@@ -99,6 +99,10 @@ class Endpoints {
   /// Body: `sendToken`, `otp`.
   static String get sendConfirm => '$apiVersion/send/confirm';
 
+  /// Returns a swap quote for converting between two coins.
+  /// Query params: `fromCoin`, `toCoin`, `amount` (all required).
+  static String get swapQuote => '$apiVersion/swap/quote';
+
   /// KYC start endpoint; returns Sumsub access token.
   static String get kycStart => '$apiVersion/user/kyc/start';
 
