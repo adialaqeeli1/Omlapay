@@ -59,11 +59,11 @@ class HistoryView extends StatelessWidget {
                   final provider = providerContext.read<HistoryProvider>();
                   HistoryFilterBottomSheet.show(
                     providerContext,
-                    selectedStatus: provider.selectedStatusFilter,
+                    selectedType: provider.selectedTypeFilter,
                     dateStart: provider.dateStart,
                     dateEnd: provider.dateEnd,
-                    onApply: ({status, dateStart, dateEnd}) {
-                      provider.setStatusFilter(status);
+                    onApply: ({type, dateStart, dateEnd}) {
+                      provider.setTypeFilter(type);
                       provider.setDateRange(dateStart, dateEnd);
                     },
                   );
@@ -106,7 +106,7 @@ class HistoryView extends StatelessWidget {
     required HistoryProvider provider,
     required double horizontalPadding,
   }) {
-    if (provider.isLoading) {
+    if (provider.isLoading && provider.transactions.isEmpty) {
       return const Center(child: CommonLoadingIndicator());
     }
 
@@ -115,30 +115,49 @@ class HistoryView extends StatelessWidget {
     }
 
     final groupedTransactions = _groupTransactionsByDate(provider.transactions);
+    final isLoadingMore = provider.isLoadingMore;
+    final hasMore = provider.hasMore;
 
-    return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-      itemCount: groupedTransactions.length,
-      itemBuilder: (context, index) {
-        final group = groupedTransactions[index];
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TransactionSectionHeader(
-              date: group['date'] as DateTime,
-              isFirst: index == 0,
-            ),
-            ...(group['transactions'] as List<TransactionModel>).map(
-              (transaction) => TransactionItem(
-                transaction: transaction,
-                onTap: () {
-                  context.push(Routes.transactionDetail, extra: transaction);
-                },
-              ),
-            ),
-          ],
-        );
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification.metrics.axis != Axis.vertical) return false;
+        if (!hasMore || isLoadingMore) return false;
+        if (notification.metrics.pixels >=
+            notification.metrics.maxScrollExtent - 200) {
+          provider.loadMore();
+        }
+        return false;
       },
+      child: ListView.builder(
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+        itemCount: groupedTransactions.length + (isLoadingMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == groupedTransactions.length) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Center(child: CommonLoadingIndicator()),
+            );
+          }
+          final group = groupedTransactions[index];
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TransactionSectionHeader(
+                date: group['date'] as DateTime,
+                isFirst: index == 0,
+              ),
+              ...(group['transactions'] as List<TransactionModel>).map(
+                (transaction) => TransactionItem(
+                  transaction: transaction,
+                  onTap: () {
+                    context.push(Routes.transactionDetail, extra: transaction);
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -158,7 +177,11 @@ class HistoryView extends StatelessWidget {
     final olderTransactions = <DateTime, List<TransactionModel>>{};
 
     for (final tx in sorted) {
-      final txDate = DateTime(tx.createdAt.year, tx.createdAt.month, tx.createdAt.day);
+      final txDate = DateTime(
+        tx.createdAt.year,
+        tx.createdAt.month,
+        tx.createdAt.day,
+      );
       if (txDate == today || txDate == yesterday) {
         recentTransactions.add(tx);
       } else {

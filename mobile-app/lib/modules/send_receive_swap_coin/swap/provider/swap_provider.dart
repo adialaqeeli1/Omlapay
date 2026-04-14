@@ -4,9 +4,12 @@ import '../../../../core/l10n/app_localizations_from_storage.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/coins_prices_provider.dart';
+import '../../../../providers/wallets_provider.dart';
+
 class SwapProvider extends ChangeNotifier {
   final AuthProvider authProvider;
   final CoinsPricesProvider _coinsPricesProvider;
+  final WalletsProvider walletsProvider;
 
   List<CoinModel> _coins = [];
   bool _isLoading = false;
@@ -33,7 +36,7 @@ class SwapProvider extends ChangeNotifier {
   bool get canSwap =>
       _error == null && fromAmountController.text.isNotEmpty && isVerified;
 
-  SwapProvider(this.authProvider, this._coinsPricesProvider) {
+  SwapProvider(this.authProvider, this._coinsPricesProvider, this.walletsProvider) {
     authProvider.addListener(notifyListeners);
     _coinsPricesProvider.addListener(_onStreamedCoinsUpdated);
     _syncCoinsFromPrices();
@@ -143,8 +146,8 @@ class SwapProvider extends ChangeNotifier {
     if (amount == null) {
       _error = l10n.sendValidationInvalidAmount;
     } else if (_fromCoin != null) {
-      final balance =
-          double.tryParse(_fromCoin!.amount.replaceAll(',', '')) ?? 0.0;
+      final balanceStr = walletsProvider.balanceForCoin(_fromCoin!.symbol).replaceAll(',', '');
+      final balance = double.tryParse(balanceStr) ?? 0.0;
       if (amount > balance) {
         _error = l10n.sendValidationInsufficientBalance;
       }

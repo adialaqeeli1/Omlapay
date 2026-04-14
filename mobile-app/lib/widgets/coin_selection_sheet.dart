@@ -6,6 +6,7 @@ import '../core/models/coin_model/coin_model.dart';
 import '../core/models/coin_model/coin_model_quote_display.dart';
 import '../core/theme/theme.dart';
 import '../providers/global_provider.dart';
+import '../providers/wallets_provider.dart';
 import 'common_coin_icon.dart';
 
 class CoinSelectionSheet extends StatefulWidget {
@@ -63,7 +64,8 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
 
         // Balance filter
         if (_hideZeroBalance) {
-          final amountStr = coin.amount.replaceAll(',', '');
+          final walletBalance = context.read<WalletsProvider>().balanceForCoin(coin.symbol);
+          final amountStr = walletBalance.replaceAll(',', '');
           final amount = double.tryParse(amountStr) ?? 0.0;
           return matchesSearch && amount > 0;
         }
@@ -84,6 +86,7 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
     final l10n = context.l10n!;
     final colorScheme = Theme.of(context).colorScheme;
     final selectedCurrency = context.watch<GlobalProvider>().selectedCurrency;
+    final walletsProvider = context.watch<WalletsProvider>();
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surface,
@@ -235,7 +238,7 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          coin.amount,
+                          walletsProvider.balanceForCoin(coin.symbol),
                           style: TextStyle(
                             color: itemColorScheme.onSurface,
                             fontWeight: FontWeight.bold,

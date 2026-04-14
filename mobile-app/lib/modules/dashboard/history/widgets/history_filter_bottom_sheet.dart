@@ -7,17 +7,17 @@ import '../../../../widgets/custom_date_picker_dialog.dart';
 class HistoryFilterBottomSheet extends StatefulWidget {
   const HistoryFilterBottomSheet({
     super.key,
-    required this.selectedStatus,
+    required this.selectedType,
     required this.dateStart,
     required this.dateEnd,
     required this.onApply,
   });
 
-  final String? selectedStatus;
+  final String? selectedType;
   final DateTime? dateStart;
   final DateTime? dateEnd;
   final void Function({
-    String? status,
+    String? type,
     DateTime? dateStart,
     DateTime? dateEnd,
   })
@@ -25,11 +25,11 @@ class HistoryFilterBottomSheet extends StatefulWidget {
 
   static void show(
     BuildContext context, {
-    required String? selectedStatus,
+    required String? selectedType,
     required DateTime? dateStart,
     required DateTime? dateEnd,
     required void Function({
-      String? status,
+      String? type,
       DateTime? dateStart,
       DateTime? dateEnd,
     })
@@ -46,7 +46,7 @@ class HistoryFilterBottomSheet extends StatefulWidget {
       ),
       elevation: 5,
       builder: (context) => HistoryFilterBottomSheet(
-        selectedStatus: selectedStatus,
+        selectedType: selectedType,
         dateStart: dateStart,
         dateEnd: dateEnd,
         onApply: onApply,
@@ -60,21 +60,21 @@ class HistoryFilterBottomSheet extends StatefulWidget {
 }
 
 class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
-  late String? _selectedStatus;
+  late String? _selectedType;
   late DateTime? _dateStart;
   late DateTime? _dateEnd;
 
   @override
   void initState() {
     super.initState();
-    _selectedStatus = widget.selectedStatus;
+    _selectedType = widget.selectedType;
     _dateStart = widget.dateStart;
     _dateEnd = widget.dateEnd;
   }
 
   void _handleReset() {
     setState(() {
-      _selectedStatus = null;
+      _selectedType = null;
       _dateStart = null;
       _dateEnd = null;
     });
@@ -82,7 +82,7 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
 
   void _handleApply() {
     widget.onApply(
-      status: _selectedStatus,
+      type: _selectedType,
       dateStart: _dateStart,
       dateEnd: _dateEnd,
     );
@@ -125,23 +125,22 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
         theme.textTheme.bodyMedium?.color ?? AppColors.textLightGrey;
     final labelColor = AppColors.textLightGrey;
 
-    final statusOptions = <String?>[
+    final typeOptions = <String?>[
       null,
-      'COMPLETED',
-      'PENDING',
+      'SENT',
+      'RECEIVE',
     ];
 
-    String getStatusLabel(String? status) {
-      if (status == null) return l10n.all;
-      switch (status.toUpperCase()) {
-        case 'COMPLETED':
-          return l10n.completed;
-        case 'PENDING':
-          return l10n.pending;
-        case 'FAILED':
-          return l10n.failed;
+    String getTypeLabel(String? type) {
+      if (type == null) return l10n.all;
+      switch (type.toUpperCase()) {
+        case 'SENT':
+          return l10n.sent;
+        case 'RECEIVE':
+        case 'RECEIVED':
+          return l10n.received;
         default:
-          return status;
+          return type;
       }
     }
 
@@ -198,15 +197,15 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  for (int i = 0; i < statusOptions.length; i++) ...[
+                  for (int i = 0; i < typeOptions.length; i++) ...[
                     if (i > 0) const SizedBox(width: 8),
                     Expanded(
                       child: _FilterChip(
-                        label: getStatusLabel(statusOptions[i]),
-                        isSelected: _selectedStatus == statusOptions[i],
+                        label: getTypeLabel(typeOptions[i]),
+                        isSelected: _selectedType == typeOptions[i],
                         onTap: () {
                           setState(
-                            () => _selectedStatus = statusOptions[i],
+                            () => _selectedType = typeOptions[i],
                           );
                         },
                       ),

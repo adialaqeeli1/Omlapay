@@ -23,12 +23,21 @@ class KycStatusProvider extends ChangeNotifier {
   /// Reset on logout so the next login triggers a fresh fetch.
   bool _hasFetched = false;
 
+  /// Whether the KYC state has been definitively determined for the current
+  /// session. Used to suppress the banner while the post-login fetch is still
+  /// in flight, which would otherwise flash a stale "not started" banner to
+  /// users whose KYC is actually approved.
+  bool _isStatusResolved = false;
+
   KycStatus get kycStatus => _kycStatus;
   String? get rejectionReason => _rejectionReason;
   bool get isLoading => _isLoading;
 
-  /// Whether the banner should be shown at all.
-  bool get showBanner => _kycStatus != KycStatus.approved;
+  /// Whether the banner should be shown at all. Returns false until the
+  /// current session's KYC status has been resolved, so callers never render
+  /// a banner based on the default [KycStatus.notStarted] while the first
+  /// fetch is still loading.
+  bool get showBanner => _isStatusResolved && _kycStatus != KycStatus.approved;
 
   /// Whether the banner should show the "Verify Now" action.
   bool get showVerifyNowAction =>
@@ -42,6 +51,7 @@ class KycStatusProvider extends ChangeNotifier {
       _kycStatus = KycStatus.notStarted;
       _rejectionReason = null;
       _hasFetched = false;
+      _isStatusResolved = false;
       notifyListeners();
       return;
     }
@@ -51,6 +61,7 @@ class KycStatusProvider extends ChangeNotifier {
       _kycStatus = KycStatus.approved;
       _rejectionReason = null;
       _hasFetched = true;
+      _isStatusResolved = true;
       notifyListeners();
       return;
     }
@@ -74,6 +85,7 @@ class KycStatusProvider extends ChangeNotifier {
     if (_authProvider.state.user?.isVerified == true) {
       _kycStatus = KycStatus.approved;
       _rejectionReason = null;
+      _isStatusResolved = true;
       notifyListeners();
       return;
     }
@@ -93,6 +105,7 @@ class KycStatusProvider extends ChangeNotifier {
       debugPrint('KycStatusProvider.fetchKycStatus failed: $e');
     } finally {
       _isLoading = false;
+      _isStatusResolved = true;
       notifyListeners();
     }
   }

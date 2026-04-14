@@ -2,87 +2,58 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 
 import '../../../../core/models/transaction_model/transaction_model.dart';
+import '../../../../core/utils/app_exception.dart';
 import '../../../../providers/coins_prices_provider.dart';
+import '../services/history_service.dart';
+
+/// Server-accepted values for the `type` query parameter on `/v1/history`.
+class HistoryTxType {
+  static const String all = 'ALL';
+  static const String sent = 'SENT';
+  static const String received = 'RECEIVE';
+}
 
 class HistoryProvider extends ChangeNotifier {
+  HistoryProvider(
+    this._coinsPrices, {
+    HistoryService? service,
+  }) : _service = service ?? HistoryService() {
+    _coinsPrices.addListener(_onStreamedCoinsUpdated);
+    fetchTransactions();
+  }
+
   final CoinsPricesProvider _coinsPrices;
+  final HistoryService _service;
 
   String?
   _selectedCoinFilter; // null = All, or coin symbol like 'USDT', 'BTC', etc.
-  String? _selectedStatusFilter; // null = All, or 'COMPLETED', 'PENDING', 'FAILED'
+  String? _selectedTypeFilter; // null = All, or 'SENT', 'RECEIVE'.
   DateTime? _dateStart;
   DateTime? _dateEnd;
+
   List<TransactionModel> _transactions = [];
   bool _isLoading = false;
+  bool _isLoadingMore = false;
+  bool _hasMore = false;
+  String? _nextCursor;
   String? _errorMessage;
+  bool _disposed = false;
 
   String? get selectedCoinFilter => _selectedCoinFilter;
-  String? get selectedStatusFilter => _selectedStatusFilter;
+  String? get selectedTypeFilter => _selectedTypeFilter;
   DateTime? get dateStart => _dateStart;
   DateTime? get dateEnd => _dateEnd;
-  List<TransactionModel> get transactions => _filteredTransactions;
+  List<TransactionModel> get transactions => _transactions;
   bool get isLoading => _isLoading;
+  bool get isLoadingMore => _isLoadingMore;
+  bool get hasMore => _hasMore;
   String? get errorMessage => _errorMessage;
-
-  List<TransactionModel> get _filteredTransactions {
-    var result = _transactions;
-
-    if (_selectedCoinFilter != null && _selectedCoinFilter!.trim().isNotEmpty) {
-      result = result
-          .where(
-            (tx) =>
-                tx.assetSymbol.toUpperCase() ==
-                _selectedCoinFilter!.toUpperCase(),
-          )
-          .toList();
-    }
-
-    if (_selectedStatusFilter != null) {
-      result = result
-          .where(
-            (tx) =>
-                tx.status.toUpperCase() ==
-                _selectedStatusFilter!.toUpperCase(),
-          )
-          .toList();
-    }
-
-    if (_dateStart != null) {
-      final startOfDay = DateTime(
-        _dateStart!.year,
-        _dateStart!.month,
-        _dateStart!.day,
-      );
-      result =
-          result.where((tx) => !tx.createdAt.isBefore(startOfDay)).toList();
-    }
-
-    if (_dateEnd != null) {
-      final endOfDay = DateTime(
-        _dateEnd!.year,
-        _dateEnd!.month,
-        _dateEnd!.day,
-        23,
-        59,
-        59,
-        999,
-      );
-      result = result.where((tx) => !tx.createdAt.isAfter(endOfDay)).toList();
-    }
-
-    return result;
-  }
-
-  HistoryProvider(this._coinsPrices) {
-    developer.log('HistoryProvider: Initializing with dummy data');
-    _coinsPrices.addListener(_onStreamedCoinsUpdated);
-  }
 
   void _onStreamedCoinsUpdated() {
     final before = _selectedCoinFilter;
     _reconcileCoinFilterWithStream();
     if (before != _selectedCoinFilter) {
-      notifyListeners();
+      fetchTransactions();
     }
   }
 
@@ -100,59 +71,144 @@ class HistoryProvider extends ChangeNotifier {
     }
   }
 
-  // TODO: Replace with actual API call when backend is ready
-  // Future<void> loadTransactions() async {
-  //   try {
-  //     _isLoading = true;
-  //     _errorMessage = null;
-  //     notifyListeners();
-  //
-  //     final response = await apiService.getTransactions();
-  //     _transactions = response.map((json) => TransactionModel.fromJson(json)).toList();
-  //     _isLoading = false;
-  //     notifyListeners();
-  //   } catch (e) {
-  //     _errorMessage = e.toString();
-  //     _isLoading = false;
-  //     notifyListeners();
-  //   }
-  // }
+  /// Snapshot of the filters used on the current/in-flight request — used to
+  /// detect stale responses when filters change mid-fetch.
+  ({String? asset, String? type, DateTime? start, DateTime? end})
+  get _filterSnapshot => (
+    asset: _selectedCoinFilter,
+    type: _selectedTypeFilter,
+    start: _dateStart,
+    end: _dateEnd,
+  );
 
-  // TODO: Implement refresh when API is ready
+  bool _snapshotMatches(
+    ({String? asset, String? type, DateTime? start, DateTime? end}) snap,
+  ) {
+    return snap.asset == _selectedCoinFilter &&
+        snap.type == _selectedTypeFilter &&
+        snap.start == _dateStart &&
+        snap.end == _dateEnd;
+  }
+
+  Future<void> fetchTransactions() async {
+    final snap = _filterSnapshot;
+    _isLoading = true;
+    _errorMessage = null;
+    _transactions = [];
+    _nextCursor = null;
+    _hasMore = false;
+    notifyListeners();
+
+    try {
+      final result = await _service.fetchHistory(
+        asset: snap.asset,
+        type: snap.type,
+        startDate: snap.start,
+        endDate: snap.end,
+      );
+      if (_disposed || !_snapshotMatches(snap)) return;
+      _transactions = result.transactions;
+      _nextCursor = result.nextCursor;
+      _hasMore = result.hasMore;
+    } on AppException catch (e) {
+      if (_disposed || !_snapshotMatches(snap)) return;
+      _errorMessage = e.messageKey ?? 'requestFailed';
+    } catch (_) {
+      if (_disposed || !_snapshotMatches(snap)) return;
+      _errorMessage = 'requestFailed';
+    } finally {
+      if (!_disposed && _snapshotMatches(snap)) {
+        _isLoading = false;
+        notifyListeners();
+      }
+    }
+  }
+
+  Future<void> loadMore() async {
+    if (_isLoadingMore || _isLoading || !_hasMore || _nextCursor == null) {
+      return;
+    }
+
+    final snap = _filterSnapshot;
+    final requestCursor = _nextCursor;
+    _isLoadingMore = true;
+    notifyListeners();
+
+    try {
+      final result = await _service.fetchHistory(
+        after: requestCursor,
+        asset: snap.asset,
+        type: snap.type,
+        startDate: snap.start,
+        endDate: snap.end,
+      );
+      if (_disposed || !_snapshotMatches(snap)) return;
+      _transactions = [..._transactions, ...result.transactions];
+      _nextCursor = result.nextCursor;
+      _hasMore = result.hasMore;
+    } on AppException catch (e) {
+      if (_disposed || !_snapshotMatches(snap)) return;
+      _errorMessage = e.messageKey ?? 'requestFailed';
+    } catch (_) {
+      if (_disposed || !_snapshotMatches(snap)) return;
+      _errorMessage = 'requestFailed';
+    } finally {
+      if (!_disposed && _snapshotMatches(snap)) {
+        _isLoadingMore = false;
+        notifyListeners();
+      }
+    }
+  }
+
   Future<void> refresh() async {
-    developer.log('HistoryProvider: Refreshing transactions');
+    await fetchTransactions();
   }
 
   void setCoinFilter(String? coinSymbol) {
-    developer.log('HistoryProvider: Setting coin filter to: $coinSymbol');
-    _selectedCoinFilter = coinSymbol;
-    notifyListeners();
+    final normalized = (coinSymbol == null || coinSymbol.trim().isEmpty)
+        ? null
+        : coinSymbol;
+    if (normalized == _selectedCoinFilter) return;
+    developer.log('HistoryProvider: Setting coin filter to: $normalized');
+    _selectedCoinFilter = normalized;
+    fetchTransactions();
   }
 
-  void setStatusFilter(String? status) {
-    developer.log('HistoryProvider: Setting status filter to: $status');
-    _selectedStatusFilter = status;
-    notifyListeners();
+  void setTypeFilter(String? type) {
+    if (type == _selectedTypeFilter) return;
+    developer.log('HistoryProvider: Setting type filter to: $type');
+    _selectedTypeFilter = type;
+    fetchTransactions();
   }
 
   void setDateRange(DateTime? start, DateTime? end) {
+    if (start == _dateStart && end == _dateEnd) return;
     developer.log('HistoryProvider: Setting date range: $start - $end');
     _dateStart = start;
     _dateEnd = end;
-    notifyListeners();
+    fetchTransactions();
   }
 
   void clearFilter() {
     developer.log('HistoryProvider: Clearing filter');
+    final changed = _selectedCoinFilter != null ||
+        _selectedTypeFilter != null ||
+        _dateStart != null ||
+        _dateEnd != null;
     _selectedCoinFilter = null;
-    _selectedStatusFilter = null;
+    _selectedTypeFilter = null;
     _dateStart = null;
     _dateEnd = null;
-    notifyListeners();
+    if (changed) {
+      fetchTransactions();
+    } else {
+      notifyListeners();
+    }
   }
 
   @override
   void dispose() {
+    _disposed = true;
     _coinsPrices.removeListener(_onStreamedCoinsUpdated);
     super.dispose();
   }

@@ -1,0 +1,98 @@
+import '../../../../core/constants/endpoints.dart';
+import '../../../../core/models/transaction_model/transaction_model.dart';
+import '../../../../core/services/api_helper.dart';
+import '../../../../core/utils/app_exception.dart';
+
+class HistoryResult {
+  const HistoryResult({
+    required this.transactions,
+    required this.nextCursor,
+    required this.hasMore,
+  });
+
+  final List<TransactionModel> transactions;
+  final String? nextCursor;
+  final bool hasMore;
+}
+
+class HistoryService {
+  Future<HistoryResult> fetchHistory({
+    int limit = 50,
+    String? after,
+    String? asset,
+    String? type,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    final queryParams = <String, dynamic>{
+      'limit': limit,
+      'asset': (asset == null || asset.trim().isEmpty) ? 'ALL' : asset,
+      'type': (type == null || type.trim().isEmpty) ? 'ALL' : type,
+    };
+    if (after != null && after.isNotEmpty) {
+      queryParams['after'] = after;
+    }
+    if (startDate != null) {
+      queryParams['startDate'] = startDate.toUtc().toIso8601String();
+    }
+    if (endDate != null) {
+      queryParams['endDate'] = endDate.toUtc().toIso8601String();
+    }
+
+    final response = await ApiHelper.get(
+      Endpoints.history,
+      queryParameters: queryParams,
+    );
+
+    final dynamic data = response['data'];
+    if (data is! Map<String, dynamic>) {
+      throw AppException(
+        'Invalid history response',
+        messageKey: 'requestFailed',
+      );
+    }
+
+    final dynamic txPayload = data['transactions'];
+    if (txPayload is! List) {
+      throw AppException(
+        'Invalid transactions list',
+        messageKey: 'requestFailed',
+      );
+    }
+
+    final transactions = txPayload
+        .whereType<Map<String, dynamic>>()
+        .map((raw) => TransactionModel.fromJson(_normalize(raw)))
+        .toList(growable: false);
+
+    final pagination = data['pagination'];
+    String? nextCursor;
+    bool hasMore = false;
+    if (pagination is Map<String, dynamic>) {
+      final rawCursor = pagination['nextCursor'];
+      nextCursor = rawCursor is String && rawCursor.isNotEmpty
+          ? rawCursor
+          : null;
+      hasMore = pagination['hasMore'] == true;
+    }
+
+    return HistoryResult(
+      transactions: transactions,
+      nextCursor: nextCursor,
+      hasMore: hasMore,
+    );
+  }
+
+  /// The history API returns `assetSymbol` / `assetName` / `assetName_ar`
+  /// while `TransactionModel` is wired to `coin_symbol` / `coinName` /
+  /// `coinName_ar` for the home API. Normalize so the shared model parses
+  /// both shapes.
+  Map<String, dynamic> _normalize(Map<String, dynamic> raw) {
+    return {
+      ...raw,
+      'coin_symbol': raw['coin_symbol'] ?? raw['assetSymbol'],
+      'coinName': raw['coinName'] ?? raw['assetName'],
+      'coinName_ar': raw['coinName_ar'] ?? raw['assetName_ar'],
+    };
+  }
+}

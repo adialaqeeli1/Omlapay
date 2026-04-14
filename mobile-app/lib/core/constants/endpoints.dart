@@ -68,6 +68,13 @@ class Endpoints {
   /// Receive wallets grouped by network and coin addresses.
   static String get receiveWallets => '$apiVersion/receive/wallets';
 
+  /// Receive transaction history; supports query params `limit` and `cursor`.
+  static String get receiveHistory => '$apiVersion/receive/history';
+
+  /// Full transaction history; supports query params `asset`, `type`,
+  /// `limit`, `after`, `startDate`, `endDate`.
+  static String get history => '$apiVersion/history';
+
   /// Validates a wallet address for a given coin before sending.
   /// Query params: `address` (required), `coin` (required).
   static String get sendValidateAddress =>

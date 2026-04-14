@@ -353,6 +353,7 @@ class HomeView extends StatelessWidget {
 
   Widget _buildRecentTransactions(BuildContext context) {
     final homeProvider = context.watch<HomeProvider>();
+    final coins = context.watch<CoinsPricesProvider>().coins;
     final transactions = homeProvider.homeData?.recentTransactions ?? [];
 
     if (transactions.isEmpty) {
@@ -362,21 +363,7 @@ class HomeView extends StatelessWidget {
     return Column(
       children: transactions.map((transaction) {
         final isDarkMode = context.isDarkMode;
-
-        Color getCoinColor(String symbol) {
-          switch (symbol.toUpperCase()) {
-            case 'USDT':
-              return AppColors.usdtColor;
-            case 'BTC':
-              return AppColors.bitcoinColor;
-            case 'ETH':
-              return AppColors.textWhite;
-            case 'SOL':
-              return const Color(0xFF9945FF);
-            default:
-              return AppColors.primaryColor;
-          }
-        }
+        final isArabic = Localizations.localeOf(context).languageCode == 'ar';
 
         Color getAmountColor() {
           if (transaction.isFailed) return Colors.red;
@@ -384,6 +371,12 @@ class HomeView extends StatelessWidget {
           if (transaction.isReceived) return AppColors.greenColor;
           return isDarkMode ? AppColors.white : AppColors.textBlack;
         }
+
+        final matchingCoin = coins
+            .where((c) => c.symbol == transaction.assetSymbol)
+            .firstOrNull;
+        final fallbackIcon =
+            matchingCoin?.iconUrl ?? matchingCoin?.networkIconUrl;
 
         return InkWell(
           onTap: () =>
@@ -393,24 +386,12 @@ class HomeView extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: getCoinColor(
-                      transaction.assetSymbol,
-                    ).withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: CommonCoinIcon(
-                      symbol: transaction.assetSymbol,
-                      radius: 20,
-                      iconBackgroundColor: getCoinColor(
-                        transaction.assetSymbol,
-                      ),
-                    ),
-                  ),
+                CommonCoinIcon(
+                  symbol: transaction.assetSymbol,
+                  networkIconUrl:
+                      transaction.networkIconUrl ??
+                      transaction.assetIconUrl ??
+                      fallbackIcon,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -418,7 +399,12 @@ class HomeView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        transaction.assetSymbol,
+                        isArabic
+                            ? (transaction.assetNameAr ??
+                                  transaction.assetName ??
+                                  transaction.assetSymbol)
+                            : (transaction.assetName ??
+                                  transaction.assetSymbol),
                         style: context.textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.w600,
                           color: isDarkMode
