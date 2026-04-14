@@ -15,6 +15,7 @@ import '../../../../widgets/common_coin_icon.dart';
 import '../../../../widgets/no_transactions_found.dart';
 import '../../../../core/models/transaction_model/transaction_model.dart';
 import '../../../../widgets/theme_aware_icon.dart';
+import '../../../../routes/app_router.dart';
 import '../provider/receive_coins_history_provider.dart';
 
 class ReceiveCoinsHistoryView extends StatefulWidget {
@@ -302,7 +303,10 @@ class _TransactionItem extends StatelessWidget {
 
     return ListTile(
       onTap: () {
-        context.pushNamed('transactionDetails', extra: transaction);
+        context.push(
+          '${Routes.transactionDetail}?showType=true',
+          extra: transaction,
+        );
       },
       leading: CommonCoinIcon(
         symbol: transaction.assetSymbol,

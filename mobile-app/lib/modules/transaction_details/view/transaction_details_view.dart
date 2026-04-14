@@ -63,7 +63,7 @@ class TransactionDetailsView extends StatelessWidget {
       appBar: AppBar(
         elevation: 0,
         leading: const CommonBackButton(),
-        title: Text(l10n.receive),
+        title: Text(l10n.transactionDetails),
         centerTitle: true,
       ),
       body: CustomScrollView(
@@ -150,7 +150,7 @@ class TransactionDetailsView extends StatelessWidget {
                     _buildDetailRow(
                       context,
                       l10n.address,
-                      transaction.txHash!,
+                      transaction.senderAddress!,
                       isMultiLine: true,
                     ),
                     Divider(

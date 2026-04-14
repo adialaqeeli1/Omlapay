@@ -723,12 +723,12 @@ class AppRouter {
           } else {
             id = '';
           }
+          final showType =
+              state.uri.queryParameters['showType'] == 'true';
           return ChangeNotifierProvider(
-            create: (_) => TransactionDetailsProvider(
-              transactionId: id,
-              seed: seed,
-            ),
-            child: const TransactionDetailView(),
+            create: (_) =>
+                TransactionDetailsProvider(transactionId: id, seed: seed),
+            child: TransactionDetailView(showTransactionType: showType),
           );
         },
         redirect: AuthMiddleware.isAuthenticated,
@@ -843,32 +843,32 @@ class AppRouter {
         },
         redirect: AuthMiddleware.isAuthenticated,
       ),
-      GoRoute(
-        path: Routes.transactionDetails,
-        name: 'transactionDetails',
-        builder: (context, state) {
-          final extra = state.extra;
-          final String id;
-          TransactionModel? seed;
-          if (extra is TransactionModel) {
-            id = extra.id;
-            seed = extra;
-          } else if (extra is String) {
-            id = extra;
-          } else {
-            id = '';
-          }
-          return ChangeNotifierProvider(
-            create: (_) => TransactionDetailsProvider(
-              transactionId: id,
-              seed: seed,
-            ),
-            child: const TransactionDetailsView(),
-          );
-        },
-        redirect: AuthMiddleware.isAuthenticated,
-      ),
 
+      // GoRoute(
+      //   path: Routes.transactionDetails,
+      //   name: 'transactionDetails',
+      //   builder: (context, state) {
+      //     final extra = state.extra;
+      //     final String id;
+      //     TransactionModel? seed;
+      //     if (extra is TransactionModel) {
+      //       id = extra.id;
+      //       seed = extra;
+      //     } else if (extra is String) {
+      //       id = extra;
+      //     } else {
+      //       id = '';
+      //     }
+      //     return ChangeNotifierProvider(
+      //       create: (_) => TransactionDetailsProvider(
+      //         transactionId: id,
+      //         seed: seed,
+      //       ),
+      //       child: const TransactionDetailsView(),
+      //     );
+      //   },
+      //   redirect: AuthMiddleware.isAuthenticated,
+      // ),
       GoRoute(
         path: Routes.qrCode,
         name: 'qrCode',
