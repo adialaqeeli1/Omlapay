@@ -83,16 +83,43 @@ class HistoryService {
     );
   }
 
+  Future<TransactionModel> fetchTransactionDetail(String id) async {
+    if (id.isEmpty) {
+      throw AppException(
+        'Missing transaction id',
+        messageKey: 'requestFailed',
+      );
+    }
+
+    final response = await ApiHelper.get(Endpoints.historyDetail(id));
+    final dynamic data = response['data'];
+    if (data is! Map<String, dynamic>) {
+      throw AppException(
+        'Invalid transaction detail response',
+        messageKey: 'requestFailed',
+      );
+    }
+
+    return TransactionModel.fromJson(_normalize(data));
+  }
+
   /// The history API returns `assetSymbol` / `assetName` / `assetName_ar`
   /// while `TransactionModel` is wired to `coin_symbol` / `coinName` /
   /// `coinName_ar` for the home API. Normalize so the shared model parses
-  /// both shapes.
+  /// both shapes. For the detail endpoint, also fold `amountDisplay` into
+  /// `amount` so the model's display-formatted amount stays consistent
+  /// between list and detail responses.
   Map<String, dynamic> _normalize(Map<String, dynamic> raw) {
-    return {
+    final normalized = <String, dynamic>{
       ...raw,
       'coin_symbol': raw['coin_symbol'] ?? raw['assetSymbol'],
       'coinName': raw['coinName'] ?? raw['assetName'],
       'coinName_ar': raw['coinName_ar'] ?? raw['assetName_ar'],
     };
+    final amountDisplay = raw['amountDisplay'];
+    if (amountDisplay is String && amountDisplay.isNotEmpty) {
+      normalized['amount'] = amountDisplay;
+    }
+    return normalized;
   }
 }

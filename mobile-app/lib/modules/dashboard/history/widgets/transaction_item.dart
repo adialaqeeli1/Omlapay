@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/models/transaction_model/transaction_model.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../providers/coins_prices_provider.dart';
 import '../../../../widgets/common_coin_icon.dart';
 import 'package:intl/intl.dart';
 
@@ -18,6 +20,11 @@ class TransactionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = context.isDarkMode;
+    final coins = context.watch<CoinsPricesProvider>().coins;
+    final matchingCoin = coins
+        .where((c) => c.symbol == transaction.assetSymbol)
+        .firstOrNull;
+    final fallbackIcon = matchingCoin?.iconUrl ?? matchingCoin?.networkIconUrl;
 
     return InkWell(
       onTap: onTap,
@@ -41,6 +48,10 @@ class TransactionItem extends StatelessWidget {
                   symbol: transaction.assetSymbol,
                   radius: 20,
                   iconBackgroundColor: _getCoinColor(transaction.assetSymbol),
+                  networkIconUrl:
+                      transaction.networkIconUrl ??
+                      transaction.assetIconUrl ??
+                      fallbackIcon,
                 ),
               ),
             ),

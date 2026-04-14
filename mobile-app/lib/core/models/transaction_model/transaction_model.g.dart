@@ -21,6 +21,11 @@ _TransactionModel _$TransactionModelFromJson(Map<String, dynamic> json) =>
       direction: json['direction'] as String?,
       type: json['type'] as String?,
       networkIconUrl: json['networkIconUrl'] as String?,
+      fee: json['fee'] as String?,
+      errorMessage: json['errorMessage'] as String?,
+      senderAddress: json['senderAddress'] as String?,
+      receiverAddress: json['receiverAddress'] as String?,
+      counterpartyPhone: json['counterpartyPhone'] as String?,
     );
 
 Map<String, dynamic> _$TransactionModelToJson(_TransactionModel instance) =>
@@ -38,4 +43,9 @@ Map<String, dynamic> _$TransactionModelToJson(_TransactionModel instance) =>
       'direction': instance.direction,
       'type': instance.type,
       'networkIconUrl': instance.networkIconUrl,
+      'fee': instance.fee,
+      'errorMessage': instance.errorMessage,
+      'senderAddress': instance.senderAddress,
+      'receiverAddress': instance.receiverAddress,
+      'counterpartyPhone': instance.counterpartyPhone,
     };
