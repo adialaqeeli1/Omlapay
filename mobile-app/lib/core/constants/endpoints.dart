@@ -87,6 +87,18 @@ class Endpoints {
   /// Query params: `coin`, `recipient`, `amount` (all required).
   static String get sendQuote => '$apiVersion/send/quote';
 
+  /// Initiates a send transfer; triggers an OTP to the user's registered phone.
+  /// Body: `coin`, `recipient`, `amount`, `network`.
+  static String get sendInitiate => '$apiVersion/send/initiate';
+
+  /// Resends the OTP for an ongoing send flow.
+  /// Body: `sendToken`.
+  static String get sendResendOtp => '$apiVersion/send/resend-otp';
+
+  /// Confirms a pending send with the OTP received on the user's phone.
+  /// Body: `sendToken`, `otp`.
+  static String get sendConfirm => '$apiVersion/send/confirm';
+
   /// KYC start endpoint; returns Sumsub access token.
   static String get kycStart => '$apiVersion/user/kyc/start';
 

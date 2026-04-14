@@ -3,15 +3,15 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
+import '../../../../providers/coins_prices_provider.dart';
 import '../../../../providers/kyc_status_provider.dart';
 import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../../../../widgets/common_back_button.dart';
+import '../../../../widgets/common_coin_icon.dart';
 import '../../../../widgets/kyc_verification_required_banner.dart';
 import 'package:intl/intl.dart';
-import 'package:crypto_font_icons/crypto_font_icons.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/theme.dart';
-import '../../../../widgets/common_coin_icon.dart';
 import '../../../../widgets/no_transactions_found.dart';
 import '../../../../core/models/transaction_model/transaction_model.dart';
 import '../../../../widgets/theme_aware_icon.dart';
@@ -260,46 +260,11 @@ class _TransactionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    Color? iconBackgroundColor;
-    Widget? fallbackIcon;
-
-    if (transaction.assetSymbol == 'USDT') {
-      iconBackgroundColor = AppColors.usdtColor;
-      fallbackIcon = DecoratedBox(
-        decoration: const BoxDecoration(
-          color: AppColors.usdtColor,
-          shape: BoxShape.circle,
-        ),
-        child: const Padding(
-          padding: EdgeInsets.all(8),
-          child: Icon(CryptoFontIcons.USDT, color: Colors.white, size: 24),
-        ),
-      );
-    } else if (transaction.assetSymbol == 'ETH') {
-      iconBackgroundColor = AppColors.textWhite;
-      fallbackIcon = DecoratedBox(
-        decoration: const BoxDecoration(
-          color: AppColors.textWhite,
-          shape: BoxShape.circle,
-        ),
-        child: const Padding(
-          padding: EdgeInsets.all(8),
-          child: Icon(CryptoFontIcons.ETH, color: Colors.black, size: 24),
-        ),
-      );
-    } else if (transaction.assetSymbol == 'BTC') {
-      iconBackgroundColor = AppColors.bitcoinColor;
-      fallbackIcon = DecoratedBox(
-        decoration: const BoxDecoration(
-          color: AppColors.bitcoinColor,
-          shape: BoxShape.circle,
-        ),
-        child: const Padding(
-          padding: EdgeInsets.all(8),
-          child: Icon(CryptoFontIcons.BTC, color: Colors.white, size: 24),
-        ),
-      );
-    }
+    final coins = context.watch<CoinsPricesProvider>().coins;
+    final matchingCoin = coins
+        .where((c) => c.symbol == transaction.assetSymbol)
+        .firstOrNull;
+    final fallbackIcon = matchingCoin?.iconUrl ?? matchingCoin?.networkIconUrl;
 
     return ListTile(
       onTap: () {
@@ -308,10 +273,24 @@ class _TransactionItem extends StatelessWidget {
           extra: transaction,
         );
       },
-      leading: CommonCoinIcon(
-        symbol: transaction.assetSymbol,
-        iconBackgroundColor: iconBackgroundColor,
-        fallbackIcon: fallbackIcon,
+      leading: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: _getCoinColor(transaction.assetSymbol).withValues(alpha: 0.1),
+          shape: BoxShape.circle,
+        ),
+        child: Center(
+          child: CommonCoinIcon(
+            symbol: transaction.assetSymbol,
+            radius: 20,
+            iconBackgroundColor: _getCoinColor(transaction.assetSymbol),
+            networkIconUrl:
+                transaction.networkIconUrl ??
+                transaction.assetIconUrl ??
+                fallbackIcon,
+          ),
+        ),
       ),
       title: Text(
         transaction.assetSymbol,
@@ -322,9 +301,9 @@ class _TransactionItem extends StatelessWidget {
       ),
       subtitle: Text(
         DateFormat(
-          'yyyy-MM-dd HH:mm:ss',
+          'yyyy-MM-dd h:mm a',
           AppLocalizations.of(context)!.localeName,
-        ).format(transaction.createdAt),
+        ).format(transaction.createdAt.toLocal()),
         style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
       ),
       trailing: Text(
@@ -335,5 +314,20 @@ class _TransactionItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Color _getCoinColor(String symbol) {
+    switch (symbol.toUpperCase()) {
+      case 'USDT':
+        return AppColors.usdtColor;
+      case 'BTC':
+        return AppColors.bitcoinColor;
+      case 'ETH':
+        return AppColors.textWhite;
+      case 'SOL':
+        return const Color(0xFF9945FF);
+      default:
+        return AppColors.primaryColor;
+    }
   }
 }

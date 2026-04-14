@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/l10n/app_localizations_from_storage.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/contact_model/contact_model.dart';
+import '../../../../core/models/send_confirm_model/send_confirm_response_model.dart';
 import '../../../../core/models/send_quote_model/send_quote_model.dart';
 import '../../../../core/utils/app_exception.dart';
 import '../../../../providers/auth_provider.dart';
@@ -58,6 +61,17 @@ class SendProvider extends ChangeNotifier {
   String? _submitError;
   SendQuoteModel? _quote;
 
+  // OTP / confirm flow state.
+  String? _sendToken;
+  int _otpCountdown = 0;
+  Timer? _otpTimer;
+  bool _isOtpSubmitting = false;
+  bool _hasOtpError = false;
+  int? _remainingResends;
+  String _otpInput = '';
+  SendConfirmResponseModel? _confirmResponse;
+  String? _confirmMessage;
+
   /// After the user picks a coin in the sheet, we keep that symbol across SSE updates.
   bool _userPickedCoin = false;
   String? _userPickedSymbol;
@@ -79,6 +93,27 @@ class SendProvider extends ChangeNotifier {
   bool get isSubmitting => _isSubmitting;
   String? get submitError => _submitError;
   SendQuoteModel? get quote => _quote;
+
+  // OTP / confirm getters.
+  String? get sendToken => _sendToken;
+  int get otpCountdown => _otpCountdown;
+  bool get canResendOtp => _otpCountdown <= 0;
+  bool get isOtpSubmitting => _isOtpSubmitting;
+  bool get hasOtpError => _hasOtpError;
+  int? get remainingResends => _remainingResends;
+  String get otpInput => _otpInput;
+  SendConfirmResponseModel? get confirmResponse => _confirmResponse;
+  String? get confirmMessage => _confirmMessage;
+
+  /// Stores the latest OTP the user has typed in the verification screen.
+  /// Clears any prior verification error flag to reset the UI state.
+  void setOtpInput(String value) {
+    _otpInput = value;
+    if (_hasOtpError) {
+      _hasOtpError = false;
+      notifyListeners();
+    }
+  }
 
   // Logic for showing warning:
   // Show if the user has NOT completed verification
@@ -208,6 +243,119 @@ class SendProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Initiates the send and triggers an OTP to the user's phone.
+  ///
+  /// Returns the backend-localized success message on success (possibly an
+  /// empty string if the backend didn't include one). Returns `null` when
+  /// pre-flight validation prevents the call. Throws [AppException] on API
+  /// failures so the view can surface the localized error via a snackbar.
+  Future<String?> initiateSend() async {
+    if (_isSubmitting) return null;
+    final coin = _selectedCoin;
+    if (coin == null) return null;
+
+    final recipient = recipientController.text.trim();
+    final amountText = amountController.text.trim();
+    final amount = double.tryParse(amountText);
+    if (recipient.isEmpty || amount == null) return null;
+
+    _isSubmitting = true;
+    notifyListeners();
+
+    try {
+      final result = await SendService.initiateSend(
+        coin: coin.symbol,
+        recipient: recipient,
+        amount: amount,
+        network: networkController.text.trim().isEmpty
+            ? coin.symbol
+            : networkController.text.trim(),
+      );
+      _sendToken = result.data.sendToken;
+      _startOtpCountdown(result.data.otpExpirySeconds);
+      return result.message ?? '';
+    } finally {
+      _isSubmitting = false;
+      notifyListeners();
+    }
+  }
+
+  /// Requests a fresh OTP for the ongoing send flow.
+  ///
+  /// Returns the backend-localized success message on success. Returns `null`
+  /// when pre-flight conditions block the call (no token, countdown active).
+  /// Throws [AppException] on API failures.
+  Future<String?> resendSendOtp() async {
+    final token = _sendToken;
+    if (token == null || token.isEmpty) return null;
+    if (_otpCountdown > 0) return null;
+
+    try {
+      final result = await SendService.resendOtp(sendToken: token);
+      _sendToken = result.data.sendToken;
+      _remainingResends = result.data.remainingResends;
+      _startOtpCountdown(result.data.otpExpirySeconds);
+      return result.message ?? '';
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  /// Submits the OTP to confirm the send.
+  ///
+  /// Returns `true` on success (and stores the queued transaction in
+  /// [confirmResponse] plus the backend success message in [confirmMessage]).
+  /// Returns `false` when the backend rejects the OTP, setting [hasOtpError]
+  /// so the OTP input renders its error state. Non-OTP API failures are
+  /// rethrown as [AppException] so the view can show an error snackbar.
+  Future<bool> confirmSendWithOtp(String otp) async {
+    final token = _sendToken;
+    if (token == null || token.isEmpty) return false;
+    if (_isOtpSubmitting) return false;
+
+    _hasOtpError = false;
+    _isOtpSubmitting = true;
+    notifyListeners();
+
+    try {
+      final result = await SendService.confirmSend(
+        sendToken: token,
+        otp: otp,
+      );
+      _confirmResponse = result.data;
+      _confirmMessage = result.message;
+      _stopOtpCountdown();
+      return true;
+    } on AppException {
+      _hasOtpError = true;
+      rethrow;
+    } finally {
+      _isOtpSubmitting = false;
+      notifyListeners();
+    }
+  }
+
+  void _startOtpCountdown(int seconds) {
+    _otpTimer?.cancel();
+    _otpCountdown = seconds;
+    notifyListeners();
+    _otpTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_otpCountdown <= 1) {
+        timer.cancel();
+        _otpCountdown = 0;
+      } else {
+        _otpCountdown -= 1;
+      }
+      notifyListeners();
+    });
+  }
+
+  void _stopOtpCountdown() {
+    _otpTimer?.cancel();
+    _otpTimer = null;
+    _otpCountdown = 0;
+  }
+
   void _validate() {
     final l10n = appLocalizationsFromStoredLocale();
     _error = null;
@@ -235,6 +383,7 @@ class SendProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _otpTimer?.cancel();
     _coinsPricesProvider.removeListener(_onStreamedCoinsUpdated);
     authProvider.removeListener(notifyListeners);
     amountController.dispose();

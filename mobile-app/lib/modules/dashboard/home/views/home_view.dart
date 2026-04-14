@@ -374,8 +374,8 @@ class HomeView extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         DateFormat(
-                          'yyyy-MM-dd HH:mm:ss',
-                        ).format(transaction.createdAt),
+                          'yyyy-MM-dd h:mm a',
+                        ).format(transaction.createdAt.toLocal()),
                         style: context.textTheme.bodySmall?.copyWith(
                           color: AppColors.textGrey,
                           fontSize: 12,

@@ -1679,7 +1679,7 @@ abstract class AppLocalizations {
   /// No description provided for @sendFlowReviewTitle.
   ///
   /// In en, this message translates to:
-  /// **'Review'**
+  /// **'Confirmation'**
   String get sendFlowReviewTitle;
 
   /// No description provided for @sendFlowSendingTitle.
@@ -1801,6 +1801,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You are sending'**
   String get youAreSending;
+
+  /// No description provided for @youWillSend.
+  ///
+  /// In en, this message translates to:
+  /// **'You will send'**
+  String get youWillSend;
+
+  /// No description provided for @walletAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet Address'**
+  String get walletAddress;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @confirmationWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Make sure that the address and network are correct, the transaction cannot be canceled after you confirm it.'**
+  String get confirmationWarning;
+
+  /// No description provided for @sendInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Send in progress'**
+  String get sendInProgress;
+
+  /// No description provided for @estimatedTimeOfExecution.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated time of execution'**
+  String get estimatedTimeOfExecution;
+
+  /// No description provided for @sendCompletionNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Upon completion, you will receive a confirmation Notification'**
+  String get sendCompletionNotification;
+
+  /// No description provided for @verifyAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Account'**
+  String get verifyAccount;
 
   /// No description provided for @reviewOrderTitle.
   ///
