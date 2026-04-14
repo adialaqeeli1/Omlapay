@@ -712,9 +712,24 @@ class AppRouter {
         path: Routes.transactionDetail,
         name: 'transactionDetail',
         builder: (context, state) {
-          final TransactionModel? transaction =
-              state.extra as TransactionModel?;
-          return TransactionDetailView(transaction: transaction!);
+          final extra = state.extra;
+          final String id;
+          TransactionModel? seed;
+          if (extra is TransactionModel) {
+            id = extra.id;
+            seed = extra;
+          } else if (extra is String) {
+            id = extra;
+          } else {
+            id = '';
+          }
+          return ChangeNotifierProvider(
+            create: (_) => TransactionDetailsProvider(
+              transactionId: id,
+              seed: seed,
+            ),
+            child: const TransactionDetailView(),
+          );
         },
         redirect: AuthMiddleware.isAuthenticated,
       ),
@@ -832,11 +847,23 @@ class AppRouter {
         path: Routes.transactionDetails,
         name: 'transactionDetails',
         builder: (context, state) {
-          final transaction = state.extra as TransactionModel;
-          // return TransactionDetailsView(transaction: transaction);
+          final extra = state.extra;
+          final String id;
+          TransactionModel? seed;
+          if (extra is TransactionModel) {
+            id = extra.id;
+            seed = extra;
+          } else if (extra is String) {
+            id = extra;
+          } else {
+            id = '';
+          }
           return ChangeNotifierProvider(
-            create: (_) => TransactionDetailsProvider(transaction: transaction),
-            child: TransactionDetailsView(),
+            create: (_) => TransactionDetailsProvider(
+              transactionId: id,
+              seed: seed,
+            ),
+            child: const TransactionDetailsView(),
           );
         },
         redirect: AuthMiddleware.isAuthenticated,

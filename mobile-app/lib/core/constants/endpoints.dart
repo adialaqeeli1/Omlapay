@@ -75,6 +75,9 @@ class Endpoints {
   /// `limit`, `after`, `startDate`, `endDate`.
   static String get history => '$apiVersion/history';
 
+  /// Single transaction detail by id.
+  static String historyDetail(String id) => '$apiVersion/history/$id';
+
   /// Validates a wallet address for a given coin before sending.
   /// Query params: `address` (required), `coin` (required).
   static String get sendValidateAddress =>

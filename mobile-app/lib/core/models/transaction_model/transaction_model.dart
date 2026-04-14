@@ -21,6 +21,11 @@ abstract class TransactionModel with _$TransactionModel {
     String? direction,
     String? type,
     @JsonKey(name: 'networkIconUrl') String? networkIconUrl,
+    String? fee,
+    String? errorMessage,
+    String? senderAddress,
+    String? receiverAddress,
+    String? counterpartyPhone,
   }) = _TransactionModel;
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) =>

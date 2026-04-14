@@ -20,15 +20,41 @@ class TransactionDetailsView extends StatelessWidget {
     final transaction = provider.transaction;
     final isDark = context.isDarkMode;
 
-    if (provider.isLoading) {
+    if (provider.isLoading && transaction == null) {
       return Scaffold(
         appBar: AppBar(
-          title: Text(l10n.receive),
+          title: Text(l10n.transactionDetails),
           centerTitle: true,
           leading: const CommonBackButton(),
         ),
         body: Center(
           child: CircularProgressIndicator(color: colorScheme.primary),
+        ),
+      );
+    }
+
+    if (transaction == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.transactionDetails),
+          centerTitle: true,
+          leading: const CommonBackButton(),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l10n.requestFailed,
+                style: TextStyle(color: colorScheme.onSurfaceVariant),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: provider.refresh,
+                child: Text(l10n.tryAgain),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -88,7 +114,7 @@ class TransactionDetailsView extends StatelessWidget {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          '${transaction.amount} ${transaction.assetSymbol}',
+                          '${(double.tryParse(transaction.amount) ?? 0).toStringAsFixed(2)} ${transaction.assetSymbol}',
                           style: TextStyle(
                             color: isDark
                                 ? AppColors.white

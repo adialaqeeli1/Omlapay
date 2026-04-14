@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/models/transaction_model/transaction_model.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/common_back_button.dart';
 import '../../../../widgets/theme_aware_icon.dart';
+import '../../../transaction_details/provider/transaction_details_provider.dart';
 import '../widgets/save_as_bottom_sheet.dart';
 
 class TransactionDetailView extends StatefulWidget {
-  const TransactionDetailView({super.key, required this.transaction});
-
-  final TransactionModel transaction;
+  const TransactionDetailView({super.key});
 
   @override
   State<TransactionDetailView> createState() => _TransactionDetailViewState();
@@ -26,7 +26,65 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
     final isDarkMode = context.isDarkMode;
-    final isSent = widget.transaction.isSent;
+    final provider = context.watch<TransactionDetailsProvider>();
+    final transaction = provider.transaction;
+
+    if (provider.isLoading && transaction == null) {
+      return Scaffold(
+        appBar: AppBar(
+          leading: const CommonBackButton(),
+          title: Text(
+            l10n.transactionDetails,
+            style: context.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: isDarkMode ? AppColors.white : AppColors.textBlack,
+            ),
+          ),
+          backgroundColor: isDarkMode
+              ? AppColors.darkBackground
+              : AppColors.lightBackground,
+          elevation: 0,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (transaction == null) {
+      return Scaffold(
+        appBar: AppBar(
+          leading: const CommonBackButton(),
+          title: Text(
+            l10n.transactionDetails,
+            style: context.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: isDarkMode ? AppColors.white : AppColors.textBlack,
+            ),
+          ),
+          backgroundColor: isDarkMode
+              ? AppColors.darkBackground
+              : AppColors.lightBackground,
+          elevation: 0,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l10n.requestFailed,
+                style: TextStyle(color: AppColors.textGrey),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: provider.refresh,
+                child: Text(l10n.tryAgain),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final isSent = transaction.isSent;
 
     return Scaffold(
       appBar: AppBar(
@@ -75,7 +133,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                           const SizedBox(height: 8),
                           // Amount
                           Text(
-                            '${widget.transaction.amount} ${widget.transaction.assetSymbol}',
+                            '${(double.tryParse(transaction.amount) ?? 0).toStringAsFixed(2)} ${transaction.assetSymbol}',
                             style: context.textTheme.headlineMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: isDarkMode
@@ -88,15 +146,15 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                           if (isSent) ...[
                             const SizedBox(height: 8),
                             Text(
-                              widget.transaction.isFailed
+                              transaction.isFailed
                                   ? l10n.failed
-                                  : widget.transaction.isCompleted
+                                  : transaction.isCompleted
                                   ? l10n.completed
                                   : l10n.pending,
                               style: context.textTheme.bodyMedium?.copyWith(
-                                color: widget.transaction.isFailed
+                                color: transaction.isFailed
                                     ? Colors.red
-                                    : widget.transaction.isCompleted
+                                    : transaction.isCompleted
                                     ? AppColors.greenColor
                                     : AppColors.textGrey,
                                 fontSize: 14,
@@ -114,21 +172,21 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                       l10n.date,
                       DateFormat(
                         'yyyy-MM-dd HH:mm:ss',
-                      ).format(widget.transaction.createdAt),
+                      ).format(transaction.createdAt),
                     ),
                     const SizedBox(height: 16),
                     _buildDetailRow(
                       context,
                       l10n.network,
-                      widget.transaction.network ?? 'N/A',
+                      transaction.network ?? 'N/A',
                       isNetwork: true,
                     ),
                     const SizedBox(height: 16),
-                    if (widget.transaction.txHash != null) ...[
+                    if (transaction.txHash != null) ...[
                       _buildDetailRow(
                         context,
                         l10n.address,
-                        widget.transaction.txHash!,
+                        transaction.txHash!,
                         isAddress: true,
                       ),
                     ],
@@ -175,7 +233,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
                             ? AppColors.iconBlack
                             : AppColors.white,
                       ),
-                      onPressed: () => _shareTransaction(),
+                      onPressed: () => _shareTransaction(transaction),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -292,8 +350,7 @@ class _TransactionDetailViewState extends State<TransactionDetailView> {
     }
   }
 
-  void _shareTransaction() {
-    final tx = widget.transaction;
+  void _shareTransaction(TransactionModel tx) {
     final amountText = '${_formatAmount(tx.amount)} ${tx.assetSymbol}';
     final dateText = DateFormat('MMMM, yyyy').format(tx.createdAt);
     final hashText = tx.txHash ?? '';
