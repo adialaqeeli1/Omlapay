@@ -5,11 +5,11 @@ import 'package:provider/provider.dart';
 import 'package:crypto_font_icons/crypto_font_icons.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/app_exception.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../widgets/common_coin_icon.dart';
 import '../../../../widgets/theme_aware_icon.dart';
 import '../provider/swap_provider.dart';
-import '../../../../routes/app_router.dart';
-import 'package:go_router/go_router.dart';
 
 class ReviewOrderView extends StatelessWidget {
   const ReviewOrderView({super.key});
@@ -28,9 +28,9 @@ class ReviewOrderView extends StatelessWidget {
         leading: CommonBackButton(),
         title: Text(
           l10n.reviewOrderTitle,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
       ),
@@ -266,24 +266,38 @@ class ReviewOrderView extends StatelessWidget {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
-                  context.push(Routes.swapSuccess, extra: provider);
-                },
+                onPressed: provider.isSubmitting
+                    ? null
+                    : () => _onSwapNowPressed(context, provider),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.tealColor,
                   foregroundColor: colorScheme.onPrimary,
+                  disabledBackgroundColor: AppColors.tealColor.withValues(
+                    alpha: 0.5,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: Text(
-                  l10n.swapNowButton,
-                  style: TextStyle(
-                    color: colorScheme.onPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: provider.isSubmitting
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        ),
+                      )
+                    : Text(
+                        l10n.swapNowButton,
+                        style: TextStyle(
+                          color: colorScheme.onPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 30),
@@ -291,6 +305,24 @@ class ReviewOrderView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _onSwapNowPressed(
+    BuildContext context,
+    SwapProvider provider,
+  ) async {
+    final l10n = context.l10n!;
+    try {
+      if (!context.mounted) return;
+      // TODO: Navigate to success screen once API returns success data.
+      // context.push(Routes.swapSuccess, extra: provider);
+    } on AppException catch (e) {
+      if (!context.mounted) return;
+      SnackbarHelper.showError(context, e.localizedMessage(context.l10n));
+    } catch (_) {
+      if (!context.mounted) return;
+      SnackbarHelper.showError(context, l10n.unknownError);
+    }
   }
 
   Widget _buildCoinIcon(String symbol) {
