@@ -67,6 +67,7 @@ class MyApp extends StatelessWidget {
                 ..onAuthChanged(auth.state.isAuthenticated),
         ),
         ChangeNotifierProxyProvider<AuthProvider, CoinsPricesProvider>(
+          lazy: false,
           create: (context) {
             final coinsService = CoinsService();
             return CoinsPricesProvider(
