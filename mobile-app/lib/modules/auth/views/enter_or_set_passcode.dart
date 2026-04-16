@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:numpad_kit/numpad_kit.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
@@ -163,8 +164,8 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                   child: InkWell(
                     onTap: () => _showLogoutAlert(context),
                     child: Container(
-                      width: 71,
-                      height: 37,
+                      // width: 71,
+                      height: kMinInteractiveDimension - 5,
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: AppColors.logoutButtonBackground,
@@ -301,13 +302,91 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                         ),
                       ),
                     const Spacer(),
-                    _KeypadGrid(
-                      onDigitPressed: (digit) =>
-                          _onDigitPressed(context, passcodeProvider, digit),
-                      onBackspacePressed: passcodeProvider.removeLastDigit,
-                      buttonColor: keypadButtonColor,
-                      buttonTextColor: keypadTextColor,
-                      isEnabled: passcodeProvider.canEnterDigits,
+                    SizedBox(
+                      height: 400,
+                      child: Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: Numpad(
+                          enableKeyboardInput: false,
+                          spacing: 18,
+                          padding: EdgeInsets.zero,
+                          theme: NumpadThemeData(
+                            backgroundColor: Colors.transparent,
+                            buttonColor: keypadButtonColor,
+                            buttonTextColor: keypadTextColor,
+                            buttonShape: NumpadButtonShape.circle,
+                            buttonSize: 64,
+                            spacing: 18,
+                            buttonPadding: EdgeInsets.zero,
+                            numpadPadding: EdgeInsets.zero,
+                            pressedScale: 0.85,
+                            animationDuration: const Duration(
+                              milliseconds: 100,
+                            ),
+                            animationCurve: Curves.easeInOut,
+                            textStyle:
+                                context.textTheme.titleLarge?.copyWith(
+                                  fontSize: 44 / 1.35,
+                                  fontWeight: FontWeight.w500,
+                                  color: keypadTextColor,
+                                  height: 1.0,
+                                ) ??
+                                TextStyle(
+                                  fontSize: 44 / 1.35,
+                                  fontWeight: FontWeight.w500,
+                                  color: keypadTextColor,
+                                  height: 1.0,
+                                ),
+                          ),
+                          showRightExtraButton: true,
+                          rightExtraButton: SvgPicture.asset(
+                            isDark
+                                ? 'assets/icons/clear-number-icon-dark.svg'
+                                : 'assets/icons/clear-number-icon-light.svg',
+                            width: 28,
+                            height: 24,
+                          ),
+                          onRightExtraButton: passcodeProvider.canEnterDigits
+                              ? passcodeProvider.removeLastDigit
+                              : null,
+                          buttonBuilder: (context, value, onPressed, isEnabled) {
+                            // Backspace button (extra button has empty value)
+                            if (value.isEmpty) {
+                              return GestureDetector(
+                                onTap: passcodeProvider.canEnterDigits
+                                    ? passcodeProvider.removeLastDigit
+                                    : null,
+                                child: SizedBox(
+                                  width: 64,
+                                  height: 64,
+                                  child: Center(
+                                    child: SvgPicture.asset(
+                                      isDark
+                                          ? 'assets/icons/clear-number-icon-dark.svg'
+                                          : 'assets/icons/clear-number-icon-light.svg',
+                                      width: 28,
+                                      height: 24,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            // Digit buttons
+                            return _NumpadDigitButton(
+                              label: value,
+                              onPressed: passcodeProvider.canEnterDigits
+                                  ? () => _onDigitPressed(
+                                      context,
+                                      passcodeProvider,
+                                      value,
+                                    )
+                                  : null,
+                              buttonColor: keypadButtonColor,
+                              textColor: keypadTextColor,
+                            );
+                          },
+                        ),
+                      ),
                     ),
                     const Spacer(),
                     const SizedBox(height: 28),
@@ -761,13 +840,13 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                 required String countryCode,
                 required String passcode,
               }) async {
-            final result = await ChangeEmailService.step5Confirm(
-              changeEmailToken: token,
-              passcode: passcode,
-            );
-            await authProvider.updateEmailForCurrentUser(result.email);
-            return true;
-          },
+                final result = await ChangeEmailService.step5Confirm(
+                  changeEmailToken: token,
+                  passcode: passcode,
+                );
+                await authProvider.updateEmailForCurrentUser(result.email);
+                return true;
+              },
         );
         if (!context.mounted || !isValid) return;
         context.go(Routes.changeEmailSuccess);
@@ -833,79 +912,8 @@ class _PasscodeDot extends StatelessWidget {
   }
 }
 
-class _KeypadGrid extends StatelessWidget {
-  const _KeypadGrid({
-    required this.onDigitPressed,
-    required this.onBackspacePressed,
-    required this.buttonColor,
-    required this.buttonTextColor,
-    required this.isEnabled,
-  });
-
-  final ValueChanged<String> onDigitPressed;
-  final VoidCallback onBackspacePressed;
-  final Color buttonColor;
-  final Color buttonTextColor;
-  final bool isEnabled;
-
-  @override
-  Widget build(BuildContext context) {
-    const keypadRows = <List<String>>[
-      ['1', '2', '3'],
-      ['4', '5', '6'],
-      ['7', '8', '9'],
-    ];
-
-    return Column(
-      textDirection: TextDirection.ltr,
-      children: [
-        for (final row in keypadRows)
-          Padding(
-            padding: const EdgeInsetsDirectional.only(bottom: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              textDirection: TextDirection.ltr,
-              children: [
-                for (var index = 0; index < row.length; index++)
-                  Padding(
-                    padding: EdgeInsets.only(
-                      right: index == row.length - 1 ? 0 : 18,
-                    ),
-                    child: _KeypadButton(
-                      label: row[index],
-                      onPressed: isEnabled
-                          ? () => onDigitPressed(row[index])
-                          : null,
-                      buttonColor: buttonColor,
-                      textColor: buttonTextColor,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          textDirection: TextDirection.ltr,
-          children: [
-            const SizedBox(width: 64, height: 64),
-            const SizedBox(width: 18),
-            _KeypadButton(
-              label: '0',
-              onPressed: isEnabled ? () => onDigitPressed('0') : null,
-              buttonColor: buttonColor,
-              textColor: buttonTextColor,
-            ),
-            const SizedBox(width: 18),
-            _BackspaceButton(onPressed: isEnabled ? onBackspacePressed : null),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _KeypadButton extends StatefulWidget {
-  const _KeypadButton({
+class _NumpadDigitButton extends StatefulWidget {
+  const _NumpadDigitButton({
     required this.label,
     required this.onPressed,
     required this.buttonColor,
@@ -918,10 +926,10 @@ class _KeypadButton extends StatefulWidget {
   final Color textColor;
 
   @override
-  State<_KeypadButton> createState() => _KeypadButtonState();
+  State<_NumpadDigitButton> createState() => _NumpadDigitButtonState();
 }
 
-class _KeypadButtonState extends State<_KeypadButton>
+class _NumpadDigitButtonState extends State<_NumpadDigitButton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _scaleAnimation;
@@ -976,8 +984,8 @@ class _KeypadButtonState extends State<_KeypadButton>
         child: Opacity(
           opacity: widget.onPressed == null ? 0.5 : 1,
           child: Container(
-            width: 64,
-            height: 64,
+            width: 70,
+            height: 70,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: widget.buttonColor,
@@ -991,85 +999,6 @@ class _KeypadButtonState extends State<_KeypadButton>
                 color: widget.textColor,
                 height: 1.0,
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _BackspaceButton extends StatefulWidget {
-  const _BackspaceButton({required this.onPressed});
-
-  final VoidCallback? onPressed;
-
-  @override
-  State<_BackspaceButton> createState() => _BackspaceButtonState();
-}
-
-class _BackspaceButtonState extends State<_BackspaceButton>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 100),
-      reverseDuration: const Duration(milliseconds: 80),
-    );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.85,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _handleTapDown(TapDownDetails _) {
-    if (widget.onPressed != null) {
-      _controller.forward();
-    }
-  }
-
-  void _handleTapUp(TapUpDetails _) {
-    if (widget.onPressed != null) {
-      _controller.reverse();
-      widget.onPressed!();
-    }
-  }
-
-  void _handleTapCancel() {
-    _controller.reverse();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 64,
-      height: 64,
-      child: Center(
-        child: GestureDetector(
-          onTapDown: _handleTapDown,
-          onTapUp: _handleTapUp,
-          onTapCancel: _handleTapCancel,
-          child: AnimatedBuilder(
-            animation: _scaleAnimation,
-            builder: (context, child) =>
-                Transform.scale(scale: _scaleAnimation.value, child: child),
-            child: SvgPicture.asset(
-              context.isDarkMode
-                  ? 'assets/icons/clear-number-icon-dark.svg'
-                  : 'assets/icons/clear-number-icon-light.svg',
-              width: 28,
-              height: 24,
             ),
           ),
         ),
