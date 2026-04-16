@@ -13,7 +13,6 @@ class WalletsProvider extends ChangeNotifier {
     : _walletsService = walletsService ?? ReceiveWalletsService() {
     _activeCurrency = _globalProvider.selectedCurrency;
     _globalProvider.addListener(_onCurrencyUpdated);
-    _fetchWallets();
   }
 
   final GlobalProvider _globalProvider;
@@ -25,11 +24,26 @@ class WalletsProvider extends ChangeNotifier {
   String? _errorMessage;
   String? _activeCurrency;
   bool _isDisposed = false;
+  bool _hasFetchedWallets = false;
 
   List<WalletNetworkModel> get wallets => _wallets;
   bool get isLoading => _isLoading;
   bool get kycRequired => _kycRequired;
   String? get errorMessage => _errorMessage;
+
+  void onAuthChanged(bool isAuthenticated) {
+    if (isAuthenticated) {
+      if (!_hasFetchedWallets) {
+        _fetchWallets();
+      }
+    } else {
+      _hasFetchedWallets = false;
+      _wallets = [];
+      _kycRequired = false;
+      _errorMessage = null;
+      _notifySafely();
+    }
+  }
 
   /// Returns the fiat balance for a coin symbol based on the selected currency.
   ///
@@ -78,6 +92,7 @@ class WalletsProvider extends ChangeNotifier {
   Future<void> _fetchWallets() async {
     _isLoading = true;
     _errorMessage = null;
+    _hasFetchedWallets = true;
     _notifySafely();
 
     try {

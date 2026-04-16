@@ -66,7 +66,7 @@ class MyApp extends StatelessWidget {
               (global ?? GlobalProvider())
                 ..onAuthChanged(auth.state.isAuthenticated),
         ),
-        ChangeNotifierProvider<CoinsPricesProvider>(
+        ChangeNotifierProxyProvider<AuthProvider, CoinsPricesProvider>(
           create: (context) {
             final coinsService = CoinsService();
             return CoinsPricesProvider(
@@ -75,9 +75,13 @@ class MyApp extends StatelessWidget {
               coinsService,
             );
           },
+          update: (_, auth, provider) =>
+              provider!..onAuthChanged(auth.state.isAuthenticated),
         ),
-        ChangeNotifierProvider<WalletsProvider>(
+        ChangeNotifierProxyProvider<AuthProvider, WalletsProvider>(
           create: (context) => WalletsProvider(context.read<GlobalProvider>()),
+          update: (_, auth, provider) =>
+              provider!..onAuthChanged(auth.state.isAuthenticated),
         ),
         ChangeNotifierProxyProvider<AuthProvider, KycStatusProvider>(
           lazy: false,
