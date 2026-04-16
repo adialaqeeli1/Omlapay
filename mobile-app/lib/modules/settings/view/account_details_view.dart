@@ -6,12 +6,10 @@ import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/l10n/app_localizations.dart';
-import '../../../core/models/wallet_model/wallet_model.dart';
 import '../../../core/theme/theme.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/wallets_provider.dart';
 import '../../../widgets/common_back_button.dart';
-import '../providers/account_details_provider.dart';
 
 class AccountDetailsView extends StatelessWidget {
   const AccountDetailsView({super.key});
@@ -19,64 +17,76 @@ class AccountDetailsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = context.l10n!;
-    final ThemeData theme = Theme.of(context);
+    final ThemeData theme = context.theme;
     final double screenWidth = MediaQuery.of(context).size.width;
     final double horizontalPadding = screenWidth * 0.05;
 
-    return ChangeNotifierProvider(
-      create: (_) => AccountDetailsProvider(),
-      child: Scaffold(
-        appBar: AppBar(
-          leading: CommonBackButton(onPressed: () => GoRouter.of(context).pop()),
-          title: Text(
-            l10n.accountDetails,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
+    return Scaffold(
+      appBar: AppBar(
+        leading: CommonBackButton(onPressed: () => GoRouter.of(context).pop()),
+        title: Text(
+          l10n.accountDetails,
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: theme.brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        body: Consumer<AuthProvider>(
-          builder: (context, authProvider, child) {
-            final user = authProvider.state.user;
-            final loc = context.l10n!;
-            if (user == null) {
-              return Center(child: Text(loc.accountNoUserDataAvailable));
-            }
+      ),
+      body: Consumer<AuthProvider>(
+        builder: (context, authProvider, child) {
+          final user = authProvider.state.user;
+          final loc = context.l10n!;
+          if (user == null) {
+            return Center(child: Text(loc.accountNoUserDataAvailable));
+          }
 
-            final email = user.email ?? '';
+          final email = user.email ?? '';
 
-            return SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: ClampingScrollPhysics(),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 24),
-                  _buildInfoSection(
-                    context: context,
-                    label: l10n.phoneNumber,
-                    value: user.fullPhoneNumber,
-                  ),
-                  if (email.isNotEmpty) ...[
-                    const SizedBox(height: 24),
-                    _buildInfoSection(
-                      context: context,
-                      label: l10n.email,
-                      value: email,
+          final hasWallets = user.walletsAvailable;
+
+          return CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: ClampingScrollPhysics(),
+            ),
+            slivers: [
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                sliver: SliverMainAxisGroup(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.only(top: 24, bottom: 32),
+                      sliver: SliverToBoxAdapter(
+                        child: Column(
+                          spacing: 24,
+                          children: [
+                            _buildInfoSection(
+                              context: context,
+                              label: l10n.phoneNumber,
+                              value: user.fullPhoneNumber,
+                            ),
+                            if (email.isNotEmpty)
+                              _buildInfoSection(
+                                context: context,
+                                label: l10n.email,
+                                value: email,
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
+                    if (hasWallets)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: _WalletsSection(l10n: l10n),
+                      ),
                   ],
-                  const SizedBox(height: 32),
-                  _buildWalletsSection(context: context, l10n: l10n),
-                ],
+                ),
               ),
-            );
-          },
-        ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -86,7 +96,7 @@ class AccountDetailsView extends StatelessWidget {
     required String label,
     required String value,
   }) {
-    final theme = Theme.of(context);
+    final theme = context.theme;
     final textColor =
         theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface;
 
@@ -123,13 +133,50 @@ class AccountDetailsView extends StatelessWidget {
       ],
     );
   }
+}
 
-  Widget _buildWalletsSection({
-    required BuildContext context,
-    required AppLocalizations l10n,
-  }) {
+class _WalletsSection extends StatefulWidget {
+  const _WalletsSection({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  State<_WalletsSection> createState() => _WalletsSectionState();
+}
+
+class _WalletsSectionState extends State<_WalletsSection>
+    with SingleTickerProviderStateMixin {
+  TabController? _tabController;
+  int _networkCount = 0;
+  bool _addressCopiedVisible = false;
+
+  void _showCopiedOverlay() {
+    setState(() => _addressCopiedVisible = true);
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _addressCopiedVisible = false);
+    });
+  }
+
+  void _syncTabController(int count) {
+    if (count == _networkCount && _tabController != null) return;
+    _tabController?.dispose();
+    _networkCount = count;
+    if (count > 0) {
+      _tabController = TabController(length: count, vsync: this);
+    } else {
+      _tabController = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final walletsProvider = context.watch<WalletsProvider>();
-    final accountDetailsProvider = context.watch<AccountDetailsProvider>();
     final networks = walletsProvider.wallets;
 
     if (walletsProvider.isLoading && networks.isEmpty) {
@@ -140,170 +187,179 @@ class AccountDetailsView extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final selectedIndex = accountDetailsProvider.selectedNetworkIndex
-        .clamp(0, networks.length - 1);
-    final selectedNetwork = networks[selectedIndex];
+    _syncTabController(networks.length);
+    final tabController = _tabController!;
 
-    final theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l10n.walletsAddress,
-          style: TextStyle(
-            color: AppColors.textLightGrey,
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            fontFamily: GoogleFonts.poppins().fontFamily,
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildNetworkTabs(
-          context: context,
-          networks: networks,
-          selectedIndex: selectedIndex,
-          onChanged: (index) =>
-              context.read<AccountDetailsProvider>().selectNetwork(index),
-        ),
-        const SizedBox(height: 16),
-        ...selectedNetwork.coins.map(
-          (coin) => _buildCoinAddressRow(
-            context: context,
-            theme: theme,
-            l10n: l10n,
-            coin: coin,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNetworkTabs({
-    required BuildContext context,
-    required List<WalletNetworkModel> networks,
-    required int selectedIndex,
-    required ValueChanged<int> onChanged,
-  }) {
     final theme = Theme.of(context);
     final textColor =
         theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: networks.asMap().entries.map((entry) {
-          final index = entry.key;
-          final network = entry.value;
-          final isSelected = index == selectedIndex;
-          final displayText = network.networkDisplayName.isNotEmpty
-              ? network.networkDisplayName
-              : network.network;
+    final colorScheme = theme.colorScheme;
 
-          return GestureDetector(
-            onTap: () => onChanged(index),
-            child: Container(
-              margin: const EdgeInsetsDirectional.only(end: 24),
-              child: Column(
-                children: [
-                  Text(
-                    displayText,
-                    style: TextStyle(
-                      color: isSelected ? textColor : AppColors.textLightGrey,
-                      fontSize: 16,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w400,
-                      fontFamily: GoogleFonts.poppins().fontFamily,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    height: 2,
-                    width: displayText.length * 10.0,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.primaryColor
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(1),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildCoinAddressRow({
-    required BuildContext context,
-    required ThemeData theme,
-    required AppLocalizations l10n,
-    required WalletCoinModel coin,
-  }) {
-    final textColor =
-        theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface;
-    final hasAddress = coin.address != null && coin.address!.isNotEmpty;
-    final displayAddress =
-        hasAddress ? coin.address! : l10n.walletAddressMasked;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return SizedBox(
+      height: context.height - (context.height / 2),
+      child: Stack(
         children: [
-          Text(
-            '${coin.name} (${coin.symbol})',
-            style: TextStyle(
-              color: AppColors.textLightGrey,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              fontFamily: GoogleFonts.poppins().fontFamily,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Column(
+            crossAxisAlignment: .start,
+            mainAxisSize: .min,
             children: [
-              Expanded(
-                child: SelectableText(
-                  displayAddress,
-                  style: TextStyle(
-                    color: hasAddress ? textColor : AppColors.textLightGrey,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    fontFamily: GoogleFonts.poppins().fontFamily,
-                  ),
+              Text(
+                widget.l10n.walletsAddress,
+                style: TextStyle(
+                  color: AppColors.textLightGrey,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  fontFamily: GoogleFonts.poppins().fontFamily,
                 ),
               ),
-              const SizedBox(width: 12),
-              IconButton(
-                icon: Icon(
-                  Icons.copy,
-                  size: 20,
-                  color: hasAddress
-                      ? textColor
-                      : AppColors.textLightGrey.withValues(alpha: 0.4),
+              const SizedBox(height: 16),
+              TabBar(
+                controller: tabController,
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
+                labelColor: textColor,
+                unselectedLabelColor: AppColors.textLightGrey,
+                labelStyle: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: GoogleFonts.poppins().fontFamily,
                 ),
-                onPressed: hasAddress
-                    ? () {
-                        Clipboard.setData(
-                          ClipboardData(text: coin.address!),
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(l10n.addressCopiedToast),
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                      }
-                    : null,
+                unselectedLabelStyle: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  fontFamily: GoogleFonts.poppins().fontFamily,
+                ),
+                indicatorColor: AppColors.primaryColor,
+                indicatorWeight: 2,
+                dividerHeight: 0,
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
+                labelPadding: const EdgeInsetsDirectional.only(end: 24),
+                tabs: networks.map((network) {
+                  final displayText = network.networkDisplayName.isNotEmpty
+                      ? network.networkDisplayName
+                      : network.network;
+                  return Tab(text: displayText);
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: TabBarView(
+                  controller: tabController,
+                  children: networks.map((network) {
+                    if (network.coins.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    final coin = network.coins.first;
+                    final hasAddress =
+                        coin.address != null && coin.address!.isNotEmpty;
+                    final displayAddress = hasAddress
+                        ? coin.address!
+                        : widget.l10n.walletAddressMasked;
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: .min,
+                      children: [
+                        Text(
+                          '${coin.name} (${coin.symbol})',
+                          style: TextStyle(
+                            color: AppColors.textLightGrey,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: GoogleFonts.poppins().fontFamily,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          spacing: 12,
+                          crossAxisAlignment: .start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                displayAddress,
+                                style: TextStyle(
+                                  color: hasAddress
+                                      ? textColor
+                                      : AppColors.textLightGrey,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  fontFamily: GoogleFonts.poppins().fontFamily,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsetsDirectional.only(
+                                end: 16.0,
+                              ),
+                              child: InkWell(
+                                onTap: hasAddress
+                                    ? () {
+                                        Clipboard.setData(
+                                          ClipboardData(text: coin.address!),
+                                        );
+                                        _showCopiedOverlay();
+                                      }
+                                    : null,
+                                child: Icon(
+                                  Icons.copy,
+                                  size: 20,
+                                  color: hasAddress
+                                      ? textColor
+                                      : AppColors.textLightGrey.withValues(
+                                          alpha: 0.4,
+                                        ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
               ),
             ],
           ),
+          if (_addressCopiedVisible)
+            Positioned(
+              bottom: 30,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.inverseSurface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.tealColor.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.check_circle,
+                        color: colorScheme.primary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        widget.l10n.addressCopiedToast,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onInverseSurface,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

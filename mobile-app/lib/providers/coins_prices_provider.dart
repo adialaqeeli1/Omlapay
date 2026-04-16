@@ -18,9 +18,6 @@ class CoinsPricesProvider extends ChangeNotifier {
   ) {
     _activeCurrency = _globalProvider.selectedCurrency;
     _globalProvider.addListener(_onCurrencyUpdated);
-    _isLoading = true;
-    _fetchCoinsOnce();
-    _connectPricesStream();
   }
 
   final GlobalProvider _globalProvider;
@@ -32,6 +29,7 @@ class CoinsPricesProvider extends ChangeNotifier {
   String? _errorMessage;
   String? _activeCurrency;
   bool _isDisposed = false;
+  bool _hasFetchedCoins = false;
   StreamSubscription<List<CoinModel>>? _pricesSubscription;
 
   /// Latest coin rows from the stream (same data as home asset cards).
@@ -40,6 +38,25 @@ class CoinsPricesProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   String? get errorMessage => _errorMessage;
+
+  void onAuthChanged(bool isAuthenticated) {
+    if (isAuthenticated) {
+      if (!_hasFetchedCoins) {
+        _isLoading = true;
+        _hasFetchedCoins = true;
+        _fetchCoinsOnce();
+        _connectPricesStream();
+      }
+    } else {
+      _hasFetchedCoins = false;
+      _pricesSubscription?.cancel();
+      _pricesSubscription = null;
+      _coins = [];
+      _isLoading = false;
+      _errorMessage = null;
+      _notifySafely();
+    }
+  }
 
   /// Resolved price row for a symbol, or `null` if not in the last payload.
   CoinModel? coinForSymbol(String symbol) {

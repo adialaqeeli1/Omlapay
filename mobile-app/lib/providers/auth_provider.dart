@@ -7,6 +7,7 @@ import '../core/constants/constants.dart';
 import '../core/l10n/app_localizations_from_storage.dart';
 import '../core/models/auth_state/auth_state.dart';
 import '../core/models/user_model/user_model.dart';
+import '../core/models/wallet_model/wallet_model.dart';
 import '../core/mock_data/mock_data.dart';
 import '../core/services/storage_helper.dart';
 import '../core/utils/app_exception.dart';
@@ -375,6 +376,7 @@ class AuthProvider extends ChangeNotifier {
       if (data is Map<String, dynamic>) {
         final isVerified = data['isVerified'];
         final email = data['email']?.toString();
+        final phone = data['phone']?.toString();
 
         var updatedUser = currentUser;
         if (isVerified is bool) {
@@ -383,11 +385,28 @@ class AuthProvider extends ChangeNotifier {
         if (email != null && email.isNotEmpty) {
           updatedUser = updatedUser.copyWith(email: email);
         }
+        if (phone != null && phone.isNotEmpty) {
+          updatedUser = updatedUser.copyWith(fullMobileNumber: phone);
+        }
         final twoFactorEnabled = data['twoFactorEnabled'];
         if (twoFactorEnabled is bool) {
           updatedUser = updatedUser.copyWith(
             twoFactorEnabled: twoFactorEnabled,
           );
+        }
+        final walletsAvailable = data['walletsAvailable'];
+        if (walletsAvailable is bool) {
+          updatedUser = updatedUser.copyWith(
+            walletsAvailable: walletsAvailable,
+          );
+        }
+        final walletsJson = data['wallets'];
+        if (walletsJson is List && walletsJson.isNotEmpty) {
+          final wallets = walletsJson
+              .whereType<Map<String, dynamic>>()
+              .map((e) => WalletNetworkModel.fromJson(e))
+              .toList();
+          updatedUser = updatedUser.copyWith(wallets: wallets);
         }
 
         if (updatedUser != currentUser) {
