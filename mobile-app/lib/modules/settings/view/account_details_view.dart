@@ -233,8 +233,9 @@ class _WalletsSectionState extends State<_WalletsSection>
                 indicatorColor: AppColors.primaryColor,
                 indicatorWeight: 2,
                 dividerHeight: 0,
-                padding: EdgeInsets.zero,
-                labelPadding: const EdgeInsetsDirectional.only(end: 24),
+                indicatorSize: TabBarIndicatorSize.tab,
+                // padding: EdgeInsets.zero,
+                // labelPadding: const EdgeInsetsDirectional.only(end: 24),
                 tabs: networks.map((network) {
                   final displayText = network.networkDisplayName.isNotEmpty
                       ? network.networkDisplayName
