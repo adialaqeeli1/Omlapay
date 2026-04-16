@@ -18,6 +18,7 @@ class CoinsPricesProvider extends ChangeNotifier {
   ) {
     _activeCurrency = _globalProvider.selectedCurrency;
     _globalProvider.addListener(_onCurrencyUpdated);
+    _startFetching();
   }
 
   final GlobalProvider _globalProvider;
@@ -39,15 +40,19 @@ class CoinsPricesProvider extends ChangeNotifier {
 
   String? get errorMessage => _errorMessage;
 
+  /// Kicks off the initial REST fetch + SSE stream connection.
+  /// Called once from the constructor (the prices API is public).
+  void _startFetching() {
+    if (_hasFetchedCoins) return;
+    _isLoading = true;
+    _hasFetchedCoins = true;
+    _fetchCoinsOnce();
+    _connectPricesStream();
+  }
+
   void onAuthChanged(bool isAuthenticated) {
-    if (isAuthenticated) {
-      if (!_hasFetchedCoins) {
-        _isLoading = true;
-        _hasFetchedCoins = true;
-        _fetchCoinsOnce();
-        _connectPricesStream();
-      }
-    } else {
+    if (!isAuthenticated) {
+      // On logout, reset so a future login re-fetches fresh data.
       _hasFetchedCoins = false;
       _pricesSubscription?.cancel();
       _pricesSubscription = null;
@@ -55,6 +60,9 @@ class CoinsPricesProvider extends ChangeNotifier {
       _isLoading = false;
       _errorMessage = null;
       _notifySafely();
+    } else {
+      // Re-connect after a fresh login (token may have changed).
+      _startFetching();
     }
   }
 
