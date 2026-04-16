@@ -43,7 +43,7 @@ class ProfileView extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Divider(thickness: 1),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+          SizedBox(height: context.height * 0.01),
           Flexible(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -294,21 +294,26 @@ class ProfileView extends StatelessWidget {
     final iconPadding = screenWidth * 0.02;
 
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
-          child: Text(
-            phoneNumber,
-            textDirection: TextDirection.ltr,
-            style: context.textTheme.headlineLarge?.copyWith(
-              color: context.isDarkMode ? AppColors.white : AppColors.textBlack,
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(
+              phoneNumber,
+              textDirection: TextDirection.ltr,
+              style: context.textTheme.headlineLarge?.copyWith(
+                color: context.isDarkMode
+                    ? AppColors.white
+                    : AppColors.textBlack,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+              overflow: TextOverflow.visible,
+              maxLines: 1,
             ),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
           ),
         ),
-        Spacer(),
         Material(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(8),
