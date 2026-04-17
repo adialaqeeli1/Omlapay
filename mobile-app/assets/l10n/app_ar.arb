@@ -456,6 +456,7 @@
     },
     "kyc_retry_button": "إعادة التحقق",
     "swapFeesTitle": "رسوم المبادلة",
+    "swapExchangeRate": "سعر الصرف",
     "transferToLabel": "إلى",
     "addressCopiedToast": "تم النسخ",
     "availableShortLabel": "المتاح",
