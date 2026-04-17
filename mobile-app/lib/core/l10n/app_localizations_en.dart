@@ -358,6 +358,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hello => 'Hello!';
 
   @override
+  String get helloComma => 'Hello,';
+
+  @override
   String get welcomeBackToOmlapay => 'Welcome Back to Omlapay!';
 
   @override

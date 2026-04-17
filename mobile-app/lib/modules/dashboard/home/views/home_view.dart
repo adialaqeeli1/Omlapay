@@ -122,18 +122,34 @@ class _HomeViewState extends State<HomeView> {
                         fontSize: 14,
                       ),
                     ),
-                    Text(
-                      userPhone,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textDirection: TextDirection.ltr,
-                      style: context.textTheme.titleMedium?.copyWith(
-                        color: context.isDarkMode
-                            ? AppColors.textWhite
-                            : AppColors.textBlack,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 18,
-                      ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            userPhone,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textDirection: TextDirection.ltr,
+                            style: context.textTheme.titleMedium?.copyWith(
+                              color: context.isDarkMode
+                                  ? AppColors.textWhite
+                                  : AppColors.textBlack,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                        if (currentUser?.isVerified == true) ...[
+                          const SizedBox(width: 6),
+                          SvgPicture.asset(
+                            'assets/icons/check.svg',
+                            width: 16,
+                            height: 16,
+                          ),
+                        ],
+                      ],
                     ),
                   ],
                 ),
