@@ -2084,6 +2084,12 @@ abstract class AppLocalizations {
   /// **'Swap Fees'**
   String get swapFeesTitle;
 
+  /// No description provided for @swapExchangeRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Exchange Rate'**
+  String get swapExchangeRate;
+
   /// No description provided for @transferToLabel.
   ///
   /// In en, this message translates to:

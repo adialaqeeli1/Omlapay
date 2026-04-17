@@ -456,6 +456,7 @@
     },
     "kyc_retry_button": "Retry Verification",
     "swapFeesTitle": "Swap Fees",
+    "swapExchangeRate": "Exchange Rate",
     "transferToLabel": "To",
     "addressCopiedToast": "Copied",
     "availableShortLabel": "Available",

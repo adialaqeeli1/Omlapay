@@ -1,4 +1,5 @@
 import '../../../../core/constants/endpoints.dart';
+import '../../../../core/models/swap_quote_model/swap_quote_model.dart';
 import '../../../../core/services/api_helper.dart';
 import '../../../../core/utils/app_exception.dart';
 
@@ -8,12 +9,9 @@ class SwapService {
 
   /// Fetches a swap quote for converting between two coins.
   ///
-  /// Currently the API always returns an error, so we only handle
-  /// the error path. Success handling will be added later.
-  ///
   /// Throws [AppException] when the backend rejects the request or
   /// the response payload is missing the `data` object.
-  static Future<void> fetchSwapQuote({
+  static Future<SwapQuoteModel> fetchSwapQuote({
     required String fromCoin,
     required String toCoin,
     required String amount,
@@ -35,6 +33,6 @@ class SwapService {
       );
     }
 
-    // TODO: Parse and return swap quote model when success data is available.
+    return SwapQuoteModel.fromJson(data);
   }
 }

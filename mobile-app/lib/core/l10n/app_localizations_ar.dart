@@ -1090,6 +1090,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get swapFeesTitle => 'رسوم المبادلة';
 
   @override
+  String get swapExchangeRate => 'سعر الصرف';
+
+  @override
   String get transferToLabel => 'إلى';
 
   @override

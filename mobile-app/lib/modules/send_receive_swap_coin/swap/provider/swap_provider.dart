@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/l10n/app_localizations_from_storage.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
+import '../../../../core/models/swap_quote_model/swap_quote_model.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/coins_prices_provider.dart';
 import '../../../../providers/wallets_provider.dart';
@@ -23,6 +24,7 @@ class SwapProvider extends ChangeNotifier {
   final TextEditingController toAmountController = TextEditingController();
 
   String? _error;
+  SwapQuoteModel? _swapQuote;
 
   List<CoinModel> get coins => _coins;
   bool get isLoading => _isLoading;
@@ -30,6 +32,7 @@ class SwapProvider extends ChangeNotifier {
   CoinModel? get fromCoin => _fromCoin;
   CoinModel? get toCoin => _toCoin;
   String? get error => _error;
+  SwapQuoteModel? get swapQuote => _swapQuote;
 
   bool get isVerified => authProvider.state.user?.isVerified ?? false;
 
@@ -204,12 +207,11 @@ class SwapProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await SwapService.fetchSwapQuote(
+      _swapQuote = await SwapService.fetchSwapQuote(
         fromCoin: _fromCoin!.symbol,
         toCoin: _toCoin!.symbol,
         amount: fromAmountController.text.trim(),
       );
-      // TODO: Handle success data when the API starts returning it.
     } finally {
       _isSubmitting = false;
       notifyListeners();

@@ -1099,6 +1099,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get swapFeesTitle => 'Swap Fees';
 
   @override
+  String get swapExchangeRate => 'Exchange Rate';
+
+  @override
   String get transferToLabel => 'To';
 
   @override

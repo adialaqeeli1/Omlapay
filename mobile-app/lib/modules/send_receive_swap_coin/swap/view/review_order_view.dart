@@ -3,6 +3,7 @@ import 'package:omlapay_mobile_app/core/extentions/context_extensions.dart';
 import 'package:omlapay_mobile_app/widgets/common_back_button.dart';
 import 'package:provider/provider.dart';
 import 'package:crypto_font_icons/crypto_font_icons.dart';
+import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/app_exception.dart';
@@ -19,6 +20,7 @@ class ReviewOrderView extends StatelessWidget {
     final provider = context.watch<SwapProvider>();
     final fromCoin = provider.fromCoin;
     final toCoin = provider.toCoin;
+    final quote = provider.swapQuote;
     final l10n = context.l10n!;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -71,7 +73,7 @@ class ReviewOrderView extends StatelessWidget {
                                 // Coin Info
                                 Row(
                                   children: [
-                                    _buildCoinIcon(fromCoin?.symbol ?? ''),
+                                    _buildCoinIcon(fromCoin),
                                     const SizedBox(width: 12),
                                     Text(
                                       fromCoin?.localizedCoinTicker(context) ??
@@ -86,7 +88,10 @@ class ReviewOrderView extends StatelessWidget {
                                 ),
                                 // Amount
                                 Text(
-                                  provider.fromAmountController.text,
+                                  double.parse(
+                                    quote?.fromAmount ??
+                                        provider.fromAmountController.text,
+                                  ).toStringAsFixed(5),
                                   style: TextStyle(
                                     color: colorScheme.onSurface,
                                     fontSize: 24,
@@ -100,7 +105,7 @@ class ReviewOrderView extends StatelessWidget {
                             Align(
                               alignment: Alignment.centerRight,
                               child: Text(
-                                '≈100,15 ${l10n.usd}', // TODO: Calculate real USD value
+                                '≈${quote?.fromAmountUsd ?? '0.00'} ${l10n.usd}',
                                 style: TextStyle(
                                   color: colorScheme.onSurfaceVariant,
                                   fontSize: 12,
@@ -135,7 +140,7 @@ class ReviewOrderView extends StatelessWidget {
                                 // Coin Info
                                 Row(
                                   children: [
-                                    _buildCoinIcon(toCoin?.symbol ?? ''),
+                                    _buildCoinIcon(toCoin),
                                     const SizedBox(width: 12),
                                     Text(
                                       toCoin?.localizedCoinTicker(context) ??
@@ -150,7 +155,10 @@ class ReviewOrderView extends StatelessWidget {
                                 ),
                                 // Amount
                                 Text(
-                                  provider.toAmountController.text,
+                                  double.parse(
+                                    quote?.estimatedToAmount ??
+                                        provider.toAmountController.text,
+                                  ).toStringAsFixed(5),
                                   style: TextStyle(
                                     color: colorScheme.onSurface,
                                     fontSize: 24,
@@ -164,7 +172,7 @@ class ReviewOrderView extends StatelessWidget {
                             Align(
                               alignment: Alignment.centerRight,
                               child: Text(
-                                '≈2,15 ${l10n.usd}', // TODO: Calculate real USD value
+                                '≈${quote?.estimatedToAmountUsd ?? '0.00'} ${l10n.usd}',
                                 style: TextStyle(
                                   color: colorScheme.onSurfaceVariant,
                                   fontSize: 12,
@@ -203,33 +211,23 @@ class ReviewOrderView extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
-            // Network Information
+            // Exchange Rate
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  l10n.network,
+                  l10n.swapExchangeRate,
                   style: TextStyle(
                     color: colorScheme.onSurfaceVariant,
                     fontSize: 14,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Text(
-                    'TRC20',
-                    style: TextStyle(
-                      color: AppColors.tealColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
+                Text(
+                  '1 ${fromCoin?.localizedCoinTicker(context) ?? ''} ≈ ${quote?.exchangeRate ?? '—'} ${toCoin?.localizedCoinTicker(context) ?? ''}',
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -249,7 +247,7 @@ class ReviewOrderView extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${provider.swapFee} ${fromCoin?.localizedCoinTicker(context) ?? ''}',
+                  '${quote?.totalFee ?? '0'} ${l10n.usd}',
                   style: TextStyle(
                     color: colorScheme.onSurface,
                     fontSize: 14,
@@ -292,8 +290,7 @@ class ReviewOrderView extends StatelessWidget {
                       )
                     : Text(
                         l10n.swapNowButton,
-                        style: TextStyle(
-                          color: colorScheme.onPrimary,
+                        style: context.textTheme.titleMedium?.copyWith(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -325,38 +322,42 @@ class ReviewOrderView extends StatelessWidget {
     }
   }
 
-  Widget _buildCoinIcon(String symbol) {
-    Color? backgroundColor;
+  Widget _buildCoinIcon(CoinModel? coin) {
+    final symbol = coin?.symbol ?? '';
+    Color iconBackgroundColor;
     Widget? fallbackIcon;
 
     if (symbol == 'USDT') {
-      backgroundColor = AppColors.usdtColor;
+      iconBackgroundColor = AppColors.usdtColor;
       fallbackIcon = const Icon(
         CryptoFontIcons.USDT,
         color: Colors.white,
         size: 24,
       );
     } else if (symbol == 'ETH') {
-      backgroundColor = AppColors.textWhite;
+      iconBackgroundColor = AppColors.textWhite;
       fallbackIcon = const Icon(
         CryptoFontIcons.ETH,
         color: Colors.black,
         size: 24,
       );
     } else if (symbol == 'BTC') {
-      backgroundColor = AppColors.bitcoinColor;
+      iconBackgroundColor = AppColors.bitcoinColor;
       fallbackIcon = const Icon(
         CryptoFontIcons.BTC,
         color: Colors.white,
         size: 24,
       );
+    } else {
+      iconBackgroundColor = Colors.grey;
     }
 
     return CommonCoinIcon(
       symbol: symbol,
-      iconBackgroundColor: backgroundColor,
+      iconBackgroundColor: iconBackgroundColor,
       fallbackIcon: fallbackIcon,
-      radius: 20, // Slightly larger for review screen? or same 20 rad = 40 dia
+      radius: 20,
+      networkIconUrl: coin?.networkIconUrl,
     );
   }
 }
