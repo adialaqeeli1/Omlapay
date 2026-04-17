@@ -30,11 +30,13 @@ class CustomDatePickerDialog extends StatefulWidget {
     DateTime? firstDate,
     DateTime? lastDate,
   }) async {
-    final first = firstDate ?? DateTime(2020);
-    final last = lastDate ?? DateTime.now();
+    final first = firstDate ?? DateTime(1900);
+    final last = lastDate ?? DateTime(2100);
     return showGeneralDialog<DateTime>(
       context: context,
       barrierDismissible: true,
+      barrierLabel:
+          MaterialLocalizations.of(context).modalBarrierDismissLabel,
       barrierColor: Colors.black54,
       transitionDuration: const Duration(milliseconds: 250),
       pageBuilder: (context, animation, secondaryAnimation) =>

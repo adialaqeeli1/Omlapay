@@ -16,11 +16,7 @@ class HistoryFilterBottomSheet extends StatefulWidget {
   final String? selectedType;
   final DateTime? dateStart;
   final DateTime? dateEnd;
-  final void Function({
-    String? type,
-    DateTime? dateStart,
-    DateTime? dateEnd,
-  })
+  final void Function({String? type, DateTime? dateStart, DateTime? dateEnd})
   onApply;
 
   static void show(
@@ -94,8 +90,6 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
       context,
       title: context.l10n!.dateFrom,
       initialDate: _dateStart ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
     );
     if (picked != null && mounted) {
       setState(() => _dateStart = picked);
@@ -108,8 +102,7 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
       context,
       title: context.l10n!.dateTo,
       initialDate: initial,
-      firstDate: _dateStart ?? DateTime(2020),
-      lastDate: DateTime.now(),
+      firstDate: _dateStart,
     );
     if (picked != null && mounted) {
       setState(() => _dateEnd = picked);
@@ -125,11 +118,7 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
         theme.textTheme.bodyMedium?.color ?? AppColors.textLightGrey;
     final labelColor = AppColors.textLightGrey;
 
-    final typeOptions = <String?>[
-      null,
-      'SENT',
-      'RECEIVE',
-    ];
+    final typeOptions = <String?>[null, 'SENT', 'RECEIVE'];
 
     String getTypeLabel(String? type) {
       if (type == null) return l10n.all;
@@ -204,9 +193,7 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
                         label: getTypeLabel(typeOptions[i]),
                         isSelected: _selectedType == typeOptions[i],
                         onTap: () {
-                          setState(
-                            () => _selectedType = typeOptions[i],
-                          );
+                          setState(() => _selectedType = typeOptions[i]);
                         },
                       ),
                     ),

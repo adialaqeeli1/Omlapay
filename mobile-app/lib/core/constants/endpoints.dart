@@ -103,6 +103,10 @@ class Endpoints {
   /// Query params: `fromCoin`, `toCoin`, `amount` (all required).
   static String get swapQuote => '$apiVersion/swap/quote';
 
+  /// Executes a swap between two coins.
+  /// Body: `fromCoin`, `toCoin`, `amount` (all required).
+  static String get swapExecute => '$apiVersion/swap/execute';
+
   /// KYC start endpoint; returns Sumsub access token.
   static String get kycStart => '$apiVersion/user/kyc/start';
 

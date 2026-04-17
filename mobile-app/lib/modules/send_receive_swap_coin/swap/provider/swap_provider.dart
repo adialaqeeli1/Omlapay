@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/l10n/app_localizations_from_storage.dart';
@@ -212,6 +214,30 @@ class SwapProvider extends ChangeNotifier {
         toCoin: _toCoin!.symbol,
         amount: fromAmountController.text.trim(),
       );
+    } finally {
+      _isSubmitting = false;
+      notifyListeners();
+    }
+  }
+
+  /// Executes the swap via the backend. Returns `true` on success.
+  /// Rethrows exceptions so the UI can surface localized error messages.
+  Future<bool> executeSwap() async {
+    if (_isSubmitting) return false;
+    if (_fromCoin == null || _toCoin == null) return false;
+    if (fromAmountController.text.trim().isEmpty) return false;
+
+    _isSubmitting = true;
+    notifyListeners();
+
+    try {
+      await SwapService.executeSwap(
+        fromCoin: _fromCoin!.symbol,
+        toCoin: _toCoin!.symbol,
+        amount: fromAmountController.text.trim(),
+      );
+      unawaited(walletsProvider.refreshWallets());
+      return true;
     } finally {
       _isSubmitting = false;
       notifyListeners();
