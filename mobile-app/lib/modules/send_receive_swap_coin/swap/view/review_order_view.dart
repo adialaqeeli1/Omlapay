@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:omlapay_mobile_app/core/extentions/context_extensions.dart';
 import 'package:omlapay_mobile_app/widgets/common_back_button.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +9,7 @@ import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/app_exception.dart';
 import '../../../../core/utils/snackbar_helper.dart';
+import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_coin_icon.dart';
 import '../../../../widgets/theme_aware_icon.dart';
 import '../provider/swap_provider.dart';
@@ -310,9 +312,11 @@ class ReviewOrderView extends StatelessWidget {
   ) async {
     final l10n = context.l10n!;
     try {
+      final success = await provider.executeSwap();
       if (!context.mounted) return;
-      // TODO: Navigate to success screen once API returns success data.
-      // context.push(Routes.swapSuccess, extra: provider);
+      if (success) {
+        context.push(Routes.swapSuccess, extra: provider);
+      }
     } on AppException catch (e) {
       if (!context.mounted) return;
       SnackbarHelper.showError(context, e.localizedMessage(context.l10n));

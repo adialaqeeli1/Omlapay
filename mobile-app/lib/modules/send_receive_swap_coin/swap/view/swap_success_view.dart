@@ -17,8 +17,12 @@ class SwapSuccessView extends StatelessWidget {
     final provider = context.read<SwapProvider>();
     final l10n = context.l10n!;
     final toCoin = provider.toCoin;
+    final quote = provider.swapQuote;
     // We display the To amount as the result
-    final toAmount = provider.toAmountController.text;
+    final toAmount = quote?.estimatedToAmount.isNotEmpty == true
+        ? quote!.estimatedToAmount
+        : provider.toAmountController.text;
+    final toAmountUsd = quote?.estimatedToAmountUsd ?? '0.00';
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -107,7 +111,7 @@ class SwapSuccessView extends StatelessWidget {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          '0,282 ${l10n.usd}', // Mock value matching screenshot style
+                          '$toAmountUsd ${l10n.usd}',
                           style: const TextStyle(
                             color: AppColors.tealColor,
                             fontSize: 14,

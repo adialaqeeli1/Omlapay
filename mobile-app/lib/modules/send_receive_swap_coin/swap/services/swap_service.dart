@@ -3,7 +3,7 @@ import '../../../../core/models/swap_quote_model/swap_quote_model.dart';
 import '../../../../core/services/api_helper.dart';
 import '../../../../core/utils/app_exception.dart';
 
-/// API calls for the swap flow: quote fetching.
+/// API calls for the swap flow: quote fetching and execution.
 class SwapService {
   SwapService._();
 
@@ -34,5 +34,27 @@ class SwapService {
     }
 
     return SwapQuoteModel.fromJson(data);
+  }
+
+  /// Executes a swap between two coins. The numeric [amount] is sent as a
+  /// JSON number to match the backend contract.
+  static Future<void> executeSwap({
+    required String fromCoin,
+    required String toCoin,
+    required String amount,
+  }) async {
+    final parsedAmount = double.tryParse(amount);
+    if (parsedAmount == null) {
+      throw AppException(
+        'Invalid swap amount',
+        messageKey: 'requestFailed',
+      );
+    }
+
+    await ApiHelper.post(Endpoints.swapExecute, <String, dynamic>{
+      'fromCoin': fromCoin,
+      'toCoin': toCoin,
+      'amount': parsedAmount,
+    });
   }
 }
