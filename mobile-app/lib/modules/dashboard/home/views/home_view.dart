@@ -35,8 +35,30 @@ import '../../../send_receive_swap_coin/send/view/send_coin_view.dart';
 import '../providers/home_provider.dart';
 import '../widgets/currency_selection_dialog.dart';
 
-class HomeView extends StatelessWidget {
+class HomeView extends StatefulWidget {
   const HomeView({super.key});
+
+  @override
+  State<HomeView> createState() => _HomeViewState();
+}
+
+class _HomeViewState extends State<HomeView> {
+  @override
+  void initState() {
+    super.initState();
+    // Refresh wallets every time the home page is entered so balances
+    // are always up-to-date.  The wallets API requires authentication.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final isAuthenticated = context
+          .read<AuthProvider>()
+          .state
+          .isAuthenticated;
+      if (isAuthenticated) {
+        context.read<WalletsProvider>().refreshWallets();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -296,10 +318,10 @@ class HomeView extends StatelessWidget {
             symbol: coin.symbol,
             symbolLabel: coin.localizedCoinTicker(context),
             name: coin.name.isEmpty ? coin.symbol : coin.name,
-            amount: walletsProvider.balanceForCoinConverted(coin.symbol),
+            amount: walletsProvider.balanceForCoin(coin.symbol),
             networkIconUrl: coin.networkIconUrl,
             currentPrice:
-                '${coin.valueInUsd} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',
+                '${walletsProvider.balanceForCoinConverted(coin.symbol)} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',
             iconBackgroundColor: iconBgColor,
             icon: iconWidget,
             onTap: () => context.push(Routes.coinDetails, extra: coin),

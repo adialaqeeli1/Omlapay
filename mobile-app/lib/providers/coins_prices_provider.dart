@@ -51,17 +51,10 @@ class CoinsPricesProvider extends ChangeNotifier {
   }
 
   void onAuthChanged(bool isAuthenticated) {
-    if (!isAuthenticated) {
-      // On logout, reset so a future login re-fetches fresh data.
-      _hasFetchedCoins = false;
-      _pricesSubscription?.cancel();
-      _pricesSubscription = null;
-      _coins = [];
-      _isLoading = false;
-      _errorMessage = null;
-      _notifySafely();
-    } else {
-      // Re-connect after a fresh login (token may have changed).
+    // Coin prices are public — the stream is started once from the
+    // constructor when the home page first accesses this provider.
+    // On login we re-connect so the request carries the fresh token.
+    if (isAuthenticated) {
       _startFetching();
     }
   }
