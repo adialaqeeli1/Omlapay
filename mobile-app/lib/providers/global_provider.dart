@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../core/constants/endpoints.dart';
 import '../core/services/api_helper.dart';
+
 class GlobalProvider extends ChangeNotifier {
   String _selectedCurrency = 'USD';
 
@@ -10,8 +11,10 @@ class GlobalProvider extends ChangeNotifier {
   bool get isBalanceVisible => _isBalanceVisible;
 
   bool _hasFetchedCurrency = false;
+  bool _isAuthenticated = false;
 
   void onAuthChanged(bool isAuthenticated) {
+    _isAuthenticated = isAuthenticated;
     if (isAuthenticated) {
       if (!_hasFetchedCurrency) {
         _fetchCurrencySetup();
@@ -31,7 +34,8 @@ class GlobalProvider extends ChangeNotifier {
     try {
       final response = await ApiHelper.get(Endpoints.userSettingsCurrency);
       final currency = response['data']?['currency'] as String?;
-      if (currency != null && _selectedCurrency.toLowerCase() != currency.toLowerCase()) {
+      if (currency != null &&
+          _selectedCurrency.toLowerCase() != currency.toLowerCase()) {
         _selectedCurrency = currency.toUpperCase();
         notifyListeners();
       }
@@ -43,11 +47,16 @@ class GlobalProvider extends ChangeNotifier {
   Future<void> updateCurrency(String currency) async {
     if (_selectedCurrency == currency) return;
 
+    if (!_isAuthenticated) {
+      _selectedCurrency = currency.toUpperCase();
+      notifyListeners();
+      return;
+    }
+
     try {
-      final response = await ApiHelper.put(
-        Endpoints.userSettingsCurrency,
-        {'currency': currency.toLowerCase()},
-      );
+      final response = await ApiHelper.put(Endpoints.userSettingsCurrency, {
+        'currency': currency.toLowerCase(),
+      });
       final newCurrency = response['data']?['currency'] as String?;
       if (newCurrency != null) {
         _selectedCurrency = newCurrency.toUpperCase();
