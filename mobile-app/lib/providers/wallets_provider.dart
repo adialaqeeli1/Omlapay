@@ -25,6 +25,7 @@ class WalletsProvider extends ChangeNotifier {
   String? _activeCurrency;
   bool _isDisposed = false;
   bool _hasFetchedWallets = false;
+  bool _isAuthenticated = false;
 
   List<WalletNetworkModel> get wallets => _wallets;
   bool get isLoading => _isLoading;
@@ -32,6 +33,7 @@ class WalletsProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   void onAuthChanged(bool isAuthenticated) {
+    _isAuthenticated = isAuthenticated;
     if (isAuthenticated) {
       if (!_hasFetchedWallets) {
         _fetchWallets();
@@ -118,6 +120,7 @@ class WalletsProvider extends ChangeNotifier {
     if (selectedCurrency == _activeCurrency) return;
 
     _activeCurrency = selectedCurrency;
+    if (!_isAuthenticated) return;
     _fetchWallets();
   }
 

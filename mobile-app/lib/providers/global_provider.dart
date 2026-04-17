@@ -45,25 +45,25 @@ class GlobalProvider extends ChangeNotifier {
   }
 
   Future<void> updateCurrency(String currency) async {
-    if (_selectedCurrency == currency) return;
+    if (_selectedCurrency.toLowerCase() == currency.toLowerCase()) return;
 
-    if (!_isAuthenticated) {
-      _selectedCurrency = currency.toUpperCase();
-      notifyListeners();
-      return;
-    }
+    _selectedCurrency = currency.toUpperCase();
+    notifyListeners();
+
+    if (!_isAuthenticated) return;
 
     try {
       final response = await ApiHelper.put(Endpoints.userSettingsCurrency, {
         'currency': currency.toLowerCase(),
       });
       final newCurrency = response['data']?['currency'] as String?;
-      if (newCurrency != null) {
+      if (newCurrency != null &&
+          newCurrency.toUpperCase() != _selectedCurrency) {
         _selectedCurrency = newCurrency.toUpperCase();
         notifyListeners();
       }
     } catch (e) {
-      // API failed, do not update selected currency. It will remain the already selected one.
+      // API failed; keep the optimistic local update so the UI stays responsive.
     }
   }
 
