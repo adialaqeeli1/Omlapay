@@ -352,6 +352,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get hello => 'مرحبًا!';
 
   @override
+  String get helloComma => 'مرحبًا،';
+
+  @override
   String get welcomeBackToOmlapay => 'مرحبًا بعودتك إلى أوملاباي!';
 
   @override

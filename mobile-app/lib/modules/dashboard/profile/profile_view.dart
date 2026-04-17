@@ -35,6 +35,7 @@ class ProfileView extends StatelessWidget {
           ? _buildAuthenticatedHeader(
               context: context,
               phoneNumber: user.fullPhoneNumber,
+              isVerified: isKycVerified,
               screenWidth: screenWidth,
               horizontalPadding: horizontalPadding,
             )
@@ -287,31 +288,63 @@ class ProfileView extends StatelessWidget {
   Widget _buildAuthenticatedHeader({
     required BuildContext context,
     required String phoneNumber,
+    required bool isVerified,
     required double screenWidth,
     required double horizontalPadding,
   }) {
+    final l10n = context.l10n!;
     final iconSize = screenWidth * 0.08;
     final iconPadding = screenWidth * 0.02;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
-          child: Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: Text(
-              phoneNumber,
-              textDirection: TextDirection.ltr,
-              style: context.textTheme.headlineLarge?.copyWith(
-                color: context.isDarkMode
-                    ? AppColors.white
-                    : AppColors.textBlack,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.helloComma,
+                style: context.textTheme.titleMedium?.copyWith(
+                  color: context.isDarkMode
+                      ? AppColors.textGrey
+                      : AppColors.textLightGrey,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                ),
               ),
-              overflow: TextOverflow.visible,
-              maxLines: 1,
-            ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: Text(
+                      phoneNumber,
+                      textDirection: TextDirection.ltr,
+                      style: context.textTheme.headlineLarge?.copyWith(
+                        color: context.isDarkMode
+                            ? AppColors.white
+                            : AppColors.textBlack,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                  if (isVerified) ...[
+                    const SizedBox(width: 6),
+                    SvgPicture.asset(
+                      'assets/icons/check.svg',
+                      width: 18,
+                      height: 18,
+                    ),
+                  ],
+                ],
+              ),
+            ],
           ),
         ),
         Material(

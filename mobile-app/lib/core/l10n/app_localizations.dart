@@ -734,6 +734,12 @@ abstract class AppLocalizations {
   /// **'Hello!'**
   String get hello;
 
+  /// No description provided for @helloComma.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello,'**
+  String get helloComma;
+
   /// No description provided for @welcomeBackToOmlapay.
   ///
   /// In en, this message translates to:
