@@ -355,10 +355,18 @@ class ProfileView extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             child: Padding(
               padding: EdgeInsets.all(iconPadding),
-              child: ThemeAwareIcon(
-                assetPath: 'assets/icons/general_settings_icon.svg',
+              // child: ThemeAwareIcon(
+              //   assetPath: 'assets/icons/general_settings_icon.svg',
+              //   width: iconSize,
+              //   height: iconSize,
+              // ),
+              child: SvgPicture.asset(
+                'assets/icons/general_settings_icon.svg',
                 width: iconSize,
                 height: iconSize,
+                colorFilter: context.isDarkMode
+                    ? null
+                    : ColorFilter.mode(AppColors.textBlack, BlendMode.srcIn),
               ),
             ),
           ),
