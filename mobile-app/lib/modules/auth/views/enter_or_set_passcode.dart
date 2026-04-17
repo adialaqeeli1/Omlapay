@@ -294,7 +294,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                         child: Text(
                           l10n.forgotPasscode,
                           style: theme.textTheme.titleMedium?.copyWith(
-                            fontSize: 18 / 1.35,
+                            fontSize: 18,
                             fontWeight: FontWeight.w600,
                             color: AppColors.primaryColor,
                           ),

@@ -49,6 +49,8 @@ class SwapCoinView extends StatelessWidget {
       );
     }
 
+    // print(provider.fromCoin?.networkIconUrl);
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,

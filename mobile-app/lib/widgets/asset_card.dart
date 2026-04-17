@@ -124,7 +124,7 @@ class AssetCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      currentPrice,
+                      '≈ $currentPrice',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: context.textTheme.bodyMedium?.copyWith(
