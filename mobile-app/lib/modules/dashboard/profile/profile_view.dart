@@ -10,7 +10,6 @@ import '../../../providers/auth_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../../../widgets/common_grid_bg_wrapper.dart';
-import '../../../widgets/theme_aware_icon.dart';
 import '../../../widgets/logout_alert_dialog.dart';
 
 class ProfileView extends StatelessWidget {
