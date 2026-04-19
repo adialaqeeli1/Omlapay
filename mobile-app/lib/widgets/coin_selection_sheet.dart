@@ -64,7 +64,9 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
 
         // Balance filter
         if (_hideZeroBalance) {
-          final walletBalance = context.read<WalletsProvider>().balanceForCoin(coin.symbol);
+          final walletBalance = context.read<WalletsProvider>().balanceForCoin(
+            coin.symbol,
+          );
           final amountStr = walletBalance.replaceAll(',', '');
           final amount = double.tryParse(amountStr) ?? 0.0;
           return matchesSearch && amount > 0;
@@ -180,34 +182,19 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
               itemBuilder: (context, index) {
                 final coin = _filteredCoins[index];
                 final isSelected = coin == widget.selectedCoin;
-                final itemColorScheme = Theme.of(context).colorScheme;
+                final theme = context.theme;
+                final itemColorScheme = theme.colorScheme;
                 Color? iconBackgroundColor;
                 Widget? fallbackIcon;
 
-                // if (coin.symbol == 'USDT') {
-                //   iconBackgroundColor = AppColors.usdtColor;
-                //   fallbackIcon = const Icon(
-                //     CryptoFontIcons.USDT,
-                //     color: Colors.white,
-                //     size: 24,
-                //   );
-                // } else if (coin.symbol == 'ETH') {
-                //   iconBackgroundColor = AppColors.textWhite;
-                //   fallbackIcon = const Icon(
-                //     CryptoFontIcons.ETH,
-                //     color: Colors.black,
-                //     size: 24,
-                //   );
-                // } else if (coin.symbol == 'BTC') {
-                //   iconBackgroundColor = AppColors.bitcoinColor;
-                //   fallbackIcon = const Icon(
-                //     CryptoFontIcons.BTC,
-                //     color: Colors.white,
-                //     size: 24,
-                //   );
-                // }
+                final bool hasPrice =
+                    (double.tryParse(
+                          walletsProvider.balanceForCoinConverted(coin.symbol),
+                        ) ??
+                        0) >
+                    0;
 
-                return Container(
+                return DecoratedBox(
                   decoration: BoxDecoration(
                     color: Colors.transparent,
                     border: isSelected
@@ -224,14 +211,16 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                     ),
                     title: Text(
                       coin.localizedCoinPrimaryName(context),
-                      style: TextStyle(
+                      style: theme.textTheme.bodyLarge?.copyWith(
                         color: itemColorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     subtitle: Text(
                       coin.localizedCoinTicker(context),
-                      style: TextStyle(color: itemColorScheme.onSurfaceVariant),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: itemColorScheme.onSurfaceVariant,
+                      ),
                     ),
                     trailing: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -239,18 +228,21 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                       children: [
                         Text(
                           walletsProvider.balanceForCoin(coin.symbol),
-                          style: TextStyle(
-                            color: itemColorScheme.onSurface,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: hasPrice
+                                ? itemColorScheme.onSurface
+                                : AppColors.redColor,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Text(
-                          '${coin.valueInUsd} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',
-                          style: TextStyle(
-                            color: itemColorScheme.onSurfaceVariant,
-                            fontSize: 12,
+                        if (hasPrice)
+                          Text(
+                            '≈ ${walletsProvider.balanceForCoinConverted(coin.symbol)} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: itemColorScheme.onSurfaceVariant,
+                              fontSize: 12,
+                            ),
                           ),
-                        ),
                       ],
                     ),
                     onTap: () {
