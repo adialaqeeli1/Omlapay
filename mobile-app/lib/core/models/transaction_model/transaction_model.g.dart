@@ -14,6 +14,9 @@ _TransactionModel _$TransactionModelFromJson(Map<String, dynamic> json) =>
       assetNameAr: json['coinName_ar'] as String?,
       assetIconUrl: json['assetIconUrl'] as String?,
       amount: json['amount'] as String,
+      amountDisplay: json['amountDisplay'] as String?,
+      amountUsd: json['amountUsd'] as String?,
+      amountSar: json['amountSAR'] as String?,
       network: json['network'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       txHash: json['txHash'] as String?,
@@ -23,9 +26,11 @@ _TransactionModel _$TransactionModelFromJson(Map<String, dynamic> json) =>
       networkIconUrl: json['networkIconUrl'] as String?,
       fee: json['fee'] as String?,
       errorMessage: json['errorMessage'] as String?,
+      errorMessageAr: json['errorMessageAr'] as String?,
       senderAddress: json['senderAddress'] as String?,
       receiverAddress: json['receiverAddress'] as String?,
       counterpartyPhone: json['counterpartyPhone'] as String?,
+      transactionType: json['transactionType'] as String?,
     );
 
 Map<String, dynamic> _$TransactionModelToJson(_TransactionModel instance) =>
@@ -36,6 +41,9 @@ Map<String, dynamic> _$TransactionModelToJson(_TransactionModel instance) =>
       'coinName_ar': instance.assetNameAr,
       'assetIconUrl': instance.assetIconUrl,
       'amount': instance.amount,
+      'amountDisplay': instance.amountDisplay,
+      'amountUsd': instance.amountUsd,
+      'amountSAR': instance.amountSar,
       'network': instance.network,
       'createdAt': instance.createdAt.toIso8601String(),
       'txHash': instance.txHash,
@@ -45,7 +53,9 @@ Map<String, dynamic> _$TransactionModelToJson(_TransactionModel instance) =>
       'networkIconUrl': instance.networkIconUrl,
       'fee': instance.fee,
       'errorMessage': instance.errorMessage,
+      'errorMessageAr': instance.errorMessageAr,
       'senderAddress': instance.senderAddress,
       'receiverAddress': instance.receiverAddress,
       'counterpartyPhone': instance.counterpartyPhone,
+      'transactionType': instance.transactionType,
     };

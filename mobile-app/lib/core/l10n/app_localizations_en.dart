@@ -623,7 +623,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String currencySymbol(String choice) {
     String _temp0 = intl.Intl.selectLogic(choice, {
       'usd': '\$',
-      'sar': '﷼',
+      'sar': '⃁',
       'other': '$choice',
     });
     return '$_temp0';
@@ -1321,4 +1321,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rejectedStatus => 'Rejected';
+
+  @override
+  String get failureReason => 'Reason';
+
+  @override
+  String approximateAmount(String amount, String currency) {
+    return '≈$amount $currency';
+  }
 }
