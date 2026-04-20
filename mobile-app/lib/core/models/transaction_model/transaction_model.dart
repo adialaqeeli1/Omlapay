@@ -30,7 +30,7 @@ abstract class TransactionModel with _$TransactionModel {
     String? senderAddress,
     String? receiverAddress,
     String? counterpartyPhone,
-    String? transactionType,
+    @JsonKey(name: 'txType') String? transactionType,
   }) = _TransactionModel;
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) =>
@@ -53,4 +53,7 @@ abstract class TransactionModel with _$TransactionModel {
   bool get isCompleted => status.toUpperCase() == 'COMPLETED';
   bool get isPending => status.toUpperCase() == 'PENDING';
   bool get isFailed => status.toUpperCase() == 'FAILED';
+
+  String? get txType => transactionType?.toUpperCase();
+  bool get isSwap => txType == 'SWAP';
 }
