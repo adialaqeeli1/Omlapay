@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../../core/models/coin_model/coin_model.dart';
 import '../../../core/models/coin_model/coin_model_quote_display.dart';
+import '../../../core/models/transaction_model/transaction_model.dart';
 import '../../../core/theme/theme.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/coins_prices_provider.dart';
@@ -19,6 +21,9 @@ import '../../../widgets/common_coin_icon.dart';
 import '../../../widgets/common_loading_indicator.dart';
 import '../../../widgets/no_transactions_found.dart';
 import '../../../widgets/receive_send_swap_actions.dart';
+import '../../dashboard/history/providers/history_provider.dart';
+import '../../dashboard/history/widgets/transaction_item.dart';
+import '../../dashboard/history/widgets/transaction_section_header.dart';
 import '../../dashboard/home/widgets/currency_selection_dialog.dart';
 
 class CoinDetailsView extends StatelessWidget {
@@ -32,6 +37,7 @@ class CoinDetailsView extends StatelessWidget {
     final selectedCurrency = context.watch<GlobalProvider>().selectedCurrency;
     final coinsPrices = context.watch<CoinsPricesProvider>();
     final walletsProvider = context.watch<WalletsProvider>();
+    final historyProvider = context.watch<HistoryProvider>();
     final liveCoin = coinsPrices.coinForSymbol(coinModel?.symbol ?? '');
     final coinSymbol = coinModel?.symbol ?? '';
     final totalBalanceInCurrency = coinSymbol.isEmpty
@@ -94,195 +100,48 @@ class CoinDetailsView extends StatelessWidget {
         ),
       ),
       body: SafeArea(
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: ClampingScrollPhysics(),
-          ),
-          slivers: [
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: .min,
-                children: [
-                  // Balance Section
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16.0),
-                    child: Row(
-                      mainAxisAlignment: .center,
-                      mainAxisSize: .min,
-                      crossAxisAlignment: .center,
-                      children: [
-                        Text(
-                          l10n.yourTotalBalance,
-                          style: context.textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textGrey,
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            final isAuthenticated = context
-                                .read<AuthProvider>()
-                                .state
-                                .isAuthenticated;
-
-                            if (!isAuthenticated) {
-                              context.push(Routes.loginOrRegister);
-                              return;
-                            }
-                            context
-                                .read<GlobalProvider>()
-                                .toggleBalanceVisibility();
-                          },
-                          icon: SvgPicture.asset(
-                            context.watch<GlobalProvider>().isBalanceVisible
-                                ? 'assets/icons/eye.svg'
-                                : 'assets/icons/eye-close.svg',
-                            width: 24,
-                            height: 24,
-                            colorFilter: ColorFilter.mode(
-                              AppColors.primaryColor,
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      bottom: 32.0,
-                      top: 4.0,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: .center,
-                      crossAxisAlignment: .center,
-                      mainAxisSize: .min,
-                      children: [
-                        if (context.watch<CoinDetailsProvider>().isLoading ||
-                            isWalletsLoading)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: context.isDarkMode
-                                    ? AppColors.textWhite
-                                    : AppColors.textBlack,
-                              ),
-                            ),
-                          )
-                        else
-                          Text(
-                            context.watch<GlobalProvider>().isBalanceVisible
-                                ? totalBalanceInCurrency
-                                : context
-                                      .watch<AuthProvider>()
-                                      .state
-                                      .isAuthenticated
-                                ? '****'
-                                : 'X',
-                            style: context.textTheme.displayMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: context.isDarkMode
-                                  ? AppColors.white
-                                  : AppColors.textBlack,
-                            ),
-                          ),
-                        const SizedBox(width: 8),
-                        // Currency Selector
-                        GestureDetector(
-                          onTap: context.watch<CoinDetailsProvider>().isLoading
-                              ? null
-                              : () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (_) => CurrencySelectionDialog(
-                                      initialCurrency: selectedCurrency,
-                                      onCurrencyChanged: (currency) {
-                                        context
-                                            .read<GlobalProvider>()
-                                            .updateCurrency(currency);
-                                      },
-                                    ),
-                                  );
-                                },
-                          child: Row(
-                            children: [
-                              Text(
-                                l10n.currencyName(
-                                  selectedCurrency.toLowerCase(),
-                                ),
-                                style: context.textTheme.titleMedium?.copyWith(
-                                  color: AppColors.textGrey,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Icon(
-                                CupertinoIcons.chevron_down,
-                                size: 16,
-                                color: AppColors.textGrey,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Actions
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: const ReceiveSendSwapActions(),
-                  ),
-
-                  const SizedBox(height: 48),
-
-                  // History Section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          l10n.coinHistory,
-                          style: context.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: context.isDarkMode
-                                ? AppColors.white
-                                : AppColors.textBlack,
-                            fontSize: 18.0,
-                          ),
-                        ),
-
-                        Row(
-                          spacing: 4,
-                          children: [
-                            Text(
-                              l10n.all,
-                              style: context.textTheme.bodyMedium?.copyWith(
-                                color: AppColors.textGrey,
-                              ),
-                            ),
-                            Icon(
-                              CupertinoIcons.chevron_down,
-                              size: 16,
-                              color: AppColors.textGrey,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  const NoTransactionsFound(),
-                ],
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification.metrics.axis != Axis.vertical) return false;
+            if (!historyProvider.hasMore || historyProvider.isLoadingMore) {
+              return false;
+            }
+            if (notification.metrics.pixels >=
+                notification.metrics.maxScrollExtent - 200) {
+              historyProvider.loadMore();
+            }
+            return false;
+          },
+          child: RefreshIndicator(
+            onRefresh: historyProvider.refresh,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: ClampingScrollPhysics(),
               ),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: _buildHeaderSection(
+                    context,
+                    l10n: l10n,
+                    selectedCurrency: selectedCurrency,
+                    totalBalanceInCurrency: totalBalanceInCurrency,
+                    isWalletsLoading: isWalletsLoading,
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: _buildHistoryHeader(
+                    context,
+                    l10n: l10n,
+                    historyProvider: historyProvider,
+                  ),
+                ),
+                ..._buildHistorySlivers(
+                  context,
+                  historyProvider: historyProvider,
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: Container(
@@ -375,5 +234,403 @@ class CoinDetailsView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildHeaderSection(
+    BuildContext context, {
+    required AppLocalizations l10n,
+    required String selectedCurrency,
+    required String totalBalanceInCurrency,
+    required bool isWalletsLoading,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                l10n.yourTotalBalance,
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textGrey,
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  final isAuthenticated = context
+                      .read<AuthProvider>()
+                      .state
+                      .isAuthenticated;
+
+                  if (!isAuthenticated) {
+                    context.push(Routes.loginOrRegister);
+                    return;
+                  }
+                  context.read<GlobalProvider>().toggleBalanceVisibility();
+                },
+                icon: SvgPicture.asset(
+                  context.watch<GlobalProvider>().isBalanceVisible
+                      ? 'assets/icons/eye.svg'
+                      : 'assets/icons/eye-close.svg',
+                  width: 24,
+                  height: 24,
+                  colorFilter: ColorFilter.mode(
+                    AppColors.primaryColor,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsetsDirectional.only(bottom: 32.0, top: 4.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (context.watch<CoinDetailsProvider>().isLoading ||
+                  isWalletsLoading)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: context.isDarkMode
+                          ? AppColors.textWhite
+                          : AppColors.textBlack,
+                    ),
+                  ),
+                )
+              else
+                Text(
+                  context.watch<GlobalProvider>().isBalanceVisible
+                      ? totalBalanceInCurrency
+                      : context.watch<AuthProvider>().state.isAuthenticated
+                      ? '****'
+                      : 'X',
+                  style: context.textTheme.displayMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: context.isDarkMode
+                        ? AppColors.white
+                        : AppColors.textBlack,
+                  ),
+                ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: context.watch<CoinDetailsProvider>().isLoading
+                    ? null
+                    : () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => CurrencySelectionDialog(
+                            initialCurrency: selectedCurrency,
+                            onCurrencyChanged: (currency) {
+                              context.read<GlobalProvider>().updateCurrency(
+                                currency,
+                              );
+                            },
+                          ),
+                        );
+                      },
+                child: Row(
+                  children: [
+                    Text(
+                      l10n.currencyName(selectedCurrency.toLowerCase()),
+                      style: context.textTheme.titleMedium?.copyWith(
+                        color: AppColors.textGrey,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Icon(
+                      CupertinoIcons.chevron_down,
+                      size: 16,
+                      color: AppColors.textGrey,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: const ReceiveSendSwapActions(),
+        ),
+        const SizedBox(height: 48),
+      ],
+    );
+  }
+
+  Widget _buildHistoryHeader(
+    BuildContext context, {
+    required AppLocalizations l10n,
+    required HistoryProvider historyProvider,
+  }) {
+    final selectedType = historyProvider.selectedTypeFilter;
+    final filterLabel = _typeFilterLabel(l10n, selectedType);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            l10n.coinHistory,
+            style: context.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: context.isDarkMode ? AppColors.white : AppColors.textBlack,
+              fontSize: 18.0,
+            ),
+          ),
+          PopupMenuButton<String>(
+            initialValue: selectedType ?? HistoryTxType.all,
+            tooltip: filterLabel,
+            position: PopupMenuPosition.under,
+            padding: EdgeInsets.zero,
+            elevation: 4,
+            clipBehavior: Clip.antiAliasWithSaveLayer,
+            color: context.isDarkMode
+                ? AppColors.darkCardColor
+                : AppColors.white,
+            splashRadius: 12,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            onSelected: (value) {
+              final normalized = value == HistoryTxType.all ? null : value;
+              historyProvider.setTypeFilter(normalized);
+            },
+            itemBuilder: (context) => [
+              _buildFilterMenuItem(
+                context,
+                value: HistoryTxType.all,
+                label: l10n.all,
+                isSelected: selectedType == null,
+              ),
+              _buildFilterMenuItem(
+                context,
+                value: HistoryTxType.sent,
+                label: l10n.sent,
+                isSelected: selectedType == HistoryTxType.sent,
+              ),
+              _buildFilterMenuItem(
+                context,
+                value: HistoryTxType.received,
+                label: l10n.received,
+                isSelected: selectedType == HistoryTxType.received,
+              ),
+            ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              // decoration: BoxDecoration(
+              //   color: context.isDarkMode
+              //       ? AppColors.darkCardColor
+              //       : const Color(0xFFF5F5F5),
+              //   borderRadius: BorderRadius.circular(12),
+              // ),
+              child: Row(
+                spacing: 6,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    filterLabel,
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: context.isDarkMode
+                          ? AppColors.white
+                          : AppColors.textBlack,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Icon(
+                    CupertinoIcons.chevron_down,
+                    size: 16,
+                    color: context.isDarkMode
+                        ? AppColors.white
+                        : AppColors.textBlack,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _buildFilterMenuItem(
+    BuildContext context, {
+    required String value,
+    required String label,
+    required bool isSelected,
+  }) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: isSelected
+                  ? AppColors.primaryColor
+                  : context.isDarkMode
+                  ? AppColors.white
+                  : AppColors.textBlack,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            ),
+          ),
+          if (isSelected)
+            Icon(
+              CupertinoIcons.checkmark,
+              size: 16,
+              color: AppColors.primaryColor,
+            ),
+        ],
+      ),
+    );
+  }
+
+  String _typeFilterLabel(AppLocalizations l10n, String? type) {
+    switch (type) {
+      case HistoryTxType.sent:
+        return l10n.sent;
+      case HistoryTxType.received:
+        return l10n.received;
+      default:
+        return l10n.all;
+    }
+  }
+
+  List<Widget> _buildHistorySlivers(
+    BuildContext context, {
+    required HistoryProvider historyProvider,
+  }) {
+    if (historyProvider.isLoading && historyProvider.transactions.isEmpty) {
+      return [
+        const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 48),
+            child: Center(child: CommonLoadingIndicator()),
+          ),
+        ),
+      ];
+    }
+
+    if (historyProvider.transactions.isEmpty) {
+      return const [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.only(top: 32),
+            child: NoTransactionsFound(),
+          ),
+        ),
+      ];
+    }
+
+    final groups = _groupTransactionsByDate(historyProvider.transactions);
+    return [
+      SliverPadding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        sliver: SliverList.builder(
+          itemCount: groups.length,
+          itemBuilder: (context, index) {
+            final group = groups[index];
+            final sectionDate = group['date'] as DateTime;
+            final sectionTxs = group['transactions'] as List<TransactionModel>;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TransactionSectionHeader(
+                  date: sectionDate,
+                  isFirst: index == 0,
+                ),
+                ...sectionTxs.map(
+                  (transaction) => TransactionItem(
+                    transaction: transaction,
+                    onTap: () {
+                      context.push(
+                        Routes.transactionDetail,
+                        extra: transaction,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+      if (historyProvider.isLoadingMore)
+        const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(child: CommonLoadingIndicator()),
+          ),
+        ),
+    ];
+  }
+
+  List<Map<String, dynamic>> _groupTransactionsByDate(
+    List<TransactionModel> transactions,
+  ) {
+    final sorted = List<TransactionModel>.from(transactions)
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    final recentTransactions = <TransactionModel>[];
+    final olderTransactions = <DateTime, List<TransactionModel>>{};
+
+    for (final tx in sorted) {
+      final txDate = DateTime(
+        tx.createdAt.year,
+        tx.createdAt.month,
+        tx.createdAt.day,
+      );
+      if (txDate == today || txDate == yesterday) {
+        recentTransactions.add(tx);
+      } else {
+        final monthKey = DateTime(tx.createdAt.year, tx.createdAt.month);
+        olderTransactions.putIfAbsent(monthKey, () => []).add(tx);
+      }
+    }
+
+    final result = <Map<String, dynamic>>[];
+
+    if (recentTransactions.isNotEmpty) {
+      result.add({
+        'date': today,
+        'transactions': recentTransactions,
+        'isRecently': true,
+      });
+    }
+
+    final olderList =
+        olderTransactions.entries
+            .map(
+              (entry) => {
+                'date': entry.key,
+                'transactions': entry.value,
+                'isRecently': false,
+              },
+            )
+            .toList()
+          ..sort(
+            (a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime),
+          );
+
+    result.addAll(olderList);
+
+    return result;
   }
 }

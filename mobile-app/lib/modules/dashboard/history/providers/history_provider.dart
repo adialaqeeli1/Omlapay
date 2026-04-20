@@ -17,7 +17,14 @@ class HistoryProvider extends ChangeNotifier {
   HistoryProvider(
     this._coinsPrices, {
     HistoryService? service,
-  }) : _service = service ?? HistoryService() {
+    String? initialCoinFilter,
+    String? initialTypeFilter,
+  }) : _service = service ?? HistoryService(),
+       _selectedCoinFilter =
+           (initialCoinFilter == null || initialCoinFilter.trim().isEmpty)
+           ? null
+           : initialCoinFilter.trim().toUpperCase(),
+       _selectedTypeFilter = initialTypeFilter {
     _coinsPrices.addListener(_onStreamedCoinsUpdated);
     fetchTransactions();
   }
