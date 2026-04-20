@@ -23,6 +23,7 @@ import '../modules/auth/providers/verification_provider.dart';
 import '../modules/coin_details/views/coin_details_view.dart';
 import '../modules/coin_details/providers/coin_details_provider.dart';
 import '../modules/dashboard/dashboard_view.dart';
+import '../modules/dashboard/history/providers/history_provider.dart';
 import '../modules/dashboard/history/views/history_view.dart';
 import '../modules/dashboard/home/views/home_view.dart';
 import '../modules/dashboard/home/providers/home_provider.dart';
@@ -699,10 +700,20 @@ class AppRouter {
         name: 'coinDetails',
         builder: (context, state) {
           final CoinModel? coinModel = state.extra as CoinModel?;
-          return ChangeNotifierProvider(
-            create: (_) =>
-                CoinDetailsProvider()
-                  ..initWithBalance(coinModel?.amount ?? '0.00'),
+          return MultiProvider(
+            providers: [
+              ChangeNotifierProvider(
+                create: (_) =>
+                    CoinDetailsProvider()
+                      ..initWithBalance(coinModel?.amount ?? '0.00'),
+              ),
+              ChangeNotifierProvider(
+                create: (ctx) => HistoryProvider(
+                  ctx.read<CoinsPricesProvider>(),
+                  initialCoinFilter: coinModel?.symbol,
+                ),
+              ),
+            ],
             child: CoinDetailsView(coinModel: coinModel),
           );
         },
