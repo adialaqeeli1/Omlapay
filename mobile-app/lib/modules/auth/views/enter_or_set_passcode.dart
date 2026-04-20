@@ -83,31 +83,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
         leading: isSoftLogin
             ? null
             : (isRegisterMode
-                  ? IconButton(
-                      onPressed: () {
-                        final provider = context.read<PasscodeProvider>();
-                        context.go(
-                          Routes.registerVerification,
-                          extra: {
-                            LoginProvider.extraCountryCodeKey:
-                                provider.countryCode,
-                            LoginProvider.extraPhoneNumberKey:
-                                provider.phoneNumber,
-                          },
-                        );
-                      },
-                      icon: SvgPicture.asset(
-                        context.textDirection == TextDirection.rtl
-                            ? 'assets/icons/arrow_forward.svg'
-                            : 'assets/icons/arrow_back.svg',
-                        colorFilter: ColorFilter.mode(
-                          context.isDarkMode
-                              ? AppColors.white
-                              : AppColors.darkSurface,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                    )
+                  ? CommonBackButton()
                   : _changePasscodeBackButton(context) ??
                         _changeEmailPasscodeBackButton(context) ??
                         (context.canPop() ? CommonBackButton() : null)),

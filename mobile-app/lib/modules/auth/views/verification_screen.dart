@@ -74,8 +74,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
       }
 
       final isChangePasscodePurpose =
-          provider.verificationPurpose ==
-          LoginProvider.purposeChangePasscode;
+          provider.verificationPurpose == LoginProvider.purposeChangePasscode;
       final hasPasscodePayload = provider.hasChangePasscodePayload;
       final isChangePasscodeFlow =
           isChangePasscodePurpose || hasPasscodePayload;
@@ -101,7 +100,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
         return;
       }
 
-      context.go(
+      context.push(
         Routes.enterOrSetPasscode,
         extra: {
           LoginProvider.extraModeKey: LoginProvider.modeRegister,
