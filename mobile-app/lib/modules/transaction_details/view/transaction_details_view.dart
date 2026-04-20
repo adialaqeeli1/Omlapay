@@ -88,6 +88,26 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     }
 
     final isSent = transaction.isSent;
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+    final amountValue = double.tryParse(transaction.amount) ?? 0;
+    final amountSign = isSent ? '-' : '+';
+    final amountText =
+        '$amountSign${NumberFormat('#,##0.########').format(amountValue.abs())} ${transaction.assetSymbol}';
+    final approxAmount = _approxAmountText(context, transaction, isArabic);
+    final localizedError = isArabic
+        ? (transaction.errorMessageAr?.trim().isNotEmpty == true
+              ? transaction.errorMessageAr
+              : transaction.errorMessage)
+        : (transaction.errorMessage?.trim().isNotEmpty == true
+              ? transaction.errorMessage
+              : transaction.errorMessageAr);
+    final counterparty = transaction.counterpartyPhone?.trim();
+    final senderValue = counterparty != null && counterparty.isNotEmpty
+        ? counterparty
+        : transaction.senderAddress;
+    final addressValue = isSent
+        ? transaction.receiverAddress
+        : transaction.senderAddress;
 
     return Scaffold(
       appBar: AppBar(
@@ -138,7 +158,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                           const SizedBox(height: 8),
                           // Amount
                           Text(
-                            '${(double.tryParse(transaction.amount) ?? 0).toStringAsFixed(2)} ${transaction.assetSymbol}',
+                            amountText,
                             style: context.textTheme.headlineMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: isDarkMode
@@ -147,6 +167,17 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                               fontSize: 24,
                             ),
                           ),
+                          // Approx fiat amount
+                          if (approxAmount != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              approxAmount,
+                              style: context.textTheme.bodySmall?.copyWith(
+                                color: AppColors.textGrey,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
                           // Status
                           if (isSent) ...[
                             const SizedBox(height: 8),
@@ -187,12 +218,30 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                       isNetwork: true,
                     ),
                     const SizedBox(height: 16),
-                    if (transaction.txHash != null) ...[
+                    if (senderValue != null && senderValue.isNotEmpty) ...[
+                      _buildDetailRow(
+                        context,
+                        l10n.sender,
+                        senderValue,
+                        isAddress: true,
+                      ),
+                    ],
+                    if (addressValue != null && addressValue.isNotEmpty) ...[
                       _buildDetailRow(
                         context,
                         l10n.address,
-                        transaction.senderAddress ?? '',
+                        addressValue,
                         isAddress: true,
+                      ),
+                    ],
+                    if (transaction.isFailed &&
+                        localizedError != null &&
+                        localizedError.isNotEmpty) ...[
+                      _buildDetailRow(
+                        context,
+                        l10n.failureReason,
+                        localizedError,
+                        isError: true,
                       ),
                     ],
                   ],
@@ -280,6 +329,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     String value, {
     bool isNetwork = false,
     bool isAddress = false,
+    bool isError = false,
   }) {
     final isDarkMode = context.isDarkMode;
     return Column(
@@ -295,9 +345,10 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                 fontSize: 14,
               ),
             ),
+            const SizedBox(width: 12),
             Expanded(
               child: Align(
-                alignment: Alignment.centerRight,
+                alignment: AlignmentDirectional.centerEnd,
                 child: isNetwork
                     ? Container(
                         padding: const EdgeInsets.symmetric(
@@ -322,7 +373,9 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                             ? '${value.substring(0, 20)}...'
                             : value,
                         style: context.textTheme.bodyMedium?.copyWith(
-                          color: isDarkMode
+                          color: isError
+                              ? Colors.red
+                              : isDarkMode
                               ? AppColors.white
                               : AppColors.textBlack,
                           fontSize: 14,
@@ -342,6 +395,31 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
         ),
       ],
     );
+  }
+
+  String? _approxAmountText(
+    BuildContext context,
+    TransactionModel tx,
+    bool isArabic,
+  ) {
+    final l10n = context.l10n!;
+    final usd = tx.amountUsd;
+    if (usd != null && usd.trim().isNotEmpty) {
+      final value = double.tryParse(usd);
+      final formatted = value != null
+          ? NumberFormat('#,##0.00').format(value)
+          : usd;
+      return l10n.approximateAmount(formatted, 'USD');
+    }
+    final sar = tx.amountSar;
+    if (sar != null && sar.trim().isNotEmpty) {
+      final value = double.tryParse(sar);
+      final formatted = value != null
+          ? NumberFormat('#,##0.00').format(value)
+          : sar;
+      return l10n.approximateAmount(formatted, 'SAR');
+    }
+    return null;
   }
 
   String _formatAmount(String amount) {

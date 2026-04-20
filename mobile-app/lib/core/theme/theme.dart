@@ -8,6 +8,8 @@ class AppTheme {
   static final String fontFamily =
       GoogleFonts.poppins().fontFamily ?? 'Poppins';
 
+  static const List<String> fontFamilyFallback = ['SaudiRiyal'];
+
   static ThemeData get lightTheme => ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
@@ -29,22 +31,52 @@ class AppTheme {
         color: Colors.black,
         fontWeight: FontWeight.bold,
         fontSize: 16,
+        fontFamilyFallback: fontFamilyFallback,
       ),
       systemOverlayStyle: SystemUiOverlayStyle.dark,
     ),
     iconTheme: const IconThemeData(color: AppColors.iconBlack),
     fontFamily: fontFamily,
-    textTheme: GoogleFonts.poppinsTextTheme().copyWith(
-      bodyLarge: TextStyle(color: AppColors.textBlack),
-      bodyMedium: TextStyle(color: AppColors.textBlack),
-      bodySmall: TextStyle(color: AppColors.textBlack),
-      titleLarge: TextStyle(color: AppColors.textBlack),
-      titleMedium: TextStyle(color: AppColors.textBlack),
-      titleSmall: TextStyle(color: AppColors.textBlack),
-      labelLarge: TextStyle(color: AppColors.textBlack),
-      labelMedium: TextStyle(color: AppColors.textBlack),
-      labelSmall: TextStyle(color: AppColors.textBlack),
-    ),
+    textTheme: GoogleFonts.poppinsTextTheme()
+        .apply(fontFamilyFallback: fontFamilyFallback)
+        .copyWith(
+          bodyLarge: TextStyle(
+            color: AppColors.textBlack,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+          bodyMedium: TextStyle(
+            color: AppColors.textBlack,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+          bodySmall: TextStyle(
+            color: AppColors.textBlack,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+          titleLarge: TextStyle(
+            color: AppColors.textBlack,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+          titleMedium: TextStyle(
+            color: AppColors.textBlack,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+          titleSmall: TextStyle(
+            color: AppColors.textBlack,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+          labelLarge: TextStyle(
+            color: AppColors.textBlack,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+          labelMedium: TextStyle(
+            color: AppColors.textBlack,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+          labelSmall: TextStyle(
+            color: AppColors.textBlack,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+        ),
     dividerTheme: const DividerThemeData(color: AppColors.divider),
     cardColor: AppColors.lightCardColor,
   );
@@ -70,22 +102,52 @@ class AppTheme {
         color: Colors.white,
         fontWeight: FontWeight.bold,
         fontSize: 16,
+        fontFamilyFallback: fontFamilyFallback,
       ),
       systemOverlayStyle: SystemUiOverlayStyle.light,
     ),
     iconTheme: const IconThemeData(color: AppColors.iconWhite),
     fontFamily: fontFamily,
-    textTheme: GoogleFonts.poppinsTextTheme().copyWith(
-      bodyLarge: TextStyle(color: AppColors.textWhite),
-      bodyMedium: TextStyle(color: AppColors.textWhite),
-      bodySmall: TextStyle(color: AppColors.textWhite),
-      titleLarge: TextStyle(color: AppColors.textWhite),
-      titleMedium: TextStyle(color: AppColors.textWhite),
-      titleSmall: TextStyle(color: AppColors.textWhite),
-      labelLarge: TextStyle(color: AppColors.textWhite),
-      labelMedium: TextStyle(color: AppColors.textWhite),
-      labelSmall: TextStyle(color: AppColors.textWhite),
-    ),
+    textTheme: GoogleFonts.poppinsTextTheme()
+        .apply(fontFamilyFallback: fontFamilyFallback)
+        .copyWith(
+          bodyLarge: TextStyle(
+            color: AppColors.textWhite,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+          bodyMedium: TextStyle(
+            color: AppColors.textWhite,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+          bodySmall: TextStyle(
+            color: AppColors.textWhite,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+          titleLarge: TextStyle(
+            color: AppColors.textWhite,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+          titleMedium: TextStyle(
+            color: AppColors.textWhite,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+          titleSmall: TextStyle(
+            color: AppColors.textWhite,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+          labelLarge: TextStyle(
+            color: AppColors.textWhite,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+          labelMedium: TextStyle(
+            color: AppColors.textWhite,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+          labelSmall: TextStyle(
+            color: AppColors.textWhite,
+            fontFamilyFallback: fontFamilyFallback,
+          ),
+        ),
     dividerTheme: const DividerThemeData(color: AppColors.divider),
     cardColor: AppColors.darkCardColor,
   );

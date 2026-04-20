@@ -1217,7 +1217,7 @@ abstract class AppLocalizations {
   /// No description provided for @currencySymbol.
   ///
   /// In en, this message translates to:
-  /// **'{choice, select, usd {\$} sar {﷼} other {{choice}}}'**
+  /// **'{choice, select, usd {\$} sar {⃁} other {{choice}}}'**
   String currencySymbol(String choice);
 
   /// No description provided for @coinHistory.
@@ -2491,6 +2491,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rejected'**
   String get rejectedStatus;
+
+  /// No description provided for @failureReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get failureReason;
+
+  /// No description provided for @approximateAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'≈{amount} {currency}'**
+  String approximateAmount(String amount, String currency);
 }
 
 class _AppLocalizationsDelegate

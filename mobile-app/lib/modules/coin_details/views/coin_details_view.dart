@@ -11,6 +11,7 @@ import '../../../core/theme/theme.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/coins_prices_provider.dart';
 import '../../../providers/global_provider.dart';
+import '../../../providers/wallets_provider.dart';
 import '../providers/coin_details_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_back_button.dart';
@@ -30,7 +31,13 @@ class CoinDetailsView extends StatelessWidget {
     final l10n = context.l10n!;
     final selectedCurrency = context.watch<GlobalProvider>().selectedCurrency;
     final coinsPrices = context.watch<CoinsPricesProvider>();
+    final walletsProvider = context.watch<WalletsProvider>();
     final liveCoin = coinsPrices.coinForSymbol(coinModel?.symbol ?? '');
+    final coinSymbol = coinModel?.symbol ?? '';
+    final totalBalanceInCurrency = coinSymbol.isEmpty
+        ? '0.00'
+        : walletsProvider.balanceForCoinConverted(coinSymbol);
+    final bool isWalletsLoading = walletsProvider.isLoading;
 
     /// SSE clears coins and sets loading when currency changes; avoid showing
     /// stale [coinModel] price/% until the new stream payload arrives.
@@ -153,7 +160,8 @@ class CoinDetailsView extends StatelessWidget {
                       crossAxisAlignment: .center,
                       mainAxisSize: .min,
                       children: [
-                        if (context.watch<CoinDetailsProvider>().isLoading)
+                        if (context.watch<CoinDetailsProvider>().isLoading ||
+                            isWalletsLoading)
                           Padding(
                             padding: const EdgeInsets.only(right: 8.0),
                             child: SizedBox(
@@ -170,7 +178,7 @@ class CoinDetailsView extends StatelessWidget {
                         else
                           Text(
                             context.watch<GlobalProvider>().isBalanceVisible
-                                ? (coinModel?.amount ?? '0.00')
+                                ? totalBalanceInCurrency
                                 : context
                                       .watch<AuthProvider>()
                                       .state

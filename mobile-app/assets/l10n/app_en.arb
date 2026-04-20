@@ -228,7 +228,7 @@
     "currencyName": "{choice, select, usd {USD} sar {SAR} other {{choice}}}",
     "receive": "Receive",
     "swap": "Swap",
-    "currencySymbol": "{choice, select, usd {\u0024} sar {﷼} other {{choice}}}",
+    "currencySymbol": "{choice, select, usd {\u0024} sar {⃁} other {{choice}}}",
     "coinHistory": "Coin History",
     "sent": "Sent",
     "currentPrice": "Current price",
@@ -565,5 +565,17 @@
         }
     },
     "resolvedStatus": "Resolved",
-    "rejectedStatus": "Rejected"
+    "rejectedStatus": "Rejected",
+    "failureReason": "Reason",
+    "approximateAmount": "≈{amount} {currency}",
+    "@approximateAmount": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            },
+            "currency": {
+                "type": "String"
+            }
+        }
+    }
 }

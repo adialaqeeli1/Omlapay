@@ -228,7 +228,7 @@
     "currencyName": "{choice, select, usd {دولار أمريكي} sar {ريال سعودي} other {{choice}}}",
     "receive": "استلام",
     "swap": "مبادلة",
-    "currencySymbol": "{choice, select, usd {\u0024} sar {﷼} other {{choice}}}",
+    "currencySymbol": "{choice, select, usd {\u0024} sar {⃁} other {{choice}}}",
     "coinHistory": "تاريخ العملة",
     "sent": "أرسلت",
     "currentPrice": "السعر الحالي",
@@ -551,5 +551,17 @@
         }
     },
     "resolvedStatus": "تم الحل",
-    "rejectedStatus": "مرفوض"
+    "rejectedStatus": "مرفوض",
+    "failureReason": "السبب",
+    "approximateAmount": "≈{amount} {currency}",
+    "@approximateAmount": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            },
+            "currency": {
+                "type": "String"
+            }
+        }
+    }
 }
