@@ -206,7 +206,7 @@ class _WalletsSectionState extends State<_WalletsSection>
             children: [
               Text(
                 widget.l10n.walletsAddress,
-                style: TextStyle(
+                style: context.textTheme.bodyMedium?.copyWith(
                   color: AppColors.textLightGrey,
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
@@ -218,14 +218,16 @@ class _WalletsSectionState extends State<_WalletsSection>
                 controller: tabController,
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
-                labelColor: textColor,
+                labelColor: AppColors.primaryColor,
                 unselectedLabelColor: AppColors.textLightGrey,
-                labelStyle: TextStyle(
+                labelStyle: context.textTheme.bodyMedium?.copyWith(
+                  color: AppColors.primaryColor,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   fontFamily: GoogleFonts.poppins().fontFamily,
                 ),
-                unselectedLabelStyle: TextStyle(
+                unselectedLabelStyle: context.textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textLightGrey,
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
                   fontFamily: GoogleFonts.poppins().fontFamily,
@@ -234,8 +236,6 @@ class _WalletsSectionState extends State<_WalletsSection>
                 indicatorWeight: 2,
                 dividerHeight: 0,
                 indicatorSize: TabBarIndicatorSize.tab,
-                // padding: EdgeInsets.zero,
-                // labelPadding: const EdgeInsetsDirectional.only(end: 24),
                 tabs: networks.map((network) {
                   final displayText = network.networkDisplayName.isNotEmpty
                       ? network.networkDisplayName

@@ -13,9 +13,7 @@ import '../../dashboard/history/widgets/save_as_bottom_sheet.dart';
 import '../provider/transaction_details_provider.dart';
 
 class TransactionDetailsView extends StatefulWidget {
-  const TransactionDetailsView({super.key, this.showTransactionType = false});
-
-  final bool showTransactionType;
+  const TransactionDetailsView({super.key});
 
   @override
   State<TransactionDetailsView> createState() => _TransactionDetailsViewState();
@@ -36,13 +34,13 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
       return Scaffold(
         appBar: AppBar(
           leading: const CommonBackButton(),
-          title: Text(
-            l10n.transactionDetails,
-            style: context.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: isDarkMode ? AppColors.white : AppColors.textBlack,
-            ),
-          ),
+          // title: Text(
+          //   l10n.transactionDetails,
+          //   style: context.textTheme.titleLarge?.copyWith(
+          //     fontWeight: FontWeight.bold,
+          //     color: isDarkMode ? AppColors.white : AppColors.textBlack,
+          //   ),
+          // ),
           backgroundColor: isDarkMode
               ? AppColors.darkBackground
               : AppColors.lightBackground,
@@ -89,6 +87,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
 
     final isSent = transaction.isSent;
     final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+    final txTypeLabel = _txTypeLabel(context, transaction);
     final amountValue = double.tryParse(transaction.amount) ?? 0;
     final amountSign = isSent ? '-' : '+';
     final amountText =
@@ -113,9 +112,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
       appBar: AppBar(
         leading: const CommonBackButton(),
         title: Text(
-          widget.showTransactionType
-              ? (isSent ? l10n.sent : l10n.receive)
-              : l10n.transactionDetails,
+          txTypeLabel ?? l10n.transactionDetails,
           style: context.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
             color: isDarkMode ? AppColors.white : AppColors.textBlack,
@@ -241,6 +238,14 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                         context,
                         l10n.address,
                         addressValue,
+                        isAddress: true,
+                      ),
+                    if (transaction.txHash != null &&
+                        transaction.txHash!.trim().isNotEmpty)
+                      _buildDetailRow(
+                        context,
+                        l10n.transactionHash,
+                        transaction.txHash!,
                         isAddress: true,
                       ),
                     if (transaction.isFailed &&
@@ -407,6 +412,21 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
         ),
       ],
     );
+  }
+
+  String? _txTypeLabel(BuildContext context, TransactionModel tx) {
+    final l10n = context.l10n!;
+    switch (tx.txType) {
+      case 'SWAP':
+        return l10n.swap;
+      case 'SENT':
+        return l10n.sent;
+      case 'RECEIVE':
+      case 'RECEIVED':
+        return l10n.receive;
+      default:
+        return null;
+    }
   }
 
   String? _approxAmountText(

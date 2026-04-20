@@ -30,7 +30,7 @@ _TransactionModel _$TransactionModelFromJson(Map<String, dynamic> json) =>
       senderAddress: json['senderAddress'] as String?,
       receiverAddress: json['receiverAddress'] as String?,
       counterpartyPhone: json['counterpartyPhone'] as String?,
-      transactionType: json['transactionType'] as String?,
+      transactionType: json['txType'] as String?,
     );
 
 Map<String, dynamic> _$TransactionModelToJson(_TransactionModel instance) =>
@@ -57,5 +57,5 @@ Map<String, dynamic> _$TransactionModelToJson(_TransactionModel instance) =>
       'senderAddress': instance.senderAddress,
       'receiverAddress': instance.receiverAddress,
       'counterpartyPhone': instance.counterpartyPhone,
-      'transactionType': instance.transactionType,
+      'txType': instance.transactionType,
     };

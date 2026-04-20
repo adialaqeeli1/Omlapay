@@ -734,11 +734,10 @@ class AppRouter {
           } else {
             id = '';
           }
-          final showType = state.uri.queryParameters['showType'] == 'true';
           return ChangeNotifierProvider(
             create: (_) =>
                 TransactionDetailsProvider(transactionId: id, seed: seed),
-            child: TransactionDetailsView(showTransactionType: showType),
+            child: TransactionDetailsView(),
           );
         },
         redirect: AuthMiddleware.isAuthenticated,
