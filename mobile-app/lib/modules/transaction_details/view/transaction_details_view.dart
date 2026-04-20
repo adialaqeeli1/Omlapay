@@ -32,7 +32,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     final provider = context.watch<TransactionDetailsProvider>();
     final transaction = provider.transaction;
 
-    if (provider.isLoading && transaction == null) {
+    if (provider.isLoading) {
       return Scaffold(
         appBar: AppBar(
           leading: const CommonBackButton(),
@@ -138,11 +138,24 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                     // Total Amount Card
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 20,
+                      ),
                       decoration: BoxDecoration(
-                        color: isDarkMode
-                            ? AppColors.darkCardColor
-                            : const Color(0xFFF5F5F5),
+                        gradient: isDarkMode
+                            ? const LinearGradient(
+                                begin: Alignment(0.75, -0.66),
+                                end: Alignment(-0.75, 0.66),
+                                colors: [
+                                  Color(0x991C1C1E),
+                                  Color(0x991C1C1E),
+                                  Color(0x991B3232),
+                                ],
+                                stops: [0.0, 0.3091, 1.0],
+                              )
+                            : null,
+                        color: isDarkMode ? null : const Color(0xFFF5F5F5),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
