@@ -210,40 +210,35 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                         'yyyy-MM-dd hh:mm:ss a',
                       ).format(transaction.createdAt),
                     ),
-                    const SizedBox(height: 16),
                     _buildDetailRow(
                       context,
                       l10n.network,
                       transaction.network ?? 'N/A',
                       isNetwork: true,
                     ),
-                    const SizedBox(height: 16),
-                    if (senderValue != null && senderValue.isNotEmpty) ...[
+                    if (senderValue != null && senderValue.isNotEmpty)
                       _buildDetailRow(
                         context,
                         l10n.sender,
                         senderValue,
                         isAddress: true,
                       ),
-                    ],
-                    if (addressValue != null && addressValue.isNotEmpty) ...[
+                    if (addressValue != null && addressValue.isNotEmpty)
                       _buildDetailRow(
                         context,
                         l10n.address,
                         addressValue,
                         isAddress: true,
                       ),
-                    ],
                     if (transaction.isFailed &&
                         localizedError != null &&
-                        localizedError.isNotEmpty) ...[
+                        localizedError.isNotEmpty)
                       _buildDetailRow(
                         context,
                         l10n.failureReason,
                         localizedError,
                         isError: true,
                       ),
-                    ],
                   ],
                 ),
               ),
@@ -333,61 +328,65 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
   }) {
     final isDarkMode = context.isDarkMode;
     return Column(
+      crossAxisAlignment: .center,
+      mainAxisAlignment: .center,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: AppColors.textGrey,
-                fontSize: 14,
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textGrey,
+                  fontSize: 14,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Align(
-                alignment: AlignmentDirectional.centerEnd,
-                child: isNetwork
-                    ? Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryColor,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          value,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: isNetwork
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
                           ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            value,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        )
+                      : Text(
+                          isAddress && value.length > 20
+                              ? '${value.substring(0, 20)}...'
+                              : value,
+                          style: context.textTheme.bodyMedium?.copyWith(
+                            color: isError
+                                ? Colors.red
+                                : isDarkMode
+                                ? AppColors.white
+                                : AppColors.textBlack,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.end,
                         ),
-                      )
-                    : Text(
-                        isAddress && value.length > 20
-                            ? '${value.substring(0, 20)}...'
-                            : value,
-                        style: context.textTheme.bodyMedium?.copyWith(
-                          color: isError
-                              ? Colors.red
-                              : isDarkMode
-                              ? AppColors.white
-                              : AppColors.textBlack,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        textAlign: TextAlign.end,
-                      ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        const SizedBox(height: 16),
         Divider(
           height: 1,
           thickness: 1,
