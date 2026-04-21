@@ -31,7 +31,7 @@ class SettingsView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: CommonBackButton(onPressed: () => GoRouter.of(context).pop()),
+        leading: CommonBackButton(),
         title: Text(
           l10n.settings,
           style: theme.textTheme.titleMedium?.copyWith(
