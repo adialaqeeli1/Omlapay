@@ -47,7 +47,8 @@ class SwapCoinView extends StatelessWidget {
       );
     }
 
-    // print(provider.fromCoin?.networkIconUrl);
+    final double formHeight = 250;
+    final double swapIconSize = 20;
 
     return Scaffold(
       appBar: AppBar(
@@ -72,7 +73,7 @@ class SwapCoinView extends StatelessWidget {
               child: Column(
                 children: [
                   SizedBox(
-                    height: 250,
+                    height: formHeight,
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
@@ -108,7 +109,7 @@ class SwapCoinView extends StatelessWidget {
                         PositionedDirectional(
                           start: 0,
                           end: 0,
-                          bottom: (250 / 2) - 38,
+                          bottom: (formHeight / 2) - (swapIconSize * 2),
                           child: Center(
                             child: IconButton(
                               onPressed: provider.swapCoins,
@@ -121,10 +122,10 @@ class SwapCoinView extends StatelessWidget {
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(6),
-                                  child: const ThemeAwareIcon(
+                                  child: ThemeAwareIcon(
                                     assetPath: 'assets/icons/swap.svg',
-                                    width: 20,
-                                    height: 20,
+                                    width: swapIconSize,
+                                    height: swapIconSize,
                                   ),
                                 ),
                               ),
