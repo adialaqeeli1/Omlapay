@@ -459,7 +459,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
       // Remove +/- prefix for formatting
       final cleanAmount = amount.replaceAll(RegExp(r'^[+-]'), '');
       final numValue = double.parse(cleanAmount);
-      return NumberFormat('#,##0.000').format(numValue);
+      return NumberFormat('#,##0.00000').format(numValue);
     } catch (e) {
       return amount;
     }

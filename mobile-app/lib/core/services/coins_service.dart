@@ -108,6 +108,13 @@ class CoinsService {
     return c is Map<String, dynamic> ? c : null;
   }
 
+  double? _parseSendAmount(dynamic value) {
+    if (value == null) return null;
+    final s = value.toString().trim();
+    if (s.isEmpty) return null;
+    return double.tryParse(s);
+  }
+
   String? _optionalTrimmed(dynamic value) {
     if (value == null) return null;
     final s = value.toString().trim();
@@ -169,6 +176,8 @@ class CoinsService {
       quoteSymbolAr: quoteSymbolAr,
       coinSymbolAr: coinSymbolAr,
       coinNameAr: coinNameAr,
+      minSendAmount: _parseSendAmount(coin['minSendAmount']).toString(),
+      maxSendAmount: _parseSendAmount(coin['maxSendAmount']).toString(),
     );
   }
 

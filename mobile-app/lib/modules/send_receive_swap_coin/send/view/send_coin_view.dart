@@ -334,7 +334,9 @@ class SendCoinView extends StatelessWidget {
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         onTapOutside: (event) => FocusScope.of(context).unfocus(),
         decoration: InputDecoration(
-          hintText: l10n.minAmountHint(provider.minSendAmount.toString()),
+          hintText: l10n.minAmountHint(
+            provider.minSendAmount.toStringAsFixed(5),
+          ),
           hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
