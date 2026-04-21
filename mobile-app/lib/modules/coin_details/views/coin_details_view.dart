@@ -342,18 +342,25 @@ class CoinDetailsView extends StatelessWidget {
                         );
                       },
                 child: Row(
+                  spacing: 4,
+                  mainAxisAlignment: .center,
+                  crossAxisAlignment: .end,
                   children: [
                     Text(
                       l10n.currencyName(selectedCurrency.toLowerCase()),
                       style: context.textTheme.titleMedium?.copyWith(
-                        color: AppColors.textGrey,
+                        color: context.isDarkMode
+                            ? AppColors.white
+                            : AppColors.textBlack,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Icon(
                       CupertinoIcons.chevron_down,
                       size: 16,
-                      color: AppColors.textGrey,
+                      color: context.isDarkMode
+                          ? AppColors.white
+                          : AppColors.textBlack,
                     ),
                   ],
                 ),
