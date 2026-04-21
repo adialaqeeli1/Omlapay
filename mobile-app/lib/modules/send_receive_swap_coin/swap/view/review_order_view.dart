@@ -22,7 +22,7 @@ class ReviewOrderView extends StatelessWidget {
     final provider = context.watch<SwapProvider>();
     final fromCoin = provider.fromCoin;
     final toCoin = provider.toCoin;
-    final quote = provider.swapQuote;
+    final quote = provider.liveQuote;
     final l10n = context.l10n!;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -91,7 +91,7 @@ class ReviewOrderView extends StatelessWidget {
                                 // Amount
                                 Text(
                                   double.parse(
-                                    quote?.fromAmount ??
+                                    quote?.youPay ??
                                         provider.fromAmountController.text,
                                   ).toStringAsFixed(5),
                                   style: TextStyle(
@@ -107,7 +107,7 @@ class ReviewOrderView extends StatelessWidget {
                             Align(
                               alignment: Alignment.centerRight,
                               child: Text(
-                                '≈${quote?.fromAmountUsd ?? '0.00'} ${l10n.usd}',
+                                '≈${quote?.pay?.amountUsd ?? '0.00'} ${l10n.usd}',
                                 style: TextStyle(
                                   color: colorScheme.onSurfaceVariant,
                                   fontSize: 12,
@@ -158,7 +158,7 @@ class ReviewOrderView extends StatelessWidget {
                                 // Amount
                                 Text(
                                   double.parse(
-                                    quote?.estimatedToAmount ??
+                                    quote?.youReceive ??
                                         provider.toAmountController.text,
                                   ).toStringAsFixed(5),
                                   style: TextStyle(
@@ -174,7 +174,7 @@ class ReviewOrderView extends StatelessWidget {
                             Align(
                               alignment: Alignment.centerRight,
                               child: Text(
-                                '≈${quote?.estimatedToAmountUsd ?? '0.00'} ${l10n.usd}',
+                                '≈${quote?.receive?.netAmountUsd ?? '0.00'} ${l10n.usd}',
                                 style: TextStyle(
                                   color: colorScheme.onSurfaceVariant,
                                   fontSize: 12,
@@ -225,7 +225,7 @@ class ReviewOrderView extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '1 ${fromCoin?.localizedCoinTicker(context) ?? ''} ≈ ${quote?.exchangeRate ?? '—'} ${toCoin?.localizedCoinTicker(context) ?? ''}',
+                  '1 ${fromCoin?.localizedCoinTicker(context) ?? ''} ≈ ${provider.displayExchangeRate.isEmpty ? '—' : provider.displayExchangeRate} ${toCoin?.localizedCoinTicker(context) ?? ''}',
                   style: TextStyle(
                     color: colorScheme.onSurface,
                     fontSize: 14,
@@ -249,7 +249,7 @@ class ReviewOrderView extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${quote?.totalFee ?? '0'} ${l10n.usd}',
+                  '${quote?.fees?.total?.usd ?? '0'} ${l10n.usd}',
                   style: TextStyle(
                     color: colorScheme.onSurface,
                     fontSize: 14,

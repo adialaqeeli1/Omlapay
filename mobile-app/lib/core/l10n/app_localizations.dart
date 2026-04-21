@@ -2096,6 +2096,24 @@ abstract class AppLocalizations {
   /// **'Exchange Rate'**
   String get swapExchangeRate;
 
+  /// No description provided for @swapFeeOmlapay.
+  ///
+  /// In en, this message translates to:
+  /// **'Omlapay fee'**
+  String get swapFeeOmlapay;
+
+  /// No description provided for @swapFeeBinance.
+  ///
+  /// In en, this message translates to:
+  /// **'Binance fee'**
+  String get swapFeeBinance;
+
+  /// No description provided for @swapErrorInsufficientBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount exceeds available balance.'**
+  String get swapErrorInsufficientBalance;
+
   /// No description provided for @transferToLabel.
   ///
   /// In en, this message translates to:

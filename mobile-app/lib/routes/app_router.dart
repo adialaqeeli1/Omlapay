@@ -87,6 +87,8 @@ import '../modules/notifications/providers/notifications_provider.dart';
 import '../modules/splash/splash_view.dart';
 import '../providers/auth_provider.dart';
 import '../providers/coins_prices_provider.dart';
+import '../providers/global_provider.dart';
+import '../core/services/swap_quote_stream_service.dart';
 import 'middlewares/auth_middleware.dart';
 import '../modules/kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../widgets/two_factor_otp_verification_view.dart';
@@ -830,6 +832,8 @@ class AppRouter {
             context.read<AuthProvider>(),
             context.read<CoinsPricesProvider>(),
             context.read<WalletsProvider>(),
+            context.read<GlobalProvider>(),
+            SwapQuoteStreamService(),
           ),
           child: const SwapCoinView(),
         ),

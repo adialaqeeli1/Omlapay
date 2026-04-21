@@ -160,6 +160,7 @@ class CurrencyInputCard extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextField(
+                      onTapOutside: (event) => FocusScope.of(context).unfocus(),
                       controller: controller,
                       onChanged: onAmountChanged,
                       readOnly: readOnly,

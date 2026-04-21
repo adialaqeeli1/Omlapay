@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
-import '../../../../core/utils/app_exception.dart';
-import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../widgets/common_back_button.dart';
 import '../../../../widgets/kyc_verification_required_banner.dart';
 import '../provider/swap_provider.dart';
@@ -74,7 +72,7 @@ class SwapCoinView extends StatelessWidget {
               child: Column(
                 children: [
                   SizedBox(
-                    height: 220,
+                    height: 250,
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
@@ -110,7 +108,7 @@ class SwapCoinView extends StatelessWidget {
                         PositionedDirectional(
                           start: 0,
                           end: 0,
-                          bottom: (220 / 2) - 38,
+                          bottom: (250 / 2) - 38,
                           child: Center(
                             child: IconButton(
                               onPressed: provider.swapCoins,
@@ -164,11 +162,13 @@ class SwapCoinView extends StatelessWidget {
                   ),
                   SizedBox(height: 16.0),
                   Column(
-                    mainAxisAlignment: .center,
-                    crossAxisAlignment: .center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Swap Fees
-                      if (provider.fromCoin != null && provider.toCoin != null)
+                      if (provider.fromCoin != null &&
+                          provider.toCoin != null &&
+                          (provider.isStreamLoading ||
+                              provider.liveQuote != null)) ...[
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -179,28 +179,84 @@ class SwapCoinView extends StatelessWidget {
                                 fontSize: 12,
                               ),
                             ),
-                            Text(
-                              '1.3 USDT', // Mock value
+                            if (provider.isStreamLoading)
+                              SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 1.6,
+                                  color: colorScheme.primary,
+                                ),
+                              )
+                            else if (provider.liveQuote != null)
+                              Text(
+                                '${provider.totalFeeFromCoinAmount} '
+                                '${provider.fromCoin!.symbol}',
+                                style: TextStyle(
+                                  color: colorScheme.onSurface,
+                                  fontSize: 12,
+                                ),
+                              ),
+                          ],
+                        ),
+                        if (provider.liveQuote != null) ...[
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                l10n.swapFeeOmlapay,
+                                style: TextStyle(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontSize: 11,
+                                ),
+                              ),
+                              Text(
+                                '${provider.omlapayFeeFromCoinAmount} '
+                                '${provider.fromCoin!.symbol}',
+                                style: TextStyle(
+                                  color: colorScheme.onSurface,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                l10n.swapFeeBinance,
+                                style: TextStyle(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontSize: 11,
+                                ),
+                              ),
+                              Text(
+                                '${provider.binanceFeeFromCoinAmount} '
+                                '${provider.fromCoin!.symbol}',
+                                style: TextStyle(
+                                  color: colorScheme.onSurface,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: Text(
+                              '1 ${provider.fromCoin!.localizedCoinTicker(context)} '
+                              '≈ ${provider.displayExchangeRate} '
+                              '${provider.toCoin!.localizedCoinTicker(context)}',
                               style: TextStyle(
-                                color: colorScheme.onSurface,
+                                color: colorScheme.onSurfaceVariant,
                                 fontSize: 12,
                               ),
                             ),
-                          ],
-                        ),
-                      SizedBox(height: 4),
-                      // Exchange rate info (mock)
-                      if (provider.fromCoin != null && provider.toCoin != null)
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            '1 ${provider.fromCoin!.localizedCoinTicker(context)} ≈ 0.00032 ${provider.toCoin!.localizedCoinTicker(context)}',
-                            style: TextStyle(
-                              color: colorScheme.onSurfaceVariant,
-                              fontSize: 12,
-                            ),
                           ),
-                        ),
+                        ],
+                      ],
                     ],
                   ),
 
@@ -270,22 +326,8 @@ class SwapCoinView extends StatelessWidget {
     );
   }
 
-  Future<void> _onConfirmSwapPressed(
-    BuildContext context,
-    SwapProvider provider,
-  ) async {
-    final l10n = context.l10n!;
-    try {
-      await provider.getSwapQuote();
-      if (!context.mounted) return;
-      context.push(Routes.swapReview, extra: provider);
-    } on AppException catch (e) {
-      if (!context.mounted) return;
-      SnackbarHelper.showError(context, e.localizedMessage(context.l10n));
-    } catch (_) {
-      if (!context.mounted) return;
-      SnackbarHelper.showError(context, l10n.unknownError);
-    }
+  void _onConfirmSwapPressed(BuildContext context, SwapProvider provider) {
+    context.push(Routes.swapReview, extra: provider);
   }
 
   void _showCoinSelection(
