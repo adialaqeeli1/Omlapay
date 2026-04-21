@@ -109,7 +109,10 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
 
   Future<void> _checkPermission() async {
     if (_useProvider) return;
-    developer.log('Camera: Checking permission (internal)', name: 'QrScannerWidget');
+    developer.log(
+      'Camera: Checking permission (internal)',
+      name: 'QrScannerWidget',
+    );
     try {
       final status = await ph.Permission.camera.status;
       if (!mounted) return;
@@ -134,12 +137,12 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
     final statusStr = status.isGranted
         ? 'granted'
         : status.isPermanentlyDenied
-            ? 'permanentlyDenied'
-            : status.isDenied
-                ? 'denied'
-                : status.isRestricted
-                    ? 'restricted'
-                    : 'unknown';
+        ? 'permanentlyDenied'
+        : status.isDenied
+        ? 'denied'
+        : status.isRestricted
+        ? 'restricted'
+        : 'unknown';
     developer.log('$message: $statusStr', name: 'QrScannerWidget');
   }
 
@@ -147,7 +150,10 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
     if (_useProvider) {
       await widget.permissionProvider!.requestPermission();
     } else {
-      developer.log('Camera: Requesting permission from user (internal)', name: 'QrScannerWidget');
+      developer.log(
+        'Camera: Requesting permission from user (internal)',
+        name: 'QrScannerWidget',
+      );
       try {
         final status = await ph.Permission.camera.request();
         if (!mounted) return;
@@ -208,7 +214,10 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
     if (_useProvider) {
       await widget.permissionProvider!.openSettings();
     } else {
-      developer.log('Camera: Opening app settings (internal)', name: 'QrScannerWidget');
+      developer.log(
+        'Camera: Opening app settings (internal)',
+        name: 'QrScannerWidget',
+      );
       await ph.openAppSettings();
       if (!mounted) return;
       setState(() => _isCheckingPermission = true);
@@ -225,14 +234,37 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
     if (_hasScanned || _isValidating) return;
 
     final barcodes = capture.barcodes;
+    // developer.log(
+    //   'QR detect: ${barcodes.length} barcode(s) in capture',
+    //   name: 'QrScannerWidget',
+    // );
     if (barcodes.isEmpty) return;
+
+    // for (var i = 0; i < barcodes.length; i++) {
+    //   final b = barcodes[i];
+    // developer.log(
+    //   'QR barcode[$i]: format=${b.format}, type=${b.type}, '
+    //   'rawValue="${b.rawValue}", displayValue="${b.displayValue}"',
+    //   name: 'QrScannerWidget',
+    // );
+    // }
 
     final barcode = barcodes.first;
     final rawValue = barcode.rawValue;
-    if (rawValue == null || rawValue.isEmpty) return;
+    if (rawValue == null || rawValue.isEmpty) {
+      developer.log(
+        'QR detect: rawValue is null/empty, skipping',
+        name: 'QrScannerWidget',
+      );
+      return;
+    }
 
     final validator = widget.validator;
     if (validator != null) {
+      developer.log(
+        'QR validate: running validator on "$rawValue"',
+        name: 'QrScannerWidget',
+      );
       setState(() => _isValidating = true);
       final QrValidationError? error;
       try {
@@ -243,6 +275,10 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
         }
       }
       if (!mounted) return;
+      developer.log(
+        'QR validate: result=${error ?? 'valid'} for "$rawValue"',
+        name: 'QrScannerWidget',
+      );
       if (error != null) {
         await _showInvalidQrCodeDialog(error);
         return;
@@ -251,7 +287,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
 
     _hasScanned = true;
     developer.log(
-      'Camera: QR code scanned successfully (length: ${rawValue.length})',
+      'QR scanned: "$rawValue" (length: ${rawValue.length})',
       name: 'QrScannerWidget',
     );
     widget.onScanned(rawValue);
@@ -340,22 +376,20 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
           controller: _controller!,
           onDetect: _onDetect,
           errorBuilder: (context, error) {
-          developer.log(
-            'Camera: Scanner error - code: ${error.errorCode}, details: ${error.errorDetails}',
-            name: 'QrScannerWidget',
-            error: error,
-          );
-          return _buildCameraErrorView(context, colorScheme, error);
-        },
+            developer.log(
+              'Camera: Scanner error - code: ${error.errorCode}, details: ${error.errorDetails}',
+              name: 'QrScannerWidget',
+              error: error,
+            );
+            return _buildCameraErrorView(context, colorScheme, error);
+          },
         ),
         _buildScanOverlay(),
         Positioned(
           left: 0,
           right: 0,
           bottom: 40,
-          child: Center(
-            child: _buildTorchButton(),
-          ),
+          child: Center(child: _buildTorchButton()),
         ),
         if (_isValidating) _buildValidationOverlay(),
       ],

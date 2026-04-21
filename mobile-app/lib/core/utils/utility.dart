@@ -538,7 +538,7 @@ class Utility {
     }
 
     if (address.startsWith('T') && address.length == 34) {
-      return RegExp(r'^T[0-9a-fA-F]{33}$').hasMatch(address);
+      return RegExp(r'^T[1-9A-HJ-NP-Za-km-z]{33}$').hasMatch(address);
     }
 
     if (RegExp(r'^[1-9A-HJ-NP-Za-km-z]{32,44}$').hasMatch(address)) {
