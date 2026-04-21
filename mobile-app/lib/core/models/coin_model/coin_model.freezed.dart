@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CoinModel {
 
- String? get id; String get name; String get symbol; String get amount; String get valueInUsd; double get change24h; int get decimals; String? get network; String? get iconUrl; String? get networkIconUrl; String? get contractAddress; String? get minWithdrawal; String? get minDeposit; String? get withdrawalFee; String? get description; double? get price; String? get quoteSymbol; String? get quoteSymbolAr;@JsonKey(name: 'symbol_ar') String? get coinSymbolAr;@JsonKey(name: 'name_ar') String? get coinNameAr;
+ String? get id; String get name; String get symbol; String get amount; String get valueInUsd; double get change24h; int get decimals; String? get network; String? get iconUrl; String? get networkIconUrl; String? get contractAddress; String? get minWithdrawal; String? get minDeposit; String? get withdrawalFee; String? get description; double? get price; String? get quoteSymbol; String? get quoteSymbolAr;@JsonKey(name: 'symbol_ar') String? get coinSymbolAr;@JsonKey(name: 'name_ar') String? get coinNameAr; String? get minSendAmount; String? get maxSendAmount;
 /// Create a copy of CoinModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $CoinModelCopyWith<CoinModel> get copyWith => _$CoinModelCopyWithImpl<CoinModel>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CoinModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.valueInUsd, valueInUsd) || other.valueInUsd == valueInUsd)&&(identical(other.change24h, change24h) || other.change24h == change24h)&&(identical(other.decimals, decimals) || other.decimals == decimals)&&(identical(other.network, network) || other.network == network)&&(identical(other.iconUrl, iconUrl) || other.iconUrl == iconUrl)&&(identical(other.networkIconUrl, networkIconUrl) || other.networkIconUrl == networkIconUrl)&&(identical(other.contractAddress, contractAddress) || other.contractAddress == contractAddress)&&(identical(other.minWithdrawal, minWithdrawal) || other.minWithdrawal == minWithdrawal)&&(identical(other.minDeposit, minDeposit) || other.minDeposit == minDeposit)&&(identical(other.withdrawalFee, withdrawalFee) || other.withdrawalFee == withdrawalFee)&&(identical(other.description, description) || other.description == description)&&(identical(other.price, price) || other.price == price)&&(identical(other.quoteSymbol, quoteSymbol) || other.quoteSymbol == quoteSymbol)&&(identical(other.quoteSymbolAr, quoteSymbolAr) || other.quoteSymbolAr == quoteSymbolAr)&&(identical(other.coinSymbolAr, coinSymbolAr) || other.coinSymbolAr == coinSymbolAr)&&(identical(other.coinNameAr, coinNameAr) || other.coinNameAr == coinNameAr));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CoinModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.valueInUsd, valueInUsd) || other.valueInUsd == valueInUsd)&&(identical(other.change24h, change24h) || other.change24h == change24h)&&(identical(other.decimals, decimals) || other.decimals == decimals)&&(identical(other.network, network) || other.network == network)&&(identical(other.iconUrl, iconUrl) || other.iconUrl == iconUrl)&&(identical(other.networkIconUrl, networkIconUrl) || other.networkIconUrl == networkIconUrl)&&(identical(other.contractAddress, contractAddress) || other.contractAddress == contractAddress)&&(identical(other.minWithdrawal, minWithdrawal) || other.minWithdrawal == minWithdrawal)&&(identical(other.minDeposit, minDeposit) || other.minDeposit == minDeposit)&&(identical(other.withdrawalFee, withdrawalFee) || other.withdrawalFee == withdrawalFee)&&(identical(other.description, description) || other.description == description)&&(identical(other.price, price) || other.price == price)&&(identical(other.quoteSymbol, quoteSymbol) || other.quoteSymbol == quoteSymbol)&&(identical(other.quoteSymbolAr, quoteSymbolAr) || other.quoteSymbolAr == quoteSymbolAr)&&(identical(other.coinSymbolAr, coinSymbolAr) || other.coinSymbolAr == coinSymbolAr)&&(identical(other.coinNameAr, coinNameAr) || other.coinNameAr == coinNameAr)&&(identical(other.minSendAmount, minSendAmount) || other.minSendAmount == minSendAmount)&&(identical(other.maxSendAmount, maxSendAmount) || other.maxSendAmount == maxSendAmount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,name,symbol,amount,valueInUsd,change24h,decimals,network,iconUrl,networkIconUrl,contractAddress,minWithdrawal,minDeposit,withdrawalFee,description,price,quoteSymbol,quoteSymbolAr,coinSymbolAr,coinNameAr]);
+int get hashCode => Object.hashAll([runtimeType,id,name,symbol,amount,valueInUsd,change24h,decimals,network,iconUrl,networkIconUrl,contractAddress,minWithdrawal,minDeposit,withdrawalFee,description,price,quoteSymbol,quoteSymbolAr,coinSymbolAr,coinNameAr,minSendAmount,maxSendAmount]);
 
 @override
 String toString() {
-  return 'CoinModel(id: $id, name: $name, symbol: $symbol, amount: $amount, valueInUsd: $valueInUsd, change24h: $change24h, decimals: $decimals, network: $network, iconUrl: $iconUrl, networkIconUrl: $networkIconUrl, contractAddress: $contractAddress, minWithdrawal: $minWithdrawal, minDeposit: $minDeposit, withdrawalFee: $withdrawalFee, description: $description, price: $price, quoteSymbol: $quoteSymbol, quoteSymbolAr: $quoteSymbolAr, coinSymbolAr: $coinSymbolAr, coinNameAr: $coinNameAr)';
+  return 'CoinModel(id: $id, name: $name, symbol: $symbol, amount: $amount, valueInUsd: $valueInUsd, change24h: $change24h, decimals: $decimals, network: $network, iconUrl: $iconUrl, networkIconUrl: $networkIconUrl, contractAddress: $contractAddress, minWithdrawal: $minWithdrawal, minDeposit: $minDeposit, withdrawalFee: $withdrawalFee, description: $description, price: $price, quoteSymbol: $quoteSymbol, quoteSymbolAr: $quoteSymbolAr, coinSymbolAr: $coinSymbolAr, coinNameAr: $coinNameAr, minSendAmount: $minSendAmount, maxSendAmount: $maxSendAmount)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $CoinModelCopyWith<$Res>  {
   factory $CoinModelCopyWith(CoinModel value, $Res Function(CoinModel) _then) = _$CoinModelCopyWithImpl;
 @useResult
 $Res call({
- String? id, String name, String symbol, String amount, String valueInUsd, double change24h, int decimals, String? network, String? iconUrl, String? networkIconUrl, String? contractAddress, String? minWithdrawal, String? minDeposit, String? withdrawalFee, String? description, double? price, String? quoteSymbol, String? quoteSymbolAr,@JsonKey(name: 'symbol_ar') String? coinSymbolAr,@JsonKey(name: 'name_ar') String? coinNameAr
+ String? id, String name, String symbol, String amount, String valueInUsd, double change24h, int decimals, String? network, String? iconUrl, String? networkIconUrl, String? contractAddress, String? minWithdrawal, String? minDeposit, String? withdrawalFee, String? description, double? price, String? quoteSymbol, String? quoteSymbolAr,@JsonKey(name: 'symbol_ar') String? coinSymbolAr,@JsonKey(name: 'name_ar') String? coinNameAr, String? minSendAmount, String? maxSendAmount
 });
 
 
@@ -65,7 +65,7 @@ class _$CoinModelCopyWithImpl<$Res>
 
 /// Create a copy of CoinModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? name = null,Object? symbol = null,Object? amount = null,Object? valueInUsd = null,Object? change24h = null,Object? decimals = null,Object? network = freezed,Object? iconUrl = freezed,Object? networkIconUrl = freezed,Object? contractAddress = freezed,Object? minWithdrawal = freezed,Object? minDeposit = freezed,Object? withdrawalFee = freezed,Object? description = freezed,Object? price = freezed,Object? quoteSymbol = freezed,Object? quoteSymbolAr = freezed,Object? coinSymbolAr = freezed,Object? coinNameAr = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? name = null,Object? symbol = null,Object? amount = null,Object? valueInUsd = null,Object? change24h = null,Object? decimals = null,Object? network = freezed,Object? iconUrl = freezed,Object? networkIconUrl = freezed,Object? contractAddress = freezed,Object? minWithdrawal = freezed,Object? minDeposit = freezed,Object? withdrawalFee = freezed,Object? description = freezed,Object? price = freezed,Object? quoteSymbol = freezed,Object? quoteSymbolAr = freezed,Object? coinSymbolAr = freezed,Object? coinNameAr = freezed,Object? minSendAmount = freezed,Object? maxSendAmount = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -87,6 +87,8 @@ as double?,quoteSymbol: freezed == quoteSymbol ? _self.quoteSymbol : quoteSymbol
 as String?,quoteSymbolAr: freezed == quoteSymbolAr ? _self.quoteSymbolAr : quoteSymbolAr // ignore: cast_nullable_to_non_nullable
 as String?,coinSymbolAr: freezed == coinSymbolAr ? _self.coinSymbolAr : coinSymbolAr // ignore: cast_nullable_to_non_nullable
 as String?,coinNameAr: freezed == coinNameAr ? _self.coinNameAr : coinNameAr // ignore: cast_nullable_to_non_nullable
+as String?,minSendAmount: freezed == minSendAmount ? _self.minSendAmount : minSendAmount // ignore: cast_nullable_to_non_nullable
+as String?,maxSendAmount: freezed == maxSendAmount ? _self.maxSendAmount : maxSendAmount // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -172,10 +174,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String name,  String symbol,  String amount,  String valueInUsd,  double change24h,  int decimals,  String? network,  String? iconUrl,  String? networkIconUrl,  String? contractAddress,  String? minWithdrawal,  String? minDeposit,  String? withdrawalFee,  String? description,  double? price,  String? quoteSymbol,  String? quoteSymbolAr, @JsonKey(name: 'symbol_ar')  String? coinSymbolAr, @JsonKey(name: 'name_ar')  String? coinNameAr)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String name,  String symbol,  String amount,  String valueInUsd,  double change24h,  int decimals,  String? network,  String? iconUrl,  String? networkIconUrl,  String? contractAddress,  String? minWithdrawal,  String? minDeposit,  String? withdrawalFee,  String? description,  double? price,  String? quoteSymbol,  String? quoteSymbolAr, @JsonKey(name: 'symbol_ar')  String? coinSymbolAr, @JsonKey(name: 'name_ar')  String? coinNameAr,  String? minSendAmount,  String? maxSendAmount)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CoinModel() when $default != null:
-return $default(_that.id,_that.name,_that.symbol,_that.amount,_that.valueInUsd,_that.change24h,_that.decimals,_that.network,_that.iconUrl,_that.networkIconUrl,_that.contractAddress,_that.minWithdrawal,_that.minDeposit,_that.withdrawalFee,_that.description,_that.price,_that.quoteSymbol,_that.quoteSymbolAr,_that.coinSymbolAr,_that.coinNameAr);case _:
+return $default(_that.id,_that.name,_that.symbol,_that.amount,_that.valueInUsd,_that.change24h,_that.decimals,_that.network,_that.iconUrl,_that.networkIconUrl,_that.contractAddress,_that.minWithdrawal,_that.minDeposit,_that.withdrawalFee,_that.description,_that.price,_that.quoteSymbol,_that.quoteSymbolAr,_that.coinSymbolAr,_that.coinNameAr,_that.minSendAmount,_that.maxSendAmount);case _:
   return orElse();
 
 }
@@ -193,10 +195,10 @@ return $default(_that.id,_that.name,_that.symbol,_that.amount,_that.valueInUsd,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String name,  String symbol,  String amount,  String valueInUsd,  double change24h,  int decimals,  String? network,  String? iconUrl,  String? networkIconUrl,  String? contractAddress,  String? minWithdrawal,  String? minDeposit,  String? withdrawalFee,  String? description,  double? price,  String? quoteSymbol,  String? quoteSymbolAr, @JsonKey(name: 'symbol_ar')  String? coinSymbolAr, @JsonKey(name: 'name_ar')  String? coinNameAr)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String name,  String symbol,  String amount,  String valueInUsd,  double change24h,  int decimals,  String? network,  String? iconUrl,  String? networkIconUrl,  String? contractAddress,  String? minWithdrawal,  String? minDeposit,  String? withdrawalFee,  String? description,  double? price,  String? quoteSymbol,  String? quoteSymbolAr, @JsonKey(name: 'symbol_ar')  String? coinSymbolAr, @JsonKey(name: 'name_ar')  String? coinNameAr,  String? minSendAmount,  String? maxSendAmount)  $default,) {final _that = this;
 switch (_that) {
 case _CoinModel():
-return $default(_that.id,_that.name,_that.symbol,_that.amount,_that.valueInUsd,_that.change24h,_that.decimals,_that.network,_that.iconUrl,_that.networkIconUrl,_that.contractAddress,_that.minWithdrawal,_that.minDeposit,_that.withdrawalFee,_that.description,_that.price,_that.quoteSymbol,_that.quoteSymbolAr,_that.coinSymbolAr,_that.coinNameAr);case _:
+return $default(_that.id,_that.name,_that.symbol,_that.amount,_that.valueInUsd,_that.change24h,_that.decimals,_that.network,_that.iconUrl,_that.networkIconUrl,_that.contractAddress,_that.minWithdrawal,_that.minDeposit,_that.withdrawalFee,_that.description,_that.price,_that.quoteSymbol,_that.quoteSymbolAr,_that.coinSymbolAr,_that.coinNameAr,_that.minSendAmount,_that.maxSendAmount);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -213,10 +215,10 @@ return $default(_that.id,_that.name,_that.symbol,_that.amount,_that.valueInUsd,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String name,  String symbol,  String amount,  String valueInUsd,  double change24h,  int decimals,  String? network,  String? iconUrl,  String? networkIconUrl,  String? contractAddress,  String? minWithdrawal,  String? minDeposit,  String? withdrawalFee,  String? description,  double? price,  String? quoteSymbol,  String? quoteSymbolAr, @JsonKey(name: 'symbol_ar')  String? coinSymbolAr, @JsonKey(name: 'name_ar')  String? coinNameAr)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String name,  String symbol,  String amount,  String valueInUsd,  double change24h,  int decimals,  String? network,  String? iconUrl,  String? networkIconUrl,  String? contractAddress,  String? minWithdrawal,  String? minDeposit,  String? withdrawalFee,  String? description,  double? price,  String? quoteSymbol,  String? quoteSymbolAr, @JsonKey(name: 'symbol_ar')  String? coinSymbolAr, @JsonKey(name: 'name_ar')  String? coinNameAr,  String? minSendAmount,  String? maxSendAmount)?  $default,) {final _that = this;
 switch (_that) {
 case _CoinModel() when $default != null:
-return $default(_that.id,_that.name,_that.symbol,_that.amount,_that.valueInUsd,_that.change24h,_that.decimals,_that.network,_that.iconUrl,_that.networkIconUrl,_that.contractAddress,_that.minWithdrawal,_that.minDeposit,_that.withdrawalFee,_that.description,_that.price,_that.quoteSymbol,_that.quoteSymbolAr,_that.coinSymbolAr,_that.coinNameAr);case _:
+return $default(_that.id,_that.name,_that.symbol,_that.amount,_that.valueInUsd,_that.change24h,_that.decimals,_that.network,_that.iconUrl,_that.networkIconUrl,_that.contractAddress,_that.minWithdrawal,_that.minDeposit,_that.withdrawalFee,_that.description,_that.price,_that.quoteSymbol,_that.quoteSymbolAr,_that.coinSymbolAr,_that.coinNameAr,_that.minSendAmount,_that.maxSendAmount);case _:
   return null;
 
 }
@@ -228,7 +230,7 @@ return $default(_that.id,_that.name,_that.symbol,_that.amount,_that.valueInUsd,_
 @JsonSerializable()
 
 class _CoinModel implements CoinModel {
-  const _CoinModel({this.id, required this.name, required this.symbol, required this.amount, required this.valueInUsd, this.change24h = 0, this.decimals = 0, this.network, this.iconUrl, this.networkIconUrl, this.contractAddress, this.minWithdrawal, this.minDeposit, this.withdrawalFee, this.description, this.price, this.quoteSymbol, this.quoteSymbolAr, @JsonKey(name: 'symbol_ar') this.coinSymbolAr, @JsonKey(name: 'name_ar') this.coinNameAr});
+  const _CoinModel({this.id, required this.name, required this.symbol, required this.amount, required this.valueInUsd, this.change24h = 0, this.decimals = 0, this.network, this.iconUrl, this.networkIconUrl, this.contractAddress, this.minWithdrawal, this.minDeposit, this.withdrawalFee, this.description, this.price, this.quoteSymbol, this.quoteSymbolAr, @JsonKey(name: 'symbol_ar') this.coinSymbolAr, @JsonKey(name: 'name_ar') this.coinNameAr, this.minSendAmount, this.maxSendAmount});
   factory _CoinModel.fromJson(Map<String, dynamic> json) => _$CoinModelFromJson(json);
 
 @override final  String? id;
@@ -251,6 +253,8 @@ class _CoinModel implements CoinModel {
 @override final  String? quoteSymbolAr;
 @override@JsonKey(name: 'symbol_ar') final  String? coinSymbolAr;
 @override@JsonKey(name: 'name_ar') final  String? coinNameAr;
+@override final  String? minSendAmount;
+@override final  String? maxSendAmount;
 
 /// Create a copy of CoinModel
 /// with the given fields replaced by the non-null parameter values.
@@ -265,16 +269,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CoinModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.valueInUsd, valueInUsd) || other.valueInUsd == valueInUsd)&&(identical(other.change24h, change24h) || other.change24h == change24h)&&(identical(other.decimals, decimals) || other.decimals == decimals)&&(identical(other.network, network) || other.network == network)&&(identical(other.iconUrl, iconUrl) || other.iconUrl == iconUrl)&&(identical(other.networkIconUrl, networkIconUrl) || other.networkIconUrl == networkIconUrl)&&(identical(other.contractAddress, contractAddress) || other.contractAddress == contractAddress)&&(identical(other.minWithdrawal, minWithdrawal) || other.minWithdrawal == minWithdrawal)&&(identical(other.minDeposit, minDeposit) || other.minDeposit == minDeposit)&&(identical(other.withdrawalFee, withdrawalFee) || other.withdrawalFee == withdrawalFee)&&(identical(other.description, description) || other.description == description)&&(identical(other.price, price) || other.price == price)&&(identical(other.quoteSymbol, quoteSymbol) || other.quoteSymbol == quoteSymbol)&&(identical(other.quoteSymbolAr, quoteSymbolAr) || other.quoteSymbolAr == quoteSymbolAr)&&(identical(other.coinSymbolAr, coinSymbolAr) || other.coinSymbolAr == coinSymbolAr)&&(identical(other.coinNameAr, coinNameAr) || other.coinNameAr == coinNameAr));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CoinModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.valueInUsd, valueInUsd) || other.valueInUsd == valueInUsd)&&(identical(other.change24h, change24h) || other.change24h == change24h)&&(identical(other.decimals, decimals) || other.decimals == decimals)&&(identical(other.network, network) || other.network == network)&&(identical(other.iconUrl, iconUrl) || other.iconUrl == iconUrl)&&(identical(other.networkIconUrl, networkIconUrl) || other.networkIconUrl == networkIconUrl)&&(identical(other.contractAddress, contractAddress) || other.contractAddress == contractAddress)&&(identical(other.minWithdrawal, minWithdrawal) || other.minWithdrawal == minWithdrawal)&&(identical(other.minDeposit, minDeposit) || other.minDeposit == minDeposit)&&(identical(other.withdrawalFee, withdrawalFee) || other.withdrawalFee == withdrawalFee)&&(identical(other.description, description) || other.description == description)&&(identical(other.price, price) || other.price == price)&&(identical(other.quoteSymbol, quoteSymbol) || other.quoteSymbol == quoteSymbol)&&(identical(other.quoteSymbolAr, quoteSymbolAr) || other.quoteSymbolAr == quoteSymbolAr)&&(identical(other.coinSymbolAr, coinSymbolAr) || other.coinSymbolAr == coinSymbolAr)&&(identical(other.coinNameAr, coinNameAr) || other.coinNameAr == coinNameAr)&&(identical(other.minSendAmount, minSendAmount) || other.minSendAmount == minSendAmount)&&(identical(other.maxSendAmount, maxSendAmount) || other.maxSendAmount == maxSendAmount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,name,symbol,amount,valueInUsd,change24h,decimals,network,iconUrl,networkIconUrl,contractAddress,minWithdrawal,minDeposit,withdrawalFee,description,price,quoteSymbol,quoteSymbolAr,coinSymbolAr,coinNameAr]);
+int get hashCode => Object.hashAll([runtimeType,id,name,symbol,amount,valueInUsd,change24h,decimals,network,iconUrl,networkIconUrl,contractAddress,minWithdrawal,minDeposit,withdrawalFee,description,price,quoteSymbol,quoteSymbolAr,coinSymbolAr,coinNameAr,minSendAmount,maxSendAmount]);
 
 @override
 String toString() {
-  return 'CoinModel(id: $id, name: $name, symbol: $symbol, amount: $amount, valueInUsd: $valueInUsd, change24h: $change24h, decimals: $decimals, network: $network, iconUrl: $iconUrl, networkIconUrl: $networkIconUrl, contractAddress: $contractAddress, minWithdrawal: $minWithdrawal, minDeposit: $minDeposit, withdrawalFee: $withdrawalFee, description: $description, price: $price, quoteSymbol: $quoteSymbol, quoteSymbolAr: $quoteSymbolAr, coinSymbolAr: $coinSymbolAr, coinNameAr: $coinNameAr)';
+  return 'CoinModel(id: $id, name: $name, symbol: $symbol, amount: $amount, valueInUsd: $valueInUsd, change24h: $change24h, decimals: $decimals, network: $network, iconUrl: $iconUrl, networkIconUrl: $networkIconUrl, contractAddress: $contractAddress, minWithdrawal: $minWithdrawal, minDeposit: $minDeposit, withdrawalFee: $withdrawalFee, description: $description, price: $price, quoteSymbol: $quoteSymbol, quoteSymbolAr: $quoteSymbolAr, coinSymbolAr: $coinSymbolAr, coinNameAr: $coinNameAr, minSendAmount: $minSendAmount, maxSendAmount: $maxSendAmount)';
 }
 
 
@@ -285,7 +289,7 @@ abstract mixin class _$CoinModelCopyWith<$Res> implements $CoinModelCopyWith<$Re
   factory _$CoinModelCopyWith(_CoinModel value, $Res Function(_CoinModel) _then) = __$CoinModelCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String name, String symbol, String amount, String valueInUsd, double change24h, int decimals, String? network, String? iconUrl, String? networkIconUrl, String? contractAddress, String? minWithdrawal, String? minDeposit, String? withdrawalFee, String? description, double? price, String? quoteSymbol, String? quoteSymbolAr,@JsonKey(name: 'symbol_ar') String? coinSymbolAr,@JsonKey(name: 'name_ar') String? coinNameAr
+ String? id, String name, String symbol, String amount, String valueInUsd, double change24h, int decimals, String? network, String? iconUrl, String? networkIconUrl, String? contractAddress, String? minWithdrawal, String? minDeposit, String? withdrawalFee, String? description, double? price, String? quoteSymbol, String? quoteSymbolAr,@JsonKey(name: 'symbol_ar') String? coinSymbolAr,@JsonKey(name: 'name_ar') String? coinNameAr, String? minSendAmount, String? maxSendAmount
 });
 
 
@@ -302,7 +306,7 @@ class __$CoinModelCopyWithImpl<$Res>
 
 /// Create a copy of CoinModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? name = null,Object? symbol = null,Object? amount = null,Object? valueInUsd = null,Object? change24h = null,Object? decimals = null,Object? network = freezed,Object? iconUrl = freezed,Object? networkIconUrl = freezed,Object? contractAddress = freezed,Object? minWithdrawal = freezed,Object? minDeposit = freezed,Object? withdrawalFee = freezed,Object? description = freezed,Object? price = freezed,Object? quoteSymbol = freezed,Object? quoteSymbolAr = freezed,Object? coinSymbolAr = freezed,Object? coinNameAr = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? name = null,Object? symbol = null,Object? amount = null,Object? valueInUsd = null,Object? change24h = null,Object? decimals = null,Object? network = freezed,Object? iconUrl = freezed,Object? networkIconUrl = freezed,Object? contractAddress = freezed,Object? minWithdrawal = freezed,Object? minDeposit = freezed,Object? withdrawalFee = freezed,Object? description = freezed,Object? price = freezed,Object? quoteSymbol = freezed,Object? quoteSymbolAr = freezed,Object? coinSymbolAr = freezed,Object? coinNameAr = freezed,Object? minSendAmount = freezed,Object? maxSendAmount = freezed,}) {
   return _then(_CoinModel(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -324,6 +328,8 @@ as double?,quoteSymbol: freezed == quoteSymbol ? _self.quoteSymbol : quoteSymbol
 as String?,quoteSymbolAr: freezed == quoteSymbolAr ? _self.quoteSymbolAr : quoteSymbolAr // ignore: cast_nullable_to_non_nullable
 as String?,coinSymbolAr: freezed == coinSymbolAr ? _self.coinSymbolAr : coinSymbolAr // ignore: cast_nullable_to_non_nullable
 as String?,coinNameAr: freezed == coinNameAr ? _self.coinNameAr : coinNameAr // ignore: cast_nullable_to_non_nullable
+as String?,minSendAmount: freezed == minSendAmount ? _self.minSendAmount : minSendAmount // ignore: cast_nullable_to_non_nullable
+as String?,maxSendAmount: freezed == maxSendAmount ? _self.maxSendAmount : maxSendAmount // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

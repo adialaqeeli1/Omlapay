@@ -913,7 +913,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pasteHintLongPress => 'Press and hold to paste';
 
   @override
-  String get minAmountHint => 'Min 0';
+  String minAmountHint(String amount) {
+    return 'Min $amount';
+  }
 
   @override
   String get searchHint => 'Search';
@@ -1017,6 +1019,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sendValidationInsufficientBalance => 'Insufficient balance';
+
+  @override
+  String sendValidationBelowMinimum(String amount) {
+    return 'Amount must be at least $amount';
+  }
 
   @override
   String get sendDefaultNetworkCode => 'TRC20';

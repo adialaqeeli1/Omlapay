@@ -368,7 +368,14 @@
     "helpRequestSentSuccess": "تم إرسال الطلب بنجاح",
     "verificationCodeResentSuccess": "تم إعادة إرسال رمز التحقق بنجاح.",
     "pasteHintLongPress": "اضغط مع الاستمرار للصق",
-    "minAmountHint": "الحد الأدنى 0",
+    "minAmountHint": "الحد الأدنى {amount}",
+    "@minAmountHint": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
     "searchHint": "بحث",
     "searchContactsHint": "ابحث بالاسم أو الرقم",
     "sendFlowVerifyAccountTitle": "التحقق من الحساب",
@@ -409,6 +416,14 @@
     "sendFormAmountLabel": "المبلغ المراد إرساله",
     "sendValidationInvalidAmount": "مبلغ غير صالح",
     "sendValidationInsufficientBalance": "الرصيد غير كافٍ",
+    "sendValidationBelowMinimum": "يجب أن يكون المبلغ {amount} على الأقل",
+    "@sendValidationBelowMinimum": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
     "sendDefaultNetworkCode": "TRC20",
     "availableBalanceFormatted": "المتاح {amount} {symbol}",
     "@availableBalanceFormatted": {

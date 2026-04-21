@@ -109,6 +109,17 @@ class SendCoinView extends StatelessWidget {
                   const SizedBox(height: 8),
                   _buildAmountField(context, provider),
 
+                  if (provider.error != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      provider.error!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+
                   // Available Balance
                   const SizedBox(height: 8),
                   Row(
@@ -323,7 +334,7 @@ class SendCoinView extends StatelessWidget {
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         onTapOutside: (event) => FocusScope.of(context).unfocus(),
         decoration: InputDecoration(
-          hintText: l10n.minAmountHint,
+          hintText: l10n.minAmountHint(provider.minSendAmount.toString()),
           hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
