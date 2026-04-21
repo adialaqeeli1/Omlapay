@@ -53,17 +53,17 @@ class WalletsProvider extends ChangeNotifier {
   /// selected, `currentBalanceSar` when SAR is selected.
   String balanceForCoin(String symbol) {
     final key = symbol.trim().toUpperCase();
-    if (key.isEmpty) return '0.000';
+    if (key.isEmpty) return '0.00000';
 
     for (final network in _wallets) {
       for (final coin in network.coins) {
         if (coin.symbol.toUpperCase() == key) {
           final balance = coin.balance;
-          return balance.toStringAsFixed(4);
+          return balance.toStringAsFixed(5);
         }
       }
     }
-    return '0.0000';
+    return '0.00000';
   }
 
   /// Returns the fiat balance for a coin symbol based on the selected currency.

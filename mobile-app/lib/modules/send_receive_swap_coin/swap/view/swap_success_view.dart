@@ -24,7 +24,7 @@ class SwapSuccessView extends StatelessWidget {
         : provider.toAmountController.text;
     final parsedToAmount = double.tryParse(rawToAmount);
     final toAmount = parsedToAmount != null
-        ? parsedToAmount.toStringAsFixed(4)
+        ? parsedToAmount.toStringAsFixed(5)
         : rawToAmount;
     final toAmountUsd = quote?.estimatedToAmountUsd ?? '0.00';
     final colorScheme = Theme.of(context).colorScheme;

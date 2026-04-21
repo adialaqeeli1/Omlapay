@@ -289,15 +289,15 @@ class SwapProvider extends ChangeNotifier {
         _streamFailure = null;
         _transportError = null;
         final receive = double.tryParse(quote.youReceive);
-        final formatted = receive == null ? '' : receive.toStringAsFixed(6);
+        final formatted = receive == null ? '' : receive.toStringAsFixed(5);
         if (toAmountController.text != formatted) {
           toAmountController.text = formatted;
         }
       case SwapQuoteStreamFailure():
         _streamFailure = event;
-        // Preserve the last good `_liveQuote` and `toAmountController` so the
-        // UI doesn't layout-shift when the server alternates ok/error at the
-        // balance boundary. The error text is shown on top via `error`.
+      // Preserve the last good `_liveQuote` and `toAmountController` so the
+      // UI doesn't layout-shift when the server alternates ok/error at the
+      // balance boundary. The error text is shown on top via `error`.
     }
     notifyListeners();
   }

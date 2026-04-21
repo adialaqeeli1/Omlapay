@@ -425,7 +425,7 @@ class _HomeViewState extends State<HomeView> {
                 Text(
                   transaction.isFailed
                       ? context.l10n!.failed
-                      : '${double.tryParse(transaction.amount)?.toStringAsFixed(2) ?? transaction.amount} ${transaction.assetSymbol}',
+                      : '${double.tryParse(transaction.amount)?.toStringAsFixed(5) ?? transaction.amount} ${transaction.assetSymbol}',
                   style: context.textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: getAmountColor(),

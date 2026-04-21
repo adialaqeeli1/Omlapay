@@ -143,26 +143,30 @@ class CoinsPricesProvider extends ChangeNotifier {
       for (final c in metadataSource) c.symbol.toUpperCase(): c,
     };
 
-    return incoming.map((coin) {
-      final existing = existingBySymbol[coin.symbol.toUpperCase()];
-      if (existing == null) return coin;
+    return incoming
+        .map((coin) {
+          final existing = existingBySymbol[coin.symbol.toUpperCase()];
+          if (existing == null) return coin;
 
-      return coin.copyWith(
-        id: coin.id ?? existing.id,
-        network: coin.network ?? existing.network,
-        iconUrl: coin.iconUrl ?? existing.iconUrl,
-        networkIconUrl: coin.networkIconUrl ?? existing.networkIconUrl,
-        contractAddress: coin.contractAddress ?? existing.contractAddress,
-        minWithdrawal: coin.minWithdrawal ?? existing.minWithdrawal,
-        minDeposit: coin.minDeposit ?? existing.minDeposit,
-        withdrawalFee: coin.withdrawalFee ?? existing.withdrawalFee,
-        description: coin.description ?? existing.description,
-        price: coin.price ?? existing.price,
-        decimals: coin.decimals == 0 && existing.decimals != 0
-            ? existing.decimals
-            : coin.decimals,
-      );
-    }).toList(growable: false);
+          return coin.copyWith(
+            id: coin.id ?? existing.id,
+            network: coin.network ?? existing.network,
+            iconUrl: coin.iconUrl ?? existing.iconUrl,
+            networkIconUrl: coin.networkIconUrl ?? existing.networkIconUrl,
+            contractAddress: coin.contractAddress ?? existing.contractAddress,
+            minWithdrawal: coin.minWithdrawal ?? existing.minWithdrawal,
+            minDeposit: coin.minDeposit ?? existing.minDeposit,
+            withdrawalFee: coin.withdrawalFee ?? existing.withdrawalFee,
+            description: coin.description ?? existing.description,
+            price: coin.price ?? existing.price,
+            decimals: coin.decimals == 0 && existing.decimals != 0
+                ? existing.decimals
+                : coin.decimals,
+            minSendAmount: coin.minSendAmount ?? existing.minSendAmount,
+            maxSendAmount: coin.maxSendAmount ?? existing.maxSendAmount,
+          );
+        })
+        .toList(growable: false);
   }
 
   void _onStreamError(Object error, [StackTrace? stackTrace]) {

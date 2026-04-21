@@ -93,7 +93,7 @@ class ReviewOrderView extends StatelessWidget {
                                   double.parse(
                                     quote?.youPay ??
                                         provider.fromAmountController.text,
-                                  ).toStringAsFixed(4),
+                                  ).toStringAsFixed(5),
                                   style: TextStyle(
                                     color: colorScheme.onSurface,
                                     fontSize: 24,
@@ -160,7 +160,7 @@ class ReviewOrderView extends StatelessWidget {
                                   double.parse(
                                     quote?.youReceive ??
                                         provider.toAmountController.text,
-                                  ).toStringAsFixed(4),
+                                  ).toStringAsFixed(5),
                                   style: TextStyle(
                                     color: colorScheme.onSurface,
                                     fontSize: 24,
