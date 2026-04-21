@@ -80,7 +80,9 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: isSoftLogin
+        leading: context.canPop() == false
+            ? null
+            : isSoftLogin
             ? null
             : (isRegisterMode
                   ? CommonBackButton()
@@ -387,54 +389,43 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     }
   }
 
-  /// Leading control for the whole change-passcode flow. Step transitions use
-  /// [context.go], which can drop the [Routes.settings] stack entry, so the first
-  /// step must not rely on [context.canPop] alone.
+  /// Leading control for the change-passcode flow. Step transitions use
+  /// [context.pushReplacement] so the `[home, settings]` stack prefix is
+  /// preserved, letting the default pop-based back button work all the way out.
   Widget? _changePasscodeBackButton(BuildContext context) {
-    if (mode == LoginProvider.modeChangePasscodeCurrent) {
-      return CommonBackButton(
-        onPressed: () {
-          if (context.canPop()) {
-            context.pop();
-          } else {
-            context.go(Routes.settings);
-          }
-        },
-      );
-    }
-    if (mode == LoginProvider.modeChangePasscodeNew) {
-      return CommonBackButton(
-        onPressed: () {
-          final provider = context.read<PasscodeProvider>();
-          context.go(
-            Routes.enterOrSetPasscode,
-            extra: {
-              LoginProvider.extraModeKey:
-                  LoginProvider.modeChangePasscodeCurrent,
-              LoginProvider.extraCountryCodeKey: provider.countryCode,
-              LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
-            },
-          );
-        },
-      );
-    }
-    if (mode == LoginProvider.modeChangePasscodeConfirm) {
-      return CommonBackButton(
-        onPressed: () {
-          final provider = context.read<PasscodeProvider>();
-          context.go(
-            Routes.enterOrSetPasscode,
-            extra: {
-              LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeNew,
-              LoginProvider.extraCountryCodeKey: provider.countryCode,
-              LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
-              LoginProvider.extraCurrentPasscodeKey: currentPasscode,
-            },
-          );
-        },
-      );
-    }
-    return null;
+    // if (mode == LoginProvider.modeChangePasscodeNew) {
+    //   return CommonBackButton(
+    //     onPressed: () {
+    //       final provider = context.read<PasscodeProvider>();
+    //       context.push(
+    //         Routes.enterOrSetPasscode,
+    //         extra: {
+    //           LoginProvider.extraModeKey:
+    //               LoginProvider.modeChangePasscodeCurrent,
+    //           LoginProvider.extraCountryCodeKey: provider.countryCode,
+    //           LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+    //         },
+    //       );
+    //     },
+    //   );
+    // }
+    // if (mode == LoginProvider.modeChangePasscodeConfirm) {
+    //   return CommonBackButton(
+    //     onPressed: () {
+    //       final provider = context.read<PasscodeProvider>();
+    //       context.pushReplacement(
+    //         Routes.enterOrSetPasscode,
+    //         extra: {
+    //           LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeNew,
+    //           LoginProvider.extraCountryCodeKey: provider.countryCode,
+    //           LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+    //           LoginProvider.extraCurrentPasscodeKey: currentPasscode,
+    //         },
+    //       );
+    //     },
+    //   );
+    // }
+    return CommonBackButton();
   }
 
   /// Back navigation for change-email passcode confirmation.
@@ -578,6 +569,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     PasscodeProvider provider,
     String digit,
   ) async {
+    print(mode);
     provider.addDigit(digit);
     if (!provider.isComplete) {
       return;
@@ -589,7 +581,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
           SnackbarHelper.showError(context, context.l10n!.unknownError);
           return;
         }
-        context.go(
+        context.push(
           Routes.enterOrSetPasscode,
           extra: {
             LoginProvider.extraModeKey: LoginProvider.modeConfirmPasscode,
@@ -616,7 +608,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
         if (!context.mounted || !isValid) {
           return;
         }
-        context.go(
+        context.push(
           Routes.enterOrSetPasscode,
           extra: {
             LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeNew,
@@ -629,7 +621,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
       }
 
       if (mode == LoginProvider.modeChangePasscodeNew) {
-        context.go(
+        context.push(
           Routes.enterOrSetPasscode,
           extra: {
             LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeConfirm,

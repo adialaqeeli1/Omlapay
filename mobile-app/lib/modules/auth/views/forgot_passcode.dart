@@ -208,7 +208,7 @@ class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
         return;
       }
 
-      context.go(
+      context.push(
         Routes.enterOrSetPasscode,
         extra: {
           LoginProvider.extraModeKey: LoginProvider.modeResetPasscode,
