@@ -19,9 +19,13 @@ class SwapSuccessView extends StatelessWidget {
     final toCoin = provider.toCoin;
     final quote = provider.swapQuote;
     // We display the To amount as the result
-    final toAmount = quote?.estimatedToAmount.isNotEmpty == true
+    final rawToAmount = quote?.estimatedToAmount.isNotEmpty == true
         ? quote!.estimatedToAmount
         : provider.toAmountController.text;
+    final parsedToAmount = double.tryParse(rawToAmount);
+    final toAmount = parsedToAmount != null
+        ? parsedToAmount.toStringAsFixed(4)
+        : rawToAmount;
     final toAmountUsd = quote?.estimatedToAmountUsd ?? '0.00';
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
