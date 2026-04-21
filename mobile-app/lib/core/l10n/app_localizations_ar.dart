@@ -905,7 +905,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pasteHintLongPress => 'اضغط مع الاستمرار للصق';
 
   @override
-  String get minAmountHint => 'الحد الأدنى 0';
+  String minAmountHint(String amount) {
+    return 'الحد الأدنى $amount';
+  }
 
   @override
   String get searchHint => 'بحث';
@@ -1008,6 +1010,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sendValidationInsufficientBalance => 'الرصيد غير كافٍ';
+
+  @override
+  String sendValidationBelowMinimum(String amount) {
+    return 'يجب أن يكون المبلغ $amount على الأقل';
+  }
 
   @override
   String get sendDefaultNetworkCode => 'TRC20';

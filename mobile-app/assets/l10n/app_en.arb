@@ -368,7 +368,14 @@
     "helpRequestSentSuccess": "Request sent successfully",
     "verificationCodeResentSuccess": "Verification code resent successfully.",
     "pasteHintLongPress": "Press and hold to paste",
-    "minAmountHint": "Min 0",
+    "minAmountHint": "Min {amount}",
+    "@minAmountHint": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
     "searchHint": "Search",
     "searchContactsHint": "Search name or number",
     "sendFlowVerifyAccountTitle": "Verify Account",
@@ -409,6 +416,14 @@
     "sendFormAmountLabel": "Amount to be sent",
     "sendValidationInvalidAmount": "Invalid amount",
     "sendValidationInsufficientBalance": "Insufficient balance",
+    "sendValidationBelowMinimum": "Amount must be at least {amount}",
+    "@sendValidationBelowMinimum": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
     "sendDefaultNetworkCode": "TRC20",
     "availableBalanceFormatted": "Available {amount} {symbol}",
     "@availableBalanceFormatted": {

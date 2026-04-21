@@ -26,6 +26,8 @@ abstract class CoinModel with _$CoinModel {
     String? quoteSymbolAr,
     @JsonKey(name: 'symbol_ar') String? coinSymbolAr,
     @JsonKey(name: 'name_ar') String? coinNameAr,
+    String? minSendAmount,
+    String? maxSendAmount,
   }) = _CoinModel;
 
   factory CoinModel.fromJson(Map<String, dynamic> json) =>

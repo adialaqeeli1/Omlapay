@@ -1745,8 +1745,8 @@ abstract class AppLocalizations {
   /// No description provided for @minAmountHint.
   ///
   /// In en, this message translates to:
-  /// **'Min 0'**
-  String get minAmountHint;
+  /// **'Min {amount}'**
+  String minAmountHint(String amount);
 
   /// No description provided for @searchHint.
   ///
@@ -1945,6 +1945,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Insufficient balance'**
   String get sendValidationInsufficientBalance;
+
+  /// No description provided for @sendValidationBelowMinimum.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount must be at least {amount}'**
+  String sendValidationBelowMinimum(String amount);
 
   /// No description provided for @sendDefaultNetworkCode.
   ///

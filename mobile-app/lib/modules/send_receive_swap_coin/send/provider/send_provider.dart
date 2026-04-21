@@ -93,6 +93,16 @@ class SendProvider extends ChangeNotifier {
   bool get isSubmitting => _isSubmitting;
   String? get submitError => _submitError;
   SendQuoteModel? get quote => _quote;
+  double get minSendAmount =>
+      double.tryParse(
+        _selectedCoin?.minSendAmount ?? _selectedCoin?.minDeposit ?? '0',
+      ) ??
+      0;
+  double get maxSendAmount =>
+      double.tryParse(
+        _selectedCoin?.maxSendAmount ?? _selectedCoin?.minDeposit ?? '0',
+      ) ??
+      0;
 
   // OTP / confirm getters.
   String? get sendToken => _sendToken;
@@ -318,10 +328,7 @@ class SendProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final result = await SendService.confirmSend(
-        sendToken: token,
-        otp: otp,
-      );
+      final result = await SendService.confirmSend(sendToken: token, otp: otp);
       _confirmResponse = result.data;
       _confirmMessage = result.message;
       _stopOtpCountdown();
@@ -369,12 +376,15 @@ class SendProvider extends ChangeNotifier {
     if (amount == null) {
       _error = l10n.sendValidationInvalidAmount;
     } else if (_selectedCoin != null) {
+      final min = minSendAmount;
       final balanceStr = walletsProvider
           .balanceForCoin(_selectedCoin!.symbol)
           .replaceAll(',', '');
       final balance = double.tryParse(balanceStr) ?? 0.0;
 
-      if (amount > balance) {
+      if (min > 0 && amount < min) {
+        _error = l10n.sendValidationBelowMinimum(min.toString());
+      } else if (amount > balance) {
         _error = l10n.sendValidationInsufficientBalance;
       }
     }

@@ -27,6 +27,8 @@ _CoinModel _$CoinModelFromJson(Map<String, dynamic> json) => _CoinModel(
   quoteSymbolAr: json['quoteSymbolAr'] as String?,
   coinSymbolAr: json['symbol_ar'] as String?,
   coinNameAr: json['name_ar'] as String?,
+  minSendAmount: json['minSendAmount'] as String?,
+  maxSendAmount: json['maxSendAmount'] as String?,
 );
 
 Map<String, dynamic> _$CoinModelToJson(_CoinModel instance) =>
@@ -51,4 +53,6 @@ Map<String, dynamic> _$CoinModelToJson(_CoinModel instance) =>
       'quoteSymbolAr': instance.quoteSymbolAr,
       'symbol_ar': instance.coinSymbolAr,
       'name_ar': instance.coinNameAr,
+      'minSendAmount': instance.minSendAmount,
+      'maxSendAmount': instance.maxSendAmount,
     };
