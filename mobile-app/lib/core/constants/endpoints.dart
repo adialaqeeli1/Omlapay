@@ -103,6 +103,10 @@ class Endpoints {
   /// Query params: `fromCoin`, `toCoin`, `amount` (all required).
   static String get swapQuote => '$apiVersion/swap/quote';
 
+  /// SSE stream for real-time swap quote updates; query params
+  /// `fromCoin`, `toCoin`, `amount`, `currency` (all required).
+  static String get swapQuoteStream => '$apiVersion/swap/quote/stream';
+
   /// Executes a swap between two coins.
   /// Body: `fromCoin`, `toCoin`, `amount` (all required).
   static String get swapExecute => '$apiVersion/swap/execute';

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TransactionModel {
 
- String get id;@JsonKey(name: 'coin_symbol') String get assetSymbol;@JsonKey(name: 'coinName') String? get assetName;@JsonKey(name: 'coinName_ar') String? get assetNameAr; String? get assetIconUrl; String get amount; String? get amountDisplay; String? get amountUsd;@JsonKey(name: 'amountSAR') String? get amountSar; String? get network; DateTime get createdAt; String? get txHash; String get status; String? get direction; String? get type;@JsonKey(name: 'networkIconUrl') String? get networkIconUrl; String? get fee; String? get errorMessage; String? get errorMessageAr; String? get senderAddress; String? get receiverAddress; String? get counterpartyPhone; String? get transactionType;
+ String get id;@JsonKey(name: 'coin_symbol') String get assetSymbol;@JsonKey(name: 'coinName') String? get assetName;@JsonKey(name: 'coinName_ar') String? get assetNameAr; String? get assetIconUrl; String get amount; String? get amountDisplay; String? get amountUsd;@JsonKey(name: 'amountSAR') String? get amountSar; String? get network; DateTime get createdAt; String? get txHash; String get status; String? get direction; String? get type;@JsonKey(name: 'networkIconUrl') String? get networkIconUrl; String? get fee; String? get errorMessage; String? get errorMessageAr; String? get senderAddress; String? get receiverAddress; String? get counterpartyPhone;@JsonKey(name: 'txType') String? get transactionType;
 /// Create a copy of TransactionModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $TransactionModelCopyWith<$Res>  {
   factory $TransactionModelCopyWith(TransactionModel value, $Res Function(TransactionModel) _then) = _$TransactionModelCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'coin_symbol') String assetSymbol,@JsonKey(name: 'coinName') String? assetName,@JsonKey(name: 'coinName_ar') String? assetNameAr, String? assetIconUrl, String amount, String? amountDisplay, String? amountUsd,@JsonKey(name: 'amountSAR') String? amountSar, String? network, DateTime createdAt, String? txHash, String status, String? direction, String? type,@JsonKey(name: 'networkIconUrl') String? networkIconUrl, String? fee, String? errorMessage, String? errorMessageAr, String? senderAddress, String? receiverAddress, String? counterpartyPhone, String? transactionType
+ String id,@JsonKey(name: 'coin_symbol') String assetSymbol,@JsonKey(name: 'coinName') String? assetName,@JsonKey(name: 'coinName_ar') String? assetNameAr, String? assetIconUrl, String amount, String? amountDisplay, String? amountUsd,@JsonKey(name: 'amountSAR') String? amountSar, String? network, DateTime createdAt, String? txHash, String status, String? direction, String? type,@JsonKey(name: 'networkIconUrl') String? networkIconUrl, String? fee, String? errorMessage, String? errorMessageAr, String? senderAddress, String? receiverAddress, String? counterpartyPhone,@JsonKey(name: 'txType') String? transactionType
 });
 
 
@@ -175,7 +175,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'coin_symbol')  String assetSymbol, @JsonKey(name: 'coinName')  String? assetName, @JsonKey(name: 'coinName_ar')  String? assetNameAr,  String? assetIconUrl,  String amount,  String? amountDisplay,  String? amountUsd, @JsonKey(name: 'amountSAR')  String? amountSar,  String? network,  DateTime createdAt,  String? txHash,  String status,  String? direction,  String? type, @JsonKey(name: 'networkIconUrl')  String? networkIconUrl,  String? fee,  String? errorMessage,  String? errorMessageAr,  String? senderAddress,  String? receiverAddress,  String? counterpartyPhone,  String? transactionType)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'coin_symbol')  String assetSymbol, @JsonKey(name: 'coinName')  String? assetName, @JsonKey(name: 'coinName_ar')  String? assetNameAr,  String? assetIconUrl,  String amount,  String? amountDisplay,  String? amountUsd, @JsonKey(name: 'amountSAR')  String? amountSar,  String? network,  DateTime createdAt,  String? txHash,  String status,  String? direction,  String? type, @JsonKey(name: 'networkIconUrl')  String? networkIconUrl,  String? fee,  String? errorMessage,  String? errorMessageAr,  String? senderAddress,  String? receiverAddress,  String? counterpartyPhone, @JsonKey(name: 'txType')  String? transactionType)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TransactionModel() when $default != null:
 return $default(_that.id,_that.assetSymbol,_that.assetName,_that.assetNameAr,_that.assetIconUrl,_that.amount,_that.amountDisplay,_that.amountUsd,_that.amountSar,_that.network,_that.createdAt,_that.txHash,_that.status,_that.direction,_that.type,_that.networkIconUrl,_that.fee,_that.errorMessage,_that.errorMessageAr,_that.senderAddress,_that.receiverAddress,_that.counterpartyPhone,_that.transactionType);case _:
@@ -196,7 +196,7 @@ return $default(_that.id,_that.assetSymbol,_that.assetName,_that.assetNameAr,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'coin_symbol')  String assetSymbol, @JsonKey(name: 'coinName')  String? assetName, @JsonKey(name: 'coinName_ar')  String? assetNameAr,  String? assetIconUrl,  String amount,  String? amountDisplay,  String? amountUsd, @JsonKey(name: 'amountSAR')  String? amountSar,  String? network,  DateTime createdAt,  String? txHash,  String status,  String? direction,  String? type, @JsonKey(name: 'networkIconUrl')  String? networkIconUrl,  String? fee,  String? errorMessage,  String? errorMessageAr,  String? senderAddress,  String? receiverAddress,  String? counterpartyPhone,  String? transactionType)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'coin_symbol')  String assetSymbol, @JsonKey(name: 'coinName')  String? assetName, @JsonKey(name: 'coinName_ar')  String? assetNameAr,  String? assetIconUrl,  String amount,  String? amountDisplay,  String? amountUsd, @JsonKey(name: 'amountSAR')  String? amountSar,  String? network,  DateTime createdAt,  String? txHash,  String status,  String? direction,  String? type, @JsonKey(name: 'networkIconUrl')  String? networkIconUrl,  String? fee,  String? errorMessage,  String? errorMessageAr,  String? senderAddress,  String? receiverAddress,  String? counterpartyPhone, @JsonKey(name: 'txType')  String? transactionType)  $default,) {final _that = this;
 switch (_that) {
 case _TransactionModel():
 return $default(_that.id,_that.assetSymbol,_that.assetName,_that.assetNameAr,_that.assetIconUrl,_that.amount,_that.amountDisplay,_that.amountUsd,_that.amountSar,_that.network,_that.createdAt,_that.txHash,_that.status,_that.direction,_that.type,_that.networkIconUrl,_that.fee,_that.errorMessage,_that.errorMessageAr,_that.senderAddress,_that.receiverAddress,_that.counterpartyPhone,_that.transactionType);case _:
@@ -216,7 +216,7 @@ return $default(_that.id,_that.assetSymbol,_that.assetName,_that.assetNameAr,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'coin_symbol')  String assetSymbol, @JsonKey(name: 'coinName')  String? assetName, @JsonKey(name: 'coinName_ar')  String? assetNameAr,  String? assetIconUrl,  String amount,  String? amountDisplay,  String? amountUsd, @JsonKey(name: 'amountSAR')  String? amountSar,  String? network,  DateTime createdAt,  String? txHash,  String status,  String? direction,  String? type, @JsonKey(name: 'networkIconUrl')  String? networkIconUrl,  String? fee,  String? errorMessage,  String? errorMessageAr,  String? senderAddress,  String? receiverAddress,  String? counterpartyPhone,  String? transactionType)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'coin_symbol')  String assetSymbol, @JsonKey(name: 'coinName')  String? assetName, @JsonKey(name: 'coinName_ar')  String? assetNameAr,  String? assetIconUrl,  String amount,  String? amountDisplay,  String? amountUsd, @JsonKey(name: 'amountSAR')  String? amountSar,  String? network,  DateTime createdAt,  String? txHash,  String status,  String? direction,  String? type, @JsonKey(name: 'networkIconUrl')  String? networkIconUrl,  String? fee,  String? errorMessage,  String? errorMessageAr,  String? senderAddress,  String? receiverAddress,  String? counterpartyPhone, @JsonKey(name: 'txType')  String? transactionType)?  $default,) {final _that = this;
 switch (_that) {
 case _TransactionModel() when $default != null:
 return $default(_that.id,_that.assetSymbol,_that.assetName,_that.assetNameAr,_that.assetIconUrl,_that.amount,_that.amountDisplay,_that.amountUsd,_that.amountSar,_that.network,_that.createdAt,_that.txHash,_that.status,_that.direction,_that.type,_that.networkIconUrl,_that.fee,_that.errorMessage,_that.errorMessageAr,_that.senderAddress,_that.receiverAddress,_that.counterpartyPhone,_that.transactionType);case _:
@@ -231,7 +231,7 @@ return $default(_that.id,_that.assetSymbol,_that.assetName,_that.assetNameAr,_th
 @JsonSerializable()
 
 class _TransactionModel extends TransactionModel {
-  const _TransactionModel({required this.id, @JsonKey(name: 'coin_symbol') required this.assetSymbol, @JsonKey(name: 'coinName') this.assetName, @JsonKey(name: 'coinName_ar') this.assetNameAr, this.assetIconUrl, required this.amount, this.amountDisplay, this.amountUsd, @JsonKey(name: 'amountSAR') this.amountSar, this.network, required this.createdAt, this.txHash, required this.status, this.direction, this.type, @JsonKey(name: 'networkIconUrl') this.networkIconUrl, this.fee, this.errorMessage, this.errorMessageAr, this.senderAddress, this.receiverAddress, this.counterpartyPhone, this.transactionType}): super._();
+  const _TransactionModel({required this.id, @JsonKey(name: 'coin_symbol') required this.assetSymbol, @JsonKey(name: 'coinName') this.assetName, @JsonKey(name: 'coinName_ar') this.assetNameAr, this.assetIconUrl, required this.amount, this.amountDisplay, this.amountUsd, @JsonKey(name: 'amountSAR') this.amountSar, this.network, required this.createdAt, this.txHash, required this.status, this.direction, this.type, @JsonKey(name: 'networkIconUrl') this.networkIconUrl, this.fee, this.errorMessage, this.errorMessageAr, this.senderAddress, this.receiverAddress, this.counterpartyPhone, @JsonKey(name: 'txType') this.transactionType}): super._();
   factory _TransactionModel.fromJson(Map<String, dynamic> json) => _$TransactionModelFromJson(json);
 
 @override final  String id;
@@ -256,7 +256,7 @@ class _TransactionModel extends TransactionModel {
 @override final  String? senderAddress;
 @override final  String? receiverAddress;
 @override final  String? counterpartyPhone;
-@override final  String? transactionType;
+@override@JsonKey(name: 'txType') final  String? transactionType;
 
 /// Create a copy of TransactionModel
 /// with the given fields replaced by the non-null parameter values.
@@ -291,7 +291,7 @@ abstract mixin class _$TransactionModelCopyWith<$Res> implements $TransactionMod
   factory _$TransactionModelCopyWith(_TransactionModel value, $Res Function(_TransactionModel) _then) = __$TransactionModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'coin_symbol') String assetSymbol,@JsonKey(name: 'coinName') String? assetName,@JsonKey(name: 'coinName_ar') String? assetNameAr, String? assetIconUrl, String amount, String? amountDisplay, String? amountUsd,@JsonKey(name: 'amountSAR') String? amountSar, String? network, DateTime createdAt, String? txHash, String status, String? direction, String? type,@JsonKey(name: 'networkIconUrl') String? networkIconUrl, String? fee, String? errorMessage, String? errorMessageAr, String? senderAddress, String? receiverAddress, String? counterpartyPhone, String? transactionType
+ String id,@JsonKey(name: 'coin_symbol') String assetSymbol,@JsonKey(name: 'coinName') String? assetName,@JsonKey(name: 'coinName_ar') String? assetNameAr, String? assetIconUrl, String amount, String? amountDisplay, String? amountUsd,@JsonKey(name: 'amountSAR') String? amountSar, String? network, DateTime createdAt, String? txHash, String status, String? direction, String? type,@JsonKey(name: 'networkIconUrl') String? networkIconUrl, String? fee, String? errorMessage, String? errorMessageAr, String? senderAddress, String? receiverAddress, String? counterpartyPhone,@JsonKey(name: 'txType') String? transactionType
 });
 
 

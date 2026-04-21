@@ -1096,6 +1096,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get swapExchangeRate => 'سعر الصرف';
 
   @override
+  String get swapFeeOmlapay => 'رسوم Omlapay';
+
+  @override
+  String get swapFeeBinance => 'رسوم Binance';
+
+  @override
+  String get swapErrorInsufficientBalance => 'المبلغ يتجاوز الرصيد المتاح.';
+
+  @override
   String get transferToLabel => 'إلى';
 
   @override
