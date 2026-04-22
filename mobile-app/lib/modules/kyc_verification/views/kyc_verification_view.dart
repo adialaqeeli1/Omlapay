@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:country_codes/country_codes.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart' as ph;
 import 'package:provider/provider.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
@@ -10,22 +14,54 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/constants.dart';
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/services/storage_helper.dart';
+import '../../../core/utils/app_exception.dart';
 import '../../../routes/app_router.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/kyc_status_provider.dart';
 import '../../../widgets/common_back_button.dart';
+import '../../../widgets/common_bottom_sheet.dart';
+import '../../../widgets/permission_dialog.dart';
 import '../models/kyc_rejection_details_response.dart';
 import '../providers/kyc_verification_provider.dart';
+import '../utils/kyc_image_slot.dart';
 import '../utils/kyc_status.dart';
 import '../utils/kyc_verification_entry_source.dart';
 
-bool _hasAnyDocument(KycDocuments? docs) {
-  if (docs == null) return false;
-  return (docs.frontUrl != null && docs.frontUrl!.isNotEmpty) ||
-      (docs.backUrl != null && docs.backUrl!.isNotEmpty) ||
-      (docs.faceUrl != null && docs.faceUrl!.isNotEmpty);
+/// User's choice from the per-tile "View / Pick from gallery / Take photo"
+/// action sheet.
+enum _KycDocAction { view, gallery, camera }
+
+/// Opens the 3-action sheet for a single KYC document slot. Returns the
+/// chosen `_KycDocAction`, or `null` if the sheet was dismissed.
+Future<_KycDocAction?> _showKycDocumentActionSheet(BuildContext context) {
+  final l10n = context.l10n!;
+  return showModalBottomSheet<_KycDocAction>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (sheetContext) => CommonBottomSheet(
+      title: l10n.kycDocumentsReviewTitle,
+      childrens: [
+        ListTile(
+          leading: const Icon(Icons.visibility_outlined),
+          title: Text(l10n.kycDocumentActionView),
+          onTap: () => Navigator.of(sheetContext).pop(_KycDocAction.view),
+        ),
+        ListTile(
+          leading: const Icon(Icons.photo_library_outlined),
+          title: Text(l10n.kycDocumentActionPickGallery),
+          onTap: () => Navigator.of(sheetContext).pop(_KycDocAction.gallery),
+        ),
+        ListTile(
+          leading: const Icon(Icons.photo_camera_outlined),
+          title: Text(l10n.kycDocumentActionTakePhoto),
+          onTap: () => Navigator.of(sheetContext).pop(_KycDocAction.camera),
+        ),
+      ],
+    ),
+  );
 }
 
 class KycVerificationView extends StatefulWidget {
@@ -45,6 +81,13 @@ class _KycVerificationViewState extends State<KycVerificationView> {
   /// Previously uploaded KYC documents (front / back / selfie). Populated when
   /// the user retries after a rejection; shown below the form for reference.
   KycDocuments? _previousDocuments;
+
+  /// Locally-picked replacement images for the retry flow. `null` means "keep
+  /// the previously uploaded image". These live in `State` so they are
+  /// discarded automatically when the user leaves the retry screen.
+  XFile? _pickedFront;
+  XFile? _pickedBack;
+  XFile? _pickedFace;
 
   final FormGroup _form = FormGroup({
     'firstName': FormControl<String>(validators: [Validators.required]),
@@ -98,6 +141,96 @@ class _KycVerificationViewState extends State<KycVerificationView> {
     return '$month/$day/$year';
   }
 
+  /// Handles a tap on a single document tile in the retry flow. Opens the
+  /// 3-action sheet (View / Gallery / Camera), then either opens the full
+  /// screen viewer or dispatches the picker flow based on the choice.
+  Future<void> _handleSlotTap(KycImageSlot slot) async {
+    final l10n = context.l10n!;
+    final action = await _showKycDocumentActionSheet(context);
+    if (!mounted || action == null) return;
+
+    switch (action) {
+      case _KycDocAction.view:
+        final currentFile = switch (slot) {
+          KycImageSlot.front => _pickedFront,
+          KycImageSlot.back => _pickedBack,
+          KycImageSlot.selfie => _pickedFace,
+        };
+        final currentUrl = switch (slot) {
+          KycImageSlot.front => _previousDocuments?.frontUrl,
+          KycImageSlot.back => _previousDocuments?.backUrl,
+          KycImageSlot.selfie => _previousDocuments?.faceUrl,
+        };
+        if (currentFile == null && (currentUrl == null || currentUrl.isEmpty)) {
+          // Nothing to view yet — silently no-op. The user will see the
+          // "Add photo" placeholder on the tile and can tap again to pick.
+          return;
+        }
+        final label = switch (slot) {
+          KycImageSlot.front => l10n.kycDocumentFrontLabel,
+          KycImageSlot.back => l10n.kycDocumentBackLabel,
+          KycImageSlot.selfie => l10n.kycDocumentSelfieLabel,
+        };
+        _openFullScreenImage(
+          context,
+          url: currentFile == null ? currentUrl : null,
+          file: currentFile,
+          label: label,
+        );
+
+      case _KycDocAction.gallery:
+        await _pickImageForSlot(slot, source: ImageSource.gallery);
+      case _KycDocAction.camera:
+        await _pickImageForSlot(slot, source: ImageSource.camera);
+    }
+  }
+
+  Future<void> _pickImageForSlot(
+    KycImageSlot slot, {
+    required ImageSource source,
+  }) async {
+    final provider = context.read<KycVerificationProvider>();
+    final l10n = context.l10n!;
+    try {
+      final file = await provider.pickKycImage(source: source, slot: slot);
+      if (!mounted) return;
+      if (file == null) {
+        // null == user cancelled OR OS denied permission. Show the
+        // permission-denied dialog only for the camera path; for gallery,
+        // a cancel is common and a prompt would be noisy.
+        if (source == ImageSource.camera) {
+          await showDialog<void>(
+            context: context,
+            builder: (dialogContext) => PermissionDialog(
+              title: l10n.kycPermissionDeniedTitle,
+              message: l10n.kycPermissionDeniedBody,
+              allowLabel: l10n.kycOpenSettings,
+              onOpenSettings: () {
+                Navigator.of(dialogContext).pop();
+                ph.openAppSettings();
+              },
+              onDoNotAllow: () => Navigator.of(dialogContext).pop(),
+            ),
+          );
+        }
+        return;
+      }
+      setState(() {
+        switch (slot) {
+          case KycImageSlot.front:
+            _pickedFront = file;
+          case KycImageSlot.back:
+            _pickedBack = file;
+          case KycImageSlot.selfie:
+            _pickedFace = file;
+        }
+      });
+    } on AppException {
+      if (!mounted) return;
+      SnackbarHelper.showError(context, l10n.kycDocumentPickFailed);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
@@ -128,6 +261,10 @@ class _KycVerificationViewState extends State<KycVerificationView> {
                 entrySource: widget.entrySource,
                 previousDocuments: _previousDocuments,
                 isRejectedRetry: kycStatus == KycStatus.rejected,
+                pickedFront: _pickedFront,
+                pickedBack: _pickedBack,
+                pickedFace: _pickedFace,
+                onTapSlot: _handleSlotTap,
               )
             : switch (kycStatus) {
                 KycStatus.pending => _KycPendingBody(),
@@ -268,19 +405,30 @@ class _KycFormBody extends StatelessWidget {
     required this.entrySource,
     this.previousDocuments,
     this.isRejectedRetry = false,
+    this.pickedFront,
+    this.pickedBack,
+    this.pickedFace,
+    this.onTapSlot,
   });
 
   final FormGroup form;
   final KycVerificationEntrySource entrySource;
 
-  /// Uploaded documents from a previous rejected submission. When non-null the
-  /// form shows them below the fields so the user can compare against what
-  /// they previously submitted.
+  /// Uploaded documents from a previous rejected submission.
   final KycDocuments? previousDocuments;
 
   /// When true, submitting the form calls `kyc/resubmit` instead of the
   /// SumSub-start flow (used only after a rejected KYC).
   final bool isRejectedRetry;
+
+  /// Locally-picked replacements. Only used when `isRejectedRetry` is true.
+  final XFile? pickedFront;
+  final XFile? pickedBack;
+  final XFile? pickedFace;
+
+  /// Invoked when the user taps a document tile in the review section.
+  /// Must be non-null when `isRejectedRetry` is true.
+  final ValueChanged<KycImageSlot>? onTapSlot;
 
   @override
   Widget build(BuildContext context) {
@@ -361,11 +509,15 @@ class _KycFormBody extends StatelessWidget {
                             label: l10n.kycAddressLabel,
                           ),
                         ),
-                        if (_hasAnyDocument(previousDocuments))
+                        if (isRejectedRetry && onTapSlot != null)
                           SizedBox(
                             width: constraints.maxWidth,
-                            child: _KycPreviousDocumentsSection(
-                              documents: previousDocuments!,
+                            child: _KycDocumentsReviewSection(
+                              documents: previousDocuments,
+                              pickedFront: pickedFront,
+                              pickedBack: pickedBack,
+                              pickedFace: pickedFace,
+                              onTapSlot: onTapSlot!,
                             ),
                           ),
                       ],
@@ -404,6 +556,9 @@ class _KycFormBody extends StatelessWidget {
                                   authProvider: context.read<AuthProvider>(),
                                   kycStatusProvider: context
                                       .read<KycStatusProvider>(),
+                                  idFront: pickedFront,
+                                  idBack: pickedBack,
+                                  selfie: pickedFace,
                                 );
                                 if (!context.mounted) return;
                                 if (result.success &&
@@ -696,168 +851,209 @@ Map<String, String> _authImageHeaders() {
 
 void _openFullScreenImage(
   BuildContext context, {
-  required String url,
+  String? url,
+  XFile? file,
   required String label,
 }) {
+  assert(url != null || file != null, 'Provide either url or file');
   Navigator.of(context).push(
     PageRouteBuilder(
       opaque: false,
       barrierColor: Colors.black.withValues(alpha: 0.92),
       pageBuilder: (_, _, _) =>
-          _KycDocumentFullScreenView(url: url, label: label),
+          _KycDocumentFullScreenView(url: url, file: file, label: label),
     ),
   );
 }
 
-/// Shows the user's previously uploaded KYC documents below the form on the
-/// retry flow: selfie rendered as a circular avatar, with front/back of the
-/// document side-by-side beneath. Images are loaded with the user's bearer
-/// token so the backend-authenticated URLs resolve correctly. Tapping any
-/// image opens a zoomable full-screen viewer.
-class _KycPreviousDocumentsSection extends StatelessWidget {
-  const _KycPreviousDocumentsSection({required this.documents});
+/// Documents review for the retry flow: shows selfie, ID front, ID back.
+/// Each tile is tappable and either:
+///   • renders the user's freshly picked `XFile` with a "Changed" pill, or
+///   • renders the previously uploaded remote image, or
+///   • renders an "Add photo" placeholder when nothing exists yet.
+class _KycDocumentsReviewSection extends StatelessWidget {
+  const _KycDocumentsReviewSection({
+    required this.documents,
+    required this.pickedFront,
+    required this.pickedBack,
+    required this.pickedFace,
+    required this.onTapSlot,
+  });
 
-  final KycDocuments documents;
+  final KycDocuments? documents;
+  final XFile? pickedFront;
+  final XFile? pickedBack;
+  final XFile? pickedFace;
+  final ValueChanged<KycImageSlot> onTapSlot;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
     final theme = context.theme;
 
-    final hasSelfie =
-        documents.faceUrl != null && documents.faceUrl!.isNotEmpty;
-    final hasFront =
-        documents.frontUrl != null && documents.frontUrl!.isNotEmpty;
-    final hasBack = documents.backUrl != null && documents.backUrl!.isNotEmpty;
-
-    if (!hasSelfie && !hasFront && !hasBack) {
-      return const SizedBox.shrink();
-    }
+    final frontUrl = documents?.frontUrl;
+    final backUrl = documents?.backUrl;
+    final faceUrl = documents?.faceUrl;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 8),
         Text(
-          l10n.kycPreviouslySubmittedDocumentsTitle,
+          l10n.kycDocumentsReviewTitle,
           style: theme.textTheme.titleMedium?.copyWith(
             color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: 16),
-        if (hasSelfie) ...[
-          Center(
-            child: _KycSelfieAvatar(
-              url: documents.faceUrl!,
-              label: l10n.kycDocumentSelfieLabel,
+        Center(
+          child: _KycSelfieAvatar(
+            file: pickedFace,
+            url: faceUrl,
+            label: l10n.kycDocumentSelfieLabel,
+            isChanged: pickedFace != null,
+            onTap: () => onTapSlot(KycImageSlot.selfie),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: Text(
+            l10n.kycDocumentSelfieLabel,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 8),
-          Center(
-            child: Text(
-              l10n.kycDocumentSelfieLabel,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w500,
+        ),
+        const SizedBox(height: 20),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _KycDocumentPreview(
+                label: l10n.kycDocumentFrontLabel,
+                file: pickedFront,
+                url: frontUrl,
+                isChanged: pickedFront != null,
+                onTap: () => onTapSlot(KycImageSlot.front),
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-        ],
-        if (hasFront || hasBack)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (hasFront)
-                Expanded(
-                  child: _KycDocumentPreview(
-                    label: l10n.kycDocumentFrontLabel,
-                    url: documents.frontUrl!,
-                  ),
-                ),
-              if (hasFront && hasBack) const SizedBox(width: 12),
-              if (hasBack)
-                Expanded(
-                  child: _KycDocumentPreview(
-                    label: l10n.kycDocumentBackLabel,
-                    url: documents.backUrl!,
-                  ),
-                ),
-            ],
-          ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _KycDocumentPreview(
+                label: l10n.kycDocumentBackLabel,
+                file: pickedBack,
+                url: backUrl,
+                isChanged: pickedBack != null,
+                onTap: () => onTapSlot(KycImageSlot.back),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
 }
 
 class _KycSelfieAvatar extends StatelessWidget {
-  const _KycSelfieAvatar({required this.url, required this.label});
+  const _KycSelfieAvatar({
+    required this.file,
+    required this.url,
+    required this.label,
+    required this.isChanged,
+    required this.onTap,
+  });
 
-  final String url;
+  final XFile? file;
+  final String? url;
   final String label;
+  final bool isChanged;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
     final isDark = context.isDarkMode;
+    final hasImage = file != null || (url != null && url!.isNotEmpty);
 
     return GestureDetector(
-      onTap: () => _openFullScreenImage(context, url: url, label: label),
-      child: Container(
-        width: 120,
-        height: 120,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: theme.colorScheme.outline.withValues(alpha: 0.35),
-            width: 2,
-          ),
-        ),
-        child: ClipOval(
-          child: CachedNetworkImage(
-            imageUrl: url,
-            httpHeaders: _authImageHeaders(),
-            fit: BoxFit.cover,
-            placeholder: (context, _) => Container(
-              color: isDark
-                  ? AppColors.darkSurface
-                  : theme.colorScheme.surfaceContainerHighest,
-              alignment: Alignment.center,
-              child: const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
+      onTap: onTap,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: theme.colorScheme.outline.withValues(alpha: 0.35),
+                width: 2,
               ),
             ),
-            errorWidget: (context, _, _) => Container(
-              color: isDark
-                  ? AppColors.darkSurface
-                  : theme.colorScheme.surfaceContainerHighest,
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.broken_image_outlined,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+            child: ClipOval(
+              child: !hasImage
+                  ? _AddPhotoPlaceholder(circular: true)
+                  : file != null
+                  ? Image.file(File(file!.path), fit: BoxFit.cover)
+                  : CachedNetworkImage(
+                      imageUrl: url!,
+                      httpHeaders: _authImageHeaders(),
+                      fit: BoxFit.cover,
+                      placeholder: (context, _) => Container(
+                        color: isDark
+                            ? AppColors.darkSurface
+                            : theme.colorScheme.surfaceContainerHighest,
+                        alignment: Alignment.center,
+                        child: const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                      errorWidget: (context, _, _) => Container(
+                        color: isDark
+                            ? AppColors.darkSurface
+                            : theme.colorScheme.surfaceContainerHighest,
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.broken_image_outlined,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
             ),
           ),
-        ),
+          if (isChanged)
+            PositionedDirectional(bottom: -4, end: -4, child: _ChangedPill()),
+        ],
       ),
     );
   }
 }
 
 class _KycDocumentPreview extends StatelessWidget {
-  const _KycDocumentPreview({required this.label, required this.url});
+  const _KycDocumentPreview({
+    required this.label,
+    required this.file,
+    required this.url,
+    required this.isChanged,
+    required this.onTap,
+  });
 
   final String label;
-  final String url;
+  final XFile? file;
+  final String? url;
+  final bool isChanged;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
     final theme = context.theme;
     final isDark = context.isDarkMode;
+    final hasImage = file != null || (url != null && url!.isNotEmpty);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -871,56 +1067,68 @@ class _KycDocumentPreview extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         GestureDetector(
-          onTap: () => _openFullScreenImage(context, url: url, label: label),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isDark
-                  ? AppColors.darkSurface
-                  : theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: theme.colorScheme.outline.withValues(alpha: 0.25),
-              ),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: AspectRatio(
-                aspectRatio: 3 / 4,
-                child: CachedNetworkImage(
-                  imageUrl: url,
-                  httpHeaders: _authImageHeaders(),
-                  fit: BoxFit.contain,
-                  placeholder: (context, _) => const Center(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
+          onTap: onTap,
+          child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? AppColors.darkSurface
+                      : theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: theme.colorScheme.outline.withValues(alpha: 0.25),
                   ),
-                  errorWidget: (context, _, _) => Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.broken_image_outlined,
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          l10n.kycDocumentLoadFailed,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: AspectRatio(
+                    aspectRatio: 3 / 4,
+                    child: !hasImage
+                        ? _AddPhotoPlaceholder(circular: false)
+                        : file != null
+                        ? Image.file(File(file!.path), fit: BoxFit.contain)
+                        : CachedNetworkImage(
+                            imageUrl: url!,
+                            httpHeaders: _authImageHeaders(),
+                            fit: BoxFit.contain,
+                            placeholder: (context, _) => const Center(
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, _, _) => Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.broken_image_outlined,
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    l10n.kycDocumentLoadFailed,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
                   ),
                 ),
               ),
-            ),
+              if (isChanged)
+                PositionedDirectional(top: 8, end: 8, child: _ChangedPill()),
+            ],
           ),
         ),
       ],
@@ -928,15 +1136,108 @@ class _KycDocumentPreview extends StatelessWidget {
   }
 }
 
-class _KycDocumentFullScreenView extends StatelessWidget {
-  const _KycDocumentFullScreenView({required this.url, required this.label});
+class _ChangedPill extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n!;
+    final theme = context.theme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.primaryColor,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        l10n.kycDocumentChangedBadge,
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: AppColors.white,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
 
-  final String url;
+class _AddPhotoPlaceholder extends StatelessWidget {
+  const _AddPhotoPlaceholder({required this.circular});
+
+  final bool circular;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n!;
+    final theme = context.theme;
+    final fg = theme.colorScheme.onSurfaceVariant;
+    return Container(
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: circular ? null : BorderRadius.circular(12),
+        shape: circular ? BoxShape.circle : BoxShape.rectangle,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.add_photo_alternate_outlined, color: fg, size: 28),
+          const SizedBox(height: 6),
+          Text(
+            l10n.kycDocumentAddPhoto,
+            style: theme.textTheme.bodySmall?.copyWith(color: fg),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _KycDocumentFullScreenView extends StatelessWidget {
+  const _KycDocumentFullScreenView({this.url, this.file, required this.label})
+    : assert(url != null || file != null);
+
+  final String? url;
+  final XFile? file;
   final String label;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
+
+    final Widget image = file != null
+        ? Image.file(File(file!.path), fit: BoxFit.contain)
+        : CachedNetworkImage(
+            imageUrl: url!,
+            httpHeaders: _authImageHeaders(),
+            fit: BoxFit.contain,
+            placeholder: (context, _) => const SizedBox(
+              width: 32,
+              height: 32,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            ),
+            errorWidget: (context, _, _) => Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.broken_image_outlined,
+                    color: Colors.white70,
+                    size: 48,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.kycDocumentLoadFailed,
+                    style: const TextStyle(color: Colors.white70),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          );
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -956,42 +1257,7 @@ class _KycDocumentFullScreenView extends StatelessWidget {
       body: GestureDetector(
         onTap: () => Navigator.of(context).pop(),
         child: Center(
-          child: InteractiveViewer(
-            minScale: 1,
-            maxScale: 5,
-            child: CachedNetworkImage(
-              imageUrl: url,
-              httpHeaders: _authImageHeaders(),
-              fit: BoxFit.contain,
-              placeholder: (context, _) => const SizedBox(
-                width: 32,
-                height: 32,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              ),
-              errorWidget: (context, _, _) => Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.broken_image_outlined,
-                      color: Colors.white70,
-                      size: 48,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      l10n.kycDocumentLoadFailed,
-                      style: const TextStyle(color: Colors.white70),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          child: InteractiveViewer(minScale: 1, maxScale: 5, child: image),
         ),
       ),
     );

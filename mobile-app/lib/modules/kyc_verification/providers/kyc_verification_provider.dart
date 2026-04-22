@@ -2,15 +2,19 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_idensic_mobile_sdk_plugin/flutter_idensic_mobile_sdk_plugin.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
 import '../../../core/utils/api_message_helper.dart';
+import '../../../core/utils/app_exception.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/kyc_status_provider.dart';
 import '../models/kyc_rejection_details_response.dart';
 import '../services/kyc_verification_service.dart';
+import '../utils/kyc_image_slot.dart';
 
 class KycVerificationProvider extends ChangeNotifier {
   bool _isSubmitting = false;
@@ -36,6 +40,36 @@ class KycVerificationProvider extends ChangeNotifier {
     } finally {
       _isLoadingRejectionDetails = false;
       notifyListeners();
+    }
+  }
+
+  /// Opens the camera or gallery and returns a compressed `XFile`.
+  /// Returns `null` when the user cancels the picker or when the OS denies
+  /// camera/photos permission — callers show a localized message in both
+  /// cases (cancel: no snackbar; denied: "Open Settings" snackbar).
+  /// Selfie captures default to the front camera.
+  Future<XFile?> pickKycImage({
+    required ImageSource source,
+    required KycImageSlot slot,
+  }) async {
+    try {
+      return await ImagePicker().pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 1920,
+        preferredCameraDevice: slot == KycImageSlot.selfie
+            ? CameraDevice.front
+            : CameraDevice.rear,
+      );
+    } on PlatformException catch (e) {
+      if (e.code == 'camera_access_denied' ||
+          e.code == 'photo_access_denied') {
+        return null;
+      }
+      throw AppException(
+        e.message ?? 'Image pick failed',
+        messageKey: 'kycDocumentPickFailed',
+      );
     }
   }
 
@@ -80,9 +114,10 @@ class KycVerificationProvider extends ChangeNotifier {
     );
   }
 
-  /// Re-submits previously uploaded KYC data after a rejection. Unlike the
-  /// initial flow, SumSub is NOT re-launched — the backend reuses the existing
-  /// SumSub applicant. Returns the localized success message on success.
+  /// Re-submits previously uploaded KYC data after a rejection. Optional
+  /// `idFront` / `idBack` / `selfie` image files are attached as multipart
+  /// parts when non-null; unchanged slots are omitted so the backend keeps
+  /// the previously uploaded image for those slots.
   Future<({String message, bool success})> resubmitKyc({
     required String firstName,
     required String lastName,
@@ -94,6 +129,9 @@ class KycVerificationProvider extends ChangeNotifier {
     required String successFallback,
     required AuthProvider authProvider,
     required KycStatusProvider kycStatusProvider,
+    XFile? idFront,
+    XFile? idBack,
+    XFile? selfie,
   }) async {
     if (_isSubmitting) {
       return (message: '', success: false);
@@ -107,14 +145,26 @@ class KycVerificationProvider extends ChangeNotifier {
         firstName: firstName,
         lastName: lastName,
         dob: dob,
-        country: residentialCountry,
-        nationality: documentCountry,
+        residentialCountry: residentialCountry,
+        documentCountry: documentCountry,
         city: city,
         address: address,
+        idFront: idFront,
+        idBack: idBack,
+        selfie: selfie,
       );
 
-      unawaited(authProvider.fetchAccountDetails());
-      unawaited(kycStatusProvider.fetchKycStatus());
+      // Await the status refresh so the caller navigates with the updated
+      // KYC state (pending) already in place — not the stale rejected value.
+      // Account refresh is awaited too so the home screen shows fresh data.
+      try {
+        await Future.wait([
+          authProvider.fetchAccountDetails(),
+          kycStatusProvider.fetchKycStatus(),
+        ]);
+      } catch (e) {
+        debugPrint('Post-resubmit refresh error: $e');
+      }
 
       final message = ApiMessageHelper.localizedFromResponse(
         response,
