@@ -9,12 +9,35 @@ import 'package:reactive_forms/reactive_forms.dart';
 import '../../../core/utils/api_message_helper.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/kyc_status_provider.dart';
+import '../models/kyc_rejection_details_response.dart';
 import '../services/kyc_verification_service.dart';
 
 class KycVerificationProvider extends ChangeNotifier {
   bool _isSubmitting = false;
+  bool _isLoadingRejectionDetails = false;
 
   bool get isSubmitting => _isSubmitting;
+  bool get isLoadingRejectionDetails => _isLoadingRejectionDetails;
+
+  /// Fetches rejection details (previous form data + uploaded documents) for
+  /// the rejected-retry flow. Returns `null` on failure so the caller can fall
+  /// back to an empty form.
+  Future<KycRejectionDetailsResponse?> loadRejectionDetails() async {
+    if (_isLoadingRejectionDetails) return null;
+
+    _isLoadingRejectionDetails = true;
+    notifyListeners();
+
+    try {
+      return await KycVerificationService.fetchRejectionDetails();
+    } catch (e) {
+      debugPrint('KycVerificationProvider.loadRejectionDetails failed: $e');
+      return null;
+    } finally {
+      _isLoadingRejectionDetails = false;
+      notifyListeners();
+    }
+  }
 
   /// Validates form and returns collected data, or null if invalid.
   ({
@@ -55,6 +78,53 @@ class KycVerificationProvider extends ChangeNotifier {
       address: address,
       dob: dob,
     );
+  }
+
+  /// Re-submits previously uploaded KYC data after a rejection. Unlike the
+  /// initial flow, SumSub is NOT re-launched — the backend reuses the existing
+  /// SumSub applicant. Returns the localized success message on success.
+  Future<({String message, bool success})> resubmitKyc({
+    required String firstName,
+    required String lastName,
+    required String residentialCountry,
+    required String documentCountry,
+    required String city,
+    required String address,
+    required String dob,
+    required String successFallback,
+    required AuthProvider authProvider,
+    required KycStatusProvider kycStatusProvider,
+  }) async {
+    if (_isSubmitting) {
+      return (message: '', success: false);
+    }
+
+    _isSubmitting = true;
+    notifyListeners();
+
+    try {
+      final response = await KycVerificationService.resubmitKyc(
+        firstName: firstName,
+        lastName: lastName,
+        dob: dob,
+        country: residentialCountry,
+        nationality: documentCountry,
+        city: city,
+        address: address,
+      );
+
+      unawaited(authProvider.fetchAccountDetails());
+      unawaited(kycStatusProvider.fetchKycStatus());
+
+      final message = ApiMessageHelper.localizedFromResponse(
+        response,
+        fallback: successFallback,
+      );
+      return (message: message, success: true);
+    } finally {
+      _isSubmitting = false;
+      notifyListeners();
+    }
   }
 
   Future<({String message, bool shouldNavigateBack})> launchSumSub({

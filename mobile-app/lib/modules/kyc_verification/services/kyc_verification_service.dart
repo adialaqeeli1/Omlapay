@@ -1,5 +1,6 @@
 import '../../../core/constants/endpoints.dart';
 import '../../../core/services/api_helper.dart';
+import '../models/kyc_rejection_details_response.dart';
 import '../models/kyc_status_response.dart';
 
 class KycVerificationService {
@@ -36,5 +37,34 @@ class KycVerificationService {
       return KycStatusResponse.fromJson(data);
     }
     return const KycStatusResponse();
+  }
+
+  static Future<KycRejectionDetailsResponse> fetchRejectionDetails() async {
+    final response = await ApiHelper.get(Endpoints.kycRejectionDetails);
+    final data = response['data'];
+    if (data is Map<String, dynamic>) {
+      return KycRejectionDetailsResponse.fromJson(data);
+    }
+    return const KycRejectionDetailsResponse();
+  }
+
+  static Future<Map<String, dynamic>> resubmitKyc({
+    required String firstName,
+    required String lastName,
+    required String dob,
+    required String country,
+    required String nationality,
+    required String city,
+    required String address,
+  }) async {
+    return ApiHelper.post(Endpoints.kycResubmit, {
+      'firstName': firstName,
+      'lastName': lastName,
+      'dob': dob,
+      'country': country,
+      'nationality': nationality,
+      'address': address,
+      'city': city,
+    });
   }
 }

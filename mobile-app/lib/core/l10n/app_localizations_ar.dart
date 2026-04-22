@@ -1172,6 +1172,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get kycStartedSuccess => 'تم بدء عملية التحقق من الهوية بنجاح.';
 
   @override
+  String get kycPreviouslySubmittedDocumentsTitle => 'المستندات المقدمة سابقًا';
+
+  @override
+  String get kycDocumentFrontLabel => 'مقدمة المستند';
+
+  @override
+  String get kycDocumentBackLabel => 'خلفية المستند';
+
+  @override
+  String get kycDocumentSelfieLabel => 'صورة شخصية';
+
+  @override
+  String get kycDocumentLoadFailed => 'تعذّر تحميل المستند';
+
+  @override
   String get youAreOffline => 'أنت غير متصل بالإنترنت';
 
   @override
