@@ -2240,6 +2240,36 @@ abstract class AppLocalizations {
   /// **'KYC process started successfully.'**
   String get kycStartedSuccess;
 
+  /// No description provided for @kycPreviouslySubmittedDocumentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Previously Submitted Documents'**
+  String get kycPreviouslySubmittedDocumentsTitle;
+
+  /// No description provided for @kycDocumentFrontLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Front of Document'**
+  String get kycDocumentFrontLabel;
+
+  /// No description provided for @kycDocumentBackLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Back of Document'**
+  String get kycDocumentBackLabel;
+
+  /// No description provided for @kycDocumentSelfieLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Selfie'**
+  String get kycDocumentSelfieLabel;
+
+  /// No description provided for @kycDocumentLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load document'**
+  String get kycDocumentLoadFailed;
+
   /// No description provided for @youAreOffline.
   ///
   /// In en, this message translates to:

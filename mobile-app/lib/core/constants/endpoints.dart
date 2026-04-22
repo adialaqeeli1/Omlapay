@@ -120,6 +120,15 @@ class Endpoints {
   /// KYC status endpoint; returns sumsub and binance verification statuses.
   static String get kycStatus => '$apiVersion/user/kyc/status';
 
+  /// KYC rejection details; returns previously submitted data for form prefill
+  /// when the user is retrying after a rejection.
+  static String get kycRejectionDetails =>
+      '$apiVersion/user/kyc/rejection-details';
+
+  /// KYC resubmit; called instead of `kycStart` when the user is re-submitting
+  /// after a rejection. Reuses existing SumSub documents on the server side.
+  static String get kycResubmit => '$apiVersion/user/kyc/resubmit';
+
   /// Email verification: request OTP for email address.
   static String get emailRequest => '$apiVersion/user/email/request';
 

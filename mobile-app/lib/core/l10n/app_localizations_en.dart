@@ -1182,6 +1182,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get kycStartedSuccess => 'KYC process started successfully.';
 
   @override
+  String get kycPreviouslySubmittedDocumentsTitle =>
+      'Previously Submitted Documents';
+
+  @override
+  String get kycDocumentFrontLabel => 'Front of Document';
+
+  @override
+  String get kycDocumentBackLabel => 'Back of Document';
+
+  @override
+  String get kycDocumentSelfieLabel => 'Selfie';
+
+  @override
+  String get kycDocumentLoadFailed => 'Unable to load document';
+
+  @override
   String get youAreOffline => 'You are offline';
 
   @override
