@@ -1172,7 +1172,36 @@ class AppLocalizationsAr extends AppLocalizations {
   String get kycStartedSuccess => 'تم بدء عملية التحقق من الهوية بنجاح.';
 
   @override
-  String get kycPreviouslySubmittedDocumentsTitle => 'المستندات المقدمة سابقًا';
+  String get kycDocumentsReviewTitle => 'المستندات — اضغط للعرض أو الاستبدال';
+
+  @override
+  String get kycDocumentActionView => 'عرض';
+
+  @override
+  String get kycDocumentActionPickGallery => 'اختيار من المعرض';
+
+  @override
+  String get kycDocumentActionTakePhoto => 'التقاط صورة';
+
+  @override
+  String get kycDocumentChangedBadge => 'تم التغيير';
+
+  @override
+  String get kycDocumentAddPhoto => 'إضافة صورة';
+
+  @override
+  String get kycDocumentPickFailed =>
+      'تعذر تحميل الصورة المحددة. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get kycPermissionDeniedTitle => 'يلزم الإذن';
+
+  @override
+  String get kycPermissionDeniedBody =>
+      'قم بتمكين الوصول إلى الكاميرا والصور في الإعدادات للمتابعة.';
+
+  @override
+  String get kycOpenSettings => 'فتح الإعدادات';
 
   @override
   String get kycDocumentFrontLabel => 'مقدمة المستند';

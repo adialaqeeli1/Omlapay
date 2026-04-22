@@ -1,3 +1,7 @@
+import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as p;
+
 import '../../../core/constants/endpoints.dart';
 import '../../../core/services/api_helper.dart';
 import '../models/kyc_rejection_details_response.dart';
@@ -48,23 +52,46 @@ class KycVerificationService {
     return const KycRejectionDetailsResponse();
   }
 
+  /// Resubmits KYC after a rejection as `multipart/form-data`. Text fields are
+  /// always sent. Image files (`idFront`, `idBack`, `selfie`) are only
+  /// attached when the caller supplies a non-null `XFile` — the backend treats
+  /// omitted image parts as "keep the previously uploaded image".
   static Future<Map<String, dynamic>> resubmitKyc({
     required String firstName,
     required String lastName,
     required String dob,
-    required String country,
-    required String nationality,
+    required String residentialCountry,
+    required String documentCountry,
     required String city,
     required String address,
+    XFile? idFront,
+    XFile? idBack,
+    XFile? selfie,
   }) async {
-    return ApiHelper.post(Endpoints.kycResubmit, {
+    final data = <String, dynamic>{
       'firstName': firstName,
       'lastName': lastName,
       'dob': dob,
-      'country': country,
-      'nationality': nationality,
-      'address': address,
+      'residentialCountry': residentialCountry,
+      'country': documentCountry,
       'city': city,
-    });
+      'address': address,
+      if (idFront != null)
+        'idFront': await MultipartFile.fromFile(
+          idFront.path,
+          filename: p.basename(idFront.path),
+        ),
+      if (idBack != null)
+        'idBack': await MultipartFile.fromFile(
+          idBack.path,
+          filename: p.basename(idBack.path),
+        ),
+      if (selfie != null)
+        'selfie': await MultipartFile.fromFile(
+          selfie.path,
+          filename: p.basename(selfie.path),
+        ),
+    };
+    return ApiHelper.multipartPost(Endpoints.kycResubmit, data: data);
   }
 }

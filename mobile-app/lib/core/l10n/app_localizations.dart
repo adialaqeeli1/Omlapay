@@ -2240,11 +2240,65 @@ abstract class AppLocalizations {
   /// **'KYC process started successfully.'**
   String get kycStartedSuccess;
 
-  /// No description provided for @kycPreviouslySubmittedDocumentsTitle.
+  /// No description provided for @kycDocumentsReviewTitle.
   ///
   /// In en, this message translates to:
-  /// **'Previously Submitted Documents'**
-  String get kycPreviouslySubmittedDocumentsTitle;
+  /// **'Documents — tap to view or replace'**
+  String get kycDocumentsReviewTitle;
+
+  /// No description provided for @kycDocumentActionView.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get kycDocumentActionView;
+
+  /// No description provided for @kycDocumentActionPickGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick from gallery'**
+  String get kycDocumentActionPickGallery;
+
+  /// No description provided for @kycDocumentActionTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get kycDocumentActionTakePhoto;
+
+  /// No description provided for @kycDocumentChangedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Changed'**
+  String get kycDocumentChangedBadge;
+
+  /// No description provided for @kycDocumentAddPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get kycDocumentAddPhoto;
+
+  /// No description provided for @kycDocumentPickFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the selected image. Please try again.'**
+  String get kycDocumentPickFailed;
+
+  /// No description provided for @kycPermissionDeniedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission needed'**
+  String get kycPermissionDeniedTitle;
+
+  /// No description provided for @kycPermissionDeniedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable camera and photo access in Settings to continue.'**
+  String get kycPermissionDeniedBody;
+
+  /// No description provided for @kycOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get kycOpenSettings;
 
   /// No description provided for @kycDocumentFrontLabel.
   ///

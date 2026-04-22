@@ -1182,8 +1182,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get kycStartedSuccess => 'KYC process started successfully.';
 
   @override
-  String get kycPreviouslySubmittedDocumentsTitle =>
-      'Previously Submitted Documents';
+  String get kycDocumentsReviewTitle => 'Documents — tap to view or replace';
+
+  @override
+  String get kycDocumentActionView => 'View';
+
+  @override
+  String get kycDocumentActionPickGallery => 'Pick from gallery';
+
+  @override
+  String get kycDocumentActionTakePhoto => 'Take photo';
+
+  @override
+  String get kycDocumentChangedBadge => 'Changed';
+
+  @override
+  String get kycDocumentAddPhoto => 'Add photo';
+
+  @override
+  String get kycDocumentPickFailed =>
+      'Could not load the selected image. Please try again.';
+
+  @override
+  String get kycPermissionDeniedTitle => 'Permission needed';
+
+  @override
+  String get kycPermissionDeniedBody =>
+      'Enable camera and photo access in Settings to continue.';
+
+  @override
+  String get kycOpenSettings => 'Open Settings';
 
   @override
   String get kycDocumentFrontLabel => 'Front of Document';
