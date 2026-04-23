@@ -320,6 +320,7 @@ class _HomeViewState extends State<HomeView> {
       );
     }
     final List<CoinModel> coins = coinsPrices.coins;
+    final l10n = context.l10n!;
 
     return Directionality(
       textDirection: TextDirection.ltr,
@@ -342,6 +343,12 @@ class _HomeViewState extends State<HomeView> {
               networkIconUrl: coin.networkIconUrl,
               currentPrice:
                   '${walletsProvider.balanceForCoinConverted(coin.symbol)} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',
+              // currentPrice: walletsProvider.balanceForCoinConverted(
+              //   coin.symbol,
+              // ),
+              selectedCurrency: l10n.currencySymbol(
+                selectedCurrency.toLowerCase(),
+              ),
               iconBackgroundColor: iconBgColor,
               icon: iconWidget,
               onTap: () => context.push(Routes.coinDetails, extra: coin),

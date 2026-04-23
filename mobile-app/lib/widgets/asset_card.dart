@@ -13,6 +13,7 @@ class AssetCard extends StatelessWidget {
     this.symbolLabel,
     required this.name,
     required this.amount,
+    this.selectedCurrency,
     required this.currentPrice,
     this.icon,
     this.iconBackgroundColor,
@@ -24,6 +25,7 @@ class AssetCard extends StatelessWidget {
   final String? symbolLabel;
   final String name;
   final String amount;
+  final String? selectedCurrency;
   final String currentPrice;
   final Widget? icon;
   final Color? iconBackgroundColor;
@@ -124,7 +126,7 @@ class AssetCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '≈ $currentPrice',
+                      '≈ ${selectedCurrency ?? ''} $currentPrice',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: context.textTheme.bodyMedium?.copyWith(
