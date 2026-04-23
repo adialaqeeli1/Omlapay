@@ -107,7 +107,7 @@ class ReviewOrderView extends StatelessWidget {
                             Align(
                               alignment: Alignment.centerRight,
                               child: Text(
-                                '≈${quote?.pay?.amountUsd ?? '0.00'} ${l10n.usd}',
+                                '≈${quote?.pay?.amountUsd ?? '0.00'} USD',
                                 style: TextStyle(
                                   color: colorScheme.onSurfaceVariant,
                                   fontSize: 12,
@@ -174,7 +174,7 @@ class ReviewOrderView extends StatelessWidget {
                             Align(
                               alignment: Alignment.centerRight,
                               child: Text(
-                                '≈${quote?.receive?.netAmountUsd ?? '0.00'} ${l10n.usd}',
+                                '≈${quote?.receive?.netAmountUsd ?? '0.00'} USD',
                                 style: TextStyle(
                                   color: colorScheme.onSurfaceVariant,
                                   fontSize: 12,
@@ -249,7 +249,7 @@ class ReviewOrderView extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${quote?.fees?.total?.usd ?? '0'} ${l10n.usd}',
+                  '${quote?.fees?.total?.usd ?? '0'} USD',
                   style: TextStyle(
                     color: colorScheme.onSurface,
                     fontSize: 14,

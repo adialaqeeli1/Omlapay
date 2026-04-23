@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 import 'package:provider/provider.dart';
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/models/transaction_model/transaction_model.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../providers/coins_prices_provider.dart';
 import '../../../../widgets/common_coin_icon.dart';
-import 'package:intl/intl.dart';
 
 class TransactionItem extends StatelessWidget {
   const TransactionItem({
@@ -72,6 +72,7 @@ class TransactionItem extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     _formatDateTime(transaction.createdAt),
+                    textDirection: TextDirection.ltr,
                     style: context.textTheme.bodySmall?.copyWith(
                       color: AppColors.textGrey,
                       fontSize: 12,
@@ -87,6 +88,7 @@ class TransactionItem extends StatelessWidget {
                 transaction.isFailed
                     ? context.l10n!.failed
                     : '${(double.tryParse(transaction.amount) ?? 0).toStringAsFixed(5)} ${transaction.assetSymbol}',
+                textDirection: transaction.isFailed ? null : TextDirection.ltr,
                 style: context.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: transaction.isFailed

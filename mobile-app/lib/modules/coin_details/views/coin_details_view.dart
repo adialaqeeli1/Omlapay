@@ -53,15 +53,13 @@ class CoinDetailsView extends StatelessWidget {
     final priceQuoteLabel =
         liveCoin?.quoteCurrencyLabel(context, selectedCurrency) ??
         coinModel?.quoteCurrencyLabel(context, selectedCurrency) ??
-        l10n.currencyName(selectedCurrency.toLowerCase());
+        selectedCurrency.toUpperCase();
     final priceValue = liveCoin?.valueInUsd ?? coinModel?.valueInUsd;
     final double change24h = liveCoin?.change24h ?? coinModel?.change24h ?? 0;
     final hasPrice =
         priceValue != null && priceValue.isNotEmpty && priceValue != '--';
     final bool isChangePositive = change24h >= 0;
     final String changeSign = isChangePositive ? '+' : '';
-    final String changePercentText =
-        '$changeSign${change24h.toStringAsFixed(2)}% ${l10n.today}';
     final Color changeColor = isChangePositive
         ? AppColors.greenColor
         : AppColors.redColor;
@@ -212,6 +210,7 @@ class CoinDetailsView extends StatelessWidget {
                             ),
                         ],
                       ),
+                      textDirection: TextDirection.ltr,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -220,13 +219,38 @@ class CoinDetailsView extends StatelessWidget {
             ),
             if (!showPriceQuoteLoading && hasPrice) ...[
               const SizedBox(width: 12),
-              Text(
-                changePercentText,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: context.textTheme.titleMedium?.copyWith(
-                  color: changeColor,
-                  fontWeight: FontWeight.w600,
+              // Text(
+              //   changePercentText,
+              //   maxLines: 1,
+              //   overflow: TextOverflow.ellipsis,
+              //   style: context.textTheme.titleMedium?.copyWith(
+              //     color: changeColor,
+              //     fontWeight: FontWeight.w600,
+              //   ),
+              // ),
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(text: changeSign),
+                    WidgetSpan(
+                      child: Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: Text(
+                          '${change24h.toStringAsFixed(2)}%',
+                          style: context.textTheme.titleMedium?.copyWith(
+                            color: changeColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextSpan(text: ' '),
+                    TextSpan(text: l10n.today),
+                  ],
+                  style: context.textTheme.titleMedium?.copyWith(
+                    color: changeColor,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
@@ -294,6 +318,7 @@ class CoinDetailsView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
+            textDirection: .ltr,
             children: [
               if (context.watch<CoinDetailsProvider>().isLoading ||
                   isWalletsLoading)
@@ -312,11 +337,12 @@ class CoinDetailsView extends StatelessWidget {
                 )
               else
                 Text(
-                  context.watch<GlobalProvider>().isBalanceVisible
+                  "${l10n.currencySymbol(selectedCurrency.toLowerCase())} ${context.watch<GlobalProvider>().isBalanceVisible
                       ? totalBalanceInCurrency
                       : context.watch<AuthProvider>().state.isAuthenticated
                       ? '****'
-                      : 'X',
+                      : 'X'}",
+                  textDirection: .ltr,
                   style: context.textTheme.displayMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: context.isDarkMode
@@ -347,7 +373,7 @@ class CoinDetailsView extends StatelessWidget {
                   crossAxisAlignment: .end,
                   children: [
                     Text(
-                      l10n.currencyName(selectedCurrency.toLowerCase()),
+                      selectedCurrency.toUpperCase(),
                       style: context.textTheme.titleMedium?.copyWith(
                         color: context.isDarkMode
                             ? AppColors.white
