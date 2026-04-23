@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/utility.dart';
 import '../../../../providers/kyc_status_provider.dart';
 import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_coin_icon.dart';
@@ -211,9 +212,11 @@ class ReceiveCoinView extends StatelessWidget {
     final networkLabel = wallet.networkDisplayName.isNotEmpty
         ? wallet.networkDisplayName
         : wallet.network;
-    final title = wallet.coins.length > 1
-        ? '$networkLabel (${coin.symbol})'
-        : networkLabel;
+    final upperSymbol = coin.symbol.trim().toUpperCase();
+    final preferSymbol = upperSymbol == 'SOL' || upperSymbol == 'USDT';
+    final coinName = preferSymbol
+        ? (coin.symbol.isNotEmpty ? coin.symbol : coin.name)
+        : (coin.name.isNotEmpty ? coin.name : coin.symbol);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -225,7 +228,7 @@ class ReceiveCoinView extends StatelessWidget {
       child: Row(
         children: [
           // Network icon
-          _buildWalletIcon(wallet),
+          _buildWalletIcon(wallet, coin),
           const SizedBox(width: 12),
 
           // Coin info
@@ -234,10 +237,18 @@ class ReceiveCoinView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  coinName,
                   style: textTheme.titleSmall?.copyWith(
                     color: colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  networkLabel,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    fontSize: 12,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -284,11 +295,15 @@ class ReceiveCoinView extends StatelessWidget {
     );
   }
 
-  Widget _buildWalletIcon(WalletNetworkModel wallet) {
+  Widget _buildWalletIcon(WalletNetworkModel wallet, WalletCoinModel coin) {
     String assetPath;
     const backgroundColor = AppColors.tealColor;
     final network = wallet.network.trim().toUpperCase();
-    final iconUrl = wallet.networkIconUrl.trim();
+    final coinSymbol = coin.symbol.trim().toUpperCase();
+    final useCoinIcon = coinSymbol == 'USDT' || coinSymbol == 'USDC';
+    final iconUrl = useCoinIcon
+        ? Utility.getCryptoCoinIconFromSymbol(coinSymbol)
+        : wallet.networkIconUrl.trim();
 
     switch (network) {
       case 'TRX':
@@ -492,5 +507,4 @@ class ReceiveCoinView extends StatelessWidget {
       ),
     );
   }
-
 }

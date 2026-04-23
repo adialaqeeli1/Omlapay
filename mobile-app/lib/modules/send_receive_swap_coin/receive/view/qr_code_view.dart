@@ -14,6 +14,13 @@ import '../../../../widgets/common_coin_icon.dart';
 import '../../../dashboard/history/widgets/image_save_as_bottom_sheet.dart';
 import '../provider/qr_code_provider.dart';
 
+String _coinDisplayName(WalletCoinModel? coin) {
+  if (coin == null) return '';
+  final symbol = coin.symbol.trim().toUpperCase();
+  if (symbol == 'USDT') return coin.symbol;
+  return coin.name.isNotEmpty ? coin.name : coin.symbol;
+}
+
 class QrCodeView extends StatelessWidget {
   const QrCodeView({super.key});
 
@@ -43,7 +50,7 @@ class QrCodeView extends StatelessWidget {
             ),
             Flexible(
               child: Text(
-                headerCoin?.name ?? '',
+                _coinDisplayName(headerCoin),
                 overflow: TextOverflow.ellipsis,
                 style: context.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w600,
@@ -263,7 +270,7 @@ class _CoinSelector extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            coin.name,
+                            _coinDisplayName(coin),
                             style: TextStyle(
                               color: colorScheme.onSurface,
                               fontWeight: FontWeight.bold,
@@ -361,7 +368,7 @@ class _CoinSelector extends StatelessWidget {
                         networkIconUrl: coin.networkIconUrl,
                       ),
                       title: Text(
-                        coin.name,
+                        _coinDisplayName(coin),
                         style: TextStyle(
                           color: colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
