@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -169,6 +169,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                           // Amount
                           Text(
                             amountText,
+                            textDirection: TextDirection.ltr,
                             style: context.textTheme.headlineMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: isDarkMode
@@ -182,6 +183,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                             const SizedBox(height: 4),
                             Text(
                               approxAmount,
+                              textDirection: TextDirection.ltr,
                               style: context.textTheme.bodySmall?.copyWith(
                                 color: AppColors.textGrey,
                                 fontSize: 13,
@@ -219,6 +221,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                       DateFormat(
                         'yyyy-MM-dd hh:mm:ss a',
                       ).format(transaction.createdAt),
+                      isDateTime: true,
                     ),
                     _buildDetailRow(
                       context,
@@ -343,6 +346,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     bool isNetwork = false,
     bool isAddress = false,
     bool isError = false,
+    bool isDateTime = false,
   }) {
     final isDarkMode = context.isDarkMode;
     return Column(
@@ -378,6 +382,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                           ),
                           child: Text(
                             value,
+                            textDirection: TextDirection.ltr,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
@@ -389,6 +394,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                           isAddress && value.length > 20
                               ? '${value.substring(0, 20)}...'
                               : value,
+                          textDirection: isDateTime ? TextDirection.ltr : null,
                           style: context.textTheme.bodyMedium?.copyWith(
                             color: isError
                                 ? Colors.red

@@ -115,7 +115,7 @@ class SwapSuccessView extends StatelessWidget {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          '$toAmountUsd ${l10n.usd}',
+                          '$toAmountUsd USD',
                           style: const TextStyle(
                             color: AppColors.tealColor,
                             fontSize: 14,

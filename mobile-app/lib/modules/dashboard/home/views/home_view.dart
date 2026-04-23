@@ -1,12 +1,10 @@
 import 'dart:convert';
 
 import 'package:badges/badges.dart' as badges;
-import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:omlapay_mobile_app/core/constants/constants.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
 
@@ -229,48 +227,52 @@ class _HomeViewState extends State<HomeView> {
         mainAxisSize: .min,
         textDirection: context.textDirection,
         children: [
+          // Todo Uncomment when needed
+          // Padding(
+          //   padding: EdgeInsetsDirectional.symmetric(
+          //     horizontal: horizontalPadding,
+          //   ),
+          //   child: _buildCurrencyDropdown(
+          //     context,
+          //     l10n,
+          //     selectedCurrency: selectedCurrency,
+          //     onCurrencyChanged: (currency) {
+          //       if ((currency ?? '').isEmpty) return;
+          //       context.read<GlobalProvider>().updateCurrency(currency!);
+          //     },
+          //   ),
+          // ),
           Padding(
-            padding: EdgeInsetsDirectional.symmetric(
-              horizontal: horizontalPadding,
-            ),
-            child: _buildCurrencyDropdown(
-              context,
-              l10n,
-              selectedCurrency: selectedCurrency,
-              onCurrencyChanged: (currency) {
-                if ((currency ?? '').isEmpty) return;
-                context.read<GlobalProvider>().updateCurrency(currency!);
-              },
-            ),
-          ),
-          SizedBox(
-            height: 196,
-            child: Column(
-              spacing: 12.0,
-              crossAxisAlignment: .start,
-              mainAxisAlignment: .start,
-              children: [
-                Padding(
-                  padding: EdgeInsetsDirectional.symmetric(
-                    horizontal: horizontalPadding,
-                  ),
-                  child: Text(
-                    l10n.assets,
-                    style: context.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: context.isDarkMode
-                          ? AppColors.white
-                          : AppColors.textBlack,
-                      fontSize: 18.0,
+            padding: const EdgeInsets.only(top: 16),
+            child: SizedBox(
+              height: 196,
+              child: Column(
+                spacing: 12.0,
+                crossAxisAlignment: .start,
+                mainAxisAlignment: .start,
+                children: [
+                  Padding(
+                    padding: EdgeInsetsDirectional.symmetric(
+                      horizontal: horizontalPadding,
+                    ),
+                    child: Text(
+                      l10n.assets,
+                      style: context.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: context.isDarkMode
+                            ? AppColors.white
+                            : AppColors.textBlack,
+                        fontSize: 18.0,
+                      ),
                     ),
                   ),
-                ),
-                _buildAssetsSection(
-                  context,
-                  selectedCurrency: selectedCurrency,
-                  horizontalPadding: horizontalPadding,
-                ),
-              ],
+                  _buildAssetsSection(
+                    context,
+                    selectedCurrency: selectedCurrency,
+                    horizontalPadding: horizontalPadding,
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 24),
@@ -319,30 +321,33 @@ class _HomeViewState extends State<HomeView> {
     }
     final List<CoinModel> coins = coinsPrices.coins;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
-      padding: EdgeInsetsDirectional.symmetric(horizontal: horizontalPadding),
-      child: Row(
-        spacing: 12,
-        children: coins.map((coin) {
-          // Determine color and icon based on symbol for now
-          Color? iconBgColor;
-          Widget? iconWidget;
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+        padding: EdgeInsetsDirectional.symmetric(horizontal: horizontalPadding),
+        child: Row(
+          spacing: 12,
+          children: coins.map((coin) {
+            // Determine color and icon based on symbol for now
+            Color? iconBgColor;
+            Widget? iconWidget;
 
-          return AssetCard(
-            symbol: coin.symbol,
-            symbolLabel: coin.localizedCoinTicker(context),
-            name: coin.name.isEmpty ? coin.symbol : coin.name,
-            amount: walletsProvider.balanceForCoin(coin.symbol),
-            networkIconUrl: coin.networkIconUrl,
-            currentPrice:
-                '${walletsProvider.balanceForCoinConverted(coin.symbol)} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',
-            iconBackgroundColor: iconBgColor,
-            icon: iconWidget,
-            onTap: () => context.push(Routes.coinDetails, extra: coin),
-          );
-        }).toList(),
+            return AssetCard(
+              symbol: coin.symbol,
+              symbolLabel: coin.localizedCoinTicker(context),
+              name: coin.name.isEmpty ? coin.symbol : coin.name,
+              amount: walletsProvider.balanceForCoin(coin.symbol),
+              networkIconUrl: coin.networkIconUrl,
+              currentPrice:
+                  '${walletsProvider.balanceForCoinConverted(coin.symbol)} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',
+              iconBackgroundColor: iconBgColor,
+              icon: iconWidget,
+              onTap: () => context.push(Routes.coinDetails, extra: coin),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -359,7 +364,6 @@ class _HomeViewState extends State<HomeView> {
     return Column(
       children: transactions.map((transaction) {
         final isDarkMode = context.isDarkMode;
-        final isArabic = Localizations.localeOf(context).languageCode == 'ar';
 
         Color getAmountColor() {
           if (transaction.isFailed) return Colors.red;
@@ -395,12 +399,7 @@ class _HomeViewState extends State<HomeView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isArabic
-                            ? (transaction.assetNameAr ??
-                                  transaction.assetName ??
-                                  transaction.assetSymbol)
-                            : (transaction.assetName ??
-                                  transaction.assetSymbol),
+                        transaction.assetName ?? transaction.assetSymbol,
                         style: context.textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.w600,
                           color: isDarkMode
@@ -414,6 +413,7 @@ class _HomeViewState extends State<HomeView> {
                         DateFormat(
                           'yyyy-MM-dd h:mm a',
                         ).format(transaction.createdAt.toLocal()),
+                        textDirection: TextDirection.ltr,
                         style: context.textTheme.bodySmall?.copyWith(
                           color: AppColors.textGrey,
                           fontSize: 12,
@@ -426,6 +426,9 @@ class _HomeViewState extends State<HomeView> {
                   transaction.isFailed
                       ? context.l10n!.failed
                       : '${double.tryParse(transaction.amount)?.toStringAsFixed(5) ?? transaction.amount} ${transaction.assetSymbol}',
+                  textDirection: transaction.isFailed
+                      ? null
+                      : TextDirection.ltr,
                   style: context.textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: getAmountColor(),
@@ -440,96 +443,97 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _buildCurrencyDropdown(
-    BuildContext context,
-    AppLocalizations l10n, {
-    required String selectedCurrency,
-    required ValueChanged<String?> onCurrencyChanged,
-  }) {
-    return Align(
-      alignment: AlignmentDirectional.centerEnd,
-      child: Padding(
-        padding: const EdgeInsetsDirectional.only(top: 8.0),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton2<String>(
-            valueListenable: ValueNotifier(selectedCurrency),
-            onChanged: context.watch<HomeProvider>().isLoading
-                ? null
-                : onCurrencyChanged,
-            items: AppConstants.supportedCurrencies
-                .map(
-                  (e) => DropdownItem<String>(
-                    value: e,
-                    child: Text(
-                      l10n.currencyName(e.toLowerCase()),
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: selectedCurrency.toLowerCase() == e.toLowerCase()
-                            ? AppColors.textLightGrey
-                            : context.isDarkMode
-                            ? AppColors.textWhite
-                            : AppColors.textBlack,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16.0,
-                      ),
-                    ),
-                  ),
-                )
-                .toList(),
-            dropdownStyleData: DropdownStyleData(
-              width: 156,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: context.isDarkMode
-                    ? AppColors.textBlack
-                    : AppColors.textWhite,
-              ),
-              elevation: 10,
-            ),
-            buttonStyleData: ButtonStyleData(
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
-            ),
-            customButton: SizedBox(
-              width: 124,
-              height: 40,
-              child: Row(
-                mainAxisSize: .min,
-                crossAxisAlignment: .center,
-                mainAxisAlignment: .center,
-                spacing: 4,
-                children: [
-                  Expanded(
-                    child: Text(
-                      l10n.currencyName(selectedCurrency.toLowerCase()),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.end,
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: context.isDarkMode
-                            ? AppColors.textWhite
-                            : AppColors.textBlack,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16.0,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsetsDirectional.only(top: 4.0),
-                    child: Icon(
-                      Icons.keyboard_arrow_down,
-                      color: context.isDarkMode
-                          ? AppColors.textWhite
-                          : AppColors.textBlack,
-                      size: 20,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  // Todo Uncomment when needed
+  // Widget _buildCurrencyDropdown(
+  //   BuildContext context,
+  //   AppLocalizations l10n, {
+  //   required String selectedCurrency,
+  //   required ValueChanged<String?> onCurrencyChanged,
+  // }) {
+  //   return Align(
+  //     alignment: AlignmentDirectional.centerEnd,
+  //     child: Padding(
+  //       padding: const EdgeInsetsDirectional.only(top: 8.0),
+  //       child: DropdownButtonHideUnderline(
+  //         child: DropdownButton2<String>(
+  //           valueListenable: ValueNotifier(selectedCurrency),
+  //           onChanged: context.watch<HomeProvider>().isLoading
+  //               ? null
+  //               : onCurrencyChanged,
+  //           items: AppConstants.supportedCurrencies
+  //               .map(
+  //                 (e) => DropdownItem<String>(
+  //                   value: e,
+  //                   child: Text(
+  //                     e.toUpperCase(),
+  //                     style: context.textTheme.bodyMedium?.copyWith(
+  //                       color: selectedCurrency.toLowerCase() == e.toLowerCase()
+  //                           ? AppColors.textLightGrey
+  //                           : context.isDarkMode
+  //                           ? AppColors.textWhite
+  //                           : AppColors.textBlack,
+  //                       fontWeight: FontWeight.w500,
+  //                       fontSize: 16.0,
+  //                     ),
+  //                   ),
+  //                 ),
+  //               )
+  //               .toList(),
+  //           dropdownStyleData: DropdownStyleData(
+  //             width: 156,
+  //             decoration: BoxDecoration(
+  //               borderRadius: BorderRadius.circular(12),
+  //               color: context.isDarkMode
+  //                   ? AppColors.textBlack
+  //                   : AppColors.textWhite,
+  //             ),
+  //             elevation: 10,
+  //           ),
+  //           buttonStyleData: ButtonStyleData(
+  //             decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+  //           ),
+  //           customButton: SizedBox(
+  //             width: 124,
+  //             height: 40,
+  //             child: Row(
+  //               mainAxisSize: .min,
+  //               crossAxisAlignment: .center,
+  //               mainAxisAlignment: .center,
+  //               spacing: 4,
+  //               children: [
+  //                 Expanded(
+  //                   child: Text(
+  //                     selectedCurrency.toUpperCase(),
+  //                     maxLines: 1,
+  //                     overflow: TextOverflow.ellipsis,
+  //                     textAlign: TextAlign.end,
+  //                     style: context.textTheme.bodyMedium?.copyWith(
+  //                       color: context.isDarkMode
+  //                           ? AppColors.textWhite
+  //                           : AppColors.textBlack,
+  //                       fontWeight: FontWeight.w500,
+  //                       fontSize: 16.0,
+  //                     ),
+  //                   ),
+  //                 ),
+  //                 Padding(
+  //                   padding: EdgeInsetsDirectional.only(top: 4.0),
+  //                   child: Icon(
+  //                     Icons.keyboard_arrow_down,
+  //                     color: context.isDarkMode
+  //                         ? AppColors.textWhite
+  //                         : AppColors.textBlack,
+  //                     size: 20,
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _totalBalanceDropdown(
     BuildContext context,
@@ -541,7 +545,7 @@ class _HomeViewState extends State<HomeView> {
     fit: .expand,
     children: [
       Positioned.directional(
-        textDirection: context.textDirection,
+        textDirection: TextDirection.ltr,
         start: 0,
         end: 0,
         top: 16,
@@ -562,6 +566,7 @@ class _HomeViewState extends State<HomeView> {
               mainAxisAlignment: .end,
               crossAxisAlignment: .end,
               spacing: 4,
+              textDirection: TextDirection.ltr,
               children: [
                 if (context.watch<HomeProvider>().isLoading)
                   Padding(
@@ -584,6 +589,7 @@ class _HomeViewState extends State<HomeView> {
                         : isAuthenticated
                         ? '****'
                         : 'X'}",
+                    textDirection: TextDirection.ltr,
                     style: context.textTheme.displaySmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: context.isDarkMode
@@ -619,7 +625,7 @@ class _HomeViewState extends State<HomeView> {
                         ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 96),
                           child: Text(
-                            l10n.currencyName(selectedCurrency.toLowerCase()),
+                            selectedCurrency.toUpperCase(),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: context.textTheme.titleMedium?.copyWith(
@@ -649,7 +655,8 @@ class _HomeViewState extends State<HomeView> {
       ),
       // if (isAuthenticated)
       Positioned.directional(
-        textDirection: context.textDirection,
+        textDirection: TextDirection.ltr,
+
         end: 16,
         bottom: -10,
         child: IconButton(
