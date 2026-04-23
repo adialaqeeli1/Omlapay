@@ -31,7 +31,7 @@ class _SplashViewState extends State<SplashView>
 
     controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        _navigateToNextScreen();
+        // _navigateToNextScreen();
       }
     });
 
