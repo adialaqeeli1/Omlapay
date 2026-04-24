@@ -12,8 +12,6 @@ import '../../../core/theme/theme.dart';
 import '../providers/login_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_back_button.dart';
-import '../../../widgets/privacy_policy_dialog.dart';
-import '../../../widgets/terms_of_services_dialog.dart';
 
 class LoginOrRegisterScreen extends StatelessWidget {
   const LoginOrRegisterScreen({super.key});
@@ -362,8 +360,8 @@ class _LoginFooterAgreementTextState extends State<_LoginFooterAgreementText> {
   Widget build(BuildContext context) {
     final l10n = widget.l10n;
     final theme = widget.theme;
-    _termsTap.onTap = () => showTermsOfServicesDialog(context);
-    _privacyTap.onTap = () => showPrivacyPolicyDialog(context);
+    _termsTap.onTap = () => context.push(Routes.termsAndConditions);
+    _privacyTap.onTap = () => context.push(Routes.privacyPolicy);
 
     return RichText(
       textAlign: TextAlign.center,
