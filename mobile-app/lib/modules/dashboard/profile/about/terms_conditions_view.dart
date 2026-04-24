@@ -61,8 +61,9 @@ class _TermsConditionsBody extends StatelessWidget {
       );
     }
 
-    if (provider.errorKey != null && !provider.hasContent) {
+    if (provider.hasError && !provider.hasContent) {
       return _TermsError(
+        message: provider.errorMessage,
         onRetry: provider.retry,
         horizontalPadding: horizontalPadding,
       );
@@ -81,8 +82,13 @@ class _TermsConditionsBody extends StatelessWidget {
 }
 
 class _TermsError extends StatelessWidget {
-  const _TermsError({required this.onRetry, required this.horizontalPadding});
+  const _TermsError({
+    required this.message,
+    required this.onRetry,
+    required this.horizontalPadding,
+  });
 
+  final String? message;
   final VoidCallback onRetry;
   final double horizontalPadding;
 
@@ -90,6 +96,9 @@ class _TermsError extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
     final theme = Theme.of(context);
+    final displayMessage = (message != null && message!.trim().isNotEmpty)
+        ? message!
+        : l10n.requestFailed;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
@@ -98,7 +107,7 @@ class _TermsError extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              l10n.requestFailed,
+              displayMessage,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyLarge,
             ),

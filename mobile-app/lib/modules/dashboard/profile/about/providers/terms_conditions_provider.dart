@@ -13,16 +13,20 @@ class TermsConditionsProvider extends ChangeNotifier {
   String? _content;
   bool _isLoading = false;
   String? _errorKey;
+  String? _errorMessage;
   bool _disposed = false;
 
   String? get content => _content;
   bool get isLoading => _isLoading;
   String? get errorKey => _errorKey;
+  String? get errorMessage => _errorMessage;
   bool get hasContent => _content != null;
+  bool get hasError => _errorKey != null || _errorMessage != null;
 
   Future<void> fetchTerms() async {
     _isLoading = true;
     _errorKey = null;
+    _errorMessage = null;
     notifyListeners();
 
     try {
@@ -32,6 +36,7 @@ class TermsConditionsProvider extends ChangeNotifier {
     } on AppException catch (e) {
       if (_disposed) return;
       _errorKey = e.messageKey ?? 'requestFailed';
+      _errorMessage = e.message.trim().isEmpty ? null : e.message;
     } catch (_) {
       if (_disposed) return;
       _errorKey = 'requestFailed';
