@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 
 import '../core/extentions/context_extensions.dart';
 import '../core/services/legal_service.dart';
@@ -7,6 +6,7 @@ import '../core/theme/theme.dart';
 import '../core/utils/app_exception.dart';
 import '../core/utils/snackbar_helper.dart';
 import 'common_loading_indicator.dart';
+import 'markdown_html_view.dart';
 
 /// Fetches terms of service markdown from the API, shows a loading overlay,
 /// then a centered dialog with rendered content, or a snackbar on failure.
@@ -66,21 +66,6 @@ Future<void> showTermsOfServicesDialog(BuildContext context) async {
       builder: (dialogContext) {
         final dialogTheme = Theme.of(dialogContext);
         final size = MediaQuery.sizeOf(dialogContext);
-        final styleSheet = MarkdownStyleSheet(
-          h1: dialogTheme.textTheme.headlineSmall?.copyWith(
-            color: dialogTheme.colorScheme.onSurface,
-          ),
-          h2: dialogTheme.textTheme.titleLarge?.copyWith(
-            color: dialogTheme.colorScheme.onSurface,
-          ),
-          p: dialogTheme.textTheme.bodyLarge?.copyWith(
-            color: dialogTheme.colorScheme.onSurface,
-          ),
-          listBullet: dialogTheme.textTheme.bodyLarge?.copyWith(
-            color: dialogTheme.colorScheme.onSurface,
-          ),
-          blockSpacing: 12,
-        );
 
         return Dialog(
           backgroundColor: dialogTheme.colorScheme.surface,
@@ -109,10 +94,9 @@ Future<void> showTermsOfServicesDialog(BuildContext context) async {
                     thumbVisibility: true,
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: MarkdownBody(
+                      child: MarkdownHtmlView(
                         data: markdown,
                         selectable: true,
-                        styleSheet: styleSheet,
                       ),
                     ),
                   ),
