@@ -446,7 +446,6 @@ InlineSpan _renderInline(
       final t = Theme.of(context);
       final linkStyle = baseStyle.copyWith(
         color: t.colorScheme.primary,
-        decoration: TextDecoration.underline,
       );
       final recognizer = TapGestureRecognizer()
         ..onTap = () => onLinkTap?.call(url);
