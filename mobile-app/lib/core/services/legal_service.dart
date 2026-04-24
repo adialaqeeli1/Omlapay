@@ -10,70 +10,45 @@ class LegalService {
   static const Set<String> _supportedLanguages = {'en', 'ar'};
 
   /// Returns markdown content for the privacy policy for [language] (e.g. `en`, `ar`).
-  static Future<String> fetchPrivacyPolicy({required String language}) async {
-    final code = _normalizeLanguage(language);
-    final response = await ApiHelper.get(
-      Endpoints.legalPrivacy,
-      queryParameters: <String, dynamic>{'language': code},
+  static Future<String> fetchPrivacyPolicy({required String language}) {
+    return _fetchLegalContent(
+      endpoint: Endpoints.legalPrivacy,
+      language: language,
+      emptyErrorMessage: 'Privacy policy content is empty',
+      invalidErrorMessage: 'Invalid privacy policy response',
     );
-
-    final status = response['status'];
-    if (status != 'success') {
-      throw AppException(
-        'Unexpected response from server',
-        messageKey: 'requestFailed',
-      );
-    }
-
-    final data = response['data'];
-    if (data is! Map<String, dynamic>) {
-      throw AppException(
-        'Invalid privacy policy response',
-        messageKey: 'requestFailed',
-      );
-    }
-
-    final content = data['content'];
-    if (content is! String || content.trim().isEmpty) {
-      throw AppException(
-        'Privacy policy content is empty',
-        messageKey: 'requestFailed',
-      );
-    }
-
-    return content;
   }
 
   /// Returns markdown content for the terms of service for [language] (e.g. `en`, `ar`).
-  static Future<String> fetchTermsOfService({required String language}) async {
+  static Future<String> fetchTermsOfService({required String language}) {
+    return _fetchLegalContent(
+      endpoint: Endpoints.legalTerms,
+      language: language,
+      emptyErrorMessage: 'Terms of service content is empty',
+      invalidErrorMessage: 'Invalid terms of service response',
+    );
+  }
+
+  static Future<String> _fetchLegalContent({
+    required String endpoint,
+    required String language,
+    required String emptyErrorMessage,
+    required String invalidErrorMessage,
+  }) async {
     final code = _normalizeLanguage(language);
     final response = await ApiHelper.get(
-      Endpoints.legalTerms,
+      endpoint,
       queryParameters: <String, dynamic>{'language': code},
     );
 
-    final status = response['status'];
-    if (status != 'success') {
-      throw AppException(
-        'Unexpected response from server',
-        messageKey: 'requestFailed',
-      );
-    }
-
     final data = response['data'];
     if (data is! Map<String, dynamic>) {
-      throw AppException(
-        'Invalid terms of service response',
-        messageKey: 'requestFailed',
-      );
+      throw AppException(invalidErrorMessage, messageKey: 'requestFailed');
     }
 
     final content = data['content'];
     if (content is! String || content.trim().isEmpty) {
-      throw AppException(
-        'Terms of service content is empty',
-        messageKey: 'requestFailed',
-      );
+      throw AppException(emptyErrorMessage, messageKey: 'requestFailed');
     }
 
     return content;

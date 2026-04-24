@@ -112,6 +112,13 @@ List<BlockNode> _parseBlocks(List<String> lines, int from, int to) {
       continue;
     }
 
+    // Marker-only heading line (e.g. "##" with no text after). Skip rather
+    // than let it fall through to the paragraph collector and render as "##".
+    if (_markerOnlyHeading.hasMatch(line)) {
+      i++;
+      continue;
+    }
+
     // HTML heading block: <h[1-6]...>...</h[1-6]>
     final htmlHeading = _matchHtmlHeadingBlock(lines, i);
     if (htmlHeading != null) {
@@ -291,6 +298,8 @@ HeadingBlock? _matchMarkdownHeading(String line) {
   final text = match.group(2)!;
   return HeadingBlock(level: level, children: _parseInlines(text));
 }
+
+final _markerOnlyHeading = RegExp(r'^#{1,6}\s*$');
 
 _BlockMatch? _matchHtmlHeadingBlock(List<String> lines, int i) {
   final openMatch = RegExp(
