@@ -741,6 +741,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageSavedSuccessfully => 'Image saved successfully';
 
   @override
+  String get transactionReceiptTitle => 'Transaction Receipt';
+
+  @override
+  String get transactionIdLabel => 'Transaction ID';
+
+  @override
+  String get recipient => 'Recipient';
+
+  @override
+  String get amountLabel => 'Amount';
+
+  @override
+  String get statusLabel => 'Status';
+
+  @override
+  String get typeLabel => 'Type';
+
+  @override
+  String get transactionSaveFailedMessage => 'Failed to save transaction';
+
+  @override
+  String get photoLibraryPermissionRequired =>
+      'Photo library access is required to save the transaction';
+
+  @override
   String transactionSavedSuccessfully(String format) {
     return 'Transaction has been saved as $format successfully';
   }
@@ -916,6 +941,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String minAmountHint(String amount) {
     return 'Min $amount';
   }
+
+  @override
+  String get sendAmountMaxShortLabel => 'Max';
+
+  @override
+  String get swapAmountMaxShortLabel => 'Max';
 
   @override
   String get searchHint => 'Search';

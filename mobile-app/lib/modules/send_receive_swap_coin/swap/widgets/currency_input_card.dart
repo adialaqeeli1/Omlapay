@@ -23,6 +23,15 @@ class CurrencyInputCard extends StatelessWidget {
   final bool hasBorder;
   final String? networkIconUrl;
 
+  /// Optional override for the amount field's hint text. When null, the card
+  /// falls back to the generic `amountInputHint` localization. Used by the
+  /// swap From card to surface the per-coin minimum swap amount.
+  final String? hintText;
+
+  /// Optional widget rendered below the amount field but above [errorText].
+  /// Used to mirror the send view's "Max" row beneath the From card.
+  final Widget? bottomHelper;
+
   const CurrencyInputCard({
     super.key,
     required this.title,
@@ -39,6 +48,8 @@ class CurrencyInputCard extends StatelessWidget {
     this.hasBorder = false,
     this.readOnly = false,
     required this.networkIconUrl,
+    this.hintText,
+    this.bottomHelper,
   });
 
   final bool readOnly;
@@ -178,10 +189,10 @@ class CurrencyInputCard extends StatelessWidget {
                       ),
                       decoration: InputDecoration(
                         border: InputBorder.none,
-                        hintText: l10n.amountInputHint,
+                        hintText: hintText ?? l10n.amountInputHint,
                         hintStyle: TextStyle(
                           color: colorScheme.onSurfaceVariant,
-                          fontSize: 24,
+                          fontSize: hintText != null ? 16 : 24,
                           fontWeight: FontWeight.bold,
                         ),
                         contentPadding: EdgeInsets.zero,
@@ -218,6 +229,10 @@ class CurrencyInputCard extends StatelessWidget {
                   ],
                 ],
               ),
+              if (bottomHelper != null) ...[
+                const SizedBox(height: 8),
+                bottomHelper!,
+              ],
             ],
           ),
         ),

@@ -81,6 +81,17 @@ class SwapProvider extends ChangeNotifier {
   bool get isVerified => authProvider.state.user?.isVerified ?? false;
   bool get showVerificationWarning => !isVerified;
 
+  /// Minimum amount the user is allowed to swap from [fromCoin], parsed as a
+  /// double. Returns 0 when the backend hasn't shipped a `swapMinAmount` for
+  /// the selected coin so the UI can hide the bound-driven hint/row.
+  double get fromCoinSwapMinAmount =>
+      double.tryParse(_fromCoin?.swapMinAmount ?? '') ?? 0;
+
+  /// Maximum amount the user is allowed to swap from [fromCoin], parsed as
+  /// a double. Returns 0 when the backend hasn't shipped a `swapMaxAmount`.
+  double get fromCoinSwapMaxAmount =>
+      double.tryParse(_fromCoin?.swapMaxAmount ?? '') ?? 0;
+
   /// Live fees — empty string when no quote yet.
   String get totalFeeFromCoinAmount =>
       _liveQuote?.fees?.total?.fromCoinAmount ?? '';

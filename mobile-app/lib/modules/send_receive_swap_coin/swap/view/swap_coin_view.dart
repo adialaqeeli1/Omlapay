@@ -103,6 +103,16 @@ class SwapCoinView extends StatelessWidget {
                             onCoinTap: () =>
                                 _showCoinSelection(context, provider, true),
                             networkIconUrl: provider.fromCoin?.networkIconUrl,
+                            hintText: provider.fromCoinSwapMinAmount > 0
+                                ? l10n.minAmountHint(
+                                    provider.fromCoinSwapMinAmount
+                                        .toStringAsFixed(5),
+                                  )
+                                : null,
+                            bottomHelper: _buildFromCoinMaxRow(
+                              context,
+                              provider,
+                            ),
                           ),
                         ),
                         // Swap Icon
@@ -324,6 +334,34 @@ class SwapCoinView extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  /// Builds the "Max  X.XXXXX SYM" row that sits beneath the From card's
+  /// amount field, mirroring the layout of the send view's Max row. Returns
+  /// `null` when the selected coin has no `swapMaxAmount` so the host card
+  /// hides the helper area entirely.
+  Widget? _buildFromCoinMaxRow(BuildContext context, SwapProvider provider) {
+    final max = provider.fromCoinSwapMaxAmount;
+    if (max <= 0) return null;
+    final l10n = context.l10n!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final ticker = provider.fromCoin?.localizedCoinTicker(context) ?? '';
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          l10n.swapAmountMaxShortLabel,
+          style: TextStyle(
+            color: colorScheme.onSurfaceVariant,
+            fontSize: 12,
+          ),
+        ),
+        Text(
+          '${max.toStringAsFixed(5)} $ticker'.trim(),
+          style: TextStyle(color: colorScheme.onSurface, fontSize: 12),
+        ),
+      ],
     );
   }
 

@@ -1442,6 +1442,54 @@ abstract class AppLocalizations {
   /// **'Image saved successfully'**
   String get imageSavedSuccessfully;
 
+  /// No description provided for @transactionReceiptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Receipt'**
+  String get transactionReceiptTitle;
+
+  /// No description provided for @transactionIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction ID'**
+  String get transactionIdLabel;
+
+  /// No description provided for @recipient.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient'**
+  String get recipient;
+
+  /// No description provided for @amountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get amountLabel;
+
+  /// No description provided for @statusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get statusLabel;
+
+  /// No description provided for @typeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get typeLabel;
+
+  /// No description provided for @transactionSaveFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save transaction'**
+  String get transactionSaveFailedMessage;
+
+  /// No description provided for @photoLibraryPermissionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo library access is required to save the transaction'**
+  String get photoLibraryPermissionRequired;
+
   /// No description provided for @transactionSavedSuccessfully.
   ///
   /// In en, this message translates to:
@@ -1747,6 +1795,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Min {amount}'**
   String minAmountHint(String amount);
+
+  /// No description provided for @sendAmountMaxShortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Max'**
+  String get sendAmountMaxShortLabel;
+
+  /// No description provided for @swapAmountMaxShortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Max'**
+  String get swapAmountMaxShortLabel;
 
   /// No description provided for @searchHint.
   ///
