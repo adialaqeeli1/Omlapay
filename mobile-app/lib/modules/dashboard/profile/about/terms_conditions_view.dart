@@ -76,7 +76,11 @@ class _TermsConditionsBody extends StatelessWidget {
       padding: EdgeInsets.symmetric(
         horizontal: horizontalPadding,
       ).add(EdgeInsets.only(bottom: context.mediaQuery.viewPadding.bottom)),
-      child: MarkdownHtmlView(data: provider.content ?? ''),
+      child: MarkdownHtmlView(
+        data: provider.content ?? '',
+        textScale: 0.85,
+        headingScale: 0.85,
+      ),
     );
   }
 }

@@ -444,9 +444,7 @@ InlineSpan _renderInline(
       return const TextSpan(text: '\n');
     case LinkInline(:final url, :final children):
       final t = Theme.of(context);
-      final linkStyle = baseStyle.copyWith(
-        color: t.colorScheme.primary,
-      );
+      final linkStyle = baseStyle.copyWith(color: t.colorScheme.primary);
       final recognizer = TapGestureRecognizer()
         ..onTap = () => onLinkTap?.call(url);
       recognizers?.add(recognizer);
