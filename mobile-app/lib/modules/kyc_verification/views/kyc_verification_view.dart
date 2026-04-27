@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:country_codes/country_codes.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:image_picker/image_picker.dart';
@@ -445,6 +446,13 @@ class _KycFormBody extends StatelessWidget {
           children: [
             Expanded(
               child: SingleChildScrollView(
+                // Top inset gives the first field's floating outline label
+                // room to render — without it the label extends above the
+                // scroll viewport and gets clipped.
+                physics: ClampingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics(),
+                ),
+                padding: const EdgeInsets.only(top: 8),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     final isWide = constraints.maxWidth >= 720;
@@ -713,6 +721,24 @@ class _KycDateField extends StatelessWidget {
   final String hint;
   final FormGroup form;
 
+  Future<void> _openDatePicker(BuildContext context) async {
+    final now = DateTime.now();
+    final pickedDate = await showDialog<DateTime>(
+      context: context,
+      builder: (_) => _KycDateInputDialog(
+        initialDate: DateTime(now.year - 18, now.month, now.day),
+        firstDate: DateTime(1900),
+        lastDate: now,
+      ),
+    );
+    if (!context.mounted || pickedDate == null) {
+      return;
+    }
+    final formatted =
+        '${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.year}';
+    form.control(formControlName).value = formatted;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
@@ -721,26 +747,12 @@ class _KycDateField extends StatelessWidget {
 
     return ReactiveTextField<String>(
       formControlName: formControlName,
-      readOnly: true,
       validationMessages: {
         ValidationMessage.required: (_) => l10n.kycRequiredFieldError,
       },
-      onTap: (_) async {
-        final now = DateTime.now();
-        final pickedDate = await showDatePicker(
-          context: context,
-          initialDate: DateTime(now.year - 18, now.month, now.day),
-          firstDate: DateTime(1900),
-          lastDate: now,
-        );
-        if (!context.mounted || pickedDate == null) {
-          return;
-        }
-        final formatted =
-            '${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.year}';
-        // final form = ReactiveForm.of(context) as FormGroup;
-        form.control(formControlName).value = formatted;
-      },
+      keyboardType: TextInputType.number,
+      textInputAction: TextInputAction.next,
+      inputFormatters: const [_DateInputFormatter()],
       style: theme.textTheme.titleMedium?.copyWith(
         color: theme.colorScheme.onSurface,
         fontWeight: FontWeight.w500,
@@ -748,7 +760,10 @@ class _KycDateField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        suffixIcon: const Icon(Icons.calendar_today_outlined),
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.calendar_today_outlined),
+          onPressed: () => _openDatePicker(context),
+        ),
         filled: true,
         fillColor: isDark ? AppColors.darkSurface : theme.colorScheme.surface,
         border: OutlineInputBorder(
@@ -764,6 +779,66 @@ class _KycDateField extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Auto-inserts `/` separators as the user types digits for a `M(M)/D(D)/YYYY`
+/// date. The month length is inferred from the first digit (0/1 → 2-digit
+/// month, 2-9 → 1-digit) and the day length from the first day digit
+/// (0/1/2/3 → 2-digit, 4-9 → 1-digit), so both `04272008` and `4272008`
+/// format correctly. Year is capped at 4 digits; excess input is dropped.
+class _DateInputFormatter extends TextInputFormatter {
+  const _DateInputFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) {
+      return const TextEditingValue();
+    }
+
+    final monthLen = (digits[0] == '0' || digits[0] == '1') ? 2 : 1;
+    final actualMonthLen = digits.length < monthLen ? digits.length : monthLen;
+
+    var actualDayLen = 0;
+    if (digits.length > actualMonthLen) {
+      final firstDay = digits[actualMonthLen];
+      final dayLen =
+          (firstDay == '0' ||
+              firstDay == '1' ||
+              firstDay == '2' ||
+              firstDay == '3')
+          ? 2
+          : 1;
+      final remaining = digits.length - actualMonthLen;
+      actualDayLen = remaining < dayLen ? remaining : dayLen;
+    }
+
+    final yearStart = actualMonthLen + actualDayLen;
+    final remainingForYear = digits.length - yearStart;
+    final actualYearLen = remainingForYear < 4 ? remainingForYear : 4;
+
+    final buf = StringBuffer();
+    buf.write(digits.substring(0, actualMonthLen));
+    if (actualDayLen > 0) {
+      buf.write('/');
+      buf.write(
+        digits.substring(actualMonthLen, actualMonthLen + actualDayLen),
+      );
+    }
+    if (actualYearLen > 0) {
+      buf.write('/');
+      buf.write(digits.substring(yearStart, yearStart + actualYearLen));
+    }
+
+    final text = buf.toString();
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
     );
   }
 }
@@ -1260,6 +1335,160 @@ class _KycDocumentFullScreenView extends StatelessWidget {
           child: InteractiveViewer(minScale: 1, maxScale: 5, child: image),
         ),
       ),
+    );
+  }
+}
+
+/// Replacement for `showDatePicker`'s built-in input mode that respects
+/// [_DateInputFormatter]. The dialog shows an auto-formatting text field
+/// at the top and a `CalendarDatePicker` below; the two stay in sync —
+/// typing a complete valid date jumps the calendar to it, and tapping a
+/// day rewrites the field text in `MM/DD/YYYY` form. Falls back to the
+/// last valid selection on OK if the field is partially typed.
+class _KycDateInputDialog extends StatefulWidget {
+  const _KycDateInputDialog({
+    required this.initialDate,
+    required this.firstDate,
+    required this.lastDate,
+  });
+
+  final DateTime initialDate;
+  final DateTime firstDate;
+  final DateTime lastDate;
+
+  @override
+  State<_KycDateInputDialog> createState() => _KycDateInputDialogState();
+}
+
+class _KycDateInputDialogState extends State<_KycDateInputDialog> {
+  late final TextEditingController _controller;
+  late DateTime _selectedDate;
+  String? _errorText;
+  Key _calendarKey = UniqueKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = widget.initialDate;
+    _controller = TextEditingController(text: _formatDate(_selectedDate));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  String _formatDate(DateTime d) =>
+      '${d.month.toString().padLeft(2, '0')}/'
+      '${d.day.toString().padLeft(2, '0')}/'
+      '${d.year}';
+
+  DateTime? _parseDate(String text) {
+    final parts = text.split('/');
+    if (parts.length != 3) return null;
+    if (parts[2].length != 4) return null;
+    final m = int.tryParse(parts[0]);
+    final d = int.tryParse(parts[1]);
+    final y = int.tryParse(parts[2]);
+    if (m == null || d == null || y == null) return null;
+    if (m < 1 || m > 12 || d < 1 || d > 31) return null;
+    final dt = DateTime(y, m, d);
+    // Reject impossible dates (e.g. Feb 30 → Mar 2 rollover).
+    if (dt.year != y || dt.month != m || dt.day != d) return null;
+    if (dt.isBefore(widget.firstDate) || dt.isAfter(widget.lastDate)) {
+      return null;
+    }
+    return dt;
+  }
+
+  void _onTextChanged(String value) {
+    final parsed = _parseDate(value);
+    setState(() {
+      if (parsed != null) {
+        _selectedDate = parsed;
+        _calendarKey = ValueKey(parsed);
+        _errorText = null;
+      } else {
+        // Don't flash the error while the user is mid-typing.
+        final digitCount = value.replaceAll(RegExp(r'[^0-9]'), '').length;
+        _errorText = digitCount >= 8
+            ? MaterialLocalizations.of(context).invalidDateFormatLabel
+            : null;
+      }
+    });
+  }
+
+  void _onCalendarDateChanged(DateTime date) {
+    setState(() {
+      _selectedDate = date;
+      final formatted = _formatDate(date);
+      _controller.value = TextEditingValue(
+        text: formatted,
+        selection: TextSelection.collapsed(offset: formatted.length),
+      );
+      _errorText = null;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ml = MaterialLocalizations.of(context);
+    final theme = Theme.of(context);
+    return AlertDialog(
+      title: Text(ml.datePickerHelpText),
+      titleTextStyle: theme.textTheme.titleLarge?.copyWith(
+        color: theme.colorScheme.onSurface,
+        fontWeight: FontWeight.w600,
+      ),
+      titlePadding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+      contentPadding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+      content: SizedBox(
+        width: 360,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: _controller,
+                keyboardType: TextInputType.number,
+                inputFormatters: const [_DateInputFormatter()],
+                onChanged: _onTextChanged,
+                decoration: InputDecoration(
+                  labelText: ml.dateInputLabel,
+                  hintText: 'MM/DD/YYYY',
+                  errorText: _errorText,
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 320,
+                child: CalendarDatePicker(
+                  key: _calendarKey,
+                  initialDate: _selectedDate,
+                  firstDate: widget.firstDate,
+                  lastDate: widget.lastDate,
+                  onDateChanged: _onCalendarDateChanged,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(ml.cancelButtonLabel),
+        ),
+        TextButton(
+          onPressed: _errorText != null
+              ? null
+              : () => Navigator.of(context).pop(_selectedDate),
+          child: Text(ml.okButtonLabel),
+        ),
+      ],
     );
   }
 }
