@@ -348,6 +348,39 @@ class SendCoinView extends StatelessWidget {
     );
   }
 
+  /// Renders the live transaction fee returned by the send-quote API.
+  ///
+  /// Shows a small spinner while the debounced quote call is in flight, the
+  /// quote's fee once available, and falls back to the localized "Free"
+  /// label when the form is incomplete or the API has not yet returned a fee.
+  Widget _buildFeeValue(
+    BuildContext context,
+    SendProvider provider,
+    AppLocalizations l10n,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textStyle = TextStyle(color: colorScheme.onSurface, fontSize: 12);
+
+    if (provider.isFetchingQuote) {
+      return SizedBox(
+        height: 12,
+        width: 12,
+        child: CircularProgressIndicator(
+          strokeWidth: 1.5,
+          color: colorScheme.onSurfaceVariant,
+        ),
+      );
+    }
+
+    final fee = provider.quote?.fee.trim() ?? '';
+    final feeAmount = double.tryParse(fee);
+    if (fee.isEmpty || (feeAmount != null && feeAmount == 0)) {
+      return Text(l10n.feeFree, style: textStyle);
+    }
+    final display = feeAmount != null ? feeAmount.toStringAsFixed(5) : fee;
+    return Text(display, style: textStyle);
+  }
+
   Widget _buildFooter(
     BuildContext context,
     SendProvider provider,
@@ -373,10 +406,7 @@ class SendCoinView extends StatelessWidget {
                   fontSize: 12,
                 ),
               ),
-              Text(
-                l10n.feeFree,
-                style: TextStyle(color: colorScheme.onSurface, fontSize: 12),
-              ),
+              _buildFeeValue(context, provider, l10n),
             ],
           ),
           const SizedBox(height: 12),
