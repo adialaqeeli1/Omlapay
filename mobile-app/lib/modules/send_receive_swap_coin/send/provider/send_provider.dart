@@ -43,6 +43,7 @@ class SendProvider extends ChangeNotifier {
           recipientController.text != _selectedContact!.phoneNumber) {
         // Selection is mainly via sheet; manual entry can diverge from stored contact.
       }
+      _scheduleQuoteFetch();
       notifyListeners();
     });
   }
@@ -60,6 +61,11 @@ class SendProvider extends ChangeNotifier {
   bool _isSubmitting = false;
   String? _submitError;
   SendQuoteModel? _quote;
+  bool _isFetchingQuote = false;
+  Timer? _quoteDebounceTimer;
+  int _quoteRequestId = 0;
+  String? _lastQuoteKey;
+  static const Duration _quoteDebounce = Duration(milliseconds: 500);
 
   // OTP / confirm flow state.
   String? _sendToken;
@@ -93,6 +99,7 @@ class SendProvider extends ChangeNotifier {
   bool get isSubmitting => _isSubmitting;
   String? get submitError => _submitError;
   SendQuoteModel? get quote => _quote;
+  bool get isFetchingQuote => _isFetchingQuote;
   double get minSendAmount =>
       double.tryParse(
         _selectedCoin?.minSendAmount ?? _selectedCoin?.minDeposit ?? '0',
@@ -188,6 +195,7 @@ class SendProvider extends ChangeNotifier {
     _selectedCoin = coin;
     _updateNetwork();
     _validate();
+    _scheduleQuoteFetch();
   }
 
   void setSelectedContact(ContactModel contact) {
@@ -368,6 +376,7 @@ class SendProvider extends ChangeNotifier {
     _error = null;
     final text = amountController.text;
     if (text.isEmpty) {
+      _scheduleQuoteFetch();
       notifyListeners();
       return;
     }
@@ -388,12 +397,85 @@ class SendProvider extends ChangeNotifier {
         _error = l10n.sendValidationInsufficientBalance;
       }
     }
+    _scheduleQuoteFetch();
     notifyListeners();
+  }
+
+  /// Debounces a fetch of the live send quote so the fee preview in the
+  /// send footer stays in sync with the form. The API is only hit once all
+  /// of {coin, network, recipient, amount} are present, the amount parses
+  /// to a positive number, and there is no validation error blocking it.
+  /// Repeated invocations with identical inputs (e.g. SSE price ticks that
+  /// re-run validation) are deduped via [_lastQuoteKey] so the quote API is
+  /// only hit when the user actually changes the form.
+  void _scheduleQuoteFetch() {
+    final coin = _selectedCoin;
+    final recipient = recipientController.text.trim();
+    final amountText = amountController.text.trim();
+    final amount = double.tryParse(amountText);
+    final network = networkController.text.trim();
+
+    final hasAllInputs = coin != null &&
+        recipient.isNotEmpty &&
+        amountText.isNotEmpty &&
+        network.isNotEmpty &&
+        amount != null &&
+        amount > 0 &&
+        _error == null;
+
+    if (!hasAllInputs) {
+      _quoteDebounceTimer?.cancel();
+      _lastQuoteKey = null;
+      if (_quote != null || _isFetchingQuote) {
+        _quote = null;
+        _isFetchingQuote = false;
+        notifyListeners();
+      }
+      return;
+    }
+
+    final key = '${coin.symbol}|$network|$recipient|$amountText';
+    if (key == _lastQuoteKey) return;
+    _lastQuoteKey = key;
+
+    _quoteDebounceTimer?.cancel();
+    _quoteDebounceTimer = Timer(_quoteDebounce, () {
+      _fetchQuote(coin: coin, recipient: recipient, amount: amountText);
+    });
+  }
+
+  Future<void> _fetchQuote({
+    required CoinModel coin,
+    required String recipient,
+    required String amount,
+  }) async {
+    final requestId = ++_quoteRequestId;
+    _isFetchingQuote = true;
+    notifyListeners();
+
+    try {
+      final result = await SendService.fetchQuote(
+        coin: coin.symbol,
+        recipient: recipient,
+        amount: amount,
+      );
+      if (requestId != _quoteRequestId) return;
+      _quote = result;
+    } catch (_) {
+      if (requestId != _quoteRequestId) return;
+      _quote = null;
+    } finally {
+      if (requestId == _quoteRequestId) {
+        _isFetchingQuote = false;
+        notifyListeners();
+      }
+    }
   }
 
   @override
   void dispose() {
     _otpTimer?.cancel();
+    _quoteDebounceTimer?.cancel();
     _coinsPricesProvider.removeListener(_onStreamedCoinsUpdated);
     authProvider.removeListener(notifyListeners);
     amountController.dispose();
