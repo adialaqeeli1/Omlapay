@@ -55,62 +55,67 @@ class RequestDetailView extends StatelessWidget {
           ),
         ],
       ),
-      body: Consumer<RequestDetailProvider>(
-        builder: (context, provider, _) {
-          if (provider.isLoading) {
-            return const Center(child: CommonLoadingIndicator());
-          }
+      body: SafeArea(
+        child: Consumer<RequestDetailProvider>(
+          builder: (context, provider, _) {
+            if (provider.isLoading) {
+              return const Center(child: CommonLoadingIndicator());
+            }
 
-          if (provider.errorKey != null && provider.detail == null) {
-            return _ErrorView(
-              message:
-                  AppException.resolveErrorKey(l10n, provider.errorKey!) ??
-                  l10n.somethingWentWrong,
-              onRetry: () => provider.fetchDetail(),
-            );
-          }
+            if (provider.errorKey != null && provider.detail == null) {
+              return _ErrorView(
+                message:
+                    AppException.resolveErrorKey(l10n, provider.errorKey!) ??
+                    l10n.somethingWentWrong,
+                onRetry: () => provider.fetchDetail(),
+              );
+            }
 
-          final detail = provider.detail;
-          if (detail == null) {
-            return const Center(child: CommonLoadingIndicator());
-          }
+            final detail = provider.detail;
+            if (detail == null) {
+              return const Center(child: CommonLoadingIndicator());
+            }
 
-          return Column(
-            children: [
-              _StatusBanner(
-                status: detail.status,
-                statusColor: detail.statusColor,
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: _RequestContent(detail: detail),
+            return Column(
+              children: [
+                _StatusBanner(
+                  status: detail.status,
+                  statusColor: detail.statusColor,
                 ),
-              ),
-              _BottomBar(
-                status: detail.status,
-                isReopening: provider.isReopening,
-                onReopen: () async {
-                  await provider.reopenTicket();
-                  if (context.mounted) {
-                    if (provider.errorKey != null) {
-                      SnackbarHelper.showError(
-                        context,
-                        AppException.resolveErrorKey(
-                              l10n,
-                              provider.errorKey!,
-                            ) ??
-                            l10n.somethingWentWrong,
-                      );
-                    } else {
-                      SnackbarHelper.showSuccess(context, l10n.requestReopened);
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: _RequestContent(detail: detail),
+                  ),
+                ),
+                _BottomBar(
+                  status: detail.status,
+                  isReopening: provider.isReopening,
+                  onReopen: () async {
+                    await provider.reopenTicket();
+                    if (context.mounted) {
+                      if (provider.errorKey != null) {
+                        SnackbarHelper.showError(
+                          context,
+                          AppException.resolveErrorKey(
+                                l10n,
+                                provider.errorKey!,
+                              ) ??
+                              l10n.somethingWentWrong,
+                        );
+                      } else {
+                        SnackbarHelper.showSuccess(
+                          context,
+                          l10n.requestReopened,
+                        );
+                      }
                     }
-                  }
-                },
-              ),
-            ],
-          );
-        },
+                  },
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

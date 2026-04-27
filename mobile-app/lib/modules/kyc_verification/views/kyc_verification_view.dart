@@ -917,7 +917,15 @@ class _KycCountryField extends StatelessWidget {
   }
 }
 
-Map<String, String> _authImageHeaders() {
+/// Returns the headers to attach when [CachedNetworkImage] fetches a KYC
+/// document. The Bearer token is only included for OmlaPay-API-hosted URLs
+/// (e.g. the selfie endpoint, which gates downloads behind auth). Direct
+/// S3 / CDN URLs receive no `Authorization` header at all — sending one
+/// causes S3 to attempt SigV4 validation against the JWT and reject the
+/// request with `400 InvalidArgument`, even when the object is public.
+Map<String, String> _authImageHeaders(String url) {
+  final host = Uri.tryParse(url)?.host ?? '';
+  if (!host.endsWith('omlapay.xyz')) return const {};
   final token = StorageService.getString(AppConstants.tokenKey);
   return {
     if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
@@ -1074,7 +1082,7 @@ class _KycSelfieAvatar extends StatelessWidget {
                   ? Image.file(File(file!.path), fit: BoxFit.cover)
                   : CachedNetworkImage(
                       imageUrl: url!,
-                      httpHeaders: _authImageHeaders(),
+                      httpHeaders: _authImageHeaders(url!),
                       fit: BoxFit.cover,
                       placeholder: (context, _) => Container(
                         color: isDark
@@ -1165,7 +1173,7 @@ class _KycDocumentPreview extends StatelessWidget {
                         ? Image.file(File(file!.path), fit: BoxFit.contain)
                         : CachedNetworkImage(
                             imageUrl: url!,
-                            httpHeaders: _authImageHeaders(),
+                            httpHeaders: _authImageHeaders(url!),
                             fit: BoxFit.contain,
                             placeholder: (context, _) => const Center(
                               child: SizedBox(
@@ -1283,7 +1291,7 @@ class _KycDocumentFullScreenView extends StatelessWidget {
         ? Image.file(File(file!.path), fit: BoxFit.contain)
         : CachedNetworkImage(
             imageUrl: url!,
-            httpHeaders: _authImageHeaders(),
+            httpHeaders: _authImageHeaders(url!),
             fit: BoxFit.contain,
             placeholder: (context, _) => const SizedBox(
               width: 32,
