@@ -24,22 +24,65 @@ class MarkdownHtmlView extends StatelessWidget {
     required this.data,
     this.onLinkTap,
     this.selectable = false,
+    this.textScale = 1.0,
+    this.headingScale = 1.0,
   });
 
   final String data;
   final void Function(String url)? onLinkTap;
   final bool selectable;
 
+  /// Multiplier applied on top of the user's current text scale. Use a value
+  /// below 1.0 to render this document slightly smaller than the rest of the
+  /// app (e.g. dense legal copy) while preserving the user's accessibility
+  /// scale.
+  final double textScale;
+
+  /// Additional multiplier applied only to heading-tier text styles
+  /// (`displaySmall`, `headlineMedium`/`Small`, `titleLarge`/`Medium`/`Small`).
+  /// Stacks with [textScale] for headings (final scale = textScale *
+  /// headingScale); body text is unaffected.
+  final double headingScale;
+
   @override
   Widget build(BuildContext context) {
-    if (selectable) {
-      return _SelectableMarkdownHtmlBody(
-        data: data,
-        onLinkTap: onLinkTap,
+    Widget child = selectable
+        ? _SelectableMarkdownHtmlBody(data: data, onLinkTap: onLinkTap)
+        : renderBlocks(parseMarkdown(data), onLinkTap: onLinkTap);
+
+    if (headingScale != 1.0) {
+      final theme = Theme.of(context);
+      final t = theme.textTheme;
+      child = Theme(
+        data: theme.copyWith(
+          textTheme: t.copyWith(
+            displaySmall: _scaledFontSize(t.displaySmall, headingScale),
+            headlineMedium: _scaledFontSize(t.headlineMedium, headingScale),
+            headlineSmall: _scaledFontSize(t.headlineSmall, headingScale),
+            titleLarge: _scaledFontSize(t.titleLarge, headingScale),
+            titleMedium: _scaledFontSize(t.titleMedium, headingScale),
+            titleSmall: _scaledFontSize(t.titleSmall, headingScale),
+          ),
+        ),
+        child: child,
       );
     }
-    return renderBlocks(parseMarkdown(data), onLinkTap: onLinkTap);
+
+    if (textScale != 1.0) {
+      final mediaQuery = MediaQuery.of(context);
+      final combined = mediaQuery.textScaler.scale(1.0) * textScale;
+      child = MediaQuery(
+        data: mediaQuery.copyWith(textScaler: TextScaler.linear(combined)),
+        child: child,
+      );
+    }
+    return child;
   }
+}
+
+TextStyle? _scaledFontSize(TextStyle? style, double scale) {
+  if (style == null || style.fontSize == null) return style;
+  return style.copyWith(fontSize: style.fontSize! * scale);
 }
 
 class _SelectableMarkdownHtmlBody extends StatefulWidget {

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:numpad_kit/numpad_kit.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
@@ -19,7 +17,7 @@ import '../providers/passcode_provider.dart';
 import '../services/forgot_passcode_service.dart';
 import '../../settings/services/change_email_service.dart';
 
-class EnterOrSetPasscodeScreen extends StatelessWidget {
+class EnterOrSetPasscodeScreen extends StatefulWidget {
   /// Prevents overlapping forgot-passcode OTP requests before the loading overlay
   /// blocks further taps.
   static bool _forgotPasscodeOtpInFlight = false;
@@ -49,6 +47,90 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
   final String? registrationToken;
 
   @override
+  State<EnterOrSetPasscodeScreen> createState() =>
+      _EnterOrSetPasscodeScreenState();
+}
+
+class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
+  final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  PasscodeProvider? _passcodeProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final provider = context.read<PasscodeProvider>();
+    if (!identical(_passcodeProvider, provider)) {
+      _passcodeProvider?.removeListener(_syncControllerFromProvider);
+      _passcodeProvider = provider;
+      _passcodeProvider!.addListener(_syncControllerFromProvider);
+    }
+  }
+
+  @override
+  void dispose() {
+    _passcodeProvider?.removeListener(_syncControllerFromProvider);
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  /// Mirrors external clears / rejected digits onto the hidden capture field
+  /// so the controller never drifts away from the provider state.
+  void _syncControllerFromProvider() {
+    final providerPasscode = _passcodeProvider?.passcode ?? '';
+    if (_controller.text != providerPasscode) {
+      _controller.value = TextEditingValue(
+        text: providerPasscode,
+        selection: TextSelection.collapsed(offset: providerPasscode.length),
+      );
+    }
+  }
+
+  void _ensureKeyboardOpen() {
+    if (!_focusNode.hasFocus) {
+      _focusNode.requestFocus();
+    }
+  }
+
+  Future<void> _onHiddenInputChanged(
+    String value,
+    PasscodeProvider provider,
+  ) async {
+    final prev = provider.passcode;
+    if (value.length > prev.length) {
+      final added = value.substring(prev.length);
+      for (final ch in added.split('')) {
+        if (!provider.canEnterDigits) break;
+        await _onDigitPressed(context, provider, ch);
+      }
+    } else if (value.length < prev.length) {
+      final removeCount = prev.length - value.length;
+      for (var i = 0; i < removeCount; i++) {
+        provider.removeLastDigit();
+      }
+    }
+    // Force the controller back in sync so any digits the provider rejected
+    // (length cap, verifying gate) don't leave the field ahead of state.
+    final synced = provider.passcode;
+    if (_controller.text != synced) {
+      _controller.value = TextEditingValue(
+        text: synced,
+        selection: TextSelection.collapsed(offset: synced.length),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final passcodeProvider = context.watch<PasscodeProvider>();
     final l10n = context.l10n!;
@@ -58,10 +140,6 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     final subtitleColor = theme.colorScheme.onSurface.withValues(
       alpha: isDark ? 0.90 : 0.62,
     );
-    final keypadButtonColor = isDark
-        ? AppColors.iconBackground
-        : theme.colorScheme.onSurface.withValues(alpha: 0.14);
-    final keypadTextColor = isDark ? AppColors.white : AppColors.textBlack;
     final emptyDotBorderColor = theme.colorScheme.onSurface.withValues(
       alpha: isDark ? 0.92 : 0.32,
     );
@@ -70,19 +148,19 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     final indicatorInactiveColor = theme.colorScheme.onSurface.withValues(
       alpha: isDark ? 0.16 : 0.20,
     );
-    final isRegisterMode = mode == LoginProvider.modeRegister;
+    final isRegisterMode = widget.mode == LoginProvider.modeRegister;
     final isChangePasscodeFlow =
-        mode == LoginProvider.modeChangePasscodeCurrent ||
-        mode == LoginProvider.modeChangePasscodeNew ||
-        mode == LoginProvider.modeChangePasscodeConfirm;
+        widget.mode == LoginProvider.modeChangePasscodeCurrent ||
+        widget.mode == LoginProvider.modeChangePasscodeNew ||
+        widget.mode == LoginProvider.modeChangePasscodeConfirm;
     final isChangeEmailPasscodeStep =
-        mode == LoginProvider.modeChangeEmailConfirmPasscode;
+        widget.mode == LoginProvider.modeChangeEmailConfirmPasscode;
 
     return Scaffold(
       appBar: AppBar(
         leading: context.canPop() == false
             ? null
-            : isSoftLogin
+            : widget.isSoftLogin
             ? null
             : (isRegisterMode
                   ? CommonBackButton()
@@ -135,7 +213,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                 ),
               )
             : null,
-        actions: isSoftLogin
+        actions: widget.isSoftLogin
             ? [
                 Padding(
                   padding: const EdgeInsetsDirectional.only(end: 16),
@@ -174,205 +252,154 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
         ),
       ),
       body: SafeArea(
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: ClampingScrollPhysics(),
-          ),
-          slivers: [
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 20,
-                ).copyWith(top: isSoftLogin ? 20 : (isRegisterMode ? 28 : 0)),
-                child: Column(
-                  children: [
-                    if (isChangePasscodeFlow) const Spacer(),
-                    if (!isRegisterMode &&
-                        !isChangePasscodeFlow &&
-                        !isChangeEmailPasscodeStep)
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _ensureKeyboardOpen,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: ClampingScrollPhysics(),
+            ),
+            slivers: [
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20).copyWith(
+                    top: widget.isSoftLogin ? 20 : (isRegisterMode ? 28 : 0),
+                  ),
+                  child: Column(
+                    children: [
+                      const Spacer(),
+                      if (!isRegisterMode &&
+                          !isChangePasscodeFlow &&
+                          !isChangeEmailPasscodeStep)
+                        Text(
+                          l10n.welcomeToOmlaPay,
+                          style: GoogleFonts.poppinsTextTheme().titleMedium
+                              ?.copyWith(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                                color: subtitleColor,
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
+                      if (!isRegisterMode &&
+                          !isChangePasscodeFlow &&
+                          !isChangeEmailPasscodeStep)
+                        const SizedBox(height: 24),
                       Text(
-                        l10n.welcomeToOmlaPay,
-                        style: GoogleFonts.poppinsTextTheme().titleMedium
+                        _titleForMode(l10n),
+                        style: GoogleFonts.poppinsTextTheme().displaySmall
                             ?.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                              color: subtitleColor,
+                              fontSize: 30,
+                              fontWeight: FontWeight.w700,
+                              height: 1.24,
+                              color: theme.colorScheme.onSurface,
                             ),
                         textAlign: TextAlign.center,
                       ),
-                    if (!isRegisterMode &&
-                        !isChangePasscodeFlow &&
-                        !isChangeEmailPasscodeStep)
-                      const SizedBox(height: 24),
-                    Text(
-                      _titleForMode(l10n),
-                      style: GoogleFonts.poppinsTextTheme().displaySmall
-                          ?.copyWith(
-                            fontSize: 30,
-                            fontWeight: FontWeight.w700,
-                            height: 1.24,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 30),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      textDirection: TextDirection.ltr,
-                      children: [
-                        for (
-                          var index = 0;
-                          index < PasscodeProvider.passcodeLength;
-                          index++
-                        ) ...[
-                          _PasscodeDot(
-                            isFilled:
-                                index < passcodeProvider.enteredDigitsCount,
-                            fillColor: passcodeProvider.hasError
-                                ? errorColor
-                                : activeDotColor,
-                            borderColor:
-                                index < passcodeProvider.enteredDigitsCount
-                                ? (passcodeProvider.hasError
-                                      ? errorColor
-                                      : activeDotColor)
-                                : emptyDotBorderColor,
-                          ),
-                          if (index < PasscodeProvider.passcodeLength - 1)
-                            const SizedBox(width: 12),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    SizedBox(
-                      height: 22,
-                      child: passcodeProvider.hasError
-                          ? Text(
-                              mode == LoginProvider.modeConfirmPasscode ||
-                                      mode ==
-                                          LoginProvider
-                                              .modeChangePasscodeConfirm
-                                  ? l10n.passcodesMismatchTryAgain
-                                  : l10n.incorrectPasscodeTryAgain,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: errorColor,
-                              ),
-                              textAlign: TextAlign.center,
-                            )
-                          : null,
-                    ),
-                    const SizedBox(height: 4),
-                    if (_showForgotPasscodeLink())
-                      GestureDetector(
-                        onTap: () =>
-                            _onForgotPasscode(context, passcodeProvider),
-                        child: Text(
-                          l10n.forgotPasscode,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primaryColor,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    const Spacer(),
-                    SizedBox(
-                      height: 400,
-                      child: Directionality(
+                      const SizedBox(height: 30),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         textDirection: TextDirection.ltr,
-                        child: Numpad(
-                          enableKeyboardInput: false,
-                          spacing: 18,
-                          padding: EdgeInsets.zero,
-                          theme: NumpadThemeData(
-                            backgroundColor: Colors.transparent,
-                            buttonColor: keypadButtonColor,
-                            buttonTextColor: keypadTextColor,
-                            buttonShape: NumpadButtonShape.circle,
-                            buttonSize: 64,
-                            spacing: 18,
-                            buttonPadding: EdgeInsets.zero,
-                            numpadPadding: EdgeInsets.zero,
-                            pressedScale: 0.85,
-                            animationDuration: const Duration(
-                              milliseconds: 100,
+                        children: [
+                          for (
+                            var index = 0;
+                            index < PasscodeProvider.passcodeLength;
+                            index++
+                          ) ...[
+                            _PasscodeDot(
+                              isFilled:
+                                  index < passcodeProvider.enteredDigitsCount,
+                              fillColor: passcodeProvider.hasError
+                                  ? errorColor
+                                  : activeDotColor,
+                              borderColor:
+                                  index < passcodeProvider.enteredDigitsCount
+                                  ? (passcodeProvider.hasError
+                                        ? errorColor
+                                        : activeDotColor)
+                                  : emptyDotBorderColor,
                             ),
-                            animationCurve: Curves.easeInOut,
-                            textStyle:
-                                context.textTheme.titleLarge?.copyWith(
-                                  fontSize: 44 / 1.35,
+                            if (index < PasscodeProvider.passcodeLength - 1)
+                              const SizedBox(width: 12),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        height: 22,
+                        child: passcodeProvider.hasError
+                            ? Text(
+                                widget.mode ==
+                                            LoginProvider.modeConfirmPasscode ||
+                                        widget.mode ==
+                                            LoginProvider
+                                                .modeChangePasscodeConfirm
+                                    ? l10n.passcodesMismatchTryAgain
+                                    : l10n.incorrectPasscodeTryAgain,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w500,
-                                  color: keypadTextColor,
-                                  height: 1.0,
-                                ) ??
-                                TextStyle(
-                                  fontSize: 44 / 1.35,
-                                  fontWeight: FontWeight.w500,
-                                  color: keypadTextColor,
-                                  height: 1.0,
+                                  color: errorColor,
                                 ),
+                                textAlign: TextAlign.center,
+                              )
+                            : null,
+                      ),
+                      const SizedBox(height: 4),
+                      if (_showForgotPasscodeLink())
+                        GestureDetector(
+                          onTap: () =>
+                              _onForgotPasscode(context, passcodeProvider),
+                          child: Text(
+                            l10n.forgotPasscode,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primaryColor,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          showRightExtraButton: true,
-                          rightExtraButton: SvgPicture.asset(
-                            isDark
-                                ? 'assets/icons/clear-number-icon-dark.svg'
-                                : 'assets/icons/clear-number-icon-light.svg',
-                            width: 28,
-                            height: 24,
+                        ),
+                      const Spacer(),
+                      // Hidden capture field: drives the device numpad while
+                      // staying invisible. The dots row above is the visible
+                      // indicator; tapping anywhere in the body re-opens the
+                      // keyboard via [_ensureKeyboardOpen].
+                      SizedBox(
+                        width: 0,
+                        height: 0,
+                        child: TextField(
+                          controller: _controller,
+                          focusNode: _focusNode,
+                          autofocus: true,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: false,
+                            signed: false,
                           ),
-                          onRightExtraButton: passcodeProvider.canEnterDigits
-                              ? passcodeProvider.removeLastDigit
-                              : null,
-                          buttonBuilder: (context, value, onPressed, isEnabled) {
-                            // Backspace button (extra button has empty value)
-                            if (value.isEmpty) {
-                              return GestureDetector(
-                                onTap: passcodeProvider.canEnterDigits
-                                    ? passcodeProvider.removeLastDigit
-                                    : null,
-                                child: SizedBox(
-                                  width: 64,
-                                  height: 64,
-                                  child: Center(
-                                    child: SvgPicture.asset(
-                                      isDark
-                                          ? 'assets/icons/clear-number-icon-dark.svg'
-                                          : 'assets/icons/clear-number-icon-light.svg',
-                                      width: 28,
-                                      height: 24,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }
-                            // Digit buttons
-                            return _NumpadDigitButton(
-                              label: value,
-                              onPressed: passcodeProvider.canEnterDigits
-                                  ? () => _onDigitPressed(
-                                      context,
-                                      passcodeProvider,
-                                      value,
-                                    )
-                                  : null,
-                              buttonColor: keypadButtonColor,
-                              textColor: keypadTextColor,
-                            );
-                          },
+                          textInputAction: TextInputAction.done,
+                          showCursor: false,
+                          obscureText: true,
+                          autocorrect: false,
+                          enableSuggestions: false,
+                          enableInteractiveSelection: false,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(
+                              PasscodeProvider.passcodeLength,
+                            ),
+                          ],
+                          onChanged: (value) =>
+                              _onHiddenInputChanged(value, passcodeProvider),
                         ),
                       ),
-                    ),
-                    const Spacer(),
-                    const SizedBox(height: 28),
-                  ],
+                      const SizedBox(height: 28),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -431,14 +458,14 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
   /// Back navigation for change-email passcode confirmation.
   /// The step is entered with [context.go], so we restore the previous route.
   Widget? _changeEmailPasscodeBackButton(BuildContext context) {
-    if (mode != LoginProvider.modeChangeEmailConfirmPasscode) {
+    if (widget.mode != LoginProvider.modeChangeEmailConfirmPasscode) {
       return null;
     }
 
     return CommonBackButton(
       onPressed: () {
-        final email = pendingEmail?.trim() ?? '';
-        final token = changeEmailToken?.trim() ?? '';
+        final email = widget.pendingEmail?.trim() ?? '';
+        final token = widget.changeEmailToken?.trim() ?? '';
         context.go(
           Routes.changeEmailVerifyNewEmail,
           extra: {
@@ -451,20 +478,20 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
   }
 
   bool _showForgotPasscodeLink() {
-    if (mode == LoginProvider.modeResetPasscode ||
-        mode == LoginProvider.modeConfirmPasscode ||
-        mode == LoginProvider.modeRegister ||
-        mode == LoginProvider.modeChangePasscodeCurrent ||
-        mode == LoginProvider.modeChangePasscodeNew ||
-        mode == LoginProvider.modeChangePasscodeConfirm ||
-        mode == LoginProvider.modeChangeEmailConfirmPasscode) {
+    if (widget.mode == LoginProvider.modeResetPasscode ||
+        widget.mode == LoginProvider.modeConfirmPasscode ||
+        widget.mode == LoginProvider.modeRegister ||
+        widget.mode == LoginProvider.modeChangePasscodeCurrent ||
+        widget.mode == LoginProvider.modeChangePasscodeNew ||
+        widget.mode == LoginProvider.modeChangePasscodeConfirm ||
+        widget.mode == LoginProvider.modeChangeEmailConfirmPasscode) {
       return false;
     }
     return true;
   }
 
   String _titleForMode(dynamic l10n) {
-    return switch (mode) {
+    return switch (widget.mode) {
       LoginProvider.modeRegister => l10n.createAPasscode,
       LoginProvider.modeChangePasscodeCurrent => l10n.enterYourCurrentPasscode,
       LoginProvider.modeChangePasscodeNew => l10n.enterYourNewPasscode,
@@ -489,10 +516,10 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
       }
       return;
     }
-    if (_forgotPasscodeOtpInFlight) {
+    if (EnterOrSetPasscodeScreen._forgotPasscodeOtpInFlight) {
       return;
     }
-    _forgotPasscodeOtpInFlight = true;
+    EnterOrSetPasscodeScreen._forgotPasscodeOtpInFlight = true;
     try {
       passcodeProvider.clearPasscode();
 
@@ -560,7 +587,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
         }
       }
     } finally {
-      _forgotPasscodeOtpInFlight = false;
+      EnterOrSetPasscodeScreen._forgotPasscodeOtpInFlight = false;
     }
   }
 
@@ -569,15 +596,15 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     PasscodeProvider provider,
     String digit,
   ) async {
-    print(mode);
+    print(widget.mode);
     provider.addDigit(digit);
     if (!provider.isComplete) {
       return;
     }
 
     try {
-      if (mode == LoginProvider.modeResetPasscode) {
-        if (resetToken == null || resetToken!.isEmpty) {
+      if (widget.mode == LoginProvider.modeResetPasscode) {
+        if (widget.resetToken == null || widget.resetToken!.isEmpty) {
           SnackbarHelper.showError(context, context.l10n!.unknownError);
           return;
         }
@@ -588,7 +615,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
             LoginProvider.extraCountryCodeKey: provider.countryCode,
             LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
             LoginProvider.extraPendingPasscodeKey: provider.passcode,
-            LoginProvider.extraResetTokenKey: resetToken,
+            LoginProvider.extraResetTokenKey: widget.resetToken,
           },
         );
         return;
@@ -596,7 +623,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
 
       final authProvider = context.read<AuthProvider>();
 
-      if (mode == LoginProvider.modeChangePasscodeCurrent) {
+      if (widget.mode == LoginProvider.modeChangePasscodeCurrent) {
         final isValid = await provider.verify(
           verifyPasscode:
               ({
@@ -620,21 +647,21 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
         return;
       }
 
-      if (mode == LoginProvider.modeChangePasscodeNew) {
+      if (widget.mode == LoginProvider.modeChangePasscodeNew) {
         context.push(
           Routes.enterOrSetPasscode,
           extra: {
             LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeConfirm,
             LoginProvider.extraCountryCodeKey: provider.countryCode,
             LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
-            LoginProvider.extraCurrentPasscodeKey: currentPasscode,
+            LoginProvider.extraCurrentPasscodeKey: widget.currentPasscode,
             LoginProvider.extraPendingPasscodeKey: provider.passcode,
           },
         );
         return;
       }
 
-      if (mode == LoginProvider.modeRegister) {
+      if (widget.mode == LoginProvider.modeRegister) {
         final isValid = await provider.verify(
           verifyPasscode:
               ({
@@ -642,11 +669,11 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                 required String countryCode,
                 required String passcode,
               }) async {
-                if (registrationToken != null &&
-                    registrationToken!.isNotEmpty) {
+                if (widget.registrationToken != null &&
+                    widget.registrationToken!.isNotEmpty) {
                   final isRegSuccess = await authProvider
                       .setRegistrationPasscode(
-                        registrationToken: registrationToken!,
+                        registrationToken: widget.registrationToken!,
                         passcode: passcode,
                         confirmPasscode: passcode,
                       );
@@ -671,20 +698,20 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
         return;
       }
 
-      if (mode == LoginProvider.modeChangePasscodeConfirm) {
+      if (widget.mode == LoginProvider.modeChangePasscodeConfirm) {
         final isValid = await provider.verify(
           verifyPasscode:
               ({
                 required String phoneNumber,
                 required String countryCode,
                 required String passcode,
-              }) async => passcode == (pendingPasscode ?? ''),
+              }) async => passcode == (widget.pendingPasscode ?? ''),
         );
         if (!context.mounted || !isValid) {
           return;
         }
-        final newPasscode = pendingPasscode;
-        final oldPasscode = currentPasscode;
+        final newPasscode = widget.pendingPasscode;
+        final oldPasscode = widget.currentPasscode;
         if (newPasscode == null ||
             newPasscode.length != PasscodeProvider.passcodeLength ||
             oldPasscode == null ||
@@ -695,10 +722,10 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
           return;
         }
 
-        if (_changePasscodeSubmitInFlight) {
+        if (EnterOrSetPasscodeScreen._changePasscodeSubmitInFlight) {
           return;
         }
-        _changePasscodeSubmitInFlight = true;
+        EnterOrSetPasscodeScreen._changePasscodeSubmitInFlight = true;
         provider.clearPasscode();
 
         final navigator = Navigator.of(context, rootNavigator: true);
@@ -730,7 +757,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
         );
         await Future<void>.delayed(Duration.zero);
         if (!context.mounted) {
-          _changePasscodeSubmitInFlight = false;
+          EnterOrSetPasscodeScreen._changePasscodeSubmitInFlight = false;
           if (navigator.mounted) {
             navigator.pop();
           }
@@ -760,13 +787,14 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
             SnackbarHelper.showError(context, e.toString());
           }
         } finally {
-          _changePasscodeSubmitInFlight = false;
+          EnterOrSetPasscodeScreen._changePasscodeSubmitInFlight = false;
         }
         return;
       }
 
-      if (mode == LoginProvider.modeConfirmPasscode) {
-        final isForgotResetFlow = resetToken != null && resetToken!.isNotEmpty;
+      if (widget.mode == LoginProvider.modeConfirmPasscode) {
+        final isForgotResetFlow =
+            widget.resetToken != null && widget.resetToken!.isNotEmpty;
         final isValid = await provider.verify(
           verifyPasscode:
               ({
@@ -774,12 +802,12 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                 required String countryCode,
                 required String passcode,
               }) async {
-                if (passcode != (pendingPasscode ?? '')) return false;
+                if (passcode != (widget.pendingPasscode ?? '')) return false;
                 if (isForgotResetFlow) {
                   return await authProvider.resetForgotPasscodeAndLogin(
                     phoneNumber: phoneNumber,
                     countryCode: countryCode,
-                    resetToken: resetToken!,
+                    resetToken: widget.resetToken!,
                     newPasscode: passcode,
                     confirmPasscode: passcode,
                   );
@@ -796,8 +824,8 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
         return;
       }
 
-      if (mode == LoginProvider.modeChangeEmailConfirmPasscode) {
-        final token = changeEmailToken?.trim() ?? '';
+      if (widget.mode == LoginProvider.modeChangeEmailConfirmPasscode) {
+        final token = widget.changeEmailToken?.trim() ?? '';
         if (token.isEmpty) {
           return;
         }
@@ -821,7 +849,7 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
         return;
       }
 
-      if (mode == LoginProvider.modeSoftLogin) {
+      if (widget.mode == LoginProvider.modeSoftLogin) {
         final isValid = await provider.verify(
           verifyPasscode:
               ({
@@ -875,101 +903,6 @@ class _PasscodeDot extends StatelessWidget {
         shape: BoxShape.circle,
         color: isFilled ? fillColor : Colors.transparent,
         border: Border.all(color: borderColor, width: 1.2),
-      ),
-    );
-  }
-}
-
-class _NumpadDigitButton extends StatefulWidget {
-  const _NumpadDigitButton({
-    required this.label,
-    required this.onPressed,
-    required this.buttonColor,
-    required this.textColor,
-  });
-
-  final String label;
-  final VoidCallback? onPressed;
-  final Color buttonColor;
-  final Color textColor;
-
-  @override
-  State<_NumpadDigitButton> createState() => _NumpadDigitButtonState();
-}
-
-class _NumpadDigitButtonState extends State<_NumpadDigitButton>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 100),
-      reverseDuration: const Duration(milliseconds: 80),
-    );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.85,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _handleTapDown(TapDownDetails _) {
-    if (widget.onPressed != null) {
-      _controller.forward();
-    }
-  }
-
-  void _handleTapUp(TapUpDetails _) {
-    if (widget.onPressed != null) {
-      _controller.reverse();
-      widget.onPressed!();
-    }
-  }
-
-  void _handleTapCancel() {
-    _controller.reverse();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: _handleTapDown,
-      onTapUp: _handleTapUp,
-      onTapCancel: _handleTapCancel,
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) =>
-            Transform.scale(scale: _scaleAnimation.value, child: child),
-        child: Opacity(
-          opacity: widget.onPressed == null ? 0.5 : 1,
-          child: Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: widget.buttonColor,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              widget.label,
-              style: context.textTheme.titleLarge?.copyWith(
-                fontSize: 44 / 1.35,
-                fontWeight: FontWeight.w500,
-                color: widget.textColor,
-                height: 1.0,
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
