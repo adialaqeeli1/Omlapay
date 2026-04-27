@@ -266,6 +266,14 @@
     "jpg": "JPG",
     "pdf": "PDF",
     "imageSavedSuccessfully": "Image saved successfully",
+    "transactionReceiptTitle": "Transaction Receipt",
+    "transactionIdLabel": "Transaction ID",
+    "recipient": "Recipient",
+    "amountLabel": "Amount",
+    "statusLabel": "Status",
+    "typeLabel": "Type",
+    "transactionSaveFailedMessage": "Failed to save transaction",
+    "photoLibraryPermissionRequired": "Photo library access is required to save the transaction",
     "transactionSavedSuccessfully": "Transaction has been saved as {format} successfully",
     "@transactionSavedSuccessfully": {
         "placeholders": {
@@ -376,6 +384,8 @@
             }
         }
     },
+    "sendAmountMaxShortLabel": "Max",
+    "swapAmountMaxShortLabel": "Max",
     "searchHint": "Search",
     "searchContactsHint": "Search name or number",
     "sendFlowVerifyAccountTitle": "Verify Account",

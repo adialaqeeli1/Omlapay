@@ -11,6 +11,7 @@ import '../../../widgets/common_back_button.dart';
 import '../../../widgets/theme_aware_icon.dart';
 import '../../dashboard/history/widgets/save_as_bottom_sheet.dart';
 import '../provider/transaction_details_provider.dart';
+import '../services/transaction_export_service.dart';
 
 class TransactionDetailsView extends StatefulWidget {
   const TransactionDetailsView({super.key});
@@ -22,6 +23,12 @@ class TransactionDetailsView extends StatefulWidget {
 class _TransactionDetailsViewState extends State<TransactionDetailsView> {
   String? _successMessage;
   bool _showSuccessBanner = false;
+  bool _isExporting = false;
+
+  /// Anchors the off-screen render that the export service rasterizes into
+  /// a PNG / PDF. Kept on State so the same boundary survives rebuilds and
+  /// the saved file always reflects the latest transaction snapshot.
+  final GlobalKey _receiptBoundaryKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +136,13 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
-                child: Column(
+                child: RepaintBoundary(
+                  key: _receiptBoundaryKey,
+                  child: Container(
+                    color: isDarkMode
+                        ? AppColors.darkBackground
+                        : AppColors.lightBackground,
+                    child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Total Amount Card
@@ -261,6 +274,8 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                         isError: true,
                       ),
                   ],
+                ),
+                  ),
                 ),
               ),
             ),
@@ -472,15 +487,73 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
   }
 
   void _shareTransaction(TransactionModel tx) {
-    final amountText = '${_formatAmount(tx.amount)} ${tx.assetSymbol}';
-    final dateText = DateFormat('MMMM, yyyy').format(tx.createdAt);
-    final hashText = tx.txHash ?? '';
-    final shareText = [
-      amountText,
-      dateText,
-      if (hashText.isNotEmpty) hashText,
-    ].join('\n');
-    SharePlus.instance.share(ShareParams(text: shareText));
+    final l10n = context.l10n!;
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+
+    final isSent = tx.isSent;
+    final amountValue = double.tryParse(tx.amount) ?? 0;
+    final amountSign = isSent ? '-' : '+';
+    final amountLine =
+        '$amountSign${_formatAmount(amountValue.abs().toString())} ${tx.assetSymbol}';
+    final approxFiat = _approxAmountText(context, tx, isArabic);
+    final amountWithFiat = approxFiat == null
+        ? amountLine
+        : '$amountLine ($approxFiat)';
+
+    final typeLabel = _txTypeLabel(context, tx) ?? l10n.transactionDetails;
+    final statusText = tx.isFailed
+        ? l10n.failed
+        : tx.isCompleted
+        ? l10n.completed
+        : l10n.pending;
+    final dateText = DateFormat(
+      'yyyy-MM-dd hh:mm:ss a',
+    ).format(tx.createdAt);
+
+    final counterparty = tx.counterpartyPhone?.trim();
+    final senderValue = counterparty != null && counterparty.isNotEmpty
+        ? counterparty
+        : tx.senderAddress;
+    final recipientValue = isSent ? tx.receiverAddress : tx.senderAddress;
+    final localizedError = isArabic
+        ? (tx.errorMessageAr?.trim().isNotEmpty == true
+              ? tx.errorMessageAr
+              : tx.errorMessage)
+        : (tx.errorMessage?.trim().isNotEmpty == true
+              ? tx.errorMessage
+              : tx.errorMessageAr);
+
+    final lines = <String>[
+      l10n.transactionReceiptTitle,
+      '',
+      '${l10n.typeLabel}: $typeLabel',
+      '${l10n.statusLabel}: $statusText',
+      '${l10n.amountLabel}: $amountWithFiat',
+      '${l10n.date}: $dateText',
+    ];
+    if ((tx.network ?? '').trim().isNotEmpty) {
+      lines.add('${l10n.network}: ${tx.network}');
+    }
+    if ((tx.fee ?? '').trim().isNotEmpty) {
+      lines.add('${l10n.fee}: ${tx.fee} ${tx.assetSymbol}');
+    }
+    if (senderValue != null && senderValue.trim().isNotEmpty) {
+      lines.add('${l10n.sender}: $senderValue');
+    }
+    if (recipientValue != null && recipientValue.trim().isNotEmpty) {
+      lines.add('${l10n.recipient}: $recipientValue');
+    }
+    if ((tx.txHash ?? '').trim().isNotEmpty) {
+      lines.add('${l10n.transactionHash}: ${tx.txHash}');
+    }
+    if (tx.id.trim().isNotEmpty) {
+      lines.add('${l10n.transactionIdLabel}: ${tx.id}');
+    }
+    if (tx.isFailed && (localizedError ?? '').trim().isNotEmpty) {
+      lines.add('${l10n.failureReason}: $localizedError');
+    }
+
+    SharePlus.instance.share(ShareParams(text: lines.join('\n')));
   }
 
   void _showSaveAsBottomSheet(BuildContext context) {
@@ -496,26 +569,62 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     );
   }
 
-  void _handleSave(SaveFormat format) {
+  Future<void> _handleSave(SaveFormat format) async {
+    if (_isExporting) return;
     final l10n = context.l10n!;
-    final formatName = format == SaveFormat.png ? l10n.png : l10n.pdf;
+    final transaction = context.read<TransactionDetailsProvider>().transaction;
+    if (transaction == null) return;
 
+    final formatName = format == SaveFormat.png ? l10n.png : l10n.pdf;
+    setState(() => _isExporting = true);
+
+    final result = format == SaveFormat.png
+        ? await TransactionExportService.savePng(
+            boundaryKey: _receiptBoundaryKey,
+            transactionId: transaction.id,
+          )
+        : await TransactionExportService.savePdf(
+            boundaryKey: _receiptBoundaryKey,
+            transactionId: transaction.id,
+          );
+
+    if (!mounted) return;
+    setState(() => _isExporting = false);
+
+    if (result.success) {
+      _showBanner(l10n.transactionSavedSuccessfully(formatName));
+    } else if (result.cancelled) {
+      // User dismissed the save dialog — stay silent.
+      return;
+    } else if (result.permissionDenied) {
+      _showError(l10n.photoLibraryPermissionRequired);
+    } else {
+      _showError(l10n.transactionSaveFailedMessage);
+    }
+  }
+
+  void _showBanner(String message) {
     setState(() {
-      _successMessage = l10n.transactionSavedSuccessfully(formatName);
+      _successMessage = message;
       _showSuccessBanner = true;
     });
-
-    // Hide banner after 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        setState(() {
-          _showSuccessBanner = false;
-          _successMessage = null;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _showSuccessBanner = false;
+        _successMessage = null;
+      });
     });
+  }
 
-    // TODO: Implement actual save functionality (PNG/PDF generation)
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
+    );
   }
 
   Widget _buildSuccessBanner(BuildContext context) {

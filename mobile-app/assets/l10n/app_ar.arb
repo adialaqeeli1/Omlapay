@@ -266,6 +266,14 @@
     "jpg": "JPG",
     "pdf": "PDF",
     "imageSavedSuccessfully": "تم حفظ الصورة بنجاح",
+    "transactionReceiptTitle": "إيصال المعاملة",
+    "transactionIdLabel": "رقم المعاملة",
+    "recipient": "المستلم",
+    "amountLabel": "المبلغ",
+    "statusLabel": "الحالة",
+    "typeLabel": "النوع",
+    "transactionSaveFailedMessage": "فشل حفظ المعاملة",
+    "photoLibraryPermissionRequired": "يلزم الوصول إلى مكتبة الصور لحفظ المعاملة",
     "transactionSavedSuccessfully": "تم حفظ المعاملة كـ {format} بنجاح",
     "@transactionSavedSuccessfully": {
         "placeholders": {
@@ -376,6 +384,8 @@
             }
         }
     },
+    "sendAmountMaxShortLabel": "الحد الأقصى",
+    "swapAmountMaxShortLabel": "الحد الأقصى",
     "searchHint": "بحث",
     "searchContactsHint": "ابحث بالاسم أو الرقم",
     "sendFlowVerifyAccountTitle": "التحقق من الحساب",

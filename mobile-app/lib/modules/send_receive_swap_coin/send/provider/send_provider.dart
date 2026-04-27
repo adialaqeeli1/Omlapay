@@ -439,6 +439,11 @@ class SendProvider extends ChangeNotifier {
     _lastQuoteKey = key;
 
     _quoteDebounceTimer?.cancel();
+    // Drop any prior quote and start the loader immediately so the fee row
+    // shows a spinner during the debounce window instead of stale data.
+    _quote = null;
+    _isFetchingQuote = true;
+    notifyListeners();
     _quoteDebounceTimer = Timer(_quoteDebounce, () {
       _fetchQuote(coin: coin, recipient: recipient, amount: amountText);
     });

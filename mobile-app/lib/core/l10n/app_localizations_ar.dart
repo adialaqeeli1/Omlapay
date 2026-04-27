@@ -733,6 +733,31 @@ class AppLocalizationsAr extends AppLocalizations {
   String get imageSavedSuccessfully => 'تم حفظ الصورة بنجاح';
 
   @override
+  String get transactionReceiptTitle => 'إيصال المعاملة';
+
+  @override
+  String get transactionIdLabel => 'رقم المعاملة';
+
+  @override
+  String get recipient => 'المستلم';
+
+  @override
+  String get amountLabel => 'المبلغ';
+
+  @override
+  String get statusLabel => 'الحالة';
+
+  @override
+  String get typeLabel => 'النوع';
+
+  @override
+  String get transactionSaveFailedMessage => 'فشل حفظ المعاملة';
+
+  @override
+  String get photoLibraryPermissionRequired =>
+      'يلزم الوصول إلى مكتبة الصور لحفظ المعاملة';
+
+  @override
   String transactionSavedSuccessfully(String format) {
     return 'تم حفظ المعاملة كـ $format بنجاح';
   }
@@ -908,6 +933,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String minAmountHint(String amount) {
     return 'الحد الأدنى $amount';
   }
+
+  @override
+  String get sendAmountMaxShortLabel => 'الحد الأقصى';
+
+  @override
+  String get swapAmountMaxShortLabel => 'الحد الأقصى';
 
   @override
   String get searchHint => 'بحث';

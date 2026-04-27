@@ -120,6 +120,8 @@ class SendCoinView extends StatelessWidget {
                     ),
                   ],
 
+                  _buildMaxRange(context, provider, l10n),
+
                   // Available Balance
                   const SizedBox(height: 8),
                   Row(
@@ -348,6 +350,39 @@ class SendCoinView extends StatelessWidget {
     );
   }
 
+  /// Renders a "Max" row under the amount field that mirrors the
+  /// "Available" row's layout (label on the start, value on the end). Hidden
+  /// when the selected coin has no max (<= 0), so coins without a max limit
+  /// don't render an empty line. Min is intentionally not surfaced here
+  /// because the amount input's placeholder already shows it.
+  Widget _buildMaxRange(
+    BuildContext context,
+    SendProvider provider,
+    AppLocalizations l10n,
+  ) {
+    final max = provider.maxSendAmount;
+    if (max <= 0) return const SizedBox.shrink();
+
+    final ticker = provider.selectedCoin?.localizedCoinTicker(context) ?? '';
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            l10n.sendAmountMaxShortLabel,
+            style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
+          ),
+          Text(
+            '${max.toStringAsFixed(5)} $ticker'.trim(),
+            style: TextStyle(color: colorScheme.onSurface, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Renders the live transaction fee returned by the send-quote API.
   ///
   /// Shows a small spinner while the debounced quote call is in flight, the
@@ -395,21 +430,25 @@ class SendCoinView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Transaction Fees Row - Full Width
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                l10n.sendTransactionFeesColon,
-                style: TextStyle(
-                  color: colorScheme.onSurfaceVariant,
-                  fontSize: 12,
+          // Transaction Fees Row — only rendered while a quote is being
+          // fetched or has just been fetched. Hidden entirely otherwise so
+          // the footer doesn't claim a "Free" fee before the API confirms.
+          if (provider.isFetchingQuote || provider.quote != null) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n.sendTransactionFeesColon,
+                  style: TextStyle(
+                    color: colorScheme.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
                 ),
-              ),
-              _buildFeeValue(context, provider, l10n),
-            ],
-          ),
-          const SizedBox(height: 12),
+                _buildFeeValue(context, provider, l10n),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
 
           // Sent Amount and Send Button Row
           Row(
