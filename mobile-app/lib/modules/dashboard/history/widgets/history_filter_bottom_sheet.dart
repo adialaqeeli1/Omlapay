@@ -86,10 +86,12 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
   }
 
   Future<void> _pickDateStart() async {
+    final today = DateTime.now();
     final picked = await CustomDatePickerDialog.show(
       context,
       title: context.l10n!.dateFrom,
-      initialDate: _dateStart ?? DateTime.now(),
+      initialDate: _dateStart ?? today,
+      lastDate: today,
     );
     if (picked != null && mounted) {
       setState(() => _dateStart = picked);
@@ -97,12 +99,14 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
   }
 
   Future<void> _pickDateEnd() async {
-    final initial = _dateEnd ?? _dateStart ?? DateTime.now();
+    final today = DateTime.now();
+    final initial = _dateEnd ?? _dateStart ?? today;
     final picked = await CustomDatePickerDialog.show(
       context,
       title: context.l10n!.dateTo,
       initialDate: initial,
       firstDate: _dateStart,
+      lastDate: today,
     );
     if (picked != null && mounted) {
       setState(() => _dateEnd = picked);
