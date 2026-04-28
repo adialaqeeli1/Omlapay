@@ -154,16 +154,18 @@ class KycVerificationProvider extends ChangeNotifier {
         selfie: selfie,
       );
 
-      // Await the status refresh so the caller navigates with the updated
-      // KYC state (pending) already in place — not the stale rejected value.
-      // Account refresh is awaited too so the home screen shows fresh data.
+      // Optimistically flip local KYC state to `pending` so the home banner
+      // reflects "under review" the moment we navigate away. We can't rely on
+      // a follow-up `fetchKycStatus()` here — the backend often still returns
+      // `binance.status = 'REJECTED'` for a short window after resubmit, and
+      // the derived status would snap back to `rejected`.
+      kycStatusProvider.markAsPendingReview();
+
+      // Refresh account details so the home screen shows fresh user data.
       try {
-        await Future.wait([
-          authProvider.fetchAccountDetails(),
-          kycStatusProvider.fetchKycStatus(),
-        ]);
+        await authProvider.fetchAccountDetails();
       } catch (e) {
-        debugPrint('Post-resubmit refresh error: $e');
+        debugPrint('Post-resubmit account refresh error: $e');
       }
 
       final message = ApiMessageHelper.localizedFromResponse(

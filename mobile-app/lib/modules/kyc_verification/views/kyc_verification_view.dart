@@ -36,14 +36,22 @@ enum _KycDocAction { view, gallery, camera }
 
 /// Opens the 3-action sheet for a single KYC document slot. Returns the
 /// chosen `_KycDocAction`, or `null` if the sheet was dismissed.
-Future<_KycDocAction?> _showKycDocumentActionSheet(BuildContext context) {
+Future<_KycDocAction?> _showKycDocumentActionSheet(
+  BuildContext context, {
+  required KycImageSlot slot,
+}) {
   final l10n = context.l10n!;
+  final title = switch (slot) {
+    KycImageSlot.front => l10n.kycDocumentFrontLabel,
+    KycImageSlot.back => l10n.kycDocumentBackLabel,
+    KycImageSlot.selfie => l10n.kycDocumentSelfieLabel,
+  };
   return showModalBottomSheet<_KycDocAction>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
     builder: (sheetContext) => CommonBottomSheet(
-      title: l10n.kycDocumentsReviewTitle,
+      title: title,
       childrens: [
         ListTile(
           leading: const Icon(Icons.visibility_outlined),
@@ -147,7 +155,7 @@ class _KycVerificationViewState extends State<KycVerificationView> {
   /// screen viewer or dispatches the picker flow based on the choice.
   Future<void> _handleSlotTap(KycImageSlot slot) async {
     final l10n = context.l10n!;
-    final action = await _showKycDocumentActionSheet(context);
+    final action = await _showKycDocumentActionSheet(context, slot: slot);
     if (!mounted || action == null) return;
 
     switch (action) {
