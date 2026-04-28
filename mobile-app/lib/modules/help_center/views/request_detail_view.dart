@@ -22,101 +22,95 @@ class RequestDetailView extends StatelessWidget {
     final l10n = context.l10n!;
     final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: CommonBackButton(onPressed: () => GoRouter.of(context).pop()),
-        title: Text(
-          l10n.pastRequests,
-          style: theme.textTheme.titleLarge?.copyWith(
-            color: theme.brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          Consumer<RequestDetailProvider>(
-            builder: (context, provider, _) {
-              final ticketId = provider.detail?.ticketId;
-              if (ticketId == null) return const SizedBox.shrink();
-              return Padding(
-                padding: const EdgeInsetsDirectional.only(end: 16),
-                child: Center(
-                  child: Text(
-                    '#$ticketId',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textLightGrey,
-                      fontWeight: FontWeight.w500,
+    return Consumer<RequestDetailProvider>(
+      builder: (context, provider, _) {
+        if (provider.isLoading) {
+          return const Center(child: CommonLoadingIndicator());
+        }
+
+        if (provider.errorKey != null && provider.detail == null) {
+          return _ErrorView(
+            message:
+                AppException.resolveErrorKey(l10n, provider.errorKey!) ??
+                l10n.somethingWentWrong,
+            onRetry: () => provider.fetchDetail(),
+          );
+        }
+
+        final detail = provider.detail;
+        if (detail == null) {
+          return const Center(child: CommonLoadingIndicator());
+        }
+
+        return Scaffold(
+          appBar: AppBar(
+            leading: CommonBackButton(
+              onPressed: () => GoRouter.of(context).pop(),
+            ),
+            title: Text(
+              l10n.pastRequests,
+              style: theme.textTheme.titleLarge?.copyWith(
+                color: theme.brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            actions: [
+              Consumer<RequestDetailProvider>(
+                builder: (context, provider, _) {
+                  final ticketId = provider.detail?.ticketId;
+                  if (ticketId == null) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsetsDirectional.only(end: 16),
+                    child: Center(
+                      child: Text(
+                        '#$ticketId',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textLightGrey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                  ),
+                  );
+                },
+              ),
+            ],
+          ),
+          body: Column(
+            children: [
+              _StatusBanner(
+                status: detail.status,
+                statusColor: detail.statusColor,
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: _RequestContent(detail: detail),
                 ),
-              );
+              ),
+            ],
+          ),
+          bottomSheet: _BottomBar(
+            status: detail.status,
+            isReopening: provider.isReopening,
+            onReopen: () async {
+              await provider.reopenTicket();
+              if (context.mounted) {
+                if (provider.errorKey != null) {
+                  SnackbarHelper.showError(
+                    context,
+                    AppException.resolveErrorKey(l10n, provider.errorKey!) ??
+                        l10n.somethingWentWrong,
+                  );
+                } else {
+                  SnackbarHelper.showSuccess(context, l10n.requestReopened);
+                }
+              }
             },
           ),
-        ],
-      ),
-      body: SafeArea(
-        child: Consumer<RequestDetailProvider>(
-          builder: (context, provider, _) {
-            if (provider.isLoading) {
-              return const Center(child: CommonLoadingIndicator());
-            }
-
-            if (provider.errorKey != null && provider.detail == null) {
-              return _ErrorView(
-                message:
-                    AppException.resolveErrorKey(l10n, provider.errorKey!) ??
-                    l10n.somethingWentWrong,
-                onRetry: () => provider.fetchDetail(),
-              );
-            }
-
-            final detail = provider.detail;
-            if (detail == null) {
-              return const Center(child: CommonLoadingIndicator());
-            }
-
-            return Column(
-              children: [
-                _StatusBanner(
-                  status: detail.status,
-                  statusColor: detail.statusColor,
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: _RequestContent(detail: detail),
-                  ),
-                ),
-                _BottomBar(
-                  status: detail.status,
-                  isReopening: provider.isReopening,
-                  onReopen: () async {
-                    await provider.reopenTicket();
-                    if (context.mounted) {
-                      if (provider.errorKey != null) {
-                        SnackbarHelper.showError(
-                          context,
-                          AppException.resolveErrorKey(
-                                l10n,
-                                provider.errorKey!,
-                              ) ??
-                              l10n.somethingWentWrong,
-                        );
-                      } else {
-                        SnackbarHelper.showSuccess(
-                          context,
-                          l10n.requestReopened,
-                        );
-                      }
-                    }
-                  },
-                ),
-              ],
-            );
-          },
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -374,8 +368,7 @@ class _BottomBar extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 17, 16, 0),
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2A2A2A) : theme.colorScheme.surface,
         border: Border(
@@ -385,8 +378,13 @@ class _BottomBar extends StatelessWidget {
           ),
         ),
       ),
-      child: SafeArea(
-        top: false,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          17,
+          16,
+          context.mediaQueryViewPadding.bottom + 20,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
