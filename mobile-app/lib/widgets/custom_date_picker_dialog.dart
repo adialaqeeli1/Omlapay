@@ -68,16 +68,18 @@ class _CustomDatePickerDialogState extends State<CustomDatePickerDialog> {
   late int _selectedDay;
 
   late List<int> _years;
+  late List<int> _months;
   late List<int> _days;
 
   List<String> _getMonthNames(BuildContext context) {
     final locale = Localizations.localeOf(context);
-    return List.generate(
-      12,
-      (i) => DateFormat.MMMM(locale.toLanguageTag()).format(
-            DateTime(2000, i + 1),
+    return _months
+        .map(
+          (m) => DateFormat.MMMM(locale.toLanguageTag()).format(
+            DateTime(2000, m),
           ),
-    );
+        )
+        .toList();
   }
 
   @override
@@ -92,16 +94,43 @@ class _CustomDatePickerDialogState extends State<CustomDatePickerDialog> {
       (i) => widget.firstDate.year + i,
     );
 
+    _updateMonths();
     _updateDays();
+  }
+
+  void _updateMonths() {
+    var min = 1;
+    var max = 12;
+    if (_selectedYear == widget.firstDate.year) {
+      min = widget.firstDate.month;
+    }
+    if (_selectedYear == widget.lastDate.year) {
+      max = widget.lastDate.month;
+    }
+    if (max < min) max = min;
+    _months = List.generate(max - min + 1, (i) => min + i);
+
+    if (_selectedMonth < min) _selectedMonth = min;
+    if (_selectedMonth > max) _selectedMonth = max;
   }
 
   void _updateDays() {
     final daysInMonth = DateTime(_selectedYear, _selectedMonth + 1, 0).day;
-    _days = List.generate(daysInMonth, (i) => i + 1);
-
-    if (_selectedDay > daysInMonth) {
-      _selectedDay = daysInMonth;
+    var minDay = 1;
+    var maxDay = daysInMonth;
+    if (_selectedYear == widget.firstDate.year &&
+        _selectedMonth == widget.firstDate.month) {
+      minDay = widget.firstDate.day;
     }
+    if (_selectedYear == widget.lastDate.year &&
+        _selectedMonth == widget.lastDate.month) {
+      maxDay = widget.lastDate.day;
+    }
+    if (maxDay < minDay) maxDay = minDay;
+    _days = List.generate(maxDay - minDay + 1, (i) => minDay + i);
+
+    if (_selectedDay < minDay) _selectedDay = minDay;
+    if (_selectedDay > maxDay) _selectedDay = maxDay;
   }
 
   DateTime get _selectedDate =>
@@ -209,6 +238,7 @@ class _CustomDatePickerDialogState extends State<CustomDatePickerDialog> {
                               onSelectedItemChanged: (index) {
                                 setState(() {
                                   _selectedYear = _years[index];
+                                  _updateMonths();
                                   _updateDays();
                                 });
                               },
@@ -250,8 +280,11 @@ class _CustomDatePickerDialogState extends State<CustomDatePickerDialog> {
                           ),
                           Expanded(
                             child: CupertinoPicker(
+                              key: ValueKey('month-picker-$_selectedYear'),
                               scrollController: FixedExtentScrollController(
-                                initialItem: (_selectedMonth - 1).clamp(0, 11),
+                                initialItem: _months
+                                    .indexOf(_selectedMonth)
+                                    .clamp(0, _months.length - 1),
                               ),
                               itemExtent: 40,
                               selectionOverlay: _PickerSelectionOverlay(
@@ -259,14 +292,14 @@ class _CustomDatePickerDialogState extends State<CustomDatePickerDialog> {
                               ),
                               onSelectedItemChanged: (index) {
                                 setState(() {
-                                  _selectedMonth = index + 1;
+                                  _selectedMonth = _months[index];
                                   _updateDays();
                                 });
                               },
-                              children: _getMonthNames(context).map((m) {
+                              children: _getMonthNames(context).map((name) {
                                 return Center(
                                   child: Text(
-                                    m,
+                                    name,
                                     style: theme.textTheme.bodyLarge?.copyWith(
                                       color: textColor,
                                       fontSize: 18,
@@ -301,8 +334,12 @@ class _CustomDatePickerDialogState extends State<CustomDatePickerDialog> {
                           ),
                           Expanded(
                             child: CupertinoPicker(
+                              key: ValueKey(
+                                'day-picker-$_selectedYear-$_selectedMonth',
+                              ),
                               scrollController: FixedExtentScrollController(
-                                initialItem: (_selectedDay - 1)
+                                initialItem: _days
+                                    .indexOf(_selectedDay)
                                     .clamp(0, _days.length - 1),
                               ),
                               itemExtent: 40,
