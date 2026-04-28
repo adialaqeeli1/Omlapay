@@ -402,13 +402,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get byCreatingAnAccountIAgreeToMushafars =>
-      'By creating an account I agree';
+      'By creating an account I agree to';
 
   @override
   String get termsOfService => 'Terms of Service';
 
   @override
   String get andWord => 'and';
+
+  @override
+  String get andOnConnector => 'and';
 
   @override
   String get privacyPolicy => 'Privacy Policy';

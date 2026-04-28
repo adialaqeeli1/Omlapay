@@ -815,7 +815,7 @@ abstract class AppLocalizations {
   /// No description provided for @byCreatingAnAccountIAgreeToMushafars.
   ///
   /// In en, this message translates to:
-  /// **'By creating an account I agree'**
+  /// **'By creating an account I agree to'**
   String get byCreatingAnAccountIAgreeToMushafars;
 
   /// No description provided for @termsOfService.
@@ -829,6 +829,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'and'**
   String get andWord;
+
+  /// No description provided for @andOnConnector.
+  ///
+  /// In en, this message translates to:
+  /// **'and'**
+  String get andOnConnector;
 
   /// No description provided for @privacyPolicy.
   ///

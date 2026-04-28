@@ -383,7 +383,7 @@ class _LoginFooterAgreementTextState extends State<_LoginFooterAgreementText> {
             ),
             recognizer: _termsTap,
           ),
-          TextSpan(text: ' ${l10n.andWord} '),
+          TextSpan(text: ' ${l10n.andOnConnector} '),
           TextSpan(
             text: l10n.privacyPolicy,
             style: theme.textTheme.bodyLarge?.copyWith(
