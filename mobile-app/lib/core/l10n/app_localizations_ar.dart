@@ -394,13 +394,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get continueAsGuest => 'المتابعة كضيف';
 
   @override
-  String get byCreatingAnAccountIAgreeToMushafars => 'بإنشاء حساب، أوافق';
+  String get byCreatingAnAccountIAgreeToMushafars => 'بإنشاء حساب، أوافق على';
 
   @override
   String get termsOfService => 'شروط الخدمة';
 
   @override
   String get andWord => 'و';
+
+  @override
+  String get andOnConnector => 'وعلى';
 
   @override
   String get privacyPolicy => 'سياسة الخصوصية';
