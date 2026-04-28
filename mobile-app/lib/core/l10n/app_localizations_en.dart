@@ -411,9 +411,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get andWord => 'and';
 
   @override
-  String get andOnConnector => 'and';
-
-  @override
   String get privacyPolicy => 'Privacy Policy';
 
   @override

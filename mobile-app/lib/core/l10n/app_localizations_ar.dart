@@ -403,9 +403,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get andWord => 'و';
 
   @override
-  String get andOnConnector => 'وعلى';
-
-  @override
   String get privacyPolicy => 'سياسة الخصوصية';
 
   @override

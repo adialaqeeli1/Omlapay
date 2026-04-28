@@ -830,12 +830,6 @@ abstract class AppLocalizations {
   /// **'and'**
   String get andWord;
 
-  /// No description provided for @andOnConnector.
-  ///
-  /// In en, this message translates to:
-  /// **'and'**
-  String get andOnConnector;
-
   /// No description provided for @privacyPolicy.
   ///
   /// In en, this message translates to:
