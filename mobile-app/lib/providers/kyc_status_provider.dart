@@ -79,6 +79,20 @@ class KycStatusProvider extends ChangeNotifier {
     await _doFetch();
   }
 
+  /// Optimistically marks the local status as `pending` (under review).
+  /// Called right after a successful KYC resubmit so the home banner reflects
+  /// the new state immediately — the backend response may still report
+  /// `binance.status = 'REJECTED'` for a short window after resubmit while
+  /// manual review processing catches up, which would otherwise cause
+  /// `_deriveStatus` to flip back to `rejected` and show stale UI.
+  void markAsPendingReview() {
+    _kycStatus = KycStatus.pending;
+    _rejectionReason = null;
+    _isStatusResolved = true;
+    _hasFetched = true;
+    notifyListeners();
+  }
+
   /// Public method to force a fresh fetch (e.g. after KYC submission flow).
   Future<void> fetchKycStatus() async {
     // Short-circuit: verified users don't need a status check.

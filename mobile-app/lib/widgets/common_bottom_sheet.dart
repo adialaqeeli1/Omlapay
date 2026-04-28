@@ -51,26 +51,33 @@ class _CommonBottomSheetState extends State<CommonBottomSheet>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: 20,
           children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                Text(
-                  widget.title,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: textColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+            Padding(
+              padding: const EdgeInsetsDirectional.only(
+                top: 16,
+                start: 8,
+                end: 8,
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Text(
+                    widget.title,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: textColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: IconButton(
-                    icon: Icon(Icons.close, color: textColor, size: 30),
-                    onPressed: () => Navigator.of(context).pop(),
+                  Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: IconButton(
+                      icon: Icon(Icons.close, color: textColor, size: 30),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
 
             Flexible(
