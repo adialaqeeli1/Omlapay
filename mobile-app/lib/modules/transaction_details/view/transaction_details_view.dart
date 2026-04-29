@@ -247,7 +247,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                         if (senderValue != null && senderValue.isNotEmpty)
                           _buildDetailRow(
                             context,
-                            l10n.sender,
+                            isSent ? l10n.sendTo : l10n.sender,
                             senderValue,
                             isAddress: true,
                           ),
@@ -538,7 +538,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
       lines.add('${l10n.fee}: ${tx.fee} ${tx.assetSymbol}');
     }
     if (senderValue != null && senderValue.trim().isNotEmpty) {
-      lines.add('${l10n.sender}: $senderValue');
+      lines.add('${isSent ? l10n.sendTo : l10n.sender}: $senderValue');
     }
     if (recipientValue != null && recipientValue.trim().isNotEmpty) {
       lines.add('${l10n.recipient}: $recipientValue');
