@@ -12,6 +12,7 @@ _KycRejectionDetailsResponse _$KycRejectionDetailsResponseFromJson(
   canResubmit: json['canResubmit'] as bool? ?? false,
   rejectedProvider: json['rejectedProvider'] as String?,
   rejectionReason: json['rejectionReason'] as String?,
+  rejectionReasonAr: json['rejectionReason_ar'] as String?,
   rejectType: json['rejectType'] as String?,
   previousData: json['previousData'] == null
       ? null
@@ -27,6 +28,7 @@ Map<String, dynamic> _$KycRejectionDetailsResponseToJson(
   'canResubmit': instance.canResubmit,
   'rejectedProvider': instance.rejectedProvider,
   'rejectionReason': instance.rejectionReason,
+  'rejectionReason_ar': instance.rejectionReasonAr,
   'rejectType': instance.rejectType,
   'previousData': instance.previousData,
   'documents': instance.documents,

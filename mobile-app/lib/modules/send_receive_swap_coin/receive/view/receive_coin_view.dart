@@ -88,6 +88,7 @@ class ReceiveCoinView extends StatelessWidget {
                     kycStatus: kycProvider.kycStatus,
                     entrySource: KycVerificationEntrySource.receive,
                     rejectionReason: kycProvider.rejectionReason,
+                    rejectionReasonAr: kycProvider.rejectionReasonAr,
                   ),
                 ),
             ],

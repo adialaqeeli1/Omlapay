@@ -47,7 +47,7 @@ class SwapCoinView extends StatelessWidget {
       );
     }
 
-    final double formHeight = 250;
+    final double formHeight = 280;
     final double swapIconSize = 20;
 
     return Scaffold(
@@ -278,6 +278,7 @@ class SwapCoinView extends StatelessWidget {
                       kycStatus: kycProvider.kycStatus,
                       entrySource: KycVerificationEntrySource.swap,
                       rejectionReason: kycProvider.rejectionReason,
+                      rejectionReasonAr: kycProvider.rejectionReasonAr,
                     ),
 
                   const SizedBox(height: 32.0),
@@ -352,10 +353,7 @@ class SwapCoinView extends StatelessWidget {
       children: [
         Text(
           l10n.swapAmountMaxShortLabel,
-          style: TextStyle(
-            color: colorScheme.onSurfaceVariant,
-            fontSize: 12,
-          ),
+          style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
         ),
         Text(
           '${max.toStringAsFixed(5)} $ticker'.trim(),

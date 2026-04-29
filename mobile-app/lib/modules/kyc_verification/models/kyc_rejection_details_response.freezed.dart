@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$KycRejectionDetailsResponse {
 
- bool get canResubmit; String? get rejectedProvider; String? get rejectionReason; String? get rejectType; KycPreviousData? get previousData; KycDocuments? get documents;
+ bool get canResubmit; String? get rejectedProvider; String? get rejectionReason;@JsonKey(name: 'rejectionReason_ar') String? get rejectionReasonAr; String? get rejectType; KycPreviousData? get previousData; KycDocuments? get documents;
 /// Create a copy of KycRejectionDetailsResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $KycRejectionDetailsResponseCopyWith<KycRejectionDetailsResponse> get copyWith =
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is KycRejectionDetailsResponse&&(identical(other.canResubmit, canResubmit) || other.canResubmit == canResubmit)&&(identical(other.rejectedProvider, rejectedProvider) || other.rejectedProvider == rejectedProvider)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.rejectType, rejectType) || other.rejectType == rejectType)&&(identical(other.previousData, previousData) || other.previousData == previousData)&&(identical(other.documents, documents) || other.documents == documents));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is KycRejectionDetailsResponse&&(identical(other.canResubmit, canResubmit) || other.canResubmit == canResubmit)&&(identical(other.rejectedProvider, rejectedProvider) || other.rejectedProvider == rejectedProvider)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.rejectionReasonAr, rejectionReasonAr) || other.rejectionReasonAr == rejectionReasonAr)&&(identical(other.rejectType, rejectType) || other.rejectType == rejectType)&&(identical(other.previousData, previousData) || other.previousData == previousData)&&(identical(other.documents, documents) || other.documents == documents));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,canResubmit,rejectedProvider,rejectionReason,rejectType,previousData,documents);
+int get hashCode => Object.hash(runtimeType,canResubmit,rejectedProvider,rejectionReason,rejectionReasonAr,rejectType,previousData,documents);
 
 @override
 String toString() {
-  return 'KycRejectionDetailsResponse(canResubmit: $canResubmit, rejectedProvider: $rejectedProvider, rejectionReason: $rejectionReason, rejectType: $rejectType, previousData: $previousData, documents: $documents)';
+  return 'KycRejectionDetailsResponse(canResubmit: $canResubmit, rejectedProvider: $rejectedProvider, rejectionReason: $rejectionReason, rejectionReasonAr: $rejectionReasonAr, rejectType: $rejectType, previousData: $previousData, documents: $documents)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $KycRejectionDetailsResponseCopyWith<$Res>  {
   factory $KycRejectionDetailsResponseCopyWith(KycRejectionDetailsResponse value, $Res Function(KycRejectionDetailsResponse) _then) = _$KycRejectionDetailsResponseCopyWithImpl;
 @useResult
 $Res call({
- bool canResubmit, String? rejectedProvider, String? rejectionReason, String? rejectType, KycPreviousData? previousData, KycDocuments? documents
+ bool canResubmit, String? rejectedProvider, String? rejectionReason,@JsonKey(name: 'rejectionReason_ar') String? rejectionReasonAr, String? rejectType, KycPreviousData? previousData, KycDocuments? documents
 });
 
 
@@ -65,11 +65,12 @@ class _$KycRejectionDetailsResponseCopyWithImpl<$Res>
 
 /// Create a copy of KycRejectionDetailsResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? canResubmit = null,Object? rejectedProvider = freezed,Object? rejectionReason = freezed,Object? rejectType = freezed,Object? previousData = freezed,Object? documents = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? canResubmit = null,Object? rejectedProvider = freezed,Object? rejectionReason = freezed,Object? rejectionReasonAr = freezed,Object? rejectType = freezed,Object? previousData = freezed,Object? documents = freezed,}) {
   return _then(_self.copyWith(
 canResubmit: null == canResubmit ? _self.canResubmit : canResubmit // ignore: cast_nullable_to_non_nullable
 as bool,rejectedProvider: freezed == rejectedProvider ? _self.rejectedProvider : rejectedProvider // ignore: cast_nullable_to_non_nullable
 as String?,rejectionReason: freezed == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
+as String?,rejectionReasonAr: freezed == rejectionReasonAr ? _self.rejectionReasonAr : rejectionReasonAr // ignore: cast_nullable_to_non_nullable
 as String?,rejectType: freezed == rejectType ? _self.rejectType : rejectType // ignore: cast_nullable_to_non_nullable
 as String?,previousData: freezed == previousData ? _self.previousData : previousData // ignore: cast_nullable_to_non_nullable
 as KycPreviousData?,documents: freezed == documents ? _self.documents : documents // ignore: cast_nullable_to_non_nullable
@@ -182,10 +183,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool canResubmit,  String? rejectedProvider,  String? rejectionReason,  String? rejectType,  KycPreviousData? previousData,  KycDocuments? documents)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool canResubmit,  String? rejectedProvider,  String? rejectionReason, @JsonKey(name: 'rejectionReason_ar')  String? rejectionReasonAr,  String? rejectType,  KycPreviousData? previousData,  KycDocuments? documents)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _KycRejectionDetailsResponse() when $default != null:
-return $default(_that.canResubmit,_that.rejectedProvider,_that.rejectionReason,_that.rejectType,_that.previousData,_that.documents);case _:
+return $default(_that.canResubmit,_that.rejectedProvider,_that.rejectionReason,_that.rejectionReasonAr,_that.rejectType,_that.previousData,_that.documents);case _:
   return orElse();
 
 }
@@ -203,10 +204,10 @@ return $default(_that.canResubmit,_that.rejectedProvider,_that.rejectionReason,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool canResubmit,  String? rejectedProvider,  String? rejectionReason,  String? rejectType,  KycPreviousData? previousData,  KycDocuments? documents)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool canResubmit,  String? rejectedProvider,  String? rejectionReason, @JsonKey(name: 'rejectionReason_ar')  String? rejectionReasonAr,  String? rejectType,  KycPreviousData? previousData,  KycDocuments? documents)  $default,) {final _that = this;
 switch (_that) {
 case _KycRejectionDetailsResponse():
-return $default(_that.canResubmit,_that.rejectedProvider,_that.rejectionReason,_that.rejectType,_that.previousData,_that.documents);case _:
+return $default(_that.canResubmit,_that.rejectedProvider,_that.rejectionReason,_that.rejectionReasonAr,_that.rejectType,_that.previousData,_that.documents);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -223,10 +224,10 @@ return $default(_that.canResubmit,_that.rejectedProvider,_that.rejectionReason,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool canResubmit,  String? rejectedProvider,  String? rejectionReason,  String? rejectType,  KycPreviousData? previousData,  KycDocuments? documents)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool canResubmit,  String? rejectedProvider,  String? rejectionReason, @JsonKey(name: 'rejectionReason_ar')  String? rejectionReasonAr,  String? rejectType,  KycPreviousData? previousData,  KycDocuments? documents)?  $default,) {final _that = this;
 switch (_that) {
 case _KycRejectionDetailsResponse() when $default != null:
-return $default(_that.canResubmit,_that.rejectedProvider,_that.rejectionReason,_that.rejectType,_that.previousData,_that.documents);case _:
+return $default(_that.canResubmit,_that.rejectedProvider,_that.rejectionReason,_that.rejectionReasonAr,_that.rejectType,_that.previousData,_that.documents);case _:
   return null;
 
 }
@@ -238,12 +239,13 @@ return $default(_that.canResubmit,_that.rejectedProvider,_that.rejectionReason,_
 @JsonSerializable()
 
 class _KycRejectionDetailsResponse implements KycRejectionDetailsResponse {
-  const _KycRejectionDetailsResponse({this.canResubmit = false, this.rejectedProvider, this.rejectionReason, this.rejectType, this.previousData, this.documents});
+  const _KycRejectionDetailsResponse({this.canResubmit = false, this.rejectedProvider, this.rejectionReason, @JsonKey(name: 'rejectionReason_ar') this.rejectionReasonAr, this.rejectType, this.previousData, this.documents});
   factory _KycRejectionDetailsResponse.fromJson(Map<String, dynamic> json) => _$KycRejectionDetailsResponseFromJson(json);
 
 @override@JsonKey() final  bool canResubmit;
 @override final  String? rejectedProvider;
 @override final  String? rejectionReason;
+@override@JsonKey(name: 'rejectionReason_ar') final  String? rejectionReasonAr;
 @override final  String? rejectType;
 @override final  KycPreviousData? previousData;
 @override final  KycDocuments? documents;
@@ -261,16 +263,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _KycRejectionDetailsResponse&&(identical(other.canResubmit, canResubmit) || other.canResubmit == canResubmit)&&(identical(other.rejectedProvider, rejectedProvider) || other.rejectedProvider == rejectedProvider)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.rejectType, rejectType) || other.rejectType == rejectType)&&(identical(other.previousData, previousData) || other.previousData == previousData)&&(identical(other.documents, documents) || other.documents == documents));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _KycRejectionDetailsResponse&&(identical(other.canResubmit, canResubmit) || other.canResubmit == canResubmit)&&(identical(other.rejectedProvider, rejectedProvider) || other.rejectedProvider == rejectedProvider)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.rejectionReasonAr, rejectionReasonAr) || other.rejectionReasonAr == rejectionReasonAr)&&(identical(other.rejectType, rejectType) || other.rejectType == rejectType)&&(identical(other.previousData, previousData) || other.previousData == previousData)&&(identical(other.documents, documents) || other.documents == documents));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,canResubmit,rejectedProvider,rejectionReason,rejectType,previousData,documents);
+int get hashCode => Object.hash(runtimeType,canResubmit,rejectedProvider,rejectionReason,rejectionReasonAr,rejectType,previousData,documents);
 
 @override
 String toString() {
-  return 'KycRejectionDetailsResponse(canResubmit: $canResubmit, rejectedProvider: $rejectedProvider, rejectionReason: $rejectionReason, rejectType: $rejectType, previousData: $previousData, documents: $documents)';
+  return 'KycRejectionDetailsResponse(canResubmit: $canResubmit, rejectedProvider: $rejectedProvider, rejectionReason: $rejectionReason, rejectionReasonAr: $rejectionReasonAr, rejectType: $rejectType, previousData: $previousData, documents: $documents)';
 }
 
 
@@ -281,7 +283,7 @@ abstract mixin class _$KycRejectionDetailsResponseCopyWith<$Res> implements $Kyc
   factory _$KycRejectionDetailsResponseCopyWith(_KycRejectionDetailsResponse value, $Res Function(_KycRejectionDetailsResponse) _then) = __$KycRejectionDetailsResponseCopyWithImpl;
 @override @useResult
 $Res call({
- bool canResubmit, String? rejectedProvider, String? rejectionReason, String? rejectType, KycPreviousData? previousData, KycDocuments? documents
+ bool canResubmit, String? rejectedProvider, String? rejectionReason,@JsonKey(name: 'rejectionReason_ar') String? rejectionReasonAr, String? rejectType, KycPreviousData? previousData, KycDocuments? documents
 });
 
 
@@ -298,11 +300,12 @@ class __$KycRejectionDetailsResponseCopyWithImpl<$Res>
 
 /// Create a copy of KycRejectionDetailsResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? canResubmit = null,Object? rejectedProvider = freezed,Object? rejectionReason = freezed,Object? rejectType = freezed,Object? previousData = freezed,Object? documents = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? canResubmit = null,Object? rejectedProvider = freezed,Object? rejectionReason = freezed,Object? rejectionReasonAr = freezed,Object? rejectType = freezed,Object? previousData = freezed,Object? documents = freezed,}) {
   return _then(_KycRejectionDetailsResponse(
 canResubmit: null == canResubmit ? _self.canResubmit : canResubmit // ignore: cast_nullable_to_non_nullable
 as bool,rejectedProvider: freezed == rejectedProvider ? _self.rejectedProvider : rejectedProvider // ignore: cast_nullable_to_non_nullable
 as String?,rejectionReason: freezed == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
+as String?,rejectionReasonAr: freezed == rejectionReasonAr ? _self.rejectionReasonAr : rejectionReasonAr // ignore: cast_nullable_to_non_nullable
 as String?,rejectType: freezed == rejectType ? _self.rejectType : rejectType // ignore: cast_nullable_to_non_nullable
 as String?,previousData: freezed == previousData ? _self.previousData : previousData // ignore: cast_nullable_to_non_nullable
 as KycPreviousData?,documents: freezed == documents ? _self.documents : documents // ignore: cast_nullable_to_non_nullable

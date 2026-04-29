@@ -9,6 +9,7 @@ abstract class KycRejectionDetailsResponse with _$KycRejectionDetailsResponse {
     @Default(false) bool canResubmit,
     String? rejectedProvider,
     String? rejectionReason,
+    @JsonKey(name: 'rejectionReason_ar') String? rejectionReasonAr,
     String? rejectType,
     KycPreviousData? previousData,
     KycDocuments? documents,

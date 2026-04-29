@@ -152,6 +152,7 @@ class SendCoinView extends StatelessWidget {
                       kycStatus: kycProvider.kycStatus,
                       entrySource: KycVerificationEntrySource.send,
                       rejectionReason: kycProvider.rejectionReason,
+                      rejectionReasonAr: kycProvider.rejectionReasonAr,
                     ),
                   ],
                 ],

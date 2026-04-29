@@ -279,6 +279,7 @@ class _KycVerificationViewState extends State<KycVerificationView> {
                 KycStatus.pending => _KycPendingBody(),
                 KycStatus.rejected => _KycRejectedBody(
                   rejectionReason: kycStatusProvider.rejectionReason,
+                  rejectionReasonAr: kycStatusProvider.rejectionReasonAr,
                   onRetry: _handleRetry,
                   isLoading: isLoadingPrefill,
                 ),
@@ -336,11 +337,13 @@ class _KycPendingBody extends StatelessWidget {
 class _KycRejectedBody extends StatelessWidget {
   const _KycRejectedBody({
     required this.rejectionReason,
+    required this.rejectionReasonAr,
     required this.onRetry,
     this.isLoading = false,
   });
 
   final String? rejectionReason;
+  final String? rejectionReasonAr;
   final VoidCallback onRetry;
   final bool isLoading;
 
@@ -351,8 +354,16 @@ class _KycRejectedBody extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final isDark = context.isDarkMode;
 
-    final message = rejectionReason != null && rejectionReason!.isNotEmpty
-        ? l10n.kyc_rejected_with_reason(rejectionReason!)
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+    final localizedReason = isArabic
+        ? (rejectionReasonAr?.trim().isNotEmpty == true
+              ? rejectionReasonAr
+              : rejectionReason)
+        : (rejectionReason?.trim().isNotEmpty == true
+              ? rejectionReason
+              : rejectionReasonAr);
+    final message = localizedReason != null && localizedReason.isNotEmpty
+        ? l10n.kyc_rejected_with_reason(localizedReason)
         : l10n.kyc_rejected;
 
     return Center(
