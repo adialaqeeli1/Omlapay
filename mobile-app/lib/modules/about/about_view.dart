@@ -5,6 +5,7 @@ import '../../core/extentions/context_extensions.dart';
 import '../../core/theme/theme.dart';
 import '../../routes/app_router.dart';
 import '../../widgets/common_back_button.dart';
+import '../../widgets/common_expandable_text.dart';
 import 'widgets/about_menu_item.dart';
 
 class AboutView extends StatelessWidget {
@@ -51,8 +52,8 @@ class AboutView extends StatelessWidget {
               ),
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-            Text(
-              l10n.aboutOmlapayDescription,
+            CommonExpandableText(
+              text: l10n.aboutOmlapayDescription,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.brightness == Brightness.dark
                     ? AppColors.textWhite

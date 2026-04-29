@@ -878,6 +878,18 @@ abstract class AppLocalizations {
   /// **'A secure and user-friendly digital wallet that enables seamless sending, receiving, and storing of cryptocurrencies. We manage your private keys on your behalf, simplifying transactions while maintaining the highest security standards. No need to worry about losing recovery phrases—access your funds effortlessly using your mobile number and password. Enjoy instant transfers, built-in exchange features, and 24/7 customer support, making crypto management as smooth as traditional banking. Our wallet ensures fast, secure, and hassle-free transactions while keeping your assets protected.'**
   String get aboutOmlapayDescription;
 
+  /// No description provided for @readMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Read more'**
+  String get readMore;
+
+  /// No description provided for @readLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Read less'**
+  String get readLess;
+
   /// No description provided for @faqs.
   ///
   /// In en, this message translates to:
