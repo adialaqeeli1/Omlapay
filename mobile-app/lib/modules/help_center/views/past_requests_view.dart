@@ -73,7 +73,7 @@ class PastRequestsView extends StatelessWidget {
             return _EmptyView();
           }
 
-          final sectionWidgets = _buildSections(provider.items, l10n);
+          final sectionWidgets = _buildSections(l10n, provider);
 
           return PaginatedListView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -89,12 +89,12 @@ class PastRequestsView extends StatelessWidget {
   }
 }
 
-List<Widget> _buildSections(List<SupportRequestModel> items, dynamic l10n) {
+List<Widget> _buildSections(dynamic l10n, HelpCenterProvider provider) {
   final now = DateTime.now();
   final sections = <Widget>[];
   String? currentSection;
 
-  for (final item in items) {
+  for (final item in provider.items) {
     final localDate = item.createdAt.toLocal();
     final sectionLabel = _getSectionLabel(localDate, now, l10n);
 
@@ -103,7 +103,7 @@ List<Widget> _buildSections(List<SupportRequestModel> items, dynamic l10n) {
       sections.add(_SectionHeader(title: sectionLabel));
     }
 
-    sections.add(_RequestItem(request: item));
+    sections.add(_RequestItem(request: item, provider: provider));
   }
 
   return sections;
@@ -143,8 +143,9 @@ class _SectionHeader extends StatelessWidget {
 
 class _RequestItem extends StatelessWidget {
   final SupportRequestModel request;
+  final HelpCenterProvider provider;
 
-  const _RequestItem({required this.request});
+  const _RequestItem({required this.request, required this.provider});
 
   @override
   Widget build(BuildContext context) {
@@ -153,10 +154,12 @@ class _RequestItem extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return InkWell(
-      onTap: () => GoRouter.of(context).push(
-        Routes.requestDetail,
-        extra: request.id,
-      ),
+      onTap: () async {
+        await GoRouter.of(
+          context,
+        ).push(Routes.requestDetail, extra: request.id);
+        provider.fetchRequests();
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Row(
