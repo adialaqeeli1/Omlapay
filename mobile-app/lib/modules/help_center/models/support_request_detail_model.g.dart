@@ -26,7 +26,13 @@ _SupportRequestDetailModel _$SupportRequestDetailModelFromJson(
       const [],
   createdAt: DateTime.parse(json['createdAt'] as String),
   updatedAt: DateTime.parse(json['updatedAt'] as String),
-  responses: json['responses'] as List<dynamic>? ?? const [],
+  responses:
+      (json['responses'] as List<dynamic>?)
+          ?.map(
+            (e) => SupportRequestResponse.fromJson(e as Map<String, dynamic>),
+          )
+          .toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$SupportRequestDetailModelToJson(
@@ -61,3 +67,21 @@ _SupportRequestAttachment _$SupportRequestAttachmentFromJson(
 Map<String, dynamic> _$SupportRequestAttachmentToJson(
   _SupportRequestAttachment instance,
 ) => <String, dynamic>{'url': instance.url, 'type': instance.type};
+
+_SupportRequestResponse _$SupportRequestResponseFromJson(
+  Map<String, dynamic> json,
+) => _SupportRequestResponse(
+  id: json['id'] as String,
+  message: json['message'] as String? ?? '',
+  createdAt: DateTime.parse(json['createdAt'] as String),
+  isAdminResponse: json['isAdminResponse'] as bool? ?? false,
+);
+
+Map<String, dynamic> _$SupportRequestResponseToJson(
+  _SupportRequestResponse instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'message': instance.message,
+  'createdAt': instance.createdAt.toIso8601String(),
+  'isAdminResponse': instance.isAdminResponse,
+};

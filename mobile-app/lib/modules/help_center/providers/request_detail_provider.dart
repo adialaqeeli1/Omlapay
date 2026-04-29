@@ -21,6 +21,9 @@ class RequestDetailProvider extends ChangeNotifier {
   bool _isReopening = false;
   String? _errorKey;
   final Map<String, int?> _fileSizes = {};
+  final Set<String> _collapsedItemIds = {};
+
+  static const String requestItemId = '__request__';
 
   SupportRequestDetailModel? get detail => _detail;
   bool get isLoading => _isLoading;
@@ -28,6 +31,17 @@ class RequestDetailProvider extends ChangeNotifier {
   String? get errorKey => _errorKey;
 
   int? getFileSizeForUrl(String url) => _fileSizes[url];
+
+  bool isItemExpanded(String itemId) => !_collapsedItemIds.contains(itemId);
+
+  void toggleItemExpansion(String itemId) {
+    if (_collapsedItemIds.contains(itemId)) {
+      _collapsedItemIds.remove(itemId);
+    } else {
+      _collapsedItemIds.add(itemId);
+    }
+    notifyListeners();
+  }
 
   Future<void> fetchDetail() async {
     _isLoading = true;

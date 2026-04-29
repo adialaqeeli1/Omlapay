@@ -2636,6 +2636,12 @@ abstract class AppLocalizations {
   /// **'Failed to load request details'**
   String get failedToLoadRequestDetail;
 
+  /// No description provided for @supportTeamReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Support team reply'**
+  String get supportTeamReply;
+
   /// No description provided for @inReview.
   ///
   /// In en, this message translates to:

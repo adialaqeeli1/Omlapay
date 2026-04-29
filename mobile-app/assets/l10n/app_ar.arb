@@ -583,6 +583,7 @@
     "requestReopened": "تم إعادة فتح التذكرة بنجاح",
     "failedToReopenRequest": "فشل في إعادة فتح التذكرة",
     "failedToLoadRequestDetail": "فشل في تحميل تفاصيل الطلب",
+    "supportTeamReply": "رد فريق الدعم",
     "inReview": "قيد المراجعة",
     "resolvesBy": "يُحل بحلول {date}",
     "@resolvesBy": {

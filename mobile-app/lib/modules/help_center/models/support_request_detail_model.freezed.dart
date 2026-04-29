@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SupportRequestDetailModel {
 
- String get id; String get title; String get description; SupportRequestStatus get status; String? get statusColor; String? get ticketId; List<SupportRequestAttachment> get attachments; DateTime get createdAt; DateTime get updatedAt; List<dynamic> get responses;
+ String get id; String get title; String get description; SupportRequestStatus get status; String? get statusColor; String? get ticketId; List<SupportRequestAttachment> get attachments; DateTime get createdAt; DateTime get updatedAt; List<SupportRequestResponse> get responses;
 /// Create a copy of SupportRequestDetailModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $SupportRequestDetailModelCopyWith<$Res>  {
   factory $SupportRequestDetailModelCopyWith(SupportRequestDetailModel value, $Res Function(SupportRequestDetailModel) _then) = _$SupportRequestDetailModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, String description, SupportRequestStatus status, String? statusColor, String? ticketId, List<SupportRequestAttachment> attachments, DateTime createdAt, DateTime updatedAt, List<dynamic> responses
+ String id, String title, String description, SupportRequestStatus status, String? statusColor, String? ticketId, List<SupportRequestAttachment> attachments, DateTime createdAt, DateTime updatedAt, List<SupportRequestResponse> responses
 });
 
 
@@ -77,7 +77,7 @@ as String?,attachments: null == attachments ? _self.attachments : attachments //
 as List<SupportRequestAttachment>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,responses: null == responses ? _self.responses : responses // ignore: cast_nullable_to_non_nullable
-as List<dynamic>,
+as List<SupportRequestResponse>,
   ));
 }
 
@@ -162,7 +162,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String description,  SupportRequestStatus status,  String? statusColor,  String? ticketId,  List<SupportRequestAttachment> attachments,  DateTime createdAt,  DateTime updatedAt,  List<dynamic> responses)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String description,  SupportRequestStatus status,  String? statusColor,  String? ticketId,  List<SupportRequestAttachment> attachments,  DateTime createdAt,  DateTime updatedAt,  List<SupportRequestResponse> responses)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SupportRequestDetailModel() when $default != null:
 return $default(_that.id,_that.title,_that.description,_that.status,_that.statusColor,_that.ticketId,_that.attachments,_that.createdAt,_that.updatedAt,_that.responses);case _:
@@ -183,7 +183,7 @@ return $default(_that.id,_that.title,_that.description,_that.status,_that.status
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String description,  SupportRequestStatus status,  String? statusColor,  String? ticketId,  List<SupportRequestAttachment> attachments,  DateTime createdAt,  DateTime updatedAt,  List<dynamic> responses)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String description,  SupportRequestStatus status,  String? statusColor,  String? ticketId,  List<SupportRequestAttachment> attachments,  DateTime createdAt,  DateTime updatedAt,  List<SupportRequestResponse> responses)  $default,) {final _that = this;
 switch (_that) {
 case _SupportRequestDetailModel():
 return $default(_that.id,_that.title,_that.description,_that.status,_that.statusColor,_that.ticketId,_that.attachments,_that.createdAt,_that.updatedAt,_that.responses);case _:
@@ -203,7 +203,7 @@ return $default(_that.id,_that.title,_that.description,_that.status,_that.status
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String description,  SupportRequestStatus status,  String? statusColor,  String? ticketId,  List<SupportRequestAttachment> attachments,  DateTime createdAt,  DateTime updatedAt,  List<dynamic> responses)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String description,  SupportRequestStatus status,  String? statusColor,  String? ticketId,  List<SupportRequestAttachment> attachments,  DateTime createdAt,  DateTime updatedAt,  List<SupportRequestResponse> responses)?  $default,) {final _that = this;
 switch (_that) {
 case _SupportRequestDetailModel() when $default != null:
 return $default(_that.id,_that.title,_that.description,_that.status,_that.statusColor,_that.ticketId,_that.attachments,_that.createdAt,_that.updatedAt,_that.responses);case _:
@@ -218,7 +218,7 @@ return $default(_that.id,_that.title,_that.description,_that.status,_that.status
 @JsonSerializable()
 
 class _SupportRequestDetailModel implements SupportRequestDetailModel {
-  const _SupportRequestDetailModel({required this.id, required this.title, this.description = '', this.status = SupportRequestStatus.pending, this.statusColor, this.ticketId, final  List<SupportRequestAttachment> attachments = const [], required this.createdAt, required this.updatedAt, final  List<dynamic> responses = const []}): _attachments = attachments,_responses = responses;
+  const _SupportRequestDetailModel({required this.id, required this.title, this.description = '', this.status = SupportRequestStatus.pending, this.statusColor, this.ticketId, final  List<SupportRequestAttachment> attachments = const [], required this.createdAt, required this.updatedAt, final  List<SupportRequestResponse> responses = const []}): _attachments = attachments,_responses = responses;
   factory _SupportRequestDetailModel.fromJson(Map<String, dynamic> json) => _$SupportRequestDetailModelFromJson(json);
 
 @override final  String id;
@@ -236,8 +236,8 @@ class _SupportRequestDetailModel implements SupportRequestDetailModel {
 
 @override final  DateTime createdAt;
 @override final  DateTime updatedAt;
- final  List<dynamic> _responses;
-@override@JsonKey() List<dynamic> get responses {
+ final  List<SupportRequestResponse> _responses;
+@override@JsonKey() List<SupportRequestResponse> get responses {
   if (_responses is EqualUnmodifiableListView) return _responses;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_responses);
@@ -277,7 +277,7 @@ abstract mixin class _$SupportRequestDetailModelCopyWith<$Res> implements $Suppo
   factory _$SupportRequestDetailModelCopyWith(_SupportRequestDetailModel value, $Res Function(_SupportRequestDetailModel) _then) = __$SupportRequestDetailModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, String description, SupportRequestStatus status, String? statusColor, String? ticketId, List<SupportRequestAttachment> attachments, DateTime createdAt, DateTime updatedAt, List<dynamic> responses
+ String id, String title, String description, SupportRequestStatus status, String? statusColor, String? ticketId, List<SupportRequestAttachment> attachments, DateTime createdAt, DateTime updatedAt, List<SupportRequestResponse> responses
 });
 
 
@@ -306,7 +306,7 @@ as String?,attachments: null == attachments ? _self._attachments : attachments /
 as List<SupportRequestAttachment>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,responses: null == responses ? _self._responses : responses // ignore: cast_nullable_to_non_nullable
-as List<dynamic>,
+as List<SupportRequestResponse>,
   ));
 }
 
@@ -573,6 +573,278 @@ class __$SupportRequestAttachmentCopyWithImpl<$Res>
 url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as String,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$SupportRequestResponse {
+
+ String get id; String get message; DateTime get createdAt; bool get isAdminResponse;
+/// Create a copy of SupportRequestResponse
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$SupportRequestResponseCopyWith<SupportRequestResponse> get copyWith => _$SupportRequestResponseCopyWithImpl<SupportRequestResponse>(this as SupportRequestResponse, _$identity);
+
+  /// Serializes this SupportRequestResponse to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SupportRequestResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.message, message) || other.message == message)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.isAdminResponse, isAdminResponse) || other.isAdminResponse == isAdminResponse));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,message,createdAt,isAdminResponse);
+
+@override
+String toString() {
+  return 'SupportRequestResponse(id: $id, message: $message, createdAt: $createdAt, isAdminResponse: $isAdminResponse)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $SupportRequestResponseCopyWith<$Res>  {
+  factory $SupportRequestResponseCopyWith(SupportRequestResponse value, $Res Function(SupportRequestResponse) _then) = _$SupportRequestResponseCopyWithImpl;
+@useResult
+$Res call({
+ String id, String message, DateTime createdAt, bool isAdminResponse
+});
+
+
+
+
+}
+/// @nodoc
+class _$SupportRequestResponseCopyWithImpl<$Res>
+    implements $SupportRequestResponseCopyWith<$Res> {
+  _$SupportRequestResponseCopyWithImpl(this._self, this._then);
+
+  final SupportRequestResponse _self;
+  final $Res Function(SupportRequestResponse) _then;
+
+/// Create a copy of SupportRequestResponse
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? message = null,Object? createdAt = null,Object? isAdminResponse = null,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,isAdminResponse: null == isAdminResponse ? _self.isAdminResponse : isAdminResponse // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [SupportRequestResponse].
+extension SupportRequestResponsePatterns on SupportRequestResponse {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _SupportRequestResponse value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _SupportRequestResponse() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _SupportRequestResponse value)  $default,){
+final _that = this;
+switch (_that) {
+case _SupportRequestResponse():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _SupportRequestResponse value)?  $default,){
+final _that = this;
+switch (_that) {
+case _SupportRequestResponse() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String message,  DateTime createdAt,  bool isAdminResponse)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _SupportRequestResponse() when $default != null:
+return $default(_that.id,_that.message,_that.createdAt,_that.isAdminResponse);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String message,  DateTime createdAt,  bool isAdminResponse)  $default,) {final _that = this;
+switch (_that) {
+case _SupportRequestResponse():
+return $default(_that.id,_that.message,_that.createdAt,_that.isAdminResponse);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String message,  DateTime createdAt,  bool isAdminResponse)?  $default,) {final _that = this;
+switch (_that) {
+case _SupportRequestResponse() when $default != null:
+return $default(_that.id,_that.message,_that.createdAt,_that.isAdminResponse);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _SupportRequestResponse implements SupportRequestResponse {
+  const _SupportRequestResponse({required this.id, this.message = '', required this.createdAt, this.isAdminResponse = false});
+  factory _SupportRequestResponse.fromJson(Map<String, dynamic> json) => _$SupportRequestResponseFromJson(json);
+
+@override final  String id;
+@override@JsonKey() final  String message;
+@override final  DateTime createdAt;
+@override@JsonKey() final  bool isAdminResponse;
+
+/// Create a copy of SupportRequestResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$SupportRequestResponseCopyWith<_SupportRequestResponse> get copyWith => __$SupportRequestResponseCopyWithImpl<_SupportRequestResponse>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$SupportRequestResponseToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SupportRequestResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.message, message) || other.message == message)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.isAdminResponse, isAdminResponse) || other.isAdminResponse == isAdminResponse));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,message,createdAt,isAdminResponse);
+
+@override
+String toString() {
+  return 'SupportRequestResponse(id: $id, message: $message, createdAt: $createdAt, isAdminResponse: $isAdminResponse)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$SupportRequestResponseCopyWith<$Res> implements $SupportRequestResponseCopyWith<$Res> {
+  factory _$SupportRequestResponseCopyWith(_SupportRequestResponse value, $Res Function(_SupportRequestResponse) _then) = __$SupportRequestResponseCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String message, DateTime createdAt, bool isAdminResponse
+});
+
+
+
+
+}
+/// @nodoc
+class __$SupportRequestResponseCopyWithImpl<$Res>
+    implements _$SupportRequestResponseCopyWith<$Res> {
+  __$SupportRequestResponseCopyWithImpl(this._self, this._then);
+
+  final _SupportRequestResponse _self;
+  final $Res Function(_SupportRequestResponse) _then;
+
+/// Create a copy of SupportRequestResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? message = null,Object? createdAt = null,Object? isAdminResponse = null,}) {
+  return _then(_SupportRequestResponse(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,isAdminResponse: null == isAdminResponse ? _self.isAdminResponse : isAdminResponse // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
