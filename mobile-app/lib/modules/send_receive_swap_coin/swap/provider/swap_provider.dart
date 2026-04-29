@@ -200,10 +200,15 @@ class SwapProvider extends ChangeNotifier {
   }
 
   void setMaxAmount() {
-    if (_fromCoin != null) {
-      fromAmountController.text = _fromCoin!.amount;
-      _validateLocal();
+    final coin = _fromCoin;
+    if (coin == null) return;
+    final swapMax = double.tryParse(coin.swapMaxAmount ?? '');
+    if (swapMax != null && swapMax > 0) {
+      fromAmountController.text = swapMax.toStringAsFixed(5);
+    } else {
+      fromAmountController.text = coin.amount;
     }
+    _validateLocal();
   }
 
   void _validateLocal() {

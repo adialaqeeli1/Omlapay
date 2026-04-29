@@ -139,6 +139,7 @@ class _ReceiveCoinsHistoryViewState extends State<ReceiveCoinsHistoryView>
                 kycStatus: kycProvider.kycStatus,
                 entrySource: KycVerificationEntrySource.receiveHistory,
                 rejectionReason: kycProvider.rejectionReason,
+                rejectionReasonAr: kycProvider.rejectionReasonAr,
               ),
             ),
           Expanded(

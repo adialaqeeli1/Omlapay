@@ -19,11 +19,13 @@ class KycVerificationRequiredBanner extends StatelessWidget {
     required this.kycStatus,
     required this.entrySource,
     this.rejectionReason,
+    this.rejectionReasonAr,
   });
 
   final KycStatus kycStatus;
   final KycVerificationEntrySource entrySource;
   final String? rejectionReason;
+  final String? rejectionReasonAr;
 
   @override
   Widget build(BuildContext context) {
@@ -51,8 +53,18 @@ class KycVerificationRequiredBanner extends StatelessWidget {
         showAction = false;
         icon = Icons.hourglass_top_rounded;
       case KycStatus.rejected:
-        messageBody = rejectionReason != null && rejectionReason!.isNotEmpty
-            ? l10n.kyc_rejected_with_reason(rejectionReason!)
+        final isArabic =
+            Localizations.localeOf(context).languageCode == 'ar';
+        final localizedReason = isArabic
+            ? (rejectionReasonAr?.trim().isNotEmpty == true
+                  ? rejectionReasonAr
+                  : rejectionReason)
+            : (rejectionReason?.trim().isNotEmpty == true
+                  ? rejectionReason
+                  : rejectionReasonAr);
+        messageBody =
+            localizedReason != null && localizedReason.isNotEmpty
+            ? l10n.kyc_rejected_with_reason(localizedReason)
             : l10n.kyc_rejected;
         showAction = true;
         icon = Icons.error_outline;

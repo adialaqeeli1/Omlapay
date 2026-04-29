@@ -178,6 +178,8 @@ class CoinsService {
       coinNameAr: coinNameAr,
       minSendAmount: _parseSendAmount(coin['minSendAmount']).toString(),
       maxSendAmount: _parseSendAmount(coin['maxSendAmount']).toString(),
+      swapMinAmount: _optionalTrimmed(coin['swapMinAmount']),
+      swapMaxAmount: _optionalTrimmed(coin['swapMaxAmount']),
     );
   }
 

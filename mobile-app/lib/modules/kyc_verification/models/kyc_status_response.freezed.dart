@@ -329,7 +329,7 @@ $BinanceStatusCopyWith<$Res>? get binance {
 /// @nodoc
 mixin _$SumsubStatus {
 
- String? get status; String? get referenceId; String? get verifiedAt; String? get rejectionReason; String? get rejectType; String? get reviewAnswer; String? get updatedAt;
+ String? get status; String? get referenceId; String? get verifiedAt; String? get rejectionReason;@JsonKey(name: 'rejectionReason_ar') String? get rejectionReasonAr; String? get rejectType; String? get reviewAnswer; String? get updatedAt;
 /// Create a copy of SumsubStatus
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -342,16 +342,16 @@ $SumsubStatusCopyWith<SumsubStatus> get copyWith => _$SumsubStatusCopyWithImpl<S
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SumsubStatus&&(identical(other.status, status) || other.status == status)&&(identical(other.referenceId, referenceId) || other.referenceId == referenceId)&&(identical(other.verifiedAt, verifiedAt) || other.verifiedAt == verifiedAt)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.rejectType, rejectType) || other.rejectType == rejectType)&&(identical(other.reviewAnswer, reviewAnswer) || other.reviewAnswer == reviewAnswer)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SumsubStatus&&(identical(other.status, status) || other.status == status)&&(identical(other.referenceId, referenceId) || other.referenceId == referenceId)&&(identical(other.verifiedAt, verifiedAt) || other.verifiedAt == verifiedAt)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.rejectionReasonAr, rejectionReasonAr) || other.rejectionReasonAr == rejectionReasonAr)&&(identical(other.rejectType, rejectType) || other.rejectType == rejectType)&&(identical(other.reviewAnswer, reviewAnswer) || other.reviewAnswer == reviewAnswer)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,status,referenceId,verifiedAt,rejectionReason,rejectType,reviewAnswer,updatedAt);
+int get hashCode => Object.hash(runtimeType,status,referenceId,verifiedAt,rejectionReason,rejectionReasonAr,rejectType,reviewAnswer,updatedAt);
 
 @override
 String toString() {
-  return 'SumsubStatus(status: $status, referenceId: $referenceId, verifiedAt: $verifiedAt, rejectionReason: $rejectionReason, rejectType: $rejectType, reviewAnswer: $reviewAnswer, updatedAt: $updatedAt)';
+  return 'SumsubStatus(status: $status, referenceId: $referenceId, verifiedAt: $verifiedAt, rejectionReason: $rejectionReason, rejectionReasonAr: $rejectionReasonAr, rejectType: $rejectType, reviewAnswer: $reviewAnswer, updatedAt: $updatedAt)';
 }
 
 
@@ -362,7 +362,7 @@ abstract mixin class $SumsubStatusCopyWith<$Res>  {
   factory $SumsubStatusCopyWith(SumsubStatus value, $Res Function(SumsubStatus) _then) = _$SumsubStatusCopyWithImpl;
 @useResult
 $Res call({
- String? status, String? referenceId, String? verifiedAt, String? rejectionReason, String? rejectType, String? reviewAnswer, String? updatedAt
+ String? status, String? referenceId, String? verifiedAt, String? rejectionReason,@JsonKey(name: 'rejectionReason_ar') String? rejectionReasonAr, String? rejectType, String? reviewAnswer, String? updatedAt
 });
 
 
@@ -379,12 +379,13 @@ class _$SumsubStatusCopyWithImpl<$Res>
 
 /// Create a copy of SumsubStatus
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? status = freezed,Object? referenceId = freezed,Object? verifiedAt = freezed,Object? rejectionReason = freezed,Object? rejectType = freezed,Object? reviewAnswer = freezed,Object? updatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? status = freezed,Object? referenceId = freezed,Object? verifiedAt = freezed,Object? rejectionReason = freezed,Object? rejectionReasonAr = freezed,Object? rejectType = freezed,Object? reviewAnswer = freezed,Object? updatedAt = freezed,}) {
   return _then(_self.copyWith(
 status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String?,referenceId: freezed == referenceId ? _self.referenceId : referenceId // ignore: cast_nullable_to_non_nullable
 as String?,verifiedAt: freezed == verifiedAt ? _self.verifiedAt : verifiedAt // ignore: cast_nullable_to_non_nullable
 as String?,rejectionReason: freezed == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
+as String?,rejectionReasonAr: freezed == rejectionReasonAr ? _self.rejectionReasonAr : rejectionReasonAr // ignore: cast_nullable_to_non_nullable
 as String?,rejectType: freezed == rejectType ? _self.rejectType : rejectType // ignore: cast_nullable_to_non_nullable
 as String?,reviewAnswer: freezed == reviewAnswer ? _self.reviewAnswer : reviewAnswer // ignore: cast_nullable_to_non_nullable
 as String?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -473,10 +474,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? status,  String? referenceId,  String? verifiedAt,  String? rejectionReason,  String? rejectType,  String? reviewAnswer,  String? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? status,  String? referenceId,  String? verifiedAt,  String? rejectionReason, @JsonKey(name: 'rejectionReason_ar')  String? rejectionReasonAr,  String? rejectType,  String? reviewAnswer,  String? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SumsubStatus() when $default != null:
-return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionReason,_that.rejectType,_that.reviewAnswer,_that.updatedAt);case _:
+return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionReason,_that.rejectionReasonAr,_that.rejectType,_that.reviewAnswer,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -494,10 +495,10 @@ return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionR
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? status,  String? referenceId,  String? verifiedAt,  String? rejectionReason,  String? rejectType,  String? reviewAnswer,  String? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? status,  String? referenceId,  String? verifiedAt,  String? rejectionReason, @JsonKey(name: 'rejectionReason_ar')  String? rejectionReasonAr,  String? rejectType,  String? reviewAnswer,  String? updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _SumsubStatus():
-return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionReason,_that.rejectType,_that.reviewAnswer,_that.updatedAt);case _:
+return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionReason,_that.rejectionReasonAr,_that.rejectType,_that.reviewAnswer,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -514,10 +515,10 @@ return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionR
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? status,  String? referenceId,  String? verifiedAt,  String? rejectionReason,  String? rejectType,  String? reviewAnswer,  String? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? status,  String? referenceId,  String? verifiedAt,  String? rejectionReason, @JsonKey(name: 'rejectionReason_ar')  String? rejectionReasonAr,  String? rejectType,  String? reviewAnswer,  String? updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _SumsubStatus() when $default != null:
-return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionReason,_that.rejectType,_that.reviewAnswer,_that.updatedAt);case _:
+return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionReason,_that.rejectionReasonAr,_that.rejectType,_that.reviewAnswer,_that.updatedAt);case _:
   return null;
 
 }
@@ -529,13 +530,14 @@ return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionR
 @JsonSerializable()
 
 class _SumsubStatus implements SumsubStatus {
-  const _SumsubStatus({this.status, this.referenceId, this.verifiedAt, this.rejectionReason, this.rejectType, this.reviewAnswer, this.updatedAt});
+  const _SumsubStatus({this.status, this.referenceId, this.verifiedAt, this.rejectionReason, @JsonKey(name: 'rejectionReason_ar') this.rejectionReasonAr, this.rejectType, this.reviewAnswer, this.updatedAt});
   factory _SumsubStatus.fromJson(Map<String, dynamic> json) => _$SumsubStatusFromJson(json);
 
 @override final  String? status;
 @override final  String? referenceId;
 @override final  String? verifiedAt;
 @override final  String? rejectionReason;
+@override@JsonKey(name: 'rejectionReason_ar') final  String? rejectionReasonAr;
 @override final  String? rejectType;
 @override final  String? reviewAnswer;
 @override final  String? updatedAt;
@@ -553,16 +555,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SumsubStatus&&(identical(other.status, status) || other.status == status)&&(identical(other.referenceId, referenceId) || other.referenceId == referenceId)&&(identical(other.verifiedAt, verifiedAt) || other.verifiedAt == verifiedAt)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.rejectType, rejectType) || other.rejectType == rejectType)&&(identical(other.reviewAnswer, reviewAnswer) || other.reviewAnswer == reviewAnswer)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SumsubStatus&&(identical(other.status, status) || other.status == status)&&(identical(other.referenceId, referenceId) || other.referenceId == referenceId)&&(identical(other.verifiedAt, verifiedAt) || other.verifiedAt == verifiedAt)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.rejectionReasonAr, rejectionReasonAr) || other.rejectionReasonAr == rejectionReasonAr)&&(identical(other.rejectType, rejectType) || other.rejectType == rejectType)&&(identical(other.reviewAnswer, reviewAnswer) || other.reviewAnswer == reviewAnswer)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,status,referenceId,verifiedAt,rejectionReason,rejectType,reviewAnswer,updatedAt);
+int get hashCode => Object.hash(runtimeType,status,referenceId,verifiedAt,rejectionReason,rejectionReasonAr,rejectType,reviewAnswer,updatedAt);
 
 @override
 String toString() {
-  return 'SumsubStatus(status: $status, referenceId: $referenceId, verifiedAt: $verifiedAt, rejectionReason: $rejectionReason, rejectType: $rejectType, reviewAnswer: $reviewAnswer, updatedAt: $updatedAt)';
+  return 'SumsubStatus(status: $status, referenceId: $referenceId, verifiedAt: $verifiedAt, rejectionReason: $rejectionReason, rejectionReasonAr: $rejectionReasonAr, rejectType: $rejectType, reviewAnswer: $reviewAnswer, updatedAt: $updatedAt)';
 }
 
 
@@ -573,7 +575,7 @@ abstract mixin class _$SumsubStatusCopyWith<$Res> implements $SumsubStatusCopyWi
   factory _$SumsubStatusCopyWith(_SumsubStatus value, $Res Function(_SumsubStatus) _then) = __$SumsubStatusCopyWithImpl;
 @override @useResult
 $Res call({
- String? status, String? referenceId, String? verifiedAt, String? rejectionReason, String? rejectType, String? reviewAnswer, String? updatedAt
+ String? status, String? referenceId, String? verifiedAt, String? rejectionReason,@JsonKey(name: 'rejectionReason_ar') String? rejectionReasonAr, String? rejectType, String? reviewAnswer, String? updatedAt
 });
 
 
@@ -590,12 +592,13 @@ class __$SumsubStatusCopyWithImpl<$Res>
 
 /// Create a copy of SumsubStatus
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? status = freezed,Object? referenceId = freezed,Object? verifiedAt = freezed,Object? rejectionReason = freezed,Object? rejectType = freezed,Object? reviewAnswer = freezed,Object? updatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? status = freezed,Object? referenceId = freezed,Object? verifiedAt = freezed,Object? rejectionReason = freezed,Object? rejectionReasonAr = freezed,Object? rejectType = freezed,Object? reviewAnswer = freezed,Object? updatedAt = freezed,}) {
   return _then(_SumsubStatus(
 status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String?,referenceId: freezed == referenceId ? _self.referenceId : referenceId // ignore: cast_nullable_to_non_nullable
 as String?,verifiedAt: freezed == verifiedAt ? _self.verifiedAt : verifiedAt // ignore: cast_nullable_to_non_nullable
 as String?,rejectionReason: freezed == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
+as String?,rejectionReasonAr: freezed == rejectionReasonAr ? _self.rejectionReasonAr : rejectionReasonAr // ignore: cast_nullable_to_non_nullable
 as String?,rejectType: freezed == rejectType ? _self.rejectType : rejectType // ignore: cast_nullable_to_non_nullable
 as String?,reviewAnswer: freezed == reviewAnswer ? _self.reviewAnswer : reviewAnswer // ignore: cast_nullable_to_non_nullable
 as String?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -610,7 +613,7 @@ as String?,
 /// @nodoc
 mixin _$BinanceStatus {
 
- String? get status; String? get referenceId; String? get verifiedAt; String? get rejectionReason; bool get canStart; bool get canCreateApiKeys; bool get hasApiKeys; String? get updatedAt;
+ String? get status; String? get referenceId; String? get verifiedAt; String? get rejectionReason;@JsonKey(name: 'rejectionReason_ar') String? get rejectionReasonAr; bool get canStart; bool get canCreateApiKeys; bool get hasApiKeys; String? get updatedAt;
 /// Create a copy of BinanceStatus
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -623,16 +626,16 @@ $BinanceStatusCopyWith<BinanceStatus> get copyWith => _$BinanceStatusCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BinanceStatus&&(identical(other.status, status) || other.status == status)&&(identical(other.referenceId, referenceId) || other.referenceId == referenceId)&&(identical(other.verifiedAt, verifiedAt) || other.verifiedAt == verifiedAt)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.canStart, canStart) || other.canStart == canStart)&&(identical(other.canCreateApiKeys, canCreateApiKeys) || other.canCreateApiKeys == canCreateApiKeys)&&(identical(other.hasApiKeys, hasApiKeys) || other.hasApiKeys == hasApiKeys)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BinanceStatus&&(identical(other.status, status) || other.status == status)&&(identical(other.referenceId, referenceId) || other.referenceId == referenceId)&&(identical(other.verifiedAt, verifiedAt) || other.verifiedAt == verifiedAt)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.rejectionReasonAr, rejectionReasonAr) || other.rejectionReasonAr == rejectionReasonAr)&&(identical(other.canStart, canStart) || other.canStart == canStart)&&(identical(other.canCreateApiKeys, canCreateApiKeys) || other.canCreateApiKeys == canCreateApiKeys)&&(identical(other.hasApiKeys, hasApiKeys) || other.hasApiKeys == hasApiKeys)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,status,referenceId,verifiedAt,rejectionReason,canStart,canCreateApiKeys,hasApiKeys,updatedAt);
+int get hashCode => Object.hash(runtimeType,status,referenceId,verifiedAt,rejectionReason,rejectionReasonAr,canStart,canCreateApiKeys,hasApiKeys,updatedAt);
 
 @override
 String toString() {
-  return 'BinanceStatus(status: $status, referenceId: $referenceId, verifiedAt: $verifiedAt, rejectionReason: $rejectionReason, canStart: $canStart, canCreateApiKeys: $canCreateApiKeys, hasApiKeys: $hasApiKeys, updatedAt: $updatedAt)';
+  return 'BinanceStatus(status: $status, referenceId: $referenceId, verifiedAt: $verifiedAt, rejectionReason: $rejectionReason, rejectionReasonAr: $rejectionReasonAr, canStart: $canStart, canCreateApiKeys: $canCreateApiKeys, hasApiKeys: $hasApiKeys, updatedAt: $updatedAt)';
 }
 
 
@@ -643,7 +646,7 @@ abstract mixin class $BinanceStatusCopyWith<$Res>  {
   factory $BinanceStatusCopyWith(BinanceStatus value, $Res Function(BinanceStatus) _then) = _$BinanceStatusCopyWithImpl;
 @useResult
 $Res call({
- String? status, String? referenceId, String? verifiedAt, String? rejectionReason, bool canStart, bool canCreateApiKeys, bool hasApiKeys, String? updatedAt
+ String? status, String? referenceId, String? verifiedAt, String? rejectionReason,@JsonKey(name: 'rejectionReason_ar') String? rejectionReasonAr, bool canStart, bool canCreateApiKeys, bool hasApiKeys, String? updatedAt
 });
 
 
@@ -660,12 +663,13 @@ class _$BinanceStatusCopyWithImpl<$Res>
 
 /// Create a copy of BinanceStatus
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? status = freezed,Object? referenceId = freezed,Object? verifiedAt = freezed,Object? rejectionReason = freezed,Object? canStart = null,Object? canCreateApiKeys = null,Object? hasApiKeys = null,Object? updatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? status = freezed,Object? referenceId = freezed,Object? verifiedAt = freezed,Object? rejectionReason = freezed,Object? rejectionReasonAr = freezed,Object? canStart = null,Object? canCreateApiKeys = null,Object? hasApiKeys = null,Object? updatedAt = freezed,}) {
   return _then(_self.copyWith(
 status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String?,referenceId: freezed == referenceId ? _self.referenceId : referenceId // ignore: cast_nullable_to_non_nullable
 as String?,verifiedAt: freezed == verifiedAt ? _self.verifiedAt : verifiedAt // ignore: cast_nullable_to_non_nullable
 as String?,rejectionReason: freezed == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
+as String?,rejectionReasonAr: freezed == rejectionReasonAr ? _self.rejectionReasonAr : rejectionReasonAr // ignore: cast_nullable_to_non_nullable
 as String?,canStart: null == canStart ? _self.canStart : canStart // ignore: cast_nullable_to_non_nullable
 as bool,canCreateApiKeys: null == canCreateApiKeys ? _self.canCreateApiKeys : canCreateApiKeys // ignore: cast_nullable_to_non_nullable
 as bool,hasApiKeys: null == hasApiKeys ? _self.hasApiKeys : hasApiKeys // ignore: cast_nullable_to_non_nullable
@@ -755,10 +759,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? status,  String? referenceId,  String? verifiedAt,  String? rejectionReason,  bool canStart,  bool canCreateApiKeys,  bool hasApiKeys,  String? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? status,  String? referenceId,  String? verifiedAt,  String? rejectionReason, @JsonKey(name: 'rejectionReason_ar')  String? rejectionReasonAr,  bool canStart,  bool canCreateApiKeys,  bool hasApiKeys,  String? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BinanceStatus() when $default != null:
-return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionReason,_that.canStart,_that.canCreateApiKeys,_that.hasApiKeys,_that.updatedAt);case _:
+return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionReason,_that.rejectionReasonAr,_that.canStart,_that.canCreateApiKeys,_that.hasApiKeys,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -776,10 +780,10 @@ return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionR
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? status,  String? referenceId,  String? verifiedAt,  String? rejectionReason,  bool canStart,  bool canCreateApiKeys,  bool hasApiKeys,  String? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? status,  String? referenceId,  String? verifiedAt,  String? rejectionReason, @JsonKey(name: 'rejectionReason_ar')  String? rejectionReasonAr,  bool canStart,  bool canCreateApiKeys,  bool hasApiKeys,  String? updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _BinanceStatus():
-return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionReason,_that.canStart,_that.canCreateApiKeys,_that.hasApiKeys,_that.updatedAt);case _:
+return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionReason,_that.rejectionReasonAr,_that.canStart,_that.canCreateApiKeys,_that.hasApiKeys,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -796,10 +800,10 @@ return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionR
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? status,  String? referenceId,  String? verifiedAt,  String? rejectionReason,  bool canStart,  bool canCreateApiKeys,  bool hasApiKeys,  String? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? status,  String? referenceId,  String? verifiedAt,  String? rejectionReason, @JsonKey(name: 'rejectionReason_ar')  String? rejectionReasonAr,  bool canStart,  bool canCreateApiKeys,  bool hasApiKeys,  String? updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _BinanceStatus() when $default != null:
-return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionReason,_that.canStart,_that.canCreateApiKeys,_that.hasApiKeys,_that.updatedAt);case _:
+return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionReason,_that.rejectionReasonAr,_that.canStart,_that.canCreateApiKeys,_that.hasApiKeys,_that.updatedAt);case _:
   return null;
 
 }
@@ -811,13 +815,14 @@ return $default(_that.status,_that.referenceId,_that.verifiedAt,_that.rejectionR
 @JsonSerializable()
 
 class _BinanceStatus implements BinanceStatus {
-  const _BinanceStatus({this.status, this.referenceId, this.verifiedAt, this.rejectionReason, this.canStart = false, this.canCreateApiKeys = false, this.hasApiKeys = false, this.updatedAt});
+  const _BinanceStatus({this.status, this.referenceId, this.verifiedAt, this.rejectionReason, @JsonKey(name: 'rejectionReason_ar') this.rejectionReasonAr, this.canStart = false, this.canCreateApiKeys = false, this.hasApiKeys = false, this.updatedAt});
   factory _BinanceStatus.fromJson(Map<String, dynamic> json) => _$BinanceStatusFromJson(json);
 
 @override final  String? status;
 @override final  String? referenceId;
 @override final  String? verifiedAt;
 @override final  String? rejectionReason;
+@override@JsonKey(name: 'rejectionReason_ar') final  String? rejectionReasonAr;
 @override@JsonKey() final  bool canStart;
 @override@JsonKey() final  bool canCreateApiKeys;
 @override@JsonKey() final  bool hasApiKeys;
@@ -836,16 +841,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BinanceStatus&&(identical(other.status, status) || other.status == status)&&(identical(other.referenceId, referenceId) || other.referenceId == referenceId)&&(identical(other.verifiedAt, verifiedAt) || other.verifiedAt == verifiedAt)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.canStart, canStart) || other.canStart == canStart)&&(identical(other.canCreateApiKeys, canCreateApiKeys) || other.canCreateApiKeys == canCreateApiKeys)&&(identical(other.hasApiKeys, hasApiKeys) || other.hasApiKeys == hasApiKeys)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BinanceStatus&&(identical(other.status, status) || other.status == status)&&(identical(other.referenceId, referenceId) || other.referenceId == referenceId)&&(identical(other.verifiedAt, verifiedAt) || other.verifiedAt == verifiedAt)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.rejectionReasonAr, rejectionReasonAr) || other.rejectionReasonAr == rejectionReasonAr)&&(identical(other.canStart, canStart) || other.canStart == canStart)&&(identical(other.canCreateApiKeys, canCreateApiKeys) || other.canCreateApiKeys == canCreateApiKeys)&&(identical(other.hasApiKeys, hasApiKeys) || other.hasApiKeys == hasApiKeys)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,status,referenceId,verifiedAt,rejectionReason,canStart,canCreateApiKeys,hasApiKeys,updatedAt);
+int get hashCode => Object.hash(runtimeType,status,referenceId,verifiedAt,rejectionReason,rejectionReasonAr,canStart,canCreateApiKeys,hasApiKeys,updatedAt);
 
 @override
 String toString() {
-  return 'BinanceStatus(status: $status, referenceId: $referenceId, verifiedAt: $verifiedAt, rejectionReason: $rejectionReason, canStart: $canStart, canCreateApiKeys: $canCreateApiKeys, hasApiKeys: $hasApiKeys, updatedAt: $updatedAt)';
+  return 'BinanceStatus(status: $status, referenceId: $referenceId, verifiedAt: $verifiedAt, rejectionReason: $rejectionReason, rejectionReasonAr: $rejectionReasonAr, canStart: $canStart, canCreateApiKeys: $canCreateApiKeys, hasApiKeys: $hasApiKeys, updatedAt: $updatedAt)';
 }
 
 
@@ -856,7 +861,7 @@ abstract mixin class _$BinanceStatusCopyWith<$Res> implements $BinanceStatusCopy
   factory _$BinanceStatusCopyWith(_BinanceStatus value, $Res Function(_BinanceStatus) _then) = __$BinanceStatusCopyWithImpl;
 @override @useResult
 $Res call({
- String? status, String? referenceId, String? verifiedAt, String? rejectionReason, bool canStart, bool canCreateApiKeys, bool hasApiKeys, String? updatedAt
+ String? status, String? referenceId, String? verifiedAt, String? rejectionReason,@JsonKey(name: 'rejectionReason_ar') String? rejectionReasonAr, bool canStart, bool canCreateApiKeys, bool hasApiKeys, String? updatedAt
 });
 
 
@@ -873,12 +878,13 @@ class __$BinanceStatusCopyWithImpl<$Res>
 
 /// Create a copy of BinanceStatus
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? status = freezed,Object? referenceId = freezed,Object? verifiedAt = freezed,Object? rejectionReason = freezed,Object? canStart = null,Object? canCreateApiKeys = null,Object? hasApiKeys = null,Object? updatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? status = freezed,Object? referenceId = freezed,Object? verifiedAt = freezed,Object? rejectionReason = freezed,Object? rejectionReasonAr = freezed,Object? canStart = null,Object? canCreateApiKeys = null,Object? hasApiKeys = null,Object? updatedAt = freezed,}) {
   return _then(_BinanceStatus(
 status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String?,referenceId: freezed == referenceId ? _self.referenceId : referenceId // ignore: cast_nullable_to_non_nullable
 as String?,verifiedAt: freezed == verifiedAt ? _self.verifiedAt : verifiedAt // ignore: cast_nullable_to_non_nullable
 as String?,rejectionReason: freezed == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
+as String?,rejectionReasonAr: freezed == rejectionReasonAr ? _self.rejectionReasonAr : rejectionReasonAr // ignore: cast_nullable_to_non_nullable
 as String?,canStart: null == canStart ? _self.canStart : canStart // ignore: cast_nullable_to_non_nullable
 as bool,canCreateApiKeys: null == canCreateApiKeys ? _self.canCreateApiKeys : canCreateApiKeys // ignore: cast_nullable_to_non_nullable
 as bool,hasApiKeys: null == hasApiKeys ? _self.hasApiKeys : hasApiKeys // ignore: cast_nullable_to_non_nullable

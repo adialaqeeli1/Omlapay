@@ -17,6 +17,7 @@ class KycStatusProvider extends ChangeNotifier {
 
   KycStatus _kycStatus = KycStatus.notStarted;
   String? _rejectionReason;
+  String? _rejectionReasonAr;
   bool _isLoading = false;
 
   /// Tracks whether we've already fetched for the current session.
@@ -31,6 +32,7 @@ class KycStatusProvider extends ChangeNotifier {
 
   KycStatus get kycStatus => _kycStatus;
   String? get rejectionReason => _rejectionReason;
+  String? get rejectionReasonAr => _rejectionReasonAr;
   bool get isLoading => _isLoading;
 
   /// Whether the banner should be shown at all. Returns false until the
@@ -50,6 +52,7 @@ class KycStatusProvider extends ChangeNotifier {
     if (user == null || !_authProvider.state.isAuthenticated) {
       _kycStatus = KycStatus.notStarted;
       _rejectionReason = null;
+      _rejectionReasonAr = null;
       _hasFetched = false;
       _isStatusResolved = false;
       notifyListeners();
@@ -60,6 +63,7 @@ class KycStatusProvider extends ChangeNotifier {
     if (user.isVerified) {
       _kycStatus = KycStatus.approved;
       _rejectionReason = null;
+      _rejectionReasonAr = null;
       _hasFetched = true;
       _isStatusResolved = true;
       notifyListeners();
@@ -99,6 +103,7 @@ class KycStatusProvider extends ChangeNotifier {
     if (_authProvider.state.user?.isVerified == true) {
       _kycStatus = KycStatus.approved;
       _rejectionReason = null;
+      _rejectionReasonAr = null;
       _isStatusResolved = true;
       notifyListeners();
       return;
@@ -132,6 +137,7 @@ class KycStatusProvider extends ChangeNotifier {
       // SumSub not approved (null or other) — KYC not started or in-progress.
       _kycStatus = KycStatus.notStarted;
       _rejectionReason = null;
+      _rejectionReasonAr = null;
       return;
     }
 
@@ -139,6 +145,7 @@ class KycStatusProvider extends ChangeNotifier {
     if (binanceStatus == 'APPROVED') {
       _kycStatus = KycStatus.approved;
       _rejectionReason = null;
+      _rejectionReasonAr = null;
       // Sync isVerified to auth provider so future checks skip the API call.
       _authProvider.verifyUser();
       return;
@@ -147,6 +154,7 @@ class KycStatusProvider extends ChangeNotifier {
     if (binanceStatus == 'REJECTED') {
       _kycStatus = KycStatus.rejected;
       _rejectionReason = response.binance?.rejectionReason;
+      _rejectionReasonAr = response.binance?.rejectionReasonAr;
       return;
     }
 
