@@ -135,146 +135,148 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(8),
                 child: RepaintBoundary(
                   key: _receiptBoundaryKey,
                   child: Container(
                     color: isDarkMode
                         ? AppColors.darkBackground
                         : AppColors.lightBackground,
+                    padding: const EdgeInsets.all(16),
                     child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Total Amount Card
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 20,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: isDarkMode
-                            ? const LinearGradient(
-                                begin: Alignment(0.75, -0.66),
-                                end: Alignment(-0.75, 0.66),
-                                colors: [
-                                  Color(0x991C1C1E),
-                                  Color(0x991C1C1E),
-                                  Color(0x991B3232),
-                                ],
-                                stops: [0.0, 0.3091, 1.0],
-                              )
-                            : null,
-                        color: isDarkMode ? null : const Color(0xFFF5F5F5),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        children: [
-                          // Total Label
-                          Text(
-                            l10n.total,
-                            style: context.textTheme.bodySmall?.copyWith(
-                              color: AppColors.textGrey,
-                              fontSize: 14,
-                            ),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Total Amount Card
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 20,
                           ),
-                          const SizedBox(height: 8),
-                          // Amount
-                          Text(
-                            amountText,
-                            textDirection: TextDirection.ltr,
-                            style: context.textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: isDarkMode
-                                  ? AppColors.white
-                                  : AppColors.textBlack,
-                              fontSize: 24,
-                            ),
+                          decoration: BoxDecoration(
+                            gradient: isDarkMode
+                                ? const LinearGradient(
+                                    begin: Alignment(0.75, -0.66),
+                                    end: Alignment(-0.75, 0.66),
+                                    colors: [
+                                      Color(0x991C1C1E),
+                                      Color(0x991C1C1E),
+                                      Color(0x991B3232),
+                                    ],
+                                    stops: [0.0, 0.3091, 1.0],
+                                  )
+                                : null,
+                            color: isDarkMode ? null : const Color(0xFFF5F5F5),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          // Approx fiat amount
-                          if (approxAmount != null) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              approxAmount,
-                              textDirection: TextDirection.ltr,
-                              style: context.textTheme.bodySmall?.copyWith(
-                                color: AppColors.textGrey,
-                                fontSize: 13,
+                          child: Column(
+                            children: [
+                              // Total Label
+                              Text(
+                                l10n.total,
+                                style: context.textTheme.bodySmall?.copyWith(
+                                  color: AppColors.textGrey,
+                                  fontSize: 14,
+                                ),
                               ),
-                            ),
-                          ],
-                          // Status
-                          if (isSent) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              transaction.isFailed
-                                  ? l10n.failed
-                                  : transaction.isCompleted
-                                  ? l10n.completed
-                                  : l10n.pending,
-                              style: context.textTheme.bodyMedium?.copyWith(
-                                color: transaction.isFailed
-                                    ? Colors.red
-                                    : transaction.isCompleted
-                                    ? AppColors.greenColor
-                                    : AppColors.textGrey,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                              const SizedBox(height: 8),
+                              // Amount
+                              Text(
+                                amountText,
+                                textDirection: TextDirection.ltr,
+                                style: context.textTheme.headlineMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: isDarkMode
+                                          ? AppColors.white
+                                          : AppColors.textBlack,
+                                      fontSize: 24,
+                                    ),
                               ),
-                            ),
-                          ],
-                        ],
-                      ),
+                              // Approx fiat amount
+                              if (approxAmount != null) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  approxAmount,
+                                  textDirection: TextDirection.ltr,
+                                  style: context.textTheme.bodySmall?.copyWith(
+                                    color: AppColors.textGrey,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                              // Status
+                              if (isSent) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  transaction.isFailed
+                                      ? l10n.failed
+                                      : transaction.isCompleted
+                                      ? l10n.completed
+                                      : l10n.pending,
+                                  style: context.textTheme.bodyMedium?.copyWith(
+                                    color: transaction.isFailed
+                                        ? Colors.red
+                                        : transaction.isCompleted
+                                        ? AppColors.greenColor
+                                        : AppColors.textGrey,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        // Transaction Details
+                        _buildDetailRow(
+                          context,
+                          l10n.date,
+                          DateFormat(
+                            'yyyy-MM-dd hh:mm:ss a',
+                          ).format(transaction.createdAt),
+                          isDateTime: true,
+                        ),
+                        _buildDetailRow(
+                          context,
+                          l10n.network,
+                          transaction.network ?? 'N/A',
+                          isNetwork: true,
+                        ),
+                        if (senderValue != null && senderValue.isNotEmpty)
+                          _buildDetailRow(
+                            context,
+                            l10n.sender,
+                            senderValue,
+                            isAddress: true,
+                          ),
+                        if (addressValue != null && addressValue.isNotEmpty)
+                          _buildDetailRow(
+                            context,
+                            l10n.address,
+                            addressValue,
+                            isAddress: true,
+                          ),
+                        if (transaction.txHash != null &&
+                            transaction.txHash!.trim().isNotEmpty)
+                          _buildDetailRow(
+                            context,
+                            l10n.transactionHash,
+                            transaction.txHash!,
+                            isAddress: true,
+                          ),
+                        if (transaction.isFailed &&
+                            localizedError != null &&
+                            localizedError.isNotEmpty)
+                          _buildDetailRow(
+                            context,
+                            l10n.failureReason,
+                            localizedError,
+                            isError: true,
+                          ),
+                      ],
                     ),
-                    const SizedBox(height: 24),
-                    // Transaction Details
-                    _buildDetailRow(
-                      context,
-                      l10n.date,
-                      DateFormat(
-                        'yyyy-MM-dd hh:mm:ss a',
-                      ).format(transaction.createdAt),
-                      isDateTime: true,
-                    ),
-                    _buildDetailRow(
-                      context,
-                      l10n.network,
-                      transaction.network ?? 'N/A',
-                      isNetwork: true,
-                    ),
-                    if (senderValue != null && senderValue.isNotEmpty)
-                      _buildDetailRow(
-                        context,
-                        l10n.sender,
-                        senderValue,
-                        isAddress: true,
-                      ),
-                    if (addressValue != null && addressValue.isNotEmpty)
-                      _buildDetailRow(
-                        context,
-                        l10n.address,
-                        addressValue,
-                        isAddress: true,
-                      ),
-                    if (transaction.txHash != null &&
-                        transaction.txHash!.trim().isNotEmpty)
-                      _buildDetailRow(
-                        context,
-                        l10n.transactionHash,
-                        transaction.txHash!,
-                        isAddress: true,
-                      ),
-                    if (transaction.isFailed &&
-                        localizedError != null &&
-                        localizedError.isNotEmpty)
-                      _buildDetailRow(
-                        context,
-                        l10n.failureReason,
-                        localizedError,
-                        isError: true,
-                      ),
-                  ],
-                ),
                   ),
                 ),
               ),
@@ -506,9 +508,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
         : tx.isCompleted
         ? l10n.completed
         : l10n.pending;
-    final dateText = DateFormat(
-      'yyyy-MM-dd hh:mm:ss a',
-    ).format(tx.createdAt);
+    final dateText = DateFormat('yyyy-MM-dd hh:mm:ss a').format(tx.createdAt);
 
     final counterparty = tx.counterpartyPhone?.trim();
     final senderValue = counterparty != null && counterparty.isNotEmpty
