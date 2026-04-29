@@ -449,7 +449,10 @@ class _KycFormBody extends StatelessWidget {
     return ReactiveForm(
       formGroup: form,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ).add(EdgeInsets.only(bottom: Platform.isAndroid ? 10 : 0)),
         child: Column(
           children: [
             Expanded(
@@ -542,7 +545,7 @@ class _KycFormBody extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             ReactiveFormConsumer(
               builder: (context, formState, child) {
                 return SizedBox(
