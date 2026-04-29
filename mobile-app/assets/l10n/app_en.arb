@@ -597,6 +597,7 @@
     "requestReopened": "Ticket reopened successfully",
     "failedToReopenRequest": "Failed to reopen ticket",
     "failedToLoadRequestDetail": "Failed to load request details",
+    "supportTeamReply": "Support team reply",
     "inReview": "In review",
     "resolvesBy": "Resolves by {date}",
     "@resolvesBy": {

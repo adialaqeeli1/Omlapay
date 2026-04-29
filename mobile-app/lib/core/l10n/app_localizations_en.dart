@@ -1401,6 +1401,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failedToLoadRequestDetail => 'Failed to load request details';
 
   @override
+  String get supportTeamReply => 'Support team reply';
+
+  @override
   String get inReview => 'In review';
 
   @override

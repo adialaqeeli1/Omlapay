@@ -17,7 +17,7 @@ abstract class SupportRequestDetailModel with _$SupportRequestDetailModel {
     @Default([]) List<SupportRequestAttachment> attachments,
     required DateTime createdAt,
     required DateTime updatedAt,
-    @Default([]) List<dynamic> responses,
+    @Default([]) List<SupportRequestResponse> responses,
   }) = _SupportRequestDetailModel;
 
   factory SupportRequestDetailModel.fromJson(Map<String, dynamic> json) =>
@@ -33,4 +33,17 @@ abstract class SupportRequestAttachment with _$SupportRequestAttachment {
 
   factory SupportRequestAttachment.fromJson(Map<String, dynamic> json) =>
       _$SupportRequestAttachmentFromJson(json);
+}
+
+@freezed
+abstract class SupportRequestResponse with _$SupportRequestResponse {
+  const factory SupportRequestResponse({
+    required String id,
+    @Default('') String message,
+    required DateTime createdAt,
+    @Default(false) bool isAdminResponse,
+  }) = _SupportRequestResponse;
+
+  factory SupportRequestResponse.fromJson(Map<String, dynamic> json) =>
+      _$SupportRequestResponseFromJson(json);
 }

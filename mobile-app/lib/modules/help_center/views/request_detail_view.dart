@@ -228,62 +228,204 @@ class _RequestContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n!;
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final provider = context.read<RequestDetailProvider>();
+    final items = <_TimelineItemData>[
+      _TimelineItemData(
+        id: RequestDetailProvider.requestItemId,
+        title: detail.title,
+        body: detail.description,
+        createdAt: detail.createdAt,
+        attachments: detail.attachments,
+        isAdmin: false,
+      ),
+      ...detail.responses.map(
+        (response) => _TimelineItemData(
+          id: response.id,
+          title: context.l10n!.supportTeamReply,
+          body: response.message,
+          createdAt: response.createdAt,
+          attachments: const [],
+          isAdmin: true,
+        ),
+      ),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 16),
-        Text(
-          detail.title,
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: isDark ? AppColors.textWhite : AppColors.textBlack,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
+        const SizedBox(height: 8),
+        for (var i = 0; i < items.length; i++)
+          _TimelineItem(
+            data: items[i],
+            isLast: i == items.length - 1,
+            provider: provider,
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          l10n.createdOn(
-            DateFormat(
-              'yyyy-MM-dd HH:mm:ss',
-            ).format(detail.createdAt.toLocal()),
+      ],
+    );
+  }
+}
+
+class _TimelineItemData {
+  final String id;
+  final String title;
+  final String body;
+  final DateTime createdAt;
+  final List<SupportRequestAttachment> attachments;
+  final bool isAdmin;
+
+  const _TimelineItemData({
+    required this.id,
+    required this.title,
+    required this.body,
+    required this.createdAt,
+    required this.attachments,
+    required this.isAdmin,
+  });
+}
+
+class _TimelineItem extends StatelessWidget {
+  final _TimelineItemData data;
+  final bool isLast;
+  final RequestDetailProvider provider;
+
+  const _TimelineItem({
+    required this.data,
+    required this.isLast,
+    required this.provider,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final isExpanded = provider.isItemExpanded(data.id);
+    final iconBg = data.isAdmin ? AppColors.greenColor : AppColors.primaryColor;
+    final iconData = data.isAdmin
+        ? Icons.check_rounded
+        : Icons.description_outlined;
+
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Column(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Icon(iconData, color: Colors.white, size: 18),
+              ),
+              if (!isLast)
+                Expanded(
+                  child: Container(
+                    width: 1,
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.15)
+                        : Colors.grey.shade300,
+                  ),
+                ),
+            ],
           ),
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: AppColors.textLightGrey,
-          ),
-        ),
-        if (detail.description.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.08)
-                  : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              detail.description,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: isDark ? AppColors.textWhite : AppColors.textBlack,
-                height: 1.5,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InkWell(
+                    onTap: () => provider.toggleItemExpansion(data.id),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  data.title,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    color: isDark
+                                        ? AppColors.textWhite
+                                        : AppColors.textBlack,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  l10n.createdOn(
+                                    DateFormat(
+                                      'yyyy-MM-dd HH:mm:ss',
+                                    ).format(data.createdAt.toLocal()),
+                                  ),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: AppColors.textLightGrey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            isExpanded
+                                ? Icons.keyboard_arrow_up_rounded
+                                : Icons.keyboard_arrow_down_rounded,
+                            color: AppColors.textLightGrey,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (isExpanded && data.body.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.08)
+                            : Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            data.body,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: isDark
+                                  ? AppColors.textWhite
+                                  : AppColors.textBlack,
+                              height: 1.5,
+                            ),
+                          ),
+                          if (data.attachments.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            ...data.attachments.map(
+                              (attachment) => _AttachmentRow(
+                                attachment: attachment,
+                                provider: provider,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ),
         ],
-        if (detail.attachments.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          ...detail.attachments.map(
-            (attachment) =>
-                _AttachmentRow(attachment: attachment, provider: provider),
-          ),
-        ],
-      ],
+      ),
     );
   }
 }

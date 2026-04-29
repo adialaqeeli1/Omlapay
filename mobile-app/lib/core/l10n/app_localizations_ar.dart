@@ -1389,6 +1389,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get failedToLoadRequestDetail => 'فشل في تحميل تفاصيل الطلب';
 
   @override
+  String get supportTeamReply => 'رد فريق الدعم';
+
+  @override
   String get inReview => 'قيد المراجعة';
 
   @override
