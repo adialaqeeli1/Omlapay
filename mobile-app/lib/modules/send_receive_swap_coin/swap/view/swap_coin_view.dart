@@ -349,7 +349,7 @@ class SwapCoinView extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final ticker = provider.fromCoin?.localizedCoinTicker(context) ?? '';
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: .spaceBetween,
       children: [
         Text(
           l10n.swapAmountMaxShortLabel,
