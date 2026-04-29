@@ -437,6 +437,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'A secure and user-friendly digital wallet that enables seamless sending, receiving, and storing of cryptocurrencies. We manage your private keys on your behalf, simplifying transactions while maintaining the highest security standards. No need to worry about losing recovery phrases—access your funds effortlessly using your mobile number and password. Enjoy instant transfers, built-in exchange features, and 24/7 customer support, making crypto management as smooth as traditional banking. Our wallet ensures fast, secure, and hassle-free transactions while keeping your assets protected.';
 
   @override
+  String get readMore => 'Read more';
+
+  @override
+  String get readLess => 'Read less';
+
+  @override
   String get faqs => 'FAQs';
 
   @override

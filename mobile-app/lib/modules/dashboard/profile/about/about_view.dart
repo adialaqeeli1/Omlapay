@@ -6,6 +6,7 @@ import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_back_button.dart';
+import '../../../../widgets/common_expandable_text.dart';
 import 'providers/about_provider.dart';
 import 'widgets/about_menu_item.dart';
 
@@ -72,8 +73,9 @@ class _AboutBody extends StatelessWidget {
               ),
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-            Text(
-              description,
+            CommonExpandableText(
+              key: ValueKey(description),
+              text: description,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.brightness == Brightness.dark
                     ? AppColors.textWhite

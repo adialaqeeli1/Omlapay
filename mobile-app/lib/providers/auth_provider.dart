@@ -511,8 +511,20 @@ class AuthProvider extends ChangeNotifier {
       if (user == null || !_state.isAuthenticated) {
         return false;
       }
-      await WalletAddressService.saveUserEmail(user, email);
+      final trimmed = email.trim();
+      await WalletAddressService.saveUserEmail(user, trimmed);
+
+      final updatedUser = user.copyWith(email: trimmed);
+      _state = _state.copyWith(user: updatedUser);
+      await StorageService.setString(
+        AppConstants.userKey,
+        jsonEncode(updatedUser.toJson()),
+      );
       notifyListeners();
+
+      // Pull authoritative profile from server to stay in sync with anything
+      // the change-email flow may have updated alongside the email.
+      unawaited(fetchAccountDetails());
       return true;
     } catch (_) {
       return false;
