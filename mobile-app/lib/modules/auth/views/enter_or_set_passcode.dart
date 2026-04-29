@@ -99,7 +99,12 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
   void _ensureKeyboardOpen() {
     if (!_focusNode.hasFocus) {
       _focusNode.requestFocus();
+      return;
     }
+    // Focus can be retained while the soft keyboard is hidden (system back
+    // button, swipe-down, or a screen-lock cycle). In that state
+    // requestFocus() is a no-op, so ask the platform to re-show it.
+    SystemChannels.textInput.invokeMethod<void>('TextInput.show');
   }
 
   Future<void> _onHiddenInputChanged(
