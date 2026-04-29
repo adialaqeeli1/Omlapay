@@ -60,30 +60,64 @@ class PastRequestsView extends StatelessWidget {
             return const Center(child: CommonLoadingIndicator());
           }
 
-          if (provider.errorKey != null && provider.items.isEmpty) {
-            return _ErrorView(
-              message:
-                  AppException.resolveErrorKey(l10n, provider.errorKey!) ??
-                  l10n.unknownError,
-              onRetry: () => provider.fetchRequests(),
-            );
-          }
-
-          if (provider.items.isEmpty) {
-            return _EmptyView();
-          }
-
-          final sectionWidgets = _buildSections(l10n, provider);
-
-          return PaginatedListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            itemCount: sectionWidgets.length,
-            isLoadingMore: provider.isLoadingMore,
-            hasMore: provider.hasMore,
-            onLoadMore: () => provider.loadMore(),
-            itemBuilder: (context, index) => sectionWidgets[index],
+          return RefreshIndicator(
+            color: AppColors.primaryColor,
+            onRefresh: () => provider.fetchRequests(),
+            child: _buildBody(context, l10n, provider),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildBody(
+    BuildContext context,
+    dynamic l10n,
+    HelpCenterProvider provider,
+  ) {
+    if (provider.errorKey != null && provider.items.isEmpty) {
+      return _ScrollableFill(
+        child: _ErrorView(
+          message:
+              AppException.resolveErrorKey(l10n, provider.errorKey!) ??
+              l10n.unknownError,
+          onRetry: () => provider.fetchRequests(),
+        ),
+      );
+    }
+
+    if (provider.items.isEmpty) {
+      return _ScrollableFill(child: _EmptyView());
+    }
+
+    final sectionWidgets = _buildSections(l10n, provider);
+
+    return PaginatedListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemCount: sectionWidgets.length,
+      isLoadingMore: provider.isLoadingMore,
+      hasMore: provider.hasMore,
+      onLoadMore: () => provider.loadMore(),
+      itemBuilder: (context, index) => sectionWidgets[index],
+    );
+  }
+}
+
+class _ScrollableFill extends StatelessWidget {
+  final Widget child;
+
+  const _ScrollableFill({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: child,
+        ),
       ),
     );
   }

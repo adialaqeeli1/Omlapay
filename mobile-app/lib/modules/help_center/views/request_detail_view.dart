@@ -84,9 +84,14 @@ class RequestDetailView extends StatelessWidget {
                 statusColor: detail.statusColor,
               ),
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: _RequestContent(detail: detail),
+                child: RefreshIndicator(
+                  color: AppColors.primaryColor,
+                  onRefresh: () => provider.fetchDetail(),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
+                    child: _RequestContent(detail: detail),
+                  ),
                 ),
               ),
             ],
