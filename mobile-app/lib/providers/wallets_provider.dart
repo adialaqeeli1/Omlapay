@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../core/extentions/number_extensions.dart';
 import '../core/models/wallet_model/wallet_model.dart';
 import '../modules/send_receive_swap_coin/receive/services/receive_wallets_service.dart';
 import 'global_provider.dart';
@@ -59,7 +60,7 @@ class WalletsProvider extends ChangeNotifier {
       for (final coin in network.coins) {
         if (coin.symbol.toUpperCase() == key) {
           final balance = coin.balance;
-          return balance.toStringAsFixed(4);
+          return balance.toFormattedAmount();
         }
       }
     }
@@ -81,7 +82,7 @@ class WalletsProvider extends ChangeNotifier {
               _globalProvider.selectedCurrency.toUpperCase() == 'SAR'
               ? coin.currentBalanceSar
               : coin.currentBalance;
-          return balance.toStringAsFixed(2);
+          return balance.toFormattedAmount(decimals: 2);
         }
       }
     }

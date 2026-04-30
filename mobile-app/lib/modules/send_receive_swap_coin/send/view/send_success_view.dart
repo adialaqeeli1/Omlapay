@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/extentions/number_extensions.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../routes/app_router.dart';
@@ -30,7 +31,7 @@ class SendSuccessView extends StatelessWidget {
         : provider.quote?.amount ?? provider.amountController.text;
     final parsedAmount = double.tryParse(rawAmount);
     final amount = parsedAmount != null
-        ? parsedAmount.toStringAsFixed(4)
+        ? parsedAmount.toFormattedAmount()
         : rawAmount;
 
     return Scaffold(

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/extentions/number_extensions.dart';
 import '../../../../providers/coins_prices_provider.dart';
 import '../../../../providers/kyc_status_provider.dart';
 import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
@@ -308,7 +309,7 @@ class _TransactionItem extends StatelessWidget {
         style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
       ),
       trailing: Text(
-        '+${double.parse(transaction.amount).toStringAsFixed(4)} ${transaction.assetSymbol}',
+        '+${double.parse(transaction.amount).toFormattedAmount()} ${transaction.assetSymbol}',
         style: TextStyle(
           color: AppColors.greenColor,
           fontWeight: FontWeight.bold,

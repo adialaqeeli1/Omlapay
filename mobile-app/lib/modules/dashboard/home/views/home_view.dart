@@ -7,6 +7,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/extentions/number_extensions.dart';
 
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
@@ -435,7 +436,7 @@ class _HomeViewState extends State<HomeView> {
                 Text(
                   transaction.isFailed
                       ? context.l10n!.failed
-                      : '${double.tryParse(transaction.amount)?.toStringAsFixed(4) ?? transaction.amount} ${transaction.assetSymbol}',
+                      : '${double.tryParse(transaction.amount)?.toFormattedAmount() ?? transaction.amount} ${transaction.assetSymbol}',
                   textDirection: transaction.isFailed
                       ? null
                       : TextDirection.ltr,

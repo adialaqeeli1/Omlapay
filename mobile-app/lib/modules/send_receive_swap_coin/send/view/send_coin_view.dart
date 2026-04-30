@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/extentions/number_extensions.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
@@ -338,7 +339,7 @@ class SendCoinView extends StatelessWidget {
         onTapOutside: (event) => FocusScope.of(context).unfocus(),
         decoration: InputDecoration(
           hintText: l10n.minAmountHint(
-            provider.minSendAmount.toStringAsFixed(4),
+            provider.minSendAmount.toFormattedAmount(),
           ),
           hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
           contentPadding: const EdgeInsets.symmetric(
@@ -376,7 +377,7 @@ class SendCoinView extends StatelessWidget {
             style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
           ),
           Text(
-            '${max.toStringAsFixed(4)} $ticker'.trim(),
+            '${max.toFormattedAmount()} $ticker'.trim(),
             style: TextStyle(color: colorScheme.onSurface, fontSize: 12),
           ),
         ],
@@ -413,7 +414,7 @@ class SendCoinView extends StatelessWidget {
     if (fee.isEmpty || (feeAmount != null && feeAmount == 0)) {
       return Text(l10n.feeFree, style: textStyle);
     }
-    final display = feeAmount != null ? feeAmount.toStringAsFixed(4) : fee;
+    final display = feeAmount != null ? feeAmount.toFormattedAmount() : fee;
     return Text(display, style: textStyle);
   }
 
