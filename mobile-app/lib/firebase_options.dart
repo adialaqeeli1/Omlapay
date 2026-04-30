@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDXck68_GOZEqQspOUXzVIactlBtuLdORc',
-    appId: '1:324262811557:android:27128473cbeb71bb7dba4c',
+    appId: '1:324262811557:android:5acc3994491746847dba4c',
     messagingSenderId: '324262811557',
     projectId: 'omlapay-4d08d',
     storageBucket: 'omlapay-4d08d.firebasestorage.app',

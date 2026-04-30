@@ -1,10 +1,12 @@
 import 'package:country_picker/country_picker.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/theme/theme.dart';
 import 'core/services/storage_helper.dart';
+import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/connectivity_provider.dart';
 import 'providers/locale_provider.dart';
@@ -27,8 +29,15 @@ Future<void> _initializeApp() async {
   });
 }
 
+Future<void> _initFirebsae() async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize firebase related settings
+  await _initFirebsae();
 
   // Initialize everything in background (blocking)
   await _initializeApp();

@@ -28,10 +28,17 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_dartobservatory._tcp</string>
+		<string>_dartVmService._tcp</string>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>OmlaPay needs camera access to scan QR codes for wallet addresses and payments.</string>
 	<key>NSContactsUsageDescription</key>
 	<string>OmlaPay needs access to your contacts to send payments to people in your address book.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Allow Flutter tools on your computer to connect and debug your application. This prompt will not appear on release builds.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>OmlaPay needs your location during verification to help confirm your current location.</string>
 	<key>NSMicrophoneUsageDescription</key>
