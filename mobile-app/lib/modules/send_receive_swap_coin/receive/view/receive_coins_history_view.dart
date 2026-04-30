@@ -308,7 +308,7 @@ class _TransactionItem extends StatelessWidget {
         style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
       ),
       trailing: Text(
-        '+${double.parse(transaction.amount).toStringAsFixed(5)} ${transaction.assetSymbol}',
+        '+${double.parse(transaction.amount).toStringAsFixed(4)} ${transaction.assetSymbol}',
         style: TextStyle(
           color: AppColors.greenColor,
           fontWeight: FontWeight.bold,

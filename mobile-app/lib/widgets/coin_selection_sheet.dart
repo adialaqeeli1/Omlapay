@@ -83,12 +83,23 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
     super.dispose();
   }
 
+  double _coinBalance(WalletsProvider walletsProvider, CoinModel coin) {
+    final raw = walletsProvider.balanceForCoin(coin.symbol).replaceAll(',', '');
+    return double.tryParse(raw) ?? 0.0;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
     final colorScheme = Theme.of(context).colorScheme;
     final selectedCurrency = context.watch<GlobalProvider>().selectedCurrency;
     final walletsProvider = context.watch<WalletsProvider>();
+    final sortedCoins = [..._filteredCoins]..sort(
+      (a, b) => _coinBalance(
+        walletsProvider,
+        b,
+      ).compareTo(_coinBalance(walletsProvider, a)),
+    );
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surface,
@@ -176,11 +187,11 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
           const SizedBox(height: 10),
           Expanded(
             child: ListView.separated(
-              itemCount: _filteredCoins.length,
+              itemCount: sortedCoins.length,
               separatorBuilder: (context, index) => const SizedBox(height: 8),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemBuilder: (context, index) {
-                final coin = _filteredCoins[index];
+                final coin = sortedCoins[index];
                 final isSelected = coin == widget.selectedCoin;
                 final theme = context.theme;
                 final itemColorScheme = theme.colorScheme;

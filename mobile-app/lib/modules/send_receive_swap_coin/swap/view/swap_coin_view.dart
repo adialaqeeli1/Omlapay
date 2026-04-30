@@ -106,7 +106,7 @@ class SwapCoinView extends StatelessWidget {
                             hintText: provider.fromCoinSwapMinAmount > 0
                                 ? l10n.minAmountHint(
                                     provider.fromCoinSwapMinAmount
-                                        .toStringAsFixed(5),
+                                        .toStringAsFixed(4),
                                   )
                                 : null,
                             bottomHelper: _buildFromCoinMaxRow(
@@ -356,7 +356,7 @@ class SwapCoinView extends StatelessWidget {
           style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
         ),
         Text(
-          '${max.toStringAsFixed(5)} $ticker'.trim(),
+          '${max.toStringAsFixed(4)} $ticker'.trim(),
           style: TextStyle(color: colorScheme.onSurface, fontSize: 12),
         ),
       ],

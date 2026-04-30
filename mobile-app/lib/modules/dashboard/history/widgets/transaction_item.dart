@@ -87,7 +87,7 @@ class TransactionItem extends StatelessWidget {
               child: Text(
                 transaction.isFailed
                     ? context.l10n!.failed
-                    : '${(double.tryParse(transaction.amount) ?? 0).toStringAsFixed(5)} ${transaction.assetSymbol}',
+                    : '${(double.tryParse(transaction.amount) ?? 0).toStringAsFixed(4)} ${transaction.assetSymbol}',
                 textDirection: transaction.isFailed ? null : TextDirection.ltr,
                 style: context.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w600,

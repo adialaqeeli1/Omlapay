@@ -338,7 +338,7 @@ class SendCoinView extends StatelessWidget {
         onTapOutside: (event) => FocusScope.of(context).unfocus(),
         decoration: InputDecoration(
           hintText: l10n.minAmountHint(
-            provider.minSendAmount.toStringAsFixed(5),
+            provider.minSendAmount.toStringAsFixed(4),
           ),
           hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
           contentPadding: const EdgeInsets.symmetric(
@@ -376,7 +376,7 @@ class SendCoinView extends StatelessWidget {
             style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
           ),
           Text(
-            '${max.toStringAsFixed(5)} $ticker'.trim(),
+            '${max.toStringAsFixed(4)} $ticker'.trim(),
             style: TextStyle(color: colorScheme.onSurface, fontSize: 12),
           ),
         ],
@@ -413,7 +413,7 @@ class SendCoinView extends StatelessWidget {
     if (fee.isEmpty || (feeAmount != null && feeAmount == 0)) {
       return Text(l10n.feeFree, style: textStyle);
     }
-    final display = feeAmount != null ? feeAmount.toStringAsFixed(5) : fee;
+    final display = feeAmount != null ? feeAmount.toStringAsFixed(4) : fee;
     return Text(display, style: textStyle);
   }
 

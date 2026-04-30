@@ -24,7 +24,7 @@ class SwapSuccessView extends StatelessWidget {
         : provider.toAmountController.text;
     final parsedToAmount = double.tryParse(rawToAmount);
     final toAmount = parsedToAmount != null
-        ? parsedToAmount.toStringAsFixed(5)
+        ? parsedToAmount.toStringAsFixed(4)
         : rawToAmount;
     final toAmountUsd = quote?.estimatedToAmountUsd ?? '0.00';
     final colorScheme = Theme.of(context).colorScheme;
@@ -70,6 +70,9 @@ class SwapSuccessView extends StatelessWidget {
                     : Border.all(color: colorScheme.outlineVariant),
               ),
               child: Column(
+                crossAxisAlignment: .center,
+                mainAxisAlignment: .center,
+                mainAxisSize: .min,
                 children: [
                   // Icon
                   SvgPicture.asset(
@@ -88,43 +91,44 @@ class SwapSuccessView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        '$toAmount ${toCoin?.localizedCoinTicker(context) ?? ''}',
-                        style: TextStyle(
-                          color: isDark
-                              ? AppColors.textWhite
-                              : colorScheme.onSurface,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF1E2E2C)
-                              : AppColors.tealColor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          '$toAmountUsd USD',
-                          style: const TextStyle(
-                            color: AppColors.tealColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    '$toAmount ${toCoin?.localizedCoinTicker(context) ?? ''}',
+                    style: TextStyle(
+                      color: isDark
+                          ? AppColors.textWhite
+                          : colorScheme.onSurface,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   crossAxisAlignment: CrossAxisAlignment.center,
+                  //   children: [
+
+                  //     const SizedBox(width: 8),
+                  //     Container(
+                  //       padding: const EdgeInsets.symmetric(
+                  //         horizontal: 8,
+                  //         vertical: 4,
+                  //       ),
+                  //       decoration: BoxDecoration(
+                  //         color: isDark
+                  //             ? const Color(0xFF1E2E2C)
+                  //             : AppColors.tealColor.withValues(alpha: 0.12),
+                  //         borderRadius: BorderRadius.circular(6),
+                  //       ),
+                  //       child: Text(
+                  //         '$toAmountUsd USD',
+                  //         style: const TextStyle(
+                  //           color: AppColors.tealColor,
+                  //           fontSize: 14,
+                  //           fontWeight: FontWeight.w500,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
                 ],
               ),
             ),
