@@ -204,7 +204,7 @@ class SwapProvider extends ChangeNotifier {
     if (coin == null) return;
     final swapMax = double.tryParse(coin.swapMaxAmount ?? '');
     if (swapMax != null && swapMax > 0) {
-      fromAmountController.text = swapMax.toStringAsFixed(5);
+      fromAmountController.text = swapMax.toStringAsFixed(4);
     } else {
       fromAmountController.text = coin.amount;
     }
@@ -305,7 +305,7 @@ class SwapProvider extends ChangeNotifier {
         _streamFailure = null;
         _transportError = null;
         final receive = double.tryParse(quote.youReceive);
-        final formatted = receive == null ? '' : receive.toStringAsFixed(5);
+        final formatted = receive == null ? '' : receive.toStringAsFixed(4);
         if (toAmountController.text != formatted) {
           toAmountController.text = formatted;
         }

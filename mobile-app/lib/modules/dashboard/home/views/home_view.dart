@@ -341,8 +341,11 @@ class _HomeViewState extends State<HomeView> {
               name: coin.name.isEmpty ? coin.symbol : coin.name,
               amount: walletsProvider.balanceForCoin(coin.symbol),
               networkIconUrl: coin.networkIconUrl,
-              currentPrice:
-                  '${walletsProvider.balanceForCoinConverted(coin.symbol)} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',
+              currentPrice: walletsProvider.balanceForCoinConverted(
+                coin.symbol,
+              ),
+              // currentPrice:
+              //     '${walletsProvider.balanceForCoinConverted(coin.symbol)} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',
               // currentPrice: walletsProvider.balanceForCoinConverted(
               //   coin.symbol,
               // ),
@@ -432,7 +435,7 @@ class _HomeViewState extends State<HomeView> {
                 Text(
                   transaction.isFailed
                       ? context.l10n!.failed
-                      : '${double.tryParse(transaction.amount)?.toStringAsFixed(5) ?? transaction.amount} ${transaction.assetSymbol}',
+                      : '${double.tryParse(transaction.amount)?.toStringAsFixed(4) ?? transaction.amount} ${transaction.assetSymbol}',
                   textDirection: transaction.isFailed
                       ? null
                       : TextDirection.ltr,
