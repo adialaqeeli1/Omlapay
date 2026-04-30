@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:provider/provider.dart';
 import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/extentions/number_extensions.dart';
 import '../../../../core/models/transaction_model/transaction_model.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../providers/coins_prices_provider.dart';
@@ -87,7 +88,7 @@ class TransactionItem extends StatelessWidget {
               child: Text(
                 transaction.isFailed
                     ? context.l10n!.failed
-                    : '${(double.tryParse(transaction.amount) ?? 0).toStringAsFixed(4)} ${transaction.assetSymbol}',
+                    : '${(double.tryParse(transaction.amount) ?? 0).toFormattedAmount()} ${transaction.assetSymbol}',
                 textDirection: transaction.isFailed ? null : TextDirection.ltr,
                 style: context.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w600,

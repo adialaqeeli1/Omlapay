@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/extentions/number_extensions.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../routes/app_router.dart';
 import '../../../../core/theme/theme.dart';
@@ -24,7 +25,7 @@ class SwapSuccessView extends StatelessWidget {
         : provider.toAmountController.text;
     final parsedToAmount = double.tryParse(rawToAmount);
     final toAmount = parsedToAmount != null
-        ? parsedToAmount.toStringAsFixed(4)
+        ? parsedToAmount.toFormattedAmount()
         : rawToAmount;
     final toAmountUsd = quote?.estimatedToAmountUsd ?? '0.00';
     final colorScheme = Theme.of(context).colorScheme;

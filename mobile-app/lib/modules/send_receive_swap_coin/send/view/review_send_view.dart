@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/extentions/number_extensions.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/app_exception.dart';
@@ -33,7 +34,7 @@ class ReviewSendView extends StatelessWidget {
     final feeAmount = double.tryParse((quote?.fee ?? '').trim());
     final displayFee = (feeAmount == null || feeAmount <= 0)
         ? l10n.feeFree
-        : '${feeAmount.toStringAsFixed(4)} $ticker';
+        : '${feeAmount.toFormattedAmount()} $ticker';
     final selectedCoin = provider.selectedCoin;
     final senderAddress = selectedCoin == null
         ? null

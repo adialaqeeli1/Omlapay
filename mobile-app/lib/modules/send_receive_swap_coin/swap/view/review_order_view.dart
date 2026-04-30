@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:omlapay_mobile_app/core/extentions/context_extensions.dart';
+import 'package:omlapay_mobile_app/core/extentions/number_extensions.dart';
 import 'package:omlapay_mobile_app/widgets/common_back_button.dart';
 import 'package:provider/provider.dart';
 import 'package:crypto_font_icons/crypto_font_icons.dart';
@@ -93,7 +94,7 @@ class ReviewOrderView extends StatelessWidget {
                                   double.parse(
                                     quote?.youPay ??
                                         provider.fromAmountController.text,
-                                  ).toStringAsFixed(4),
+                                  ).toFormattedAmount(),
                                   style: TextStyle(
                                     color: colorScheme.onSurface,
                                     fontSize: 24,
@@ -160,7 +161,7 @@ class ReviewOrderView extends StatelessWidget {
                                   double.parse(
                                     quote?.youReceive ??
                                         provider.toAmountController.text,
-                                  ).toStringAsFixed(4),
+                                  ).toFormattedAmount(),
                                   style: TextStyle(
                                     color: colorScheme.onSurface,
                                     fontSize: 24,
