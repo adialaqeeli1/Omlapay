@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "324262811557",
+    "project_id": "omlapay-4d08d",
+    "storage_bucket": "omlapay-4d08d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324262811557:android:27128473cbeb71bb7dba4c",
+        "android_client_info": {
+          "package_name": "com.omlapay.applcation"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXck68_GOZEqQspOUXzVIactlBtuLdORc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
