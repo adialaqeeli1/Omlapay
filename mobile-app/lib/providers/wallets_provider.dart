@@ -88,6 +88,31 @@ class WalletsProvider extends ChangeNotifier {
     return '0.00';
   }
 
+  /// Returns the current user's deposit address for [symbol] on [network].
+  ///
+  /// When [network] is provided, only coins on that network are considered;
+  /// otherwise the first matching symbol across networks is returned. Returns
+  /// `null` when no match is found or the address is unavailable.
+  String? addressForCoin(String symbol, {String? network}) {
+    final symbolKey = symbol.trim().toUpperCase();
+    if (symbolKey.isEmpty) return null;
+    final networkKey = network?.trim().toUpperCase();
+
+    for (final net in _wallets) {
+      if (networkKey != null &&
+          networkKey.isNotEmpty &&
+          net.network.toUpperCase() != networkKey) {
+        continue;
+      }
+      for (final coin in net.coins) {
+        if (coin.symbol.toUpperCase() == symbolKey) {
+          return coin.address;
+        }
+      }
+    }
+    return null;
+  }
+
   /// Public method to re-fetch wallets (e.g. pull-to-refresh on receive screen).
   Future<void> refreshWallets() => _fetchWallets();
 

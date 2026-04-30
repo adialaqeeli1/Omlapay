@@ -30,8 +30,17 @@ class ReviewSendView extends StatelessWidget {
     final displayNetwork = (quote?.network.isNotEmpty ?? false)
         ? quote!.network
         : provider.network;
-    final displayFee = quote?.fee ?? '';
-    final walletAddress = provider.recipientController.text.trim();
+    final feeAmount = double.tryParse((quote?.fee ?? '').trim());
+    final displayFee = (feeAmount == null || feeAmount <= 0)
+        ? l10n.feeFree
+        : '${feeAmount.toStringAsFixed(4)} $ticker';
+    final selectedCoin = provider.selectedCoin;
+    final senderAddress = selectedCoin == null
+        ? null
+        : provider.walletsProvider.addressForCoin(
+            selectedCoin.symbol,
+            network: provider.network,
+          );
     final recipientName = quote?.recipientName?.trim() ?? '';
 
     return Scaffold(
@@ -59,10 +68,10 @@ class ReviewSendView extends StatelessWidget {
                     label: l10n.network,
                     trailing: _NetworkPill(network: displayNetwork),
                   ),
-                  if (walletAddress.isNotEmpty)
+                  if (senderAddress != null && senderAddress.isNotEmpty)
                     _DetailRowData(
                       label: l10n.walletAddress,
-                      valueText: walletAddress,
+                      valueText: senderAddress,
                     ),
                   if (recipientName.isNotEmpty)
                     _DetailRowData(
@@ -72,7 +81,7 @@ class ReviewSendView extends StatelessWidget {
                     ),
                   _DetailRowData(
                     label: l10n.transactionFees,
-                    valueText: '$displayFee $ticker'.trim(),
+                    valueText: displayFee,
                   ),
                 ],
               ),
@@ -89,8 +98,9 @@ class ReviewSendView extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.tealColor,
                     foregroundColor: colorScheme.onPrimary,
-                    disabledBackgroundColor:
-                        AppColors.tealColor.withValues(alpha: 0.5),
+                    disabledBackgroundColor: AppColors.tealColor.withValues(
+                      alpha: 0.5,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(32),
                     ),
@@ -101,8 +111,9 @@ class ReviewSendView extends StatelessWidget {
                           height: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.4,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         )
                       : Text(
