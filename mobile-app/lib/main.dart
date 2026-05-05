@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'core/constants/constants.dart';
 import 'core/theme/theme.dart';
+import 'core/services/push_notification_service.dart';
 import 'core/services/storage_helper.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
@@ -41,6 +43,13 @@ void main() async {
 
   // Initialize everything in background (blocking)
   await _initializeApp();
+
+  // Start FCM push-notification token-refresh listener. Re-registers when
+  // FCM rotates the token, but only if the user is currently authenticated.
+  PushNotificationService.instance.startTokenRefreshListener(
+    isAuthenticated: () =>
+        StorageService.getString(AppConstants.tokenKey) != null,
+  );
 
   // Run the app
   runApp(const MyApp());

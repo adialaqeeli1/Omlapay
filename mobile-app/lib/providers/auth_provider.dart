@@ -9,6 +9,7 @@ import '../core/models/auth_state/auth_state.dart';
 import '../core/models/user_model/user_model.dart';
 import '../core/models/wallet_model/wallet_model.dart';
 import '../core/mock_data/mock_data.dart';
+import '../core/services/push_notification_service.dart';
 import '../core/services/storage_helper.dart';
 import '../core/utils/app_exception.dart';
 import '../core/utils/api_message_helper.dart';
@@ -136,6 +137,8 @@ class AuthProvider extends ChangeNotifier {
         notifyListeners();
         // Refresh account details in background to sync latest profile data
         fetchAccountDetails();
+        // Register FCM push-notification device token with backend (fire-and-forget).
+        unawaited(PushNotificationService.instance.registerCurrentDevice());
         return true;
       }
 

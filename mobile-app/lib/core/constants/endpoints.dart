@@ -138,6 +138,11 @@ class Endpoints {
   /// User account details endpoint.
   static String get accountDetails => '$apiVersion/user/account-details';
 
+  /// Register an FCM device token for push notifications.
+  /// Body: `device_token`, `device_model`, `device_uuid`.
+  static String get pushNotificationDevices =>
+      '$apiVersion/notifications/devices';
+
   /// Notifications; supports query params `limit` and `cursor`.
   static String get notifications => '$apiVersion/notifications';
 
