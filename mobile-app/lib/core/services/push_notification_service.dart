@@ -1,29 +1,203 @@
 import 'dart:async';
 import 'dart:io' show Platform;
+import 'dart:ui' show Color;
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../routes/app_router.dart';
 import '../constants/endpoints.dart';
 import '../models/push_notification_device_registration_request/push_notification_device_registration_request.dart';
 import 'api_helper.dart';
 
-/// Orchestrates FCM push-notification device registration with the backend.
+/// Top-level FCM background handler. Runs in a separate isolate when the app
+/// is in the background or terminated, so it MUST be a top-level (or static)
+/// function annotated with `@pragma("vm:entry-point")`.
 ///
-/// Fire-and-forget: every failure path is caught and logged; nothing is
-/// rethrown. Safe to call from any auth-success site.
+/// For this to display anything, the backend MUST send a **data-only** FCM
+/// payload with `awesome_notifications`-compatible keys (at minimum
+/// `id`, `channelKey`, `title`, `body`). If the backend sends a `notification`
+/// payload, FCM displays its default banner before this handler runs and we
+/// cannot suppress it client-side.
+@pragma('vm:entry-point')
+Future<void> pushNotificationBackgroundHandler(RemoteMessage message) async {
+  if (message.data.isEmpty) return;
+  try {
+    await AwesomeNotifications().createNotificationFromJsonData(message.data);
+  } catch (e) {
+    debugPrint('[PushNotification] background createFromJsonData failed: $e');
+  }
+}
+
+/// Orchestrates FCM push-notification handling:
+///   - Awesome Notifications channel + listener setup.
+///   - Bridging FCM messages (foreground/background/terminated) into local
+///     notifications shown via Awesome Notifications.
+///   - Device registration with the backend.
+///   - Token refresh handling.
+///
+/// Fire-and-forget for registration: every failure path is caught and logged.
 class PushNotificationService {
   PushNotificationService._();
   static final PushNotificationService instance = PushNotificationService._();
 
   static const String _logTag = '[PushNotification]';
 
+  /// Default channel used when the backend's payload doesn't specify a
+  /// `channelKey`. Backend may set `channelKey` in `data` to target a
+  /// different channel registered at init.
+  static const String defaultChannelKey = 'omlapay_default';
+
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
 
   StreamSubscription<String>? _refreshSubscription;
+  StreamSubscription<RemoteMessage>? _foregroundSubscription;
+  StreamSubscription<RemoteMessage>? _openedAppSubscription;
   bool Function()? _isAuthenticatedCheck;
+
+  // ---------------------------------------------------------------------------
+  // Initialization
+  // ---------------------------------------------------------------------------
+
+  /// Initializes Awesome Notifications, registers the FCM background handler,
+  /// and wires foreground / opened-app / terminated-tap streams so every
+  /// FCM message displays through Awesome Notifications instead of the
+  /// default FCM banner (when backend sends data-only payloads).
+  ///
+  /// Call once from `main()` after `Firebase.initializeApp()` and before
+  /// `runApp()`.
+  Future<void> initializeNotifications() async {
+    await AwesomeNotifications().initialize(
+      // null falls back to the application's launcher icon.
+      null,
+      [
+        NotificationChannel(
+          channelKey: defaultChannelKey,
+          channelName: 'OmlaPay notifications',
+          channelDescription: 'General notifications from OmlaPay',
+          defaultColor: const Color(0xFF111111),
+          importance: NotificationImportance.High,
+          channelShowBadge: true,
+          playSound: true,
+          enableVibration: true,
+        ),
+      ],
+      debug: kDebugMode,
+    );
+
+    await AwesomeNotifications().setListeners(
+      onActionReceivedMethod: _onActionReceivedMethod,
+    );
+
+    // Background handler must be registered before runApp(). It runs in a
+    // separate isolate when a message arrives while the app is killed or
+    // backgrounded.
+    FirebaseMessaging.onBackgroundMessage(pushNotificationBackgroundHandler);
+
+    // Foreground messages — display via Awesome Notifications (FCM does not
+    // show a banner in foreground by default).
+    _foregroundSubscription?.cancel();
+    _foregroundSubscription =
+        FirebaseMessaging.onMessage.listen(_displayForegroundMessage);
+
+    // User tapped the notification while app was in background.
+    _openedAppSubscription?.cancel();
+    _openedAppSubscription =
+        FirebaseMessaging.onMessageOpenedApp.listen(_routeFromMessage);
+
+    // App was launched (cold start) by tapping a notification.
+    final initialMessage = await _messaging.getInitialMessage();
+    if (initialMessage != null) {
+      _routeFromMessage(initialMessage);
+    }
+
+    // Ensure system-level notification permission is granted. Same OS
+    // permission as FCM `requestPermission` — calling both is safe.
+    final isAllowed = await AwesomeNotifications().isNotificationAllowed();
+    if (!isAllowed) {
+      await AwesomeNotifications().requestPermissionToSendNotifications();
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Display bridging (FCM → Awesome Notifications)
+  // ---------------------------------------------------------------------------
+
+  Future<void> _displayForegroundMessage(RemoteMessage message) async {
+    // Preferred path: backend sends data-only payload with
+    // awesome_notifications-compatible keys.
+    if (message.data.isNotEmpty) {
+      try {
+        await AwesomeNotifications()
+            .createNotificationFromJsonData(message.data);
+        return;
+      } catch (e) {
+        debugPrint('$_logTag createFromJsonData failed, falling back: $e');
+      }
+    }
+
+    // Fallback: build a notification from `message.notification` (when
+    // backend sends a `notification` payload) or from generic `title`/`body`
+    // keys in `data`.
+    final notification = message.notification;
+    final title = notification?.title ?? message.data['title']?.toString();
+    final body = notification?.body ?? message.data['body']?.toString();
+
+    if (title == null && body == null) {
+      debugPrint('$_logTag onMessage with no displayable content — skipping');
+      return;
+    }
+
+    final payload = <String, String>{
+      for (final entry in message.data.entries)
+        entry.key: entry.value.toString(),
+    };
+
+    try {
+      await AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: DateTime.now().millisecondsSinceEpoch.remainder(1 << 31),
+          channelKey: defaultChannelKey,
+          title: title,
+          body: body,
+          payload: payload,
+          notificationLayout: NotificationLayout.Default,
+        ),
+      );
+    } catch (e) {
+      debugPrint('$_logTag fallback createNotification failed: $e');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Tap → navigation
+  // ---------------------------------------------------------------------------
+
+  void _routeFromMessage(RemoteMessage message) {
+    _navigateToNotificationsList();
+  }
+
+  @pragma('vm:entry-point')
+  static Future<void> _onActionReceivedMethod(
+    ReceivedAction receivedAction,
+  ) async {
+    instance._navigateToNotificationsList();
+  }
+
+  void _navigateToNotificationsList() {
+    try {
+      AppRouter.router.go(Routes.notifications);
+    } catch (e) {
+      debugPrint('$_logTag tap routing failed: $e');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Backend registration
+  // ---------------------------------------------------------------------------
 
   /// Registers the current device's FCM token with the backend.
   ///
@@ -101,6 +275,10 @@ class PushNotificationService {
       },
     );
   }
+
+  // ---------------------------------------------------------------------------
+  // Device info helpers
+  // ---------------------------------------------------------------------------
 
   Future<String?> _readDeviceUuid() async {
     if (Platform.isIOS) {
