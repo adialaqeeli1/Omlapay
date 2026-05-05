@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/extentions/context_extensions.dart';
+import '../../core/services/push_notification_service.dart';
 import '../../core/services/storage_helper.dart';
 import '../../core/constants/constants.dart';
 import '../../modules/auth/providers/login_provider.dart';
@@ -66,6 +69,9 @@ class _SplashViewState extends State<SplashView>
           GoRouter.of(context).go(Routes.loginOrRegister);
           return;
         }
+
+        // Register FCM push-notification device token with backend (fire-and-forget).
+        unawaited(PushNotificationService.instance.registerCurrentDevice());
 
         GoRouter.of(context).go(
           Routes.enterOrSetPasscode,
