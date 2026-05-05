@@ -1,5 +1,5 @@
 # Uncomment this line to define a global platform for your project
-platform :ios, '18.0'
+platform :ios, '15.0'
 
 source 'https://cdn.cocoapods.org/'
 source 'https://github.com/SumSubstance/Specs.git'
@@ -51,10 +51,19 @@ target 'Runner' do
   end
 end
 
+# awesome_notifications pod modification — main target settings.
+awesome_pod_file = File.expand_path(File.join('plugins', 'awesome_notifications',
+  'ios', 'Scripts', 'AwesomePodFile'), '.symlinks')
+require awesome_pod_file
+update_awesome_main_target_settings('Runner', File.dirname(File.realpath(__FILE__)), flutter_root)
+
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     target.build_configurations.each do |config|
+      # Pin every pod to iOS 15.0 so awesome_notifications + Firebase 4 are
+      # satisfied and pods don't drift back to their podspec defaults.
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
       config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
         '$(inherited)',
         'PERMISSION_CAMERA=1',
@@ -62,4 +71,7 @@ post_install do |installer|
       ]
     end
   end
+
+  # awesome_notifications pod modification — apply build settings to plugin pods.
+  update_awesome_pod_build_settings(installer)
 end

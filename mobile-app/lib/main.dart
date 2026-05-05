@@ -41,6 +41,10 @@ void main() async {
   // Initialize firebase related settings
   await _initFirebsae();
 
+  // Initialize Awesome Notifications + FCM bridging (foreground/background/
+  // terminated handlers). Must run after Firebase init and before runApp().
+  await PushNotificationService.instance.initializeNotifications();
+
   // Initialize everything in background (blocking)
   await _initializeApp();
 
