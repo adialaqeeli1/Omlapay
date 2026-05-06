@@ -3,14 +3,18 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'change_phone_models.freezed.dart';
 part 'change_phone_models.g.dart';
 
-/// Response from step1-request and step3-request (OTP sent to a phone number).
-/// When 2FA is enabled, step1 also returns [maskedEmail].
+/// Response from step1-request and step4-request-new-phone.
+/// Step 1 sends an OTP to the user's email (returns [maskedEmail]).
+/// Step 4 sends an OTP to the new phone number (returns [maskedMobile] and a
+/// fresh [changePhoneToken] used by step 5).
 @freezed
 abstract class ChangePhoneRequestData with _$ChangePhoneRequestData {
   const factory ChangePhoneRequestData({
-    @JsonKey(name: 'masked_phone') required String maskedMobile,
     @JsonKey(name: 'otp_expiry_seconds') required int otpExpirySeconds,
+    @JsonKey(name: 'verification_type') String? verificationType,
+    @JsonKey(name: 'masked_phone') String? maskedMobile,
     @JsonKey(name: 'masked_email') String? maskedEmail,
+    @JsonKey(name: 'change_phone_token') String? changePhoneToken,
   }) = _ChangePhoneRequestData;
 
   factory ChangePhoneRequestData.fromJson(Map<String, dynamic> json) =>

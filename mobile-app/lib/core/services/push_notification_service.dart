@@ -310,6 +310,19 @@ class PushNotificationService {
   // Backend registration
   // ---------------------------------------------------------------------------
 
+  /// Returns the current device's FCM registration token, or `null` if it
+  /// can't be retrieved. Never throws — used by best-effort flows like logout.
+  Future<String?> currentDeviceToken() async {
+    try {
+      final token = await _messaging.getToken();
+      if (token == null || token.isEmpty) return null;
+      return token;
+    } catch (e) {
+      debugPrint('$_logTag currentDeviceToken failed: $e');
+      return null;
+    }
+  }
+
   /// Registers the current device's FCM token with the backend.
   ///
   /// Sequence:

@@ -5,7 +5,8 @@ import 'package:flutter/foundation.dart';
 import '../../../core/utils/app_exception.dart';
 import '../services/change_phone_service.dart';
 
-/// OTP step for [change-phone/step3-request] + [change-phone/step4-verify] (new number).
+/// OTP step for [change-phone/step4-request-new-phone] +
+/// [change-phone/step5-verify-new-phone] (new number).
 class ChangePhoneOtpProvider extends ChangeNotifier {
   ChangePhoneOtpProvider({
     required this.changePhoneToken,
@@ -17,7 +18,8 @@ class ChangePhoneOtpProvider extends ChangeNotifier {
 
   static const int otpLength = 6;
 
-  final String changePhoneToken;
+  /// Token used by step 5. Refreshed when the user resends an OTP via step 4.
+  String changePhoneToken;
   final String countryCode;
   final String newMobileNumber;
   final String maskedMobile;
@@ -69,11 +71,15 @@ class ChangePhoneOtpProvider extends ChangeNotifier {
         _startCountdown(seconds);
         return;
       }
-      final result = await ChangePhoneService.step3Request(
+      final result = await ChangePhoneService.step4RequestNewPhone(
         changePhoneToken: changePhoneToken,
         countryCode: countryCode,
         newMobileNumber: newMobileNumber,
       );
+      final refreshedToken = result.changePhoneToken;
+      if (refreshedToken != null && refreshedToken.isNotEmpty) {
+        changePhoneToken = refreshedToken;
+      }
       _startCountdown(result.otpExpirySeconds);
     } finally {
       _isRequestingOtp = false;
@@ -93,7 +99,7 @@ class ChangePhoneOtpProvider extends ChangeNotifier {
     _verifyErrorKey = null;
     notifyListeners();
     try {
-      await ChangePhoneService.step4Verify(
+      await ChangePhoneService.step5VerifyNewPhone(
         changePhoneToken: changePhoneToken,
         otp: _otp,
       );

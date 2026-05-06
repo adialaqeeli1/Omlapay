@@ -26,6 +26,7 @@ class Endpoints {
   static String get inviteUser => '$apiVersion/user/invite';
   static String get home => '$apiVersion/home';
   static String get sessionStatus => '$apiVersion/auth/session-status';
+  static String get authLogout => '$apiVersion/auth/logout';
   static String get forgotPasscode => '$apiVersion/auth/forgot-passcode';
   static String get forgotPasscodeResendOtp =>
       '$apiVersion/auth/forgot-passcode/resend-otp';
@@ -34,15 +35,17 @@ class Endpoints {
   static String get forgotPasscodeReset => '$apiVersion/auth/forgot-passcode/reset';
   static String get changePasscode => '$apiVersion/user/settings/change-passcode';
 
-  /// Settings → change phone (4-step flow).
+  /// Settings → change phone (5-step flow).
   static String get changePhoneStep1Request =>
       '$apiVersion/user/settings/change-phone/step1-request';
-  static String get changePhoneStep2Verify =>
-      '$apiVersion/user/settings/change-phone/step2-verify';
-  static String get changePhoneStep3Request =>
-      '$apiVersion/user/settings/change-phone/step3-request';
-  static String get changePhoneStep4Verify =>
-      '$apiVersion/user/settings/change-phone/step4-verify';
+  static String get changePhoneStep2VerifyEmail =>
+      '$apiVersion/user/settings/change-phone/step2-verify-email';
+  static String get changePhoneStep3VerifyPasscode =>
+      '$apiVersion/user/settings/change-phone/step3-verify-passcode';
+  static String get changePhoneStep4RequestNewPhone =>
+      '$apiVersion/user/settings/change-phone/step4-request-new-phone';
+  static String get changePhoneStep5VerifyNewPhone =>
+      '$apiVersion/user/settings/change-phone/step5-verify-new-phone';
 
   /// Settings → change email (5-step flow).
   static String get changeEmailStep1Request =>

@@ -27,6 +27,8 @@ class LoginProvider extends ChangeNotifier {
   static const String modeChangePasscodeConfirm = 'change_passcode_confirm';
   static const String modeChangeEmailConfirmPasscode =
       'change_email_confirm_passcode';
+  static const String modeChangePhoneConfirmPasscode =
+      'change_phone_confirm_passcode';
   static const String extraPendingPasscodeKey = 'pendingPasscode';
   static const String extraCurrentPasscodeKey = 'currentPasscode';
   static const String extraResetTokenKey = 'resetToken';
@@ -34,6 +36,9 @@ class LoginProvider extends ChangeNotifier {
 
   /// Settings → change phone verify route: server-masked destination (e.g. +91 ******6660).
   static const String extraMaskedMobileKey = 'maskedMobile';
+
+  /// Settings → change phone step1 verify route: server-masked email destination.
+  static const String extraMaskedEmailKey = 'maskedEmail';
 
   /// Token from step2-verify used for step3/step4 (change phone).
   static const String extraChangePhoneTokenKey = 'changePhoneToken';

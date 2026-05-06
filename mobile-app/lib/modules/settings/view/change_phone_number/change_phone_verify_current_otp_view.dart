@@ -5,7 +5,6 @@ import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/utils/app_exception.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../widgets/otp_verification_view.dart';
-import '../../../../widgets/two_factor_otp_verification_view.dart';
 import '../../providers/change_phone_current_otp_provider.dart';
 
 class ChangePhoneVerifyCurrentOtpView extends StatelessWidget {
@@ -28,37 +27,6 @@ class ChangePhoneVerifyCurrentOtpView extends StatelessWidget {
     final l10n = context.l10n!;
     final theme = context.theme;
 
-    final bottomSection = Text(
-      l10n.needHelpContactSupport,
-      style: theme.textTheme.bodyMedium?.copyWith(
-        color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
-        decoration: TextDecoration.underline,
-      ),
-    );
-
-    if (provider.twoFactorEnabled) {
-      return TwoFactorOtpVerificationView(
-        appBarTitle: appBarTitle,
-        phoneTitle: l10n.verifyYourPhoneNumber,
-        phoneSubtitle: subtitle,
-        emailTitle: l10n.verifyYourEmail,
-        emailSubtitle: provider.maskedEmail.isNotEmpty
-            ? l10n.twoFactorEmailOtpSent(provider.maskedEmail)
-            : l10n.twoFactorEmailOtpSent('...'),
-        otpLength: ChangePhoneCurrentOtpProvider.otpLength,
-        countdownSeconds: provider.countdownSeconds,
-        canResend: provider.canResend,
-        phoneHasError: provider.hasError,
-        emailHasError: provider.emailHasError,
-        onInitialRequest: () => _safeRequestOtp(context, provider),
-        onPhoneOtpChanged: provider.setOtp,
-        onEmailOtpChanged: provider.setEmailOtp,
-        onBothOtpCompleted: () => _verify(context, provider),
-        onResend: () => _safeResend(context, provider),
-        bottomSection: bottomSection,
-      );
-    }
-
     return OtpVerificationView(
       appBarTitle: appBarTitle,
       title: title,
@@ -71,7 +39,13 @@ class ChangePhoneVerifyCurrentOtpView extends StatelessWidget {
       onOtpChanged: provider.setOtp,
       onOtpCompleted: () => _verify(context, provider),
       onResend: () => _safeResend(context, provider),
-      bottomSection: bottomSection,
+      bottomSection: Text(
+        l10n.needHelpContactSupport,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+          decoration: TextDecoration.underline,
+        ),
+      ),
     );
   }
 
@@ -118,7 +92,8 @@ class ChangePhoneVerifyCurrentOtpView extends StatelessWidget {
       if (key != null && key.isNotEmpty) {
         SnackbarHelper.showError(
           context,
-          AppException.resolveErrorKey(context.l10n!, key) ?? context.l10n!.unknownError,
+          AppException.resolveErrorKey(context.l10n!, key) ??
+              context.l10n!.unknownError,
         );
       }
       return;

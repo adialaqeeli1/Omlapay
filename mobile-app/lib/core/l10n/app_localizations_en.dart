@@ -103,19 +103,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get changePhoneStep1 =>
-      'Verify your current registered phone number with a verification code.';
+      'Verify your account with a verification code sent to your registered email address.';
 
   @override
   String get changePhoneStep2 =>
-      'Enter your new phone number (the one you want to use for your account).';
+      'Confirm your account passcode to authorize the change.';
 
   @override
   String get changePhoneStep3 =>
-      'Verify your new phone number with a verification code.';
+      'Enter your new phone number (the one you want to use for your account).';
 
   @override
   String get changePhoneStep4 =>
-      'Verify your account with a passcode to confirm the changes.';
+      'Verify your new phone number with a verification code.';
 
   @override
   String get changePhoneAfterStepsNote =>

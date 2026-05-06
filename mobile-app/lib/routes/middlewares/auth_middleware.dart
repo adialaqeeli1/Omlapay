@@ -54,7 +54,8 @@ class AuthMiddleware {
     if (mode == LoginProvider.modeChangePasscodeCurrent ||
         mode == LoginProvider.modeChangePasscodeNew ||
         mode == LoginProvider.modeChangePasscodeConfirm ||
-        mode == LoginProvider.modeChangeEmailConfirmPasscode) {
+        mode == LoginProvider.modeChangeEmailConfirmPasscode ||
+        mode == LoginProvider.modeChangePhoneConfirmPasscode) {
       if (!authProvider.state.isAuthenticated ||
           authProvider.state.user == null) {
         return Routes.loginOrRegister;

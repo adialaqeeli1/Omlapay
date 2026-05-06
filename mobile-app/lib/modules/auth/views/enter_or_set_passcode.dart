@@ -16,6 +16,7 @@ import '../providers/login_provider.dart';
 import '../providers/passcode_provider.dart';
 import '../services/forgot_passcode_service.dart';
 import '../../settings/services/change_email_service.dart';
+import '../../settings/services/change_phone_service.dart';
 
 class EnterOrSetPasscodeScreen extends StatefulWidget {
   /// Prevents overlapping forgot-passcode OTP requests before the loading overlay
@@ -34,6 +35,7 @@ class EnterOrSetPasscodeScreen extends StatefulWidget {
     this.resetToken,
     this.pendingEmail,
     this.changeEmailToken,
+    this.changePhoneToken,
     this.registrationToken,
   });
 
@@ -44,6 +46,7 @@ class EnterOrSetPasscodeScreen extends StatefulWidget {
   final String? resetToken;
   final String? pendingEmail;
   final String? changeEmailToken;
+  final String? changePhoneToken;
   final String? registrationToken;
 
   @override
@@ -160,6 +163,10 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
         widget.mode == LoginProvider.modeChangePasscodeConfirm;
     final isChangeEmailPasscodeStep =
         widget.mode == LoginProvider.modeChangeEmailConfirmPasscode;
+    final isChangePhonePasscodeStep =
+        widget.mode == LoginProvider.modeChangePhoneConfirmPasscode;
+    final isAccountPasscodeStep =
+        isChangeEmailPasscodeStep || isChangePhonePasscodeStep;
 
     return Scaffold(
       appBar: AppBar(
@@ -276,7 +283,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
                       const Spacer(),
                       if (!isRegisterMode &&
                           !isChangePasscodeFlow &&
-                          !isChangeEmailPasscodeStep)
+                          !isAccountPasscodeStep)
                         Text(
                           l10n.welcomeToOmlaPay,
                           style: GoogleFonts.poppinsTextTheme().titleMedium
@@ -289,7 +296,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
                         ),
                       if (!isRegisterMode &&
                           !isChangePasscodeFlow &&
-                          !isChangeEmailPasscodeStep)
+                          !isAccountPasscodeStep)
                         const SizedBox(height: 24),
                       Text(
                         _titleForMode(l10n),
@@ -489,7 +496,8 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
         widget.mode == LoginProvider.modeChangePasscodeCurrent ||
         widget.mode == LoginProvider.modeChangePasscodeNew ||
         widget.mode == LoginProvider.modeChangePasscodeConfirm ||
-        widget.mode == LoginProvider.modeChangeEmailConfirmPasscode) {
+        widget.mode == LoginProvider.modeChangeEmailConfirmPasscode ||
+        widget.mode == LoginProvider.modeChangePhoneConfirmPasscode) {
       return false;
     }
     return true;
@@ -502,6 +510,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
       LoginProvider.modeChangePasscodeNew => l10n.enterYourNewPasscode,
       LoginProvider.modeChangePasscodeConfirm => l10n.confirmYourNewPasscode,
       LoginProvider.modeChangeEmailConfirmPasscode => l10n.enterPasscode,
+      LoginProvider.modeChangePhoneConfirmPasscode => l10n.enterPasscode,
       LoginProvider.modeResetPasscode => l10n.setYourNewPasscode,
       LoginProvider.modeConfirmPasscode => l10n.confirmYourPasscode,
       _ => l10n.enterPasscode,
@@ -851,6 +860,38 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
         );
         if (!context.mounted || !isValid) return;
         context.go(Routes.changeEmailSuccess);
+        return;
+      }
+
+      if (widget.mode == LoginProvider.modeChangePhoneConfirmPasscode) {
+        final token = widget.changePhoneToken?.trim() ?? '';
+        if (token.isEmpty) {
+          return;
+        }
+        String? refreshedToken;
+        final isValid = await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) async {
+                final result = await ChangePhoneService.step3VerifyPasscode(
+                  changePhoneToken: token,
+                  passcode: passcode,
+                );
+                refreshedToken = result.changePhoneToken;
+                return true;
+              },
+        );
+        if (!context.mounted || !isValid) return;
+        final nextToken = (refreshedToken != null && refreshedToken!.isNotEmpty)
+            ? refreshedToken!
+            : token;
+        context.go(
+          Routes.changePhoneEnterNew,
+          extra: {LoginProvider.extraChangePhoneTokenKey: nextToken},
+        );
         return;
       }
 

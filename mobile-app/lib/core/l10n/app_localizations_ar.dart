@@ -102,18 +102,17 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get changePhoneStep1 =>
-      'تحقق من رقم هاتفك المسجل الحالي باستخدام رمز تحقق.';
+      'تحقق من حسابك باستخدام رمز التحقق المُرسل إلى بريدك الإلكتروني المسجل.';
 
   @override
-  String get changePhoneStep2 =>
+  String get changePhoneStep2 => 'أكّد رمز مرور حسابك لاعتماد التغيير.';
+
+  @override
+  String get changePhoneStep3 =>
       'أدخل رقم الهاتف الجديد الذي تريد استخدامه في حسابك.';
 
   @override
-  String get changePhoneStep3 => 'تحقق من رقم هاتفك الجديد باستخدام رمز تحقق.';
-
-  @override
-  String get changePhoneStep4 =>
-      'تحقق من حسابك باستخدام رمز المرور لتأكيد التغييرات.';
+  String get changePhoneStep4 => 'تحقق من رقم هاتفك الجديد باستخدام رمز تحقق.';
 
   @override
   String get changePhoneAfterStepsNote =>
