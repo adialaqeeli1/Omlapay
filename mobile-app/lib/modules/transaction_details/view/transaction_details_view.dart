@@ -232,8 +232,8 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                           context,
                           l10n.date,
                           DateFormat(
-                            'yyyy-MM-dd hh:mm:ss a',
-                          ).format(transaction.createdAt),
+                            'yyyy-MM-dd hh:mm a',
+                          ).format(transaction.createdAt.toLocal()),
                           isDateTime: true,
                         ),
                         _buildDetailRow(
