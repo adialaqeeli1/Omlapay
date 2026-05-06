@@ -33,10 +33,10 @@ class HistoryService {
       queryParams['after'] = after;
     }
     if (startDate != null) {
-      queryParams['startDate'] = startDate.toUtc().toIso8601String();
+      queryParams['startDate'] = _formatYmd(startDate);
     }
     if (endDate != null) {
-      queryParams['endDate'] = endDate.toUtc().toIso8601String();
+      queryParams['endDate'] = _formatYmd(endDate);
     }
 
     final response = await ApiHelper.get(
@@ -101,6 +101,16 @@ class HistoryService {
     }
 
     return TransactionModel.fromJson(_normalize(data));
+  }
+
+  /// Formats a [DateTime] as `YYYY-MM-DD` in UTC for the history API's
+  /// `startDate` / `endDate` query params.
+  String _formatYmd(DateTime date) {
+    final utc = date.toUtc();
+    final y = utc.year.toString().padLeft(4, '0');
+    final m = utc.month.toString().padLeft(2, '0');
+    final d = utc.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
   }
 
   /// The history API returns `assetSymbol` / `assetName` / `assetName_ar`
