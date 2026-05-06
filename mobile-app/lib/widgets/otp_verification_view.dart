@@ -75,6 +75,12 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
     super.dispose();
   }
 
+  Future<void> _handleResend() async {
+    _pinController.clear();
+    widget.onOtpChanged('');
+    await widget.onResend();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
@@ -205,7 +211,7 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
               _OtpStatusText(
                 countdownSeconds: widget.countdownSeconds,
                 canResend: widget.canResend,
-                onResend: widget.onResend,
+                onResend: _handleResend,
               ),
               if (widget.hasError) ...[
                 const SizedBox(height: 12),

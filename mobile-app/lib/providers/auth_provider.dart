@@ -209,6 +209,18 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    // Tell the server to revoke this session and unregister the FCM token.
+    // Best-effort: we still clear local state below even if the call fails
+    // (offline, already-revoked session, etc.) so the user is always signed
+    // out client-side.
+    try {
+      final deviceToken =
+          await PushNotificationService.instance.currentDeviceToken();
+      await AuthService.logout(deviceToken: deviceToken);
+    } catch (_) {
+      // Ignore — local sign-out must still proceed.
+    }
+
     await StorageService.remove(AppConstants.userKey);
     await StorageService.remove(AppConstants.tokenKey);
     await StorageService.remove('refresh_token');

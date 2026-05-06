@@ -23,6 +23,7 @@ class SplashView extends StatefulWidget {
 class _SplashViewState extends State<SplashView>
     with SingleTickerProviderStateMixin {
   late AnimationController controller;
+  bool _navigationStarted = false;
 
   @override
   void initState() {
@@ -33,7 +34,9 @@ class _SplashViewState extends State<SplashView>
     );
 
     controller.addStatusListener((status) {
+      if (!mounted || _navigationStarted) return;
       if (status == AnimationStatus.completed) {
+        _navigationStarted = true;
         _navigateToNextScreen();
       }
     });
@@ -41,52 +44,53 @@ class _SplashViewState extends State<SplashView>
     controller.forward();
   }
 
-  /// Navigates to the appropriate screen based on onboarding completion and auth status
+  /// Navigates to the appropriate screen based on onboarding completion and auth status.
+  ///
+  /// Captures provider/router references up-front so we never look up ancestors
+  /// after the splash widget has been deactivated (e.g. when an in-flight 401
+  /// triggers a tree rebuild while the animation is finishing).
   Future<void> _navigateToNextScreen() async {
+    if (!mounted) return;
+    final router = GoRouter.of(context);
+    final authProvider = context.read<AuthProvider>();
+
     final bool isOnboardingCompleted =
         StorageService.getBool(AppConstants.onboardingCompletedKey) ?? false;
 
-    if (!mounted) {
+    if (!isOnboardingCompleted) {
+      router.go(Routes.onboarding);
       return;
     }
 
-    if (!isOnboardingCompleted) {
-      GoRouter.of(context).go(Routes.onboarding);
-    } else {
-      final authProvider = context.read<AuthProvider>();
-      final isLoggedIn = authProvider.state.isAuthenticated;
-      if (isLoggedIn) {
-        final isSessionValid = await authProvider.validateSession();
-        if (!mounted) {
-          return;
-        }
-
-        if (!isSessionValid) {
-          await authProvider.logout();
-          if (!mounted) {
-            return;
-          }
-          GoRouter.of(context).go(Routes.loginOrRegister);
-          return;
-        }
-
-        // Register FCM push-notification device token with backend (fire-and-forget).
-        unawaited(PushNotificationService.instance.registerCurrentDevice());
-
-        GoRouter.of(context).go(
-          Routes.enterOrSetPasscode,
-          extra: {LoginProvider.extraModeKey: LoginProvider.modeSoftLogin},
-        );
-      } else {
-        GoRouter.of(context).go(Routes.home);
-      }
+    final isLoggedIn = authProvider.state.isAuthenticated;
+    if (!isLoggedIn) {
+      router.go(Routes.home);
+      return;
     }
+
+    final isSessionValid = await authProvider.validateSession();
+    if (!mounted) return;
+
+    if (!isSessionValid) {
+      await authProvider.logout();
+      if (!mounted) return;
+      router.go(Routes.loginOrRegister);
+      return;
+    }
+
+    // Register FCM push-notification device token with backend (fire-and-forget).
+    unawaited(PushNotificationService.instance.registerCurrentDevice());
+
+    router.go(
+      Routes.enterOrSetPasscode,
+      extra: {LoginProvider.extraModeKey: LoginProvider.modeSoftLogin},
+    );
   }
 
   @override
   void dispose() {
-    super.dispose();
     controller.dispose();
+    super.dispose();
   }
 
   @override

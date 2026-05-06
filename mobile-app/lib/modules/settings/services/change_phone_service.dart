@@ -4,9 +4,9 @@ import '../../../core/models/change_phone/change_phone_models.dart';
 import '../../../core/services/api_helper.dart';
 import '../../../core/utils/app_exception.dart';
 
-/// Authenticated APIs for the 4-step change-phone flow.
+/// Authenticated APIs for the 5-step change-phone flow.
 class ChangePhoneService {
-  /// Step 1: Send OTP to the user's current registered phone number.
+  /// Step 1: Send OTP to the user's registered email address.
   static Future<ChangePhoneRequestData> step1Request() async {
     final response = await ApiHelper.post(
       Endpoints.changePhoneStep1Request,
@@ -15,51 +15,54 @@ class ChangePhoneService {
     return _parseData(response, ChangePhoneRequestData.fromJson);
   }
 
-  /// Step 2: Verify current phone OTP. Returns a [change_phone_token].
-  /// When 2FA is enabled, [emailOtp] must also be provided.
-  static Future<ChangePhoneStep2Data> step2Verify({
-    required String otp,
-    String? emailOtp,
+  /// Step 2: Verify the email OTP. Returns a [change_phone_token].
+  static Future<ChangePhoneStep2Data> step2VerifyEmail({
+    required String emailOtp,
   }) async {
-    final body = <String, dynamic>{'otp': otp.trim()};
-    if (emailOtp != null && emailOtp.trim().isNotEmpty) {
-      body['email_otp'] = emailOtp.trim();
-    }
     final response = await ApiHelper.post(
-      Endpoints.changePhoneStep2Verify,
-      body,
+      Endpoints.changePhoneStep2VerifyEmail,
+      {'email_otp': emailOtp.trim()},
     );
     return _parseData(response, ChangePhoneStep2Data.fromJson);
   }
 
-  /// Step 3: Submit the new phone number. Sends OTP to the new number.
-  static Future<ChangePhoneRequestData> step3Request({
+  /// Step 3: Verify the user's account passcode. Returns a fresh
+  /// [change_phone_token] used by step 4.
+  static Future<ChangePhoneStep2Data> step3VerifyPasscode({
+    required String changePhoneToken,
+    required String passcode,
+  }) async {
+    final response = await ApiHelper.post(
+      Endpoints.changePhoneStep3VerifyPasscode,
+      {'change_phone_token': changePhoneToken, 'passcode': passcode},
+    );
+    return _parseData(response, ChangePhoneStep2Data.fromJson);
+  }
+
+  /// Step 4: Submit the new phone number. Sends an OTP to the new number and
+  /// returns a fresh [change_phone_token] used by step 5.
+  static Future<ChangePhoneRequestData> step4RequestNewPhone({
     required String changePhoneToken,
     required String countryCode,
     required String newMobileNumber,
   }) async {
-    final response = await ApiHelper.post(
-      Endpoints.changePhoneStep3Request,
-      {
-        'change_phone_token': changePhoneToken,
-        'country_code': countryCode.trim(),
-        'new_mobile_number': newMobileNumber.trim(),
-      },
-    );
+    final response =
+        await ApiHelper.post(Endpoints.changePhoneStep4RequestNewPhone, {
+          'change_phone_token': changePhoneToken,
+          'country_code': countryCode.trim(),
+          'new_mobile_number': newMobileNumber.trim(),
+        });
     return _parseData(response, ChangePhoneRequestData.fromJson);
   }
 
-  /// Step 4: Verify OTP sent to the new phone number.
-  static Future<ChangePhoneVerifyData> step4Verify({
+  /// Step 5: Verify the OTP sent to the new phone number.
+  static Future<ChangePhoneVerifyData> step5VerifyNewPhone({
     required String changePhoneToken,
     required String otp,
   }) async {
     final response = await ApiHelper.post(
-      Endpoints.changePhoneStep4Verify,
-      {
-        'change_phone_token': changePhoneToken,
-        'otp': otp.trim(),
-      },
+      Endpoints.changePhoneStep5VerifyNewPhone,
+      {'change_phone_token': changePhoneToken, 'otp': otp.trim()},
     );
     return _parseData(response, ChangePhoneVerifyData.fromJson);
   }
@@ -69,8 +72,7 @@ class ChangePhoneService {
     T Function(Map<String, dynamic>) fromJson,
   ) {
     final data = response['data'];
-    final invalidMsg =
-        appLocalizationsFromStoredLocale().invalidServerResponse;
+    final invalidMsg = appLocalizationsFromStoredLocale().invalidServerResponse;
     if (data is! Map<String, dynamic>) {
       throw AppException(invalidMsg, messageKey: 'requestFailed');
     }

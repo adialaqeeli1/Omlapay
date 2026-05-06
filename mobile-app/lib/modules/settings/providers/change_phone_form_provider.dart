@@ -14,8 +14,9 @@ class ChangePhoneFormProvider extends ChangeNotifier {
     _initSelectedCountryFromDevice();
   }
 
-  /// Token obtained from step 2 (verify current phone).
-  final String changePhoneToken;
+  /// Token obtained from step 3 (verify passcode). Replaced by the fresh token
+  /// returned by step 4 once the new phone number request succeeds.
+  String changePhoneToken;
 
   /// Signed-in user's dial code (e.g. `+966`) for "same number" validation only.
   final String? _accountCountryDialCode;
@@ -78,7 +79,9 @@ class ChangePhoneFormProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Calls [change-phone/request]. Returns `null` if validation fails.
+  /// Calls [change-phone/step4-request-new-phone]. Returns `null` if validation
+  /// fails. Updates [changePhoneToken] with the fresh token returned by the API
+  /// (used by step 5 to verify the new phone OTP).
   Future<ChangePhoneRequestData?> submitRequestChange() async {
     markSubmitted();
     if (!canContinue) {
@@ -88,11 +91,16 @@ class ChangePhoneFormProvider extends ChangeNotifier {
     _isSubmitting = true;
     notifyListeners();
     try {
-      return await ChangePhoneService.step3Request(
+      final result = await ChangePhoneService.step4RequestNewPhone(
         changePhoneToken: changePhoneToken,
         countryCode: currentPhoneCode,
         newMobileNumber: digitsOnly,
       );
+      final refreshedToken = result.changePhoneToken;
+      if (refreshedToken != null && refreshedToken.isNotEmpty) {
+        changePhoneToken = refreshedToken;
+      }
+      return result;
     } finally {
       _isSubmitting = false;
       notifyListeners();

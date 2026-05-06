@@ -30,7 +30,7 @@ class _ChangePhoneIntroViewState extends State<ChangePhoneIntroView> {
       context.push(
         Routes.changePhoneVerifyCurrent,
         extra: {
-          LoginProvider.extraMaskedMobileKey: result.maskedMobile,
+          LoginProvider.extraMaskedEmailKey: result.maskedEmail ?? '',
           LoginProvider.extraOtpExpirySecondsKey: result.otpExpirySeconds,
         },
       );

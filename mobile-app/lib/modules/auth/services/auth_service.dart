@@ -141,6 +141,17 @@ class AuthService {
     return response;
   }
 
+  /// Revokes the current session and unregisters the FCM device token from
+  /// the backend. [deviceToken] should be the current FCM token; an empty
+  /// string is sent if it is not available.
+  static Future<Map<String, dynamic>> logout({String? deviceToken}) async {
+    final response = await ApiHelper.post(
+      Endpoints.authLogout,
+      {'device_token': deviceToken ?? ''},
+    );
+    return response;
+  }
+
   static Future<Map<String, dynamic>> fetchAccountDetails() async {
     return ApiHelper.get(Endpoints.accountDetails);
   }

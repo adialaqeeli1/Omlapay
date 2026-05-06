@@ -5,34 +5,17 @@ import 'package:flutter/foundation.dart';
 import '../../../core/utils/app_exception.dart';
 import '../services/change_email_service.dart';
 
-/// OTP provider for change-email step1/step2 (verify current phone).
-///
-/// When [twoFactorEnabled] is true, the provider also tracks an email OTP
-/// that the API sends alongside the phone OTP.
+/// OTP provider for change-email step1/step2 (verify the user's current phone
+/// number via a single phone OTP).
 class ChangeEmailPhoneOtpProvider extends ChangeNotifier {
-  ChangeEmailPhoneOtpProvider({
-    required this.twoFactorEnabled,
-    this.fallbackMaskedEmail,
-  });
+  ChangeEmailPhoneOtpProvider();
 
   static const int otpLength = 6;
 
-  final bool twoFactorEnabled;
-
-  /// Fallback masked email from UserModel, used when the API doesn't return one.
-  final String? fallbackMaskedEmail;
-
-  // Phone OTP state
   String _otp = '';
   String _maskedPhone = '';
   bool _hasError = false;
 
-  // Email OTP state (only used when 2FA is enabled)
-  String _emailOtp = '';
-  bool _emailHasError = false;
-  String? _maskedEmail;
-
-  // Shared state
   int _countdownSeconds = 0;
   Timer? _timer;
   bool _isRequestingOtp = false;
@@ -48,15 +31,7 @@ class ChangeEmailPhoneOtpProvider extends ChangeNotifier {
   bool get hasError => _hasError;
   String? get changeEmailToken => _changeEmailToken;
 
-  String get emailOtp => _emailOtp;
-  bool get emailHasError => _emailHasError;
-  String get maskedEmail => _maskedEmail ?? fallbackMaskedEmail ?? '';
-
-  bool get isPhoneOtpComplete => _otp.length == otpLength;
-  bool get isEmailOtpComplete => _emailOtp.length == otpLength;
-
-  bool get isComplete =>
-      isPhoneOtpComplete && (!twoFactorEnabled || isEmailOtpComplete);
+  bool get isComplete => _otp.length == otpLength;
 
   void setOtp(String value) {
     final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
@@ -65,16 +40,6 @@ class ChangeEmailPhoneOtpProvider extends ChangeNotifier {
     if (_otp == truncated) return;
     _otp = truncated;
     _hasError = false;
-    notifyListeners();
-  }
-
-  void setEmailOtp(String value) {
-    final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
-    final truncated =
-        digits.length > otpLength ? digits.substring(0, otpLength) : digits;
-    if (_emailOtp == truncated) return;
-    _emailOtp = truncated;
-    _emailHasError = false;
     notifyListeners();
   }
 
@@ -87,7 +52,6 @@ class ChangeEmailPhoneOtpProvider extends ChangeNotifier {
   }
 
   /// Calls step1-request to send OTP to the user's current phone.
-  /// When 2FA is enabled, the API also sends an OTP to the user's email.
   Future<void> requestOtp() async {
     if (_isRequestingOtp) return;
     _isRequestingOtp = true;
@@ -95,9 +59,6 @@ class ChangeEmailPhoneOtpProvider extends ChangeNotifier {
     try {
       final result = await ChangeEmailService.step1Request();
       _maskedPhone = result.maskedPhone;
-      if (result.maskedEmail != null) {
-        _maskedEmail = result.maskedEmail;
-      }
       _startCountdown(result.otpExpirySeconds);
     } finally {
       _isRequestingOtp = false;
@@ -111,23 +72,17 @@ class ChangeEmailPhoneOtpProvider extends ChangeNotifier {
   }
 
   /// Calls step2-verify. Returns true on success and stores [changeEmailToken].
-  /// When 2FA is enabled, also sends the [emailOtp].
   Future<bool> verifyOtp() async {
     if (!isComplete || _isVerifying) return false;
     _isVerifying = true;
     _hasError = false;
-    _emailHasError = false;
     notifyListeners();
     try {
-      final result = await ChangeEmailService.step2Verify(
-        otp: _otp,
-        emailOtp: twoFactorEnabled ? _emailOtp : null,
-      );
+      final result = await ChangeEmailService.step2Verify(otp: _otp);
       _changeEmailToken = result.changeEmailToken;
       return true;
     } on AppException {
       _hasError = true;
-      _emailHasError = twoFactorEnabled;
       rethrow;
     } finally {
       _isVerifying = false;

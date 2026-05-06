@@ -129,7 +129,7 @@ class ChangePhoneEnterNewView extends StatelessWidget {
                   provider.changePhoneToken,
               LoginProvider.extraCountryCodeKey: countryCode,
               LoginProvider.extraPhoneNumberKey: provider.digitsOnly,
-              LoginProvider.extraMaskedMobileKey: result.maskedMobile,
+              LoginProvider.extraMaskedMobileKey: result.maskedMobile ?? '',
               LoginProvider.extraOtpExpirySecondsKey: result.otpExpirySeconds,
             },
           );

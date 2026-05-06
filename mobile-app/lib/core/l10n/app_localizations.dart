@@ -281,25 +281,25 @@ abstract class AppLocalizations {
   /// No description provided for @changePhoneStep1.
   ///
   /// In en, this message translates to:
-  /// **'Verify your current registered phone number with a verification code.'**
+  /// **'Verify your account with a verification code sent to your registered email address.'**
   String get changePhoneStep1;
 
   /// No description provided for @changePhoneStep2.
   ///
   /// In en, this message translates to:
-  /// **'Enter your new phone number (the one you want to use for your account).'**
+  /// **'Confirm your account passcode to authorize the change.'**
   String get changePhoneStep2;
 
   /// No description provided for @changePhoneStep3.
   ///
   /// In en, this message translates to:
-  /// **'Verify your new phone number with a verification code.'**
+  /// **'Enter your new phone number (the one you want to use for your account).'**
   String get changePhoneStep3;
 
   /// No description provided for @changePhoneStep4.
   ///
   /// In en, this message translates to:
-  /// **'Verify your account with a passcode to confirm the changes.'**
+  /// **'Verify your new phone number with a verification code.'**
   String get changePhoneStep4;
 
   /// No description provided for @changePhoneAfterStepsNote.
