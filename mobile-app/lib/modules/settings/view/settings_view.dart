@@ -19,8 +19,24 @@ import '../../../widgets/common_back_button.dart';
 import '../widgets/appearance_selection_widget.dart';
 import '../widgets/language_selection_widget.dart';
 
-class SettingsView extends StatelessWidget {
+class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
+
+  @override
+  State<SettingsView> createState() => _SettingsViewState();
+}
+
+class _SettingsViewState extends State<SettingsView> {
+  @override
+  void initState() {
+    super.initState();
+    // Re-fetch the notification setting every time Settings opens so the
+    // toggle reflects the latest server state.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<NotificationProvider>().refreshFromServer();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,16 +88,16 @@ class SettingsView extends StatelessWidget {
                           GoRouter.of(context).push(Routes.accountDetails);
                         },
                       ),
-                      _buildSimpleSettingOption(
-                        context: context,
-                        label: l10n.changePhoneNumber,
-                        screenWidth: screenWidth,
-                        onTap: () {
-                          GoRouter.of(context).push(Routes.changePhoneIntro);
-                        },
-                      ),
+                      if (isKycVerified) ...[
+                        _buildSimpleSettingOption(
+                          context: context,
+                          label: l10n.changePhoneNumber,
+                          screenWidth: screenWidth,
+                          onTap: () {
+                            GoRouter.of(context).push(Routes.changePhoneIntro);
+                          },
+                        ),
 
-                      if (isKycVerified)
                         _buildSimpleSettingOption(
                           context: context,
                           label: l10n.changeEmail,
@@ -90,6 +106,7 @@ class SettingsView extends StatelessWidget {
                             GoRouter.of(context).push(Routes.changeEmailIntro);
                           },
                         ),
+                      ],
                       _buildSimpleSettingOption(
                         context: context,
                         label: l10n.changePasscode,
@@ -110,76 +127,76 @@ class SettingsView extends StatelessWidget {
                           );
                         },
                       ),
-                      _buildNotificationToggle(
-                        context: context,
-                        label: l10n.twoFactorAuthentication,
-                        screenWidth: screenWidth,
-                        value: user?.twoFactorEnabled ?? false,
-                        onChanged: (value) async {
-                          // When enabling 2FA, check if user has an email first
-                          if (value) {
-                            final hasEmail =
-                                (user?.email?.trim() ?? '').isNotEmpty;
-                            if (!hasEmail) {
-                              final emailVerified = await GoRouter.of(
-                                context,
-                              ).push<bool>(Routes.emailEntry);
-                              if (!context.mounted || emailVerified != true) {
-                                return;
+                      if (isKycVerified)
+                        _buildNotificationToggle(
+                          context: context,
+                          label: l10n.twoFactorAuthentication,
+                          screenWidth: screenWidth,
+                          value: user?.twoFactorEnabled ?? false,
+                          onChanged: (value) async {
+                            // When enabling 2FA, check if user has an email first
+                            if (value) {
+                              final hasEmail =
+                                  (user?.email?.trim() ?? '').isNotEmpty;
+                              if (!hasEmail) {
+                                final emailVerified = await GoRouter.of(
+                                  context,
+                                ).push<bool>(Routes.emailEntry);
+                                if (!context.mounted || emailVerified != true) {
+                                  return;
+                                }
                               }
                             }
-                          }
 
-                          if (!context.mounted) return;
+                            if (!context.mounted) return;
 
-                          final navigator = Navigator.of(
-                            context,
-                            rootNavigator: true,
-                          );
-                          final barrierColor = theme.colorScheme.scrim
-                              .withValues(alpha: 0.45);
+                            final navigator = Navigator.of(
+                              context,
+                              rootNavigator: true,
+                            );
+                            final barrierColor = theme.colorScheme.scrim
+                                .withValues(alpha: 0.45);
 
-                          showDialog<void>(
-                            context: context,
-                            barrierDismissible: false,
-                            barrierColor: barrierColor,
-                            useRootNavigator: true,
-                            builder: (_) => PopScope(
-                              canPop: false,
-                              child: Center(
-                                child: Material(
-                                  color: Colors.transparent,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: const SizedBox.square(
-                                    dimension: 60,
-                                    child: CommonLoadingIndicator(),
+                            showDialog<void>(
+                              context: context,
+                              barrierDismissible: false,
+                              barrierColor: barrierColor,
+                              useRootNavigator: true,
+                              builder: (_) => PopScope(
+                                canPop: false,
+                                child: Center(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: const SizedBox.square(
+                                      dimension: 60,
+                                      child: CommonLoadingIndicator(),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          );
-
-                          try {
-                            final message = await authProvider.toggleTwoFactor(
-                              value,
                             );
-                            if (navigator.mounted) navigator.pop();
-                            if (context.mounted) {
-                              SnackbarHelper.showSuccess(context, message);
+
+                            try {
+                              final message = await authProvider
+                                  .toggleTwoFactor(value);
+                              if (navigator.mounted) navigator.pop();
+                              if (context.mounted) {
+                                SnackbarHelper.showSuccess(context, message);
+                              }
+                            } catch (e) {
+                              if (navigator.mounted) navigator.pop();
+                              if (context.mounted) {
+                                SnackbarHelper.showError(
+                                  context,
+                                  e.toString().replaceAll('Exception: ', ''),
+                                );
+                              }
                             }
-                          } catch (e) {
-                            if (navigator.mounted) navigator.pop();
-                            if (context.mounted) {
-                              SnackbarHelper.showError(
-                                context,
-                                e.toString().replaceAll('Exception: ', ''),
-                              );
-                            }
-                          }
-                        },
-                      ),
+                          },
+                        ),
                     ],
                   ),
                 ],
@@ -236,8 +253,19 @@ class SettingsView extends StatelessWidget {
                             label: l10n.notification,
                             screenWidth: screenWidth,
                             value: notificationProvider.notificationsEnabled,
-                            onChanged: (value) {
-                              notificationProvider.toggleNotifications(value);
+                            onChanged: (value) async {
+                              try {
+                                await notificationProvider.toggleNotifications(
+                                  value,
+                                );
+                              } catch (e) {
+                                if (context.mounted) {
+                                  SnackbarHelper.showError(
+                                    context,
+                                    e.toString().replaceAll('Exception: ', ''),
+                                  );
+                                }
+                              }
                             },
                           );
                         },
