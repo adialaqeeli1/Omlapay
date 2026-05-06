@@ -175,19 +175,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get step4Label => 'الخطوة 4';
 
   @override
-  String get changeEmailStep1 => 'سيتم إرسال رمز تحقق إلى رقم هاتفك المسجل.';
+  String get changeEmailStep1 =>
+      'تحقق من حسابك باستخدام رمز التحقق المُرسل إلى رقم هاتفك المسجل.';
 
   @override
-  String get changeEmailStep2 =>
-      'بعد إدخال الرمز المُرسل، أدخل البريد الإلكتروني الجديد.';
+  String get changeEmailStep2 => 'أكّد رمز مرور حسابك لاعتماد التغيير.';
 
   @override
   String get changeEmailStep3 =>
-      'سيتم إرسال رمز تحقق إلى البريد الإلكتروني الجديد الذي أدخلته.';
+      'أدخل البريد الإلكتروني الجديد الذي تريد استخدامه في حسابك.';
 
   @override
   String get changeEmailStep4 =>
-      'تحقق من حسابك باستخدام رمز المرور لتأكيد التغييرات على حسابك.';
+      'تحقق من البريد الإلكتروني الجديد باستخدام رمز التحقق.';
 
   @override
   String get changeEmailAfterStepsNote =>

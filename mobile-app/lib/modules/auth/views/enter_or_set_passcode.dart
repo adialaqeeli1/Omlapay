@@ -467,26 +467,14 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
     return CommonBackButton();
   }
 
-  /// Back navigation for change-email passcode confirmation.
-  /// The step is entered with [context.go], so we restore the previous route.
+  /// Back navigation for change-email passcode confirmation (step 3).
+  /// The screen is reached via [context.push] from the verify-phone step,
+  /// so the default pop is correct here.
   Widget? _changeEmailPasscodeBackButton(BuildContext context) {
     if (widget.mode != LoginProvider.modeChangeEmailConfirmPasscode) {
       return null;
     }
-
-    return CommonBackButton(
-      onPressed: () {
-        final email = widget.pendingEmail?.trim() ?? '';
-        final token = widget.changeEmailToken?.trim() ?? '';
-        context.go(
-          Routes.changeEmailVerifyNewEmail,
-          extra: {
-            LoginProvider.extraPendingEmailKey: email,
-            LoginProvider.extraChangeEmailTokenKey: token,
-          },
-        );
-      },
-    );
+    return context.canPop() ? const CommonBackButton() : null;
   }
 
   bool _showForgotPasscodeLink() {
@@ -843,6 +831,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
         if (token.isEmpty) {
           return;
         }
+        String? refreshedToken;
         final isValid = await provider.verify(
           verifyPasscode:
               ({
@@ -850,16 +839,22 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
                 required String countryCode,
                 required String passcode,
               }) async {
-                final result = await ChangeEmailService.step5Confirm(
+                final result = await ChangeEmailService.step3VerifyPasscode(
                   changeEmailToken: token,
                   passcode: passcode,
                 );
-                await authProvider.updateEmailForCurrentUser(result.email);
+                refreshedToken = result.changeEmailToken;
                 return true;
               },
         );
         if (!context.mounted || !isValid) return;
-        context.go(Routes.changeEmailSuccess);
+        final nextToken = (refreshedToken != null && refreshedToken!.isNotEmpty)
+            ? refreshedToken!
+            : token;
+        context.go(
+          Routes.changeEmailEnterNew,
+          extra: {LoginProvider.extraChangeEmailTokenKey: nextToken},
+        );
         return;
       }
 

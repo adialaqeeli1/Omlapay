@@ -407,25 +407,25 @@ abstract class AppLocalizations {
   /// No description provided for @changeEmailStep1.
   ///
   /// In en, this message translates to:
-  /// **'A verification code will be sent to your registered phone number.'**
+  /// **'Verify your account with a verification code sent to your registered phone number.'**
   String get changeEmailStep1;
 
   /// No description provided for @changeEmailStep2.
   ///
   /// In en, this message translates to:
-  /// **'After entering the code that was sent, enter the new email address.'**
+  /// **'Confirm your account passcode to authorize the change.'**
   String get changeEmailStep2;
 
   /// No description provided for @changeEmailStep3.
   ///
   /// In en, this message translates to:
-  /// **'A verification code will be sent to the new email address entered by you.'**
+  /// **'Enter the new email address you want to use for your account.'**
   String get changeEmailStep3;
 
   /// No description provided for @changeEmailStep4.
   ///
   /// In en, this message translates to:
-  /// **'Verify your account with a passcode to confirm changes to your account.'**
+  /// **'Verify the new email address with a verification code.'**
   String get changeEmailStep4;
 
   /// No description provided for @changeEmailAfterStepsNote.

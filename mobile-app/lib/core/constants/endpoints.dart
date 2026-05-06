@@ -50,14 +50,14 @@ class Endpoints {
   /// Settings → change email (5-step flow).
   static String get changeEmailStep1Request =>
       '$apiVersion/user/settings/change-email/step1-request';
-  static String get changeEmailStep2Verify =>
-      '$apiVersion/user/settings/change-email/step2-verify';
-  static String get changeEmailStep3Request =>
-      '$apiVersion/user/settings/change-email/step3-request';
-  static String get changeEmailStep4Verify =>
-      '$apiVersion/user/settings/change-email/step4-verify';
-  static String get changeEmailStep5Confirm =>
-      '$apiVersion/user/settings/change-email/step5-confirm';
+  static String get changeEmailStep2VerifyPhone =>
+      '$apiVersion/user/settings/change-email/step2-verify-phone';
+  static String get changeEmailStep3VerifyPasscode =>
+      '$apiVersion/user/settings/change-email/step3-verify-passcode';
+  static String get changeEmailStep4RequestNewEmail =>
+      '$apiVersion/user/settings/change-email/step4-request-new-email';
+  static String get changeEmailStep5VerifyNewEmail =>
+      '$apiVersion/user/settings/change-email/step5-verify-new-email';
 
   /// List coins with prices; supports query param `currency` (e.g. /v1/coins?currency=usd).
   static String get coins => '$apiVersion/coins';

@@ -313,11 +313,14 @@ class AppRouter {
                   onOtpCompleted: (innerCtx) async {
                     final valid = await provider.verifyOtp();
                     if (!innerCtx.mounted || !valid) return;
+                    final token = provider.changeEmailToken;
+                    if (token == null || token.isEmpty) return;
                     innerCtx.push(
-                      Routes.changeEmailEnterNew,
+                      Routes.enterOrSetPasscode,
                       extra: {
-                        LoginProvider.extraChangeEmailTokenKey:
-                            provider.changeEmailToken,
+                        LoginProvider.extraModeKey:
+                            LoginProvider.modeChangeEmailConfirmPasscode,
+                        LoginProvider.extraChangeEmailTokenKey: token,
                       },
                     );
                   },
@@ -380,16 +383,15 @@ class AppRouter {
                   onOtpCompleted: (innerCtx) async {
                     final valid = await provider.verifyOtp();
                     if (!innerCtx.mounted || !valid) return;
-                    innerCtx.go(
-                      Routes.enterOrSetPasscode,
-                      extra: {
-                        LoginProvider.extraModeKey:
-                            LoginProvider.modeChangeEmailConfirmPasscode,
-                        LoginProvider.extraPendingEmailKey: pendingEmail,
-                        LoginProvider.extraChangeEmailTokenKey:
-                            provider.changeEmailToken,
-                      },
-                    );
+                    final confirmedEmail =
+                        provider.verifiedEmail?.trim().isNotEmpty == true
+                            ? provider.verifiedEmail!.trim()
+                            : pendingEmail;
+                    await innerCtx
+                        .read<AuthProvider>()
+                        .updateEmailForCurrentUser(confirmedEmail);
+                    if (!innerCtx.mounted) return;
+                    innerCtx.go(Routes.changeEmailSuccess);
                   },
                   onResend: provider.resendOtp,
                 );
@@ -499,19 +501,25 @@ class AppRouter {
               extra?[LoginProvider.extraMaskedMobileKey] as String? ?? '';
           final otpExpiry =
               extra?[LoginProvider.extraOtpExpirySecondsKey] as int?;
+          // Fall back to the typed phone number when the server didn't return
+          // a masked value, so the OTP screen still tells the user where the
+          // code was sent.
+          final displayPhone = maskedMobile.isNotEmpty
+              ? maskedMobile
+              : '$countryCode $phoneNumber';
           final l10n = AppLocalizations.of(context)!;
           return ChangeNotifierProvider(
             create: (_) => ChangePhoneOtpProvider(
               changePhoneToken: changePhoneToken,
               countryCode: countryCode,
               newMobileNumber: phoneNumber,
-              maskedMobile: maskedMobile,
+              maskedMobile: displayPhone,
               initialOtpExpirySeconds: otpExpiry,
             ),
             child: ChangePhoneVerifyOtpView(
               appBarTitle: l10n.changePhoneNumber,
               title: l10n.verifyNewPhoneNumber,
-              subtitle: l10n.changePhoneNewOtpSent(maskedMobile),
+              subtitle: l10n.changePhoneNewOtpSent(displayPhone),
               onVerified: (ctx) async {
                 final l10n = AppLocalizations.of(ctx)!;
                 final applied = await ctx
