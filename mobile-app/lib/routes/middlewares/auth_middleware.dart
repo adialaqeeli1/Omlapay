@@ -153,6 +153,9 @@ class AuthMiddleware {
   }
 
   /// Change phone → verify OTP: require navigation extra from enter-new screen.
+  /// Only the country code and entered phone number are required — the server's
+  /// `masked_phone` may be omitted by step 4 and will fall back to the typed
+  /// number for display.
   static String? changePhoneVerifyNew(
     BuildContext context,
     GoRouterState state,
@@ -165,9 +168,7 @@ class AuthMiddleware {
         extra[LoginProvider.extraCountryCodeKey] as String? ?? '';
     final phoneNumber =
         extra[LoginProvider.extraPhoneNumberKey] as String? ?? '';
-    final maskedMobile =
-        extra[LoginProvider.extraMaskedMobileKey] as String? ?? '';
-    if (countryCode.isEmpty || phoneNumber.isEmpty || maskedMobile.isEmpty) {
+    if (countryCode.isEmpty || phoneNumber.isEmpty) {
       return Routes.changePhoneEnterNew;
     }
     return null;

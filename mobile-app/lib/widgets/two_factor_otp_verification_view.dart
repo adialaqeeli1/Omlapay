@@ -85,6 +85,15 @@ class _TwoFactorOtpVerificationViewState
     super.dispose();
   }
 
+  Future<void> _handleResend() async {
+    _phonePinController.clear();
+    _emailPinController.clear();
+    widget.onPhoneOtpChanged('');
+    widget.onEmailOtpChanged('');
+    _phoneCompleted = false;
+    await widget.onResend();
+  }
+
   void _onPhoneOtpChanged(String value) {
     widget.onPhoneOtpChanged(value);
   }
@@ -140,7 +149,7 @@ class _TwoFactorOtpVerificationViewState
                         hasError: widget.phoneHasError,
                         countdownSeconds: widget.countdownSeconds,
                         canResend: widget.canResend,
-                        onResend: widget.onResend,
+                        onResend: _handleResend,
                         onChanged: _onPhoneOtpChanged,
                         onCompleted: _onPhoneOtpCompleted,
                       ),
@@ -155,7 +164,7 @@ class _TwoFactorOtpVerificationViewState
                         hasError: widget.emailHasError,
                         countdownSeconds: widget.countdownSeconds,
                         canResend: widget.canResend,
-                        onResend: widget.onResend,
+                        onResend: _handleResend,
                         onChanged: widget.onEmailOtpChanged,
                         onCompleted: _onEmailOtpCompleted,
                       ),

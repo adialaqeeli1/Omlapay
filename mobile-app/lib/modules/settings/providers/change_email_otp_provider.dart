@@ -5,8 +5,8 @@ import 'package:flutter/foundation.dart';
 import '../../../core/utils/app_exception.dart';
 import '../services/change_email_service.dart';
 
-/// OTP provider for change-email step1/step2 (verify the user's current phone
-/// number via a single phone OTP).
+/// OTP provider for change-email step 1 / step 2 — verifies the user via the
+/// OTP sent to their registered phone number.
 class ChangeEmailPhoneOtpProvider extends ChangeNotifier {
   ChangeEmailPhoneOtpProvider();
 
@@ -51,14 +51,14 @@ class ChangeEmailPhoneOtpProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Calls step1-request to send OTP to the user's current phone.
+  /// Calls step1-request to send an OTP to the user's current phone.
   Future<void> requestOtp() async {
     if (_isRequestingOtp) return;
     _isRequestingOtp = true;
     notifyListeners();
     try {
       final result = await ChangeEmailService.step1Request();
-      _maskedPhone = result.maskedPhone;
+      _maskedPhone = result.maskedPhone ?? '';
       _startCountdown(result.otpExpirySeconds);
     } finally {
       _isRequestingOtp = false;
@@ -71,14 +71,15 @@ class ChangeEmailPhoneOtpProvider extends ChangeNotifier {
     await requestOtp();
   }
 
-  /// Calls step2-verify. Returns true on success and stores [changeEmailToken].
+  /// Calls step2-verify-phone with the phone OTP.
+  /// Returns true on success and stores [changeEmailToken].
   Future<bool> verifyOtp() async {
     if (!isComplete || _isVerifying) return false;
     _isVerifying = true;
     _hasError = false;
     notifyListeners();
     try {
-      final result = await ChangeEmailService.step2Verify(otp: _otp);
+      final result = await ChangeEmailService.step2VerifyPhone(otp: _otp);
       _changeEmailToken = result.changeEmailToken;
       return true;
     } on AppException {
@@ -108,7 +109,7 @@ class ChangeEmailPhoneOtpProvider extends ChangeNotifier {
   }
 }
 
-/// OTP provider for change-email step3/step4 (verify new email).
+/// OTP provider for change-email step4/step5 (verify the new email).
 class ChangeEmailNewEmailOtpProvider extends ChangeNotifier {
   ChangeEmailNewEmailOtpProvider({
     required this.changeEmailToken,
@@ -118,6 +119,7 @@ class ChangeEmailNewEmailOtpProvider extends ChangeNotifier {
 
   static const int otpLength = 6;
 
+  /// Token used by step 5. Refreshed when the user resends an OTP via step 4.
   String changeEmailToken;
   final String newEmail;
 
@@ -129,12 +131,14 @@ class ChangeEmailNewEmailOtpProvider extends ChangeNotifier {
   bool _isRequestingOtp = false;
   bool _isVerifying = false;
   bool _hasError = false;
+  String? _verifiedEmail;
 
   String get otp => _otp;
   int get countdownSeconds => _countdownSeconds;
   bool get canResend => _countdownSeconds <= 0 && !_isRequestingOtp;
   bool get hasError => _hasError;
   bool get isComplete => _otp.length == otpLength;
+  String? get verifiedEmail => _verifiedEmail;
 
   void setOtp(String value) {
     final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
@@ -154,7 +158,8 @@ class ChangeEmailNewEmailOtpProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Calls step3-request to send OTP to the new email address.
+  /// Calls step4-request-new-email to send an OTP to the new email and
+  /// refresh the change-email token.
   Future<void> requestOtp() async {
     if (_isRequestingOtp) return;
     _isRequestingOtp = true;
@@ -166,11 +171,14 @@ class ChangeEmailNewEmailOtpProvider extends ChangeNotifier {
         _startCountdown(seconds);
         return;
       }
-      final result = await ChangeEmailService.step3Request(
+      final result = await ChangeEmailService.step4RequestNewEmail(
         changeEmailToken: changeEmailToken,
         newEmail: newEmail,
       );
-      changeEmailToken = result.changeEmailToken;
+      final refreshedToken = result.changeEmailToken;
+      if (refreshedToken != null && refreshedToken.isNotEmpty) {
+        changeEmailToken = refreshedToken;
+      }
       _startCountdown(result.otpExpirySeconds);
     } finally {
       _isRequestingOtp = false;
@@ -183,18 +191,19 @@ class ChangeEmailNewEmailOtpProvider extends ChangeNotifier {
     await requestOtp();
   }
 
-  /// Calls step4-verify. Returns true on success and updates [changeEmailToken].
+  /// Calls step5-verify-new-email. Returns true on success and stores the
+  /// confirmed email (when the API returns one) for downstream use.
   Future<bool> verifyOtp() async {
     if (!isComplete || _isVerifying) return false;
     _isVerifying = true;
     _hasError = false;
     notifyListeners();
     try {
-      final result = await ChangeEmailService.step4Verify(
+      final result = await ChangeEmailService.step5VerifyNewEmail(
         changeEmailToken: changeEmailToken,
         otp: _otp,
       );
-      changeEmailToken = result.changeEmailToken;
+      _verifiedEmail = result.email;
       return true;
     } on AppException {
       _hasError = true;

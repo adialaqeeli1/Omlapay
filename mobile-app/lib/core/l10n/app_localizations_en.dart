@@ -180,19 +180,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get changeEmailStep1 =>
-      'A verification code will be sent to your registered phone number.';
+      'Verify your account with a verification code sent to your registered phone number.';
 
   @override
   String get changeEmailStep2 =>
-      'After entering the code that was sent, enter the new email address.';
+      'Confirm your account passcode to authorize the change.';
 
   @override
   String get changeEmailStep3 =>
-      'A verification code will be sent to the new email address entered by you.';
+      'Enter the new email address you want to use for your account.';
 
   @override
   String get changeEmailStep4 =>
-      'Verify your account with a passcode to confirm changes to your account.';
+      'Verify the new email address with a verification code.';
 
   @override
   String get changeEmailAfterStepsNote =>

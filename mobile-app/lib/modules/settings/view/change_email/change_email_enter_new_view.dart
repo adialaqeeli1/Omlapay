@@ -56,19 +56,22 @@ class ChangeEmailEnterNewView extends StatelessWidget {
         provider.markSubmitted();
         if (!provider.canContinue) return;
         try {
-          final result = await ChangeEmailService.step3Request(
+          final result = await ChangeEmailService.step4RequestNewEmail(
             changeEmailToken: changeEmailToken,
             newEmail: provider.normalizedEmail,
           );
           if (!context.mounted) return;
+          final refreshedToken = result.changeEmailToken;
+          final nextToken =
+              (refreshedToken != null && refreshedToken.isNotEmpty)
+                  ? refreshedToken
+                  : changeEmailToken;
           context.push(
             Routes.changeEmailVerifyNewEmail,
             extra: {
               LoginProvider.extraPendingEmailKey: provider.normalizedEmail,
-              LoginProvider.extraChangeEmailTokenKey:
-                  result.changeEmailToken,
-              LoginProvider.extraOtpExpirySecondsKey:
-                  result.otpExpirySeconds,
+              LoginProvider.extraChangeEmailTokenKey: nextToken,
+              LoginProvider.extraOtpExpirySecondsKey: result.otpExpirySeconds,
             },
           );
         } on AppException catch (e) {
