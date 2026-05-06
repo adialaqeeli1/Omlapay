@@ -225,11 +225,17 @@ class AppRouter {
           final phoneNumber =
               extra?[LoginProvider.extraPhoneNumberKey] as String? ?? '';
           final otpExpirySeconds = extra?['otpExpirySeconds'] as int? ?? 60;
+          final maskedMobile = extra?['maskedMobile'] as String?;
+          final maskedEmail = extra?['maskedEmail'] as String?;
+          final verificationType = extra?['verificationType'] as String?;
           return ChangeNotifierProvider(
             create: (_) => ForgotPasscodeProvider(
               phoneNumber: phoneNumber,
               countryCode: countryCode,
               initialCountdown: otpExpirySeconds,
+              maskedMobile: maskedMobile,
+              maskedEmail: maskedEmail,
+              verificationType: verificationType,
             ),
             child: const ForgotPasscodeScreen(),
           );

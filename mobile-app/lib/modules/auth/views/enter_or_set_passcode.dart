@@ -577,6 +577,9 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
               LoginProvider.extraCountryCodeKey: passcodeProvider.countryCode,
               LoginProvider.extraPhoneNumberKey: passcodeProvider.phoneNumber,
               'otpExpirySeconds': response.otpExpirySeconds,
+              'maskedMobile': response.maskedMobile,
+              'maskedEmail': response.maskedEmail,
+              'verificationType': response.verificationType,
             },
           );
         }

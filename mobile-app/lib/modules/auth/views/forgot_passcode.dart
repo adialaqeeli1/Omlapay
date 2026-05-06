@@ -22,7 +22,8 @@ class ForgotPasscodeScreen extends StatefulWidget {
 }
 
 class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
-  final PinInputController _pinController = PinInputController();
+  final PinInputController _phonePinController = PinInputController();
+  final PinInputController _emailPinController = PinInputController();
 
   @override
   void initState() {
@@ -31,8 +32,8 @@ class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
       if (!mounted) return;
       final provider = context.read<ForgotPasscodeProvider>();
 
-      // Avoid duplicate OTP requests when countdown is already started
-      // from previous screen's successful forgot-passcode call.
+      // Skip the duplicate OTP request when the previous screen already
+      // triggered it (countdown started from extras) or one is in flight.
       if (provider.countdownSeconds > 0 || provider.isRequestingOtp) {
         return;
       }
@@ -48,7 +49,8 @@ class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
 
   @override
   void dispose() {
-    _pinController.dispose();
+    _phonePinController.dispose();
+    _emailPinController.dispose();
     super.dispose();
   }
 
@@ -62,8 +64,8 @@ class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
     final subtitleColor = theme.colorScheme.onSurface.withValues(
       alpha: isDark ? 0.6 : 0.6,
     );
-    // Figma: border #FFFFFF, 1px; inactive state can use same or subtle
     final pinBorderColor = theme.colorScheme.onSurface;
+    final isEmailRequired = provider.isEmailOtpRequired;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -104,76 +106,40 @@ class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                l10n.verifyYourPhoneNumber,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  color: subtitleColor,
-                ),
-                textAlign: TextAlign.start,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                provider.formattedPhoneForDisplay,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  color: subtitleColor,
-                ),
-                textAlign: TextAlign.start,
-              ),
-              const SizedBox(height: 24),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  const preferredCellSize = 56.0;
-                  const preferredSpacing = 8.0;
-                  const cellCount = ForgotPasscodeProvider.otpLength;
-                  final availableWidth = constraints.maxWidth;
-                  final totalPreferredWidth =
-                      cellCount * preferredCellSize +
-                      (cellCount - 1) * preferredSpacing;
-                  final cellWidth = totalPreferredWidth <= availableWidth
-                      ? preferredCellSize
-                      : (availableWidth - (cellCount - 1) * preferredSpacing) /
-                            cellCount;
-                  final cellSize = Size(
-                    cellWidth.clamp(40.0, preferredCellSize),
-                    preferredCellSize,
-                  );
-
-                  return MaterialPinField(
-                    length: cellCount,
-                    pinController: _pinController,
-                    autoFocus: true,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    theme: MaterialPinTheme(
-                      shape: MaterialPinShape.outlined,
-                      cellSize: cellSize,
-                      spacing: preferredSpacing,
-                      borderRadius: BorderRadius.circular(16),
-                      borderWidth: 1,
-                      focusedBorderWidth: 1,
-                      borderColor: pinBorderColor,
-                      focusedBorderColor: pinBorderColor,
-                      filledBorderColor: pinBorderColor,
-                      textStyle: theme.textTheme.titleLarge?.copyWith(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                      cursorColor: theme.colorScheme.onSurface,
-                    ),
-                    onChanged: (value) => provider.setOtpFromString(value),
-                    onCompleted: (pin) => _verifyOtp(provider),
-                  );
-                },
-              ),
               const SizedBox(height: 16),
-              _StatusText(provider: provider),
-              const Spacer(),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _OtpSection(
+                        sectionTitle: l10n.verifyYourPhoneNumber,
+                        subtitleColor: subtitleColor,
+                        pinController: _phonePinController,
+                        autoFocus: true,
+                        pinBorderColor: pinBorderColor,
+                        onChanged: provider.setPhoneOtpFromString,
+                        onCompleted: (_) =>
+                            _onPhoneOtpCompleted(provider, isEmailRequired),
+                        statusText: _StatusText(provider: provider),
+                      ),
+                      if (isEmailRequired) ...[
+                        const SizedBox(height: 28),
+                        _OtpSection(
+                          sectionTitle: l10n.verifyYourEmail,
+                          subtitleColor: subtitleColor,
+                          pinController: _emailPinController,
+                          autoFocus: false,
+                          pinBorderColor: pinBorderColor,
+                          onChanged: provider.setEmailOtpFromString,
+                          onCompleted: (_) => _verifyOtp(provider),
+                          statusText: _StatusText(provider: provider),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
               Center(
                 child: TextButton(
                   onPressed: () => context.push(Routes.helpCenter),
@@ -197,7 +163,23 @@ class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
     );
   }
 
+  void _onPhoneOtpCompleted(
+    ForgotPasscodeProvider provider,
+    bool isEmailRequired,
+  ) {
+    if (isEmailRequired) {
+      _emailPinController.requestFocus();
+      // If both fields are already complete (e.g. autofill), trigger verify.
+      if (provider.isComplete) {
+        _verifyOtp(provider);
+      }
+    } else {
+      _verifyOtp(provider);
+    }
+  }
+
   Future<void> _verifyOtp(ForgotPasscodeProvider provider) async {
+    if (!provider.isComplete) return;
     try {
       final isValid = await provider.verifyOtp();
       if (!mounted || !isValid) return;
@@ -221,6 +203,97 @@ class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
       if (!mounted) return;
       SnackbarHelper.showError(context, e.toString());
     }
+  }
+}
+
+class _OtpSection extends StatelessWidget {
+  const _OtpSection({
+    required this.sectionTitle,
+    required this.subtitleColor,
+    required this.pinController,
+    required this.autoFocus,
+    required this.pinBorderColor,
+    required this.onChanged,
+    required this.onCompleted,
+    required this.statusText,
+  });
+
+  final String sectionTitle;
+  final Color subtitleColor;
+  final PinInputController pinController;
+  final bool autoFocus;
+  final Color pinBorderColor;
+  final ValueChanged<String> onChanged;
+  final ValueChanged<String> onCompleted;
+  final Widget statusText;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.theme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          sectionTitle,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            color: subtitleColor,
+          ),
+          textAlign: TextAlign.start,
+        ),
+        const SizedBox(height: 20),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const preferredCellSize = 56.0;
+            const preferredSpacing = 8.0;
+            const cellCount = ForgotPasscodeProvider.otpLength;
+            final availableWidth = constraints.maxWidth;
+            final totalPreferredWidth =
+                cellCount * preferredCellSize +
+                (cellCount - 1) * preferredSpacing;
+            final cellWidth = totalPreferredWidth <= availableWidth
+                ? preferredCellSize
+                : (availableWidth - (cellCount - 1) * preferredSpacing) /
+                      cellCount;
+            final cellSize = Size(
+              cellWidth.clamp(40.0, preferredCellSize),
+              preferredCellSize,
+            );
+
+            return MaterialPinField(
+              length: cellCount,
+              pinController: pinController,
+              autoFocus: autoFocus,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              theme: MaterialPinTheme(
+                shape: MaterialPinShape.outlined,
+                cellSize: cellSize,
+                spacing: preferredSpacing,
+                borderRadius: BorderRadius.circular(16),
+                borderWidth: 1,
+                focusedBorderWidth: 1,
+                borderColor: pinBorderColor,
+                focusedBorderColor: pinBorderColor,
+                filledBorderColor: pinBorderColor,
+                textStyle: theme.textTheme.titleLarge?.copyWith(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w500,
+                  color: theme.colorScheme.onSurface,
+                ),
+                cursorColor: theme.colorScheme.onSurface,
+              ),
+              onChanged: onChanged,
+              onCompleted: onCompleted,
+            );
+          },
+        ),
+        const SizedBox(height: 16),
+        statusText,
+      ],
+    );
   }
 }
 
