@@ -103,13 +103,14 @@ class HistoryService {
     return TransactionModel.fromJson(_normalize(data));
   }
 
-  /// Formats a [DateTime] as `YYYY-MM-DD` in UTC for the history API's
-  /// `startDate` / `endDate` query params.
+  /// Formats a [DateTime] as `YYYY-MM-DD` for the history API's `startDate` /
+  /// `endDate` query params. Uses the local Y/M/D so the date the user picked
+  /// in the calendar is the date sent to the server (no UTC drift for users
+  /// in positive timezone offsets).
   String _formatYmd(DateTime date) {
-    final utc = date.toUtc();
-    final y = utc.year.toString().padLeft(4, '0');
-    final m = utc.month.toString().padLeft(2, '0');
-    final d = utc.day.toString().padLeft(2, '0');
+    final y = date.year.toString().padLeft(4, '0');
+    final m = date.month.toString().padLeft(2, '0');
+    final d = date.day.toString().padLeft(2, '0');
     return '$y-$m-$d';
   }
 
