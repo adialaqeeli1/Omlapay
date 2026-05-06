@@ -68,17 +68,9 @@ class SendCoinView extends StatelessWidget {
     final kycProvider = context.watch<KycStatusProvider>();
     final l10n = context.l10n!;
     final theme = context.theme;
-    final theme = context.theme;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          l10n.sendFlowSendingTitle,
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: context.isDarkMode ? Colors.white : Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
         title: Text(
           l10n.sendFlowSendingTitle,
           style: theme.textTheme.titleMedium?.copyWith(
