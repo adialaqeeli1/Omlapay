@@ -173,6 +173,8 @@ class Endpoints {
       '$apiVersion/user/settings/appearance';
   static String get userSettingsLanguage =>
       '$apiVersion/user/settings/language';
+  static String get userSettingsNotifications =>
+      '$apiVersion/user/settings/notifications';
 
   /// File upload; supports query param `prefix` (e.g. support-requests).
   static String get upload => '$apiVersion/user/upload';

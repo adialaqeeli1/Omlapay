@@ -108,8 +108,11 @@ class MyApp extends StatelessWidget {
           create: (context) => KycStatusProvider(context.read<AuthProvider>()),
           update: (_, auth, previous) => previous ?? KycStatusProvider(auth),
         ),
-        ChangeNotifierProvider<NotificationProvider>(
+        ChangeNotifierProxyProvider<AuthProvider, NotificationProvider>(
           create: (_) => NotificationProvider(),
+          update: (_, auth, notification) =>
+              (notification ?? NotificationProvider())
+                ..onAuthChanged(auth.state.isAuthenticated),
         ),
       ],
       child: Consumer2<LocaleProvider, ThemeProvider>(
