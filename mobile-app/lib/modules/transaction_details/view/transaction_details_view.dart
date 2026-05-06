@@ -111,9 +111,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     final senderValue = counterparty != null && counterparty.isNotEmpty
         ? counterparty
         : transaction.senderAddress;
-    final addressValue = isSent
-        ? transaction.receiverAddress
-        : transaction.senderAddress;
+    final addressValue = transaction.receiverAddress;
 
     return Scaffold(
       appBar: AppBar(
@@ -383,7 +381,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                   fontSize: 14,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: Align(
                   alignment: AlignmentDirectional.centerEnd,
@@ -408,9 +406,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                           ),
                         )
                       : Text(
-                          isAddress && value.length > 20
-                              ? '${value.substring(0, 20)}...'
-                              : value,
+                          value,
                           textDirection: isDateTime ? TextDirection.ltr : null,
                           style: context.textTheme.bodyMedium?.copyWith(
                             color: isError
@@ -420,6 +416,9 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                                 : AppColors.textBlack,
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
+                            overflow: isAddress
+                                ? TextOverflow.visible
+                                : TextOverflow.clip,
                           ),
                           textAlign: TextAlign.end,
                         ),
