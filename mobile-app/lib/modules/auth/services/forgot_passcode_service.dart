@@ -7,11 +7,22 @@ class ForgotPasscodeOtpResponse {
     required this.message,
     required this.otpExpirySeconds,
     this.maskedMobile,
+    this.maskedEmail,
+    this.verificationType,
   });
 
   final String message;
   final int otpExpirySeconds;
   final String? maskedMobile;
+  final String? maskedEmail;
+
+  /// Server-provided hint of which channels received the OTP. Known values
+  /// observed from backend: `mobile` (phone-only) or `both` (phone + email
+  /// when 2FA is enabled). The presence of [maskedEmail] is the source of
+  /// truth — this field is informational.
+  final String? verificationType;
+
+  bool get requiresEmailOtp => (maskedEmail ?? '').trim().isNotEmpty;
 }
 
 class ForgotPasscodeVerifyResponse {
@@ -54,17 +65,25 @@ class ForgotPasscodeService {
   /// [requireResetToken] is true for the forgot-password reset flow (needs
   /// [reset_token] to call [resetPasscode]). For settings → change passcode,
   /// the same verify endpoint may return success without a token; use false.
+  ///
+  /// Pass [emailOtp] when 2FA is enabled (initial response returned a
+  /// `masked_email`). The backend then validates both codes together.
   static Future<bool> verifyOtp(
     String phoneNumber,
     String countryCode,
     String otp, {
     bool requireResetToken = true,
+    String? emailOtp,
   }) async {
-    final response = await ApiHelper.post(Endpoints.forgotPasscodeVerifyOtp, {
-      "country_code": countryCode,
-      "mobile_number": phoneNumber,
-      "mobile_otp": otp,
-    });
+    final response = await ApiHelper.post(
+      Endpoints.forgotPasscodeVerifyOtp,
+      _buildVerifyBody(
+        countryCode: countryCode,
+        phoneNumber: phoneNumber,
+        mobileOtp: otp,
+        emailOtp: emailOtp,
+      ),
+    );
 
     final data = response['data'];
     final dataMap = data is Map<String, dynamic> ? data : null;
@@ -79,13 +98,18 @@ class ForgotPasscodeService {
   static Future<ForgotPasscodeVerifyResponse> verifyOtpAndGetResetToken(
     String phoneNumber,
     String countryCode,
-    String otp,
-  ) async {
-    final response = await ApiHelper.post(Endpoints.forgotPasscodeVerifyOtp, {
-      "country_code": countryCode,
-      "mobile_number": phoneNumber,
-      "mobile_otp": otp,
-    });
+    String otp, {
+    String? emailOtp,
+  }) async {
+    final response = await ApiHelper.post(
+      Endpoints.forgotPasscodeVerifyOtp,
+      _buildVerifyBody(
+        countryCode: countryCode,
+        phoneNumber: phoneNumber,
+        mobileOtp: otp,
+        emailOtp: emailOtp,
+      ),
+    );
     final data = response['data'];
     final dataMap = data is Map<String, dynamic> ? data : null;
     final resetToken = dataMap?['reset_token']?.toString() ?? '';
@@ -119,6 +143,24 @@ class ForgotPasscodeService {
     });
   }
 
+  static Map<String, dynamic> _buildVerifyBody({
+    required String countryCode,
+    required String phoneNumber,
+    required String mobileOtp,
+    String? emailOtp,
+  }) {
+    final body = <String, dynamic>{
+      'country_code': countryCode,
+      'mobile_number': phoneNumber,
+      'mobile_otp': mobileOtp,
+    };
+    final trimmedEmailOtp = emailOtp?.trim() ?? '';
+    if (trimmedEmailOtp.isNotEmpty) {
+      body['email_otp'] = trimmedEmailOtp;
+    }
+    return body;
+  }
+
   static ForgotPasscodeOtpResponse _parseOtpResponse(
     Map<String, dynamic> response,
   ) {
@@ -138,6 +180,8 @@ class ForgotPasscodeService {
           ? otpExpirySeconds
           : defaultOtpExpirySeconds,
       maskedMobile: dataMap?['masked_mobile']?.toString(),
+      maskedEmail: dataMap?['masked_email']?.toString(),
+      verificationType: dataMap?['verification_type']?.toString(),
     );
   }
 

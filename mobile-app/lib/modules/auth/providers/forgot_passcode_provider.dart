@@ -10,74 +10,103 @@ class ForgotPasscodeProvider extends ChangeNotifier {
     required String phoneNumber,
     required String countryCode,
     int initialCountdown = ForgotPasscodeService.defaultOtpExpirySeconds,
+    String? maskedMobile,
+    String? maskedEmail,
+    String? verificationType,
   }) : _phoneNumber = phoneNumber.replaceAll(RegExp(r'[^0-9]'), ''),
        _countryCode = countryCode.trim(),
-       _initialCountdown = initialCountdown;
+       _initialCountdown = initialCountdown,
+       _maskedMobile = maskedMobile,
+       _maskedEmail = maskedEmail,
+       _verificationType = verificationType {
+    // If the caller already triggered the request OTP API (e.g. from the
+    // "Forgot passcode" tap on the previous screen) and passed a positive
+    // [initialCountdown], start the countdown immediately so the screen does
+    // not fire a duplicate request when it mounts.
+    if (initialCountdown > 0) {
+      _countdownSeconds = initialCountdown;
+      _countdownTimer = Timer.periodic(
+        const Duration(seconds: 1),
+        _onCountdownTick,
+      );
+    }
+  }
 
   static const int otpLength = 6;
   final String _phoneNumber;
   final String _countryCode;
   final int _initialCountdown;
 
-  String _otp = '';
+  String _phoneOtp = '';
+  String _emailOtp = '';
   int _countdownSeconds = 0;
   Timer? _countdownTimer;
   bool _isVerifying = false;
   bool _hasError = false;
   bool _isRequestingOtp = false;
   String? _resetToken;
+  String? _maskedMobile;
+  String? _maskedEmail;
+  String? _verificationType;
 
   String get phoneNumber => _phoneNumber;
   String get countryCode => _countryCode;
 
   /// Returns formatted phone for display (e.g. "+966 XXX XXX 1234").
-  String get formattedPhoneForDisplay =>
-      maskedPhoneForDisplay(_countryCode, _phoneNumber);
-  String get otp => _otp;
+  /// Prefers the server-provided masked value when available.
+  String get formattedPhoneForDisplay {
+    final fromServer = _maskedMobile?.trim();
+    if (fromServer != null && fromServer.isNotEmpty) {
+      return fromServer;
+    }
+    return maskedPhoneForDisplay(_countryCode, _phoneNumber);
+  }
+
+  String? get maskedEmail => _maskedEmail;
+  String? get verificationType => _verificationType;
+
+  /// True when the API indicates that an OTP was also dispatched to the
+  /// user's email (2FA enabled). The presence of [maskedEmail] is the
+  /// source of truth.
+  bool get isEmailOtpRequired => (_maskedEmail ?? '').trim().isNotEmpty;
+
+  String get phoneOtp => _phoneOtp;
+  String get emailOtp => _emailOtp;
   int get countdownSeconds => _countdownSeconds;
   bool get isResendCooldown => _countdownSeconds > 0;
   bool get isVerifying => _isVerifying;
   bool get hasError => _hasError;
   bool get isRequestingOtp => _isRequestingOtp;
-  int get enteredDigitsCount => _otp.length;
-  bool get isComplete => enteredDigitsCount == otpLength;
+  bool get isPhoneOtpComplete => _phoneOtp.length == otpLength;
+  bool get isEmailOtpComplete => _emailOtp.length == otpLength;
+  bool get isComplete =>
+      isPhoneOtpComplete && (!isEmailOtpRequired || isEmailOtpComplete);
   bool get canEnterDigits => !_isVerifying;
   bool get canResend => _countdownSeconds <= 0 && !_isRequestingOtp;
   String? get resetToken => _resetToken;
 
-  void addDigit(String digit) {
-    if (!canEnterDigits || _otp.length >= otpLength) return;
-    final sanitized = digit.replaceAll(RegExp(r'[^0-9]'), '');
-    if (sanitized.isEmpty) return;
-    _otp = '$_otp${sanitized[0]}';
+  /// Sets phone OTP from full string (e.g. from single TextField). Keeps
+  /// only digits.
+  void setPhoneOtpFromString(String value) {
+    final truncated = _sanitize(value);
+    if (_phoneOtp == truncated) return;
+    _phoneOtp = truncated;
     _hasError = false;
     notifyListeners();
   }
 
-  void removeLastDigit() {
-    if (!canEnterDigits || _otp.isEmpty) return;
-    _otp = _otp.substring(0, _otp.length - 1);
+  /// Sets email OTP from full string. Keeps only digits.
+  void setEmailOtpFromString(String value) {
+    final truncated = _sanitize(value);
+    if (_emailOtp == truncated) return;
+    _emailOtp = truncated;
     _hasError = false;
     notifyListeners();
   }
 
-  void clearOtp() {
-    if (_otp.isEmpty && !_hasError) return;
-    _otp = '';
-    _hasError = false;
-    notifyListeners();
-  }
-
-  /// Sets OTP from full string (e.g. from single TextField). Keeps only digits.
-  void setOtpFromString(String value) {
+  String _sanitize(String value) {
     final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
-    final truncated = digits.length > otpLength
-        ? digits.substring(0, otpLength)
-        : digits;
-    if (_otp == truncated) return;
-    _otp = truncated;
-    _hasError = false;
-    notifyListeners();
+    return digits.length > otpLength ? digits.substring(0, otpLength) : digits;
   }
 
   Future<String?> requestOtp() async {
@@ -90,14 +119,7 @@ class ForgotPasscodeProvider extends ChangeNotifier {
         _phoneNumber,
         _countryCode,
       );
-      _countdownSeconds = response.otpExpirySeconds > 0
-          ? response.otpExpirySeconds
-          : _initialCountdown;
-      _countdownTimer?.cancel();
-      _countdownTimer = Timer.periodic(
-        const Duration(seconds: 1),
-        _onCountdownTick,
-      );
+      _applyOtpResponse(response);
       return response.message;
     } finally {
       _isRequestingOtp = false;
@@ -108,6 +130,8 @@ class ForgotPasscodeProvider extends ChangeNotifier {
   Future<String?> resendOtp() async {
     if (!canResend || _isRequestingOtp) return null;
     _isRequestingOtp = true;
+    _phoneOtp = '';
+    _emailOtp = '';
     notifyListeners();
 
     try {
@@ -115,19 +139,26 @@ class ForgotPasscodeProvider extends ChangeNotifier {
         _phoneNumber,
         _countryCode,
       );
-      _countdownSeconds = response.otpExpirySeconds > 0
-          ? response.otpExpirySeconds
-          : _initialCountdown;
-      _countdownTimer?.cancel();
-      _countdownTimer = Timer.periodic(
-        const Duration(seconds: 1),
-        _onCountdownTick,
-      );
+      _applyOtpResponse(response);
       return response.message;
     } finally {
       _isRequestingOtp = false;
       notifyListeners();
     }
+  }
+
+  void _applyOtpResponse(ForgotPasscodeOtpResponse response) {
+    _maskedMobile = response.maskedMobile ?? _maskedMobile;
+    _maskedEmail = response.maskedEmail;
+    _verificationType = response.verificationType ?? _verificationType;
+    _countdownSeconds = response.otpExpirySeconds > 0
+        ? response.otpExpirySeconds
+        : _initialCountdown;
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      _onCountdownTick,
+    );
   }
 
   void _onCountdownTick(Timer timer) {
@@ -152,7 +183,8 @@ class ForgotPasscodeProvider extends ChangeNotifier {
       final response = await ForgotPasscodeService.verifyOtpAndGetResetToken(
         _phoneNumber,
         _countryCode,
-        _otp,
+        _phoneOtp,
+        emailOtp: isEmailOtpRequired ? _emailOtp : null,
       );
       _resetToken = response.resetToken;
       _hasError = false;
