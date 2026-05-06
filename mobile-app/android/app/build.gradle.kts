@@ -86,6 +86,16 @@ android {
                 } else {
                     signingConfigs.getByName("debug")
                 }
+
+            // Keep code shrinking on for release builds, but provide explicit
+            // ProGuard rules so the R8 NPE on androidx.transition does not
+            // break the build. See android/app/proguard-rules.pro.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 }
