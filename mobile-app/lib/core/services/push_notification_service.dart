@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io' show Platform;
 import 'dart:ui' show Color;
@@ -9,9 +10,12 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../routes/app_router.dart';
+import '../constants/constants.dart';
 import '../constants/endpoints.dart';
 import '../models/push_notification_device_registration_request/push_notification_device_registration_request.dart';
+import '../theme/theme.dart';
 import 'api_helper.dart';
+import 'storage_helper.dart';
 
 /// Top-level FCM background handler. Runs in a separate isolate when the app
 /// is in the background or terminated, so it MUST be a top-level (or static)
@@ -94,6 +98,8 @@ class PushNotificationService {
   /// Call once from `main()` after `Firebase.initializeApp()` and before
   /// `runApp()`.
   Future<void> initializeNotifications() async {
+    final languageCode =
+        StorageService.getString(AppConstants.localeKey) ?? 'en';
     await AwesomeNotifications().initialize(
       // null falls back to the application's launcher icon.
       null,
@@ -101,8 +107,10 @@ class PushNotificationService {
         NotificationChannel(
           channelKey: defaultChannelKey,
           channelName: 'OmlaPay notifications',
+          channelGroupKey: 'omlapay_default_group',
+          groupKey: 'omlapay_default_group',
           channelDescription: 'General notifications from OmlaPay',
-          defaultColor: const Color(0xFF111111),
+          defaultColor: AppColors.primaryColor,
           importance: NotificationImportance.High,
           channelShowBadge: true,
           playSound: true,
@@ -110,6 +118,7 @@ class PushNotificationService {
         ),
       ],
       debug: kDebugMode,
+      languageCode: languageCode,
     );
 
     await AwesomeNotifications().setListeners(
@@ -145,6 +154,79 @@ class PushNotificationService {
     final isAllowed = await AwesomeNotifications().isNotificationAllowed();
     if (!isAllowed) {
       await AwesomeNotifications().requestPermissionToSendNotifications();
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Demo / debug
+  // ---------------------------------------------------------------------------
+
+  /// Shows a sample local notification through Awesome Notifications without
+  /// going through FCM. Use this from a debug menu to verify channel setup,
+  /// styling, tap-handling, and OS-level permissions.
+  ///
+  /// Builds a sample JSON string — same shape the backend would return — then
+  /// decodes it with `jsonDecode` and pipes it through
+  /// `createNotificationFromJsonData`. This exercises the same code path as
+  /// real FCM data messages.
+  ///
+  /// Logs every step (permission state, raw json, decoded keys, scheduling
+  /// result, errors) so silent failures are debuggable from the console.
+  ///
+  /// Returns `true` if the notification was scheduled, `false` otherwise.
+  Future<bool> showDemoNotification({
+    String title = 'OmlaPay test notification',
+    String body =
+        'If you can see this, Awesome Notifications is wired up correctly.',
+  }) async {
+    try {
+      final isAllowed = await AwesomeNotifications().isNotificationAllowed();
+      log('$_logTag demo: isNotificationAllowed=$isAllowed');
+      if (!isAllowed) {
+        final granted = await AwesomeNotifications()
+            .requestPermissionToSendNotifications();
+        log('$_logTag demo: requestPermission granted=$granted');
+        if (!granted) {
+          debugPrint(
+            '$_logTag demo skipped — permission denied. '
+            'Enable in Settings → OmlaPay → Notifications.',
+          );
+          return false;
+        }
+      }
+
+      final notificationId = DateTime.now().millisecondsSinceEpoch.remainder(
+        1 << 31,
+      );
+
+      // Sample JSON the API/backend would return. Encoding both the outer
+      // wrapper and the `payload` inner map as strings mirrors how FCM
+      // actually transports nested data (`Map<String, String>` only).
+      final String apiJsonResponse = jsonEncode({
+        'content': {
+          'id': notificationId,
+          'channelKey': defaultChannelKey,
+          'title': title,
+          'body': body,
+          'notificationLayout': 'Default',
+          'wakeUpScreen': true,
+        },
+        'payload': {'source': 'demo'},
+      });
+      log('$_logTag demo: api json = $apiJsonResponse');
+
+      final Map<String, dynamic> decoded =
+          jsonDecode(apiJsonResponse) as Map<String, dynamic>;
+      log('$_logTag demo: decoded keys = ${decoded.keys.toList()}');
+
+      final scheduled = await AwesomeNotifications()
+          .createNotificationFromJsonData(decoded);
+      log('$_logTag demo: createNotificationFromJsonData scheduled=$scheduled');
+      return scheduled;
+    } catch (e, stack) {
+      debugPrint('$_logTag demo notification failed: $e');
+      debugPrintStack(stackTrace: stack, label: _logTag);
+      return false;
     }
   }
 

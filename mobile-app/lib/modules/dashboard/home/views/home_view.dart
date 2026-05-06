@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:badges/badges.dart' as badges;
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +15,7 @@ import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/models/wallet_model/wallet_model.dart';
+import '../../../../core/services/push_notification_service.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/utility.dart';
 import '../../../../providers/auth_provider.dart';
@@ -180,9 +183,18 @@ class _HomeViewState extends State<HomeView> {
             iconSize: iconSize,
             iconPadding: iconPadding,
             onTap: () async {
-              await context.push(Routes.notifications);
+              context.push(Routes.notifications);
               if (context.mounted) {
                 context.read<HomeProvider>().fetchHomeData();
+              }
+              //Todo: Uncomment later
+              if (kDebugMode) {
+                await PushNotificationService.instance
+                    .showDemoNotification()
+                    .onError((error, stackTrace) {
+                      log("$error");
+                      return false;
+                    });
               }
             },
           ),
