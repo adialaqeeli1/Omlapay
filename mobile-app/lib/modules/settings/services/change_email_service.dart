@@ -26,7 +26,7 @@ class ChangeEmailService {
       Endpoints.changeEmailStep2VerifyPhone,
       {
         'otp': trimmed,
-        'email_otp': trimmed,
+        // 'email_otp': trimmed,
       },
     );
     return _parseData(response, ChangeEmailTokenData.fromJson);
@@ -40,10 +40,7 @@ class ChangeEmailService {
   }) async {
     final response = await ApiHelper.post(
       Endpoints.changeEmailStep3VerifyPasscode,
-      {
-        'change_email_token': changeEmailToken,
-        'passcode': passcode,
-      },
+      {'change_email_token': changeEmailToken, 'passcode': passcode},
     );
     return _parseData(response, ChangeEmailTokenData.fromJson);
   }
@@ -56,10 +53,7 @@ class ChangeEmailService {
   }) async {
     final response = await ApiHelper.post(
       Endpoints.changeEmailStep4RequestNewEmail,
-      {
-        'change_email_token': changeEmailToken,
-        'new_email': newEmail.trim(),
-      },
+      {'change_email_token': changeEmailToken, 'new_email': newEmail.trim()},
     );
     return _parseData(response, ChangeEmailRequestNewEmailData.fromJson);
   }
@@ -71,10 +65,7 @@ class ChangeEmailService {
   }) async {
     final response = await ApiHelper.post(
       Endpoints.changeEmailStep5VerifyNewEmail,
-      {
-        'change_email_token': changeEmailToken,
-        'otp': otp.trim(),
-      },
+      {'change_email_token': changeEmailToken, 'otp': otp.trim()},
     );
     return _parseData(response, ChangeEmailVerifyNewEmailData.fromJson);
   }
