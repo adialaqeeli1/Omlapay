@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io' show Platform;
 import 'dart:ui' show Color;
 
@@ -23,12 +24,35 @@ import 'api_helper.dart';
 /// cannot suppress it client-side.
 @pragma('vm:entry-point')
 Future<void> pushNotificationBackgroundHandler(RemoteMessage message) async {
+  _logIncomingMessage('background', message);
   if (message.data.isEmpty) return;
   try {
     await AwesomeNotifications().createNotificationFromJsonData(message.data);
   } catch (e) {
     debugPrint('[PushNotification] background createFromJsonData failed: $e');
   }
+}
+
+/// Dumps an incoming FCM payload to the debug console so the developer can
+/// inspect what the backend sent. Used by both foreground and background
+/// handlers — kept top-level so the background handler (separate isolate)
+/// can call it.
+void _logIncomingMessage(String origin, RemoteMessage message) {
+  const tag = '[PushNotification]';
+  final notification = message.notification;
+  log('$tag $origin payload received');
+  log('$tag   messageId: ${message.messageId}');
+  log('$tag   from: ${message.from}');
+  log('$tag   sentTime: ${message.sentTime}');
+  log('$tag   category: ${message.category}');
+  log('$tag   collapseKey: ${message.collapseKey}');
+  if (notification != null) {
+    log('$tag   notification.title: ${notification.title}');
+    log('$tag   notification.body: ${notification.body}');
+  } else {
+    log('$tag   notification: <data-only payload>');
+  }
+  log('$tag   data: ${message.data}');
 }
 
 /// Orchestrates FCM push-notification handling:
@@ -100,13 +124,15 @@ class PushNotificationService {
     // Foreground messages — display via Awesome Notifications (FCM does not
     // show a banner in foreground by default).
     _foregroundSubscription?.cancel();
-    _foregroundSubscription =
-        FirebaseMessaging.onMessage.listen(_displayForegroundMessage);
+    _foregroundSubscription = FirebaseMessaging.onMessage.listen(
+      _displayForegroundMessage,
+    );
 
     // User tapped the notification while app was in background.
     _openedAppSubscription?.cancel();
-    _openedAppSubscription =
-        FirebaseMessaging.onMessageOpenedApp.listen(_routeFromMessage);
+    _openedAppSubscription = FirebaseMessaging.onMessageOpenedApp.listen(
+      _routeFromMessage,
+    );
 
     // App was launched (cold start) by tapping a notification.
     final initialMessage = await _messaging.getInitialMessage();
@@ -127,12 +153,15 @@ class PushNotificationService {
   // ---------------------------------------------------------------------------
 
   Future<void> _displayForegroundMessage(RemoteMessage message) async {
+    _logIncomingMessage('foreground', message);
+
     // Preferred path: backend sends data-only payload with
     // awesome_notifications-compatible keys.
     if (message.data.isNotEmpty) {
       try {
-        await AwesomeNotifications()
-            .createNotificationFromJsonData(message.data);
+        await AwesomeNotifications().createNotificationFromJsonData(
+          message.data,
+        );
         return;
       } catch (e) {
         debugPrint('$_logTag createFromJsonData failed, falling back: $e');
