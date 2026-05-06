@@ -14,6 +14,7 @@ class CoinSelectionSheet extends StatefulWidget {
   final List<CoinModel> coins;
   final CoinModel? selectedCoin;
   final ValueChanged<CoinModel> onCoinSelected;
+  final Color? zeroBalanceColor;
 
   const CoinSelectionSheet({
     super.key,
@@ -21,6 +22,7 @@ class CoinSelectionSheet extends StatefulWidget {
     required this.coins,
     this.selectedCoin,
     required this.onCoinSelected,
+    this.zeroBalanceColor,
   });
 
   @override
@@ -94,12 +96,13 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
     final colorScheme = Theme.of(context).colorScheme;
     final selectedCurrency = context.watch<GlobalProvider>().selectedCurrency;
     final walletsProvider = context.watch<WalletsProvider>();
-    final sortedCoins = [..._filteredCoins]..sort(
-      (a, b) => _coinBalance(
-        walletsProvider,
-        b,
-      ).compareTo(_coinBalance(walletsProvider, a)),
-    );
+    final sortedCoins = [..._filteredCoins]
+      ..sort(
+        (a, b) => _coinBalance(
+          walletsProvider,
+          b,
+        ).compareTo(_coinBalance(walletsProvider, a)),
+      );
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surface,
@@ -240,9 +243,13 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                         Text(
                           walletsProvider.balanceForCoin(coin.symbol),
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: hasPrice
-                                ? itemColorScheme.onSurface
-                                : AppColors.redColor,
+                            // color: hasPrice
+                            //     ? itemColorScheme.onSurface
+                            //     : (widget.zeroBalanceColor ??
+                            //           AppColors.redColor),
+                            color:
+                                widget.zeroBalanceColor ??
+                                itemColorScheme.onSurface,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

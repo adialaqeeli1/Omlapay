@@ -552,7 +552,7 @@ class SendCoinView extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => SizedBox(
-        height: MediaQuery.of(context).size.height * 0.7,
+        height: context.height * 0.7,
         child: CoinSelectionSheet(
           title: l10n.selectCoinTitle,
           coins: provider.coins,
