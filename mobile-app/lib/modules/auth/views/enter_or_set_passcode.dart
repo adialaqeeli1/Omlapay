@@ -854,7 +854,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
         final nextToken = (refreshedToken != null && refreshedToken!.isNotEmpty)
             ? refreshedToken!
             : token;
-        context.go(
+        context.push(
           Routes.changeEmailEnterNew,
           extra: {LoginProvider.extraChangeEmailTokenKey: nextToken},
         );
@@ -886,7 +886,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
         final nextToken = (refreshedToken != null && refreshedToken!.isNotEmpty)
             ? refreshedToken!
             : token;
-        context.go(
+        context.push(
           Routes.changePhoneEnterNew,
           extra: {LoginProvider.extraChangePhoneTokenKey: nextToken},
         );
