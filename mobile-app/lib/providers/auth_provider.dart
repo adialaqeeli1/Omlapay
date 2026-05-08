@@ -22,6 +22,11 @@ class AuthProvider extends ChangeNotifier {
   AuthState _state = const AuthState();
   AuthState get state => _state;
 
+  /// Optional hook invoked after a successful [login] or [softLogin].
+  /// Set by [AppLockProvider] so the lock state machine can flip to "unlocked"
+  /// without [AuthProvider] taking a hard dependency on it.
+  VoidCallback? onUnlockCallback;
+
   bool _isApiSuccess(Map<String, dynamic> response) {
     final statusCode = response['statusCode'];
     if (statusCode is int && statusCode >= 200 && statusCode < 300) {
@@ -135,6 +140,7 @@ class AuthProvider extends ChangeNotifier {
         );
 
         notifyListeners();
+        onUnlockCallback?.call();
         // Refresh account details in background to sync latest profile data
         fetchAccountDetails();
         // Register FCM push-notification device token with backend (fire-and-forget).
@@ -188,6 +194,7 @@ class AuthProvider extends ChangeNotifier {
           _state = state.copyWith(isLoading: false, errorMessage: null);
         }
         notifyListeners();
+        onUnlockCallback?.call();
         // Refresh account details in background to sync latest profile data
         fetchAccountDetails();
         return true;

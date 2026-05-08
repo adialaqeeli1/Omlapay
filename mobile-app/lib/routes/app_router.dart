@@ -94,8 +94,13 @@ import '../modules/kyc_verification/utils/kyc_verification_entry_source.dart';
 
 part 'app_routes.dart';
 
+/// Root navigator key used by go_router. Exposed so non-router code (e.g.
+/// [AppLockProvider]) can push an overlay route onto the same navigator.
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
+
 class AppRouter {
   static final GoRouter router = GoRouter(
+    navigatorKey: appNavigatorKey,
     observers: [DebugRouteObserver()],
     routes: [
       GoRoute(

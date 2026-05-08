@@ -5,22 +5,27 @@ import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/constants/constants.dart';
-import 'core/theme/theme.dart';
-import 'core/services/push_notification_service.dart';
-import 'core/services/storage_helper.dart';
-import 'firebase_options.dart';
-import 'providers/auth_provider.dart';
-import 'providers/connectivity_provider.dart';
-import 'providers/locale_provider.dart';
-import 'providers/theme_provider.dart';
-import 'providers/coins_prices_provider.dart';
-import 'providers/global_provider.dart';
-import 'providers/notification_provider.dart';
-import 'providers/wallets_provider.dart';
-import 'providers/kyc_status_provider.dart';
+import 'core/l10n/app_localizations.dart';
 import 'core/services/coins_prices_stream_service.dart';
 import 'core/services/coins_service.dart';
-import 'core/l10n/app_localizations.dart';
+import 'core/services/push_notification_service.dart';
+import 'core/services/storage_helper.dart';
+import 'core/theme/theme.dart';
+import 'core/utils/user_auth_phone.dart';
+import 'firebase_options.dart';
+import 'modules/auth/providers/login_provider.dart';
+import 'modules/auth/providers/passcode_provider.dart';
+import 'modules/auth/views/enter_or_set_passcode.dart';
+import 'providers/app_lock_provider.dart';
+import 'providers/auth_provider.dart';
+import 'providers/coins_prices_provider.dart';
+import 'providers/connectivity_provider.dart';
+import 'providers/global_provider.dart';
+import 'providers/kyc_status_provider.dart';
+import 'providers/locale_provider.dart';
+import 'providers/notification_provider.dart';
+import 'providers/theme_provider.dart';
+import 'providers/wallets_provider.dart';
 import 'routes/app_router.dart';
 import 'widgets/offline_view.dart';
 
@@ -33,6 +38,58 @@ Future<void> _initializeApp() async {
 
 Future<void> _initFirebsae() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+}
+
+ModalRoute<void>? _activeLockRoute;
+
+Route<void> _buildLockOverlayRoute(AuthProvider authProvider) {
+  final user = authProvider.state.user;
+  final parts = user != null
+      ? authPhonePartsForUser(user)
+      : (countryCode: LoginProvider.defaultCountryCode, mobileNumber: '');
+
+  return MaterialPageRoute<void>(
+    fullscreenDialog: true,
+    builder: (context) => PopScope(
+      canPop: false,
+      child: ChangeNotifierProvider(
+        create: (_) => PasscodeProvider(
+          countryCode: parts.countryCode,
+          phoneNumber: parts.mobileNumber,
+        ),
+        child: const EnterOrSetPasscodeScreen(
+          isSoftLogin: true,
+          mode: LoginProvider.modeAppLock,
+        ),
+      ),
+    ),
+  );
+}
+
+void _showLockOverlay({
+  required AuthProvider authProvider,
+  required AppLockProvider appLock,
+}) {
+  final navState = appNavigatorKey.currentState;
+  if (navState == null) return;
+  final route = _buildLockOverlayRoute(authProvider);
+  _activeLockRoute = route as ModalRoute<void>;
+  navState.push(route).whenComplete(() {
+    if (identical(_activeLockRoute, route)) {
+      _activeLockRoute = null;
+    }
+    appLock.overlayDidDismiss();
+  });
+}
+
+void _dismissLockOverlay() {
+  final route = _activeLockRoute;
+  final navState = appNavigatorKey.currentState;
+  if (route == null || navState == null) return;
+  if (route.isActive) {
+    navState.removeRoute(route);
+  }
+  _activeLockRoute = null;
 }
 
 void main() async {
@@ -70,6 +127,24 @@ class MyApp extends StatelessWidget {
           create: (_) => ConnectivityProvider(),
         ),
         ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
+        ChangeNotifierProxyProvider<AuthProvider, AppLockProvider>(
+          lazy: false,
+          create: (context) {
+            final authProvider = context.read<AuthProvider>();
+            late final AppLockProvider lock;
+            lock = AppLockProvider(
+              authProvider: authProvider,
+              showLockOverlay: () =>
+                  _showLockOverlay(authProvider: authProvider, appLock: lock),
+              dismissLockOverlay: _dismissLockOverlay,
+              backgroundThreshold: const Duration(
+                seconds: AppConstants.appLockBackgroundThresholdSeconds,
+              ),
+            );
+            return lock;
+          },
+          update: (_, auth, prev) => prev!,
+        ),
         ChangeNotifierProxyProvider<AuthProvider, LocaleProvider>(
           create: (_) => LocaleProvider(),
           update: (_, auth, locale) =>

@@ -170,6 +170,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: !widget.isSoftLogin,
         leading: context.canPop() == false
             ? null
             : widget.isSoftLogin
@@ -889,6 +890,23 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
         context.push(
           Routes.changePhoneEnterNew,
           extra: {LoginProvider.extraChangePhoneTokenKey: nextToken},
+        );
+        return;
+      }
+
+      if (widget.mode == LoginProvider.modeAppLock) {
+        // Verify only — do NOT pop the overlay route here. On success,
+        // [AuthProvider.softLogin] fires `onUnlockCallback`, which calls
+        // [AppLockProvider.markUnlocked], which removes the overlay route
+        // via the show/dismiss callbacks wired in main.dart. Popping here
+        // too would race with the route removal.
+        await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) => authProvider.softLogin(passcode),
         );
         return;
       }
