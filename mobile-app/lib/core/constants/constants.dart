@@ -8,6 +8,9 @@ class AppConstants {
   static const String onboardingCompletedKey = 'onboarding_completed';
   static const String dummyUsersKey = 'dummy_users_data';
 
+  // App Lock
+  static const int appLockBackgroundThresholdSeconds = 60;
+
   //Supported currencies
   static const List<String> supportedCurrencies = ['USD', 'SAR'];
 }
