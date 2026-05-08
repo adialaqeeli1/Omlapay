@@ -819,16 +819,22 @@ class AppRouter {
       GoRoute(
         path: Routes.swapCoin,
         name: 'swapCoin',
-        builder: (context, state) => ChangeNotifierProvider(
-          create: (_) => SwapProvider(
-            context.read<AuthProvider>(),
-            context.read<CoinsPricesProvider>(),
-            context.read<WalletsProvider>(),
-            context.read<GlobalProvider>(),
-            SwapQuoteStreamService(),
-          ),
-          child: const SwapCoinView(),
-        ),
+        builder: (context, state) {
+          final extra = state.extra is SwapCoinExtra
+              ? state.extra as SwapCoinExtra
+              : null;
+          return ChangeNotifierProvider(
+            create: (_) => SwapProvider(
+              context.read<AuthProvider>(),
+              context.read<CoinsPricesProvider>(),
+              context.read<WalletsProvider>(),
+              context.read<GlobalProvider>(),
+              SwapQuoteStreamService(),
+              initialFromCoinSymbol: extra?.initialFromCoinSymbol,
+            ),
+            child: const SwapCoinView(),
+          );
+        },
         redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(

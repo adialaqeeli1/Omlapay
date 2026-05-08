@@ -21,14 +21,24 @@ class SwapProvider extends ChangeNotifier {
     this._coinsPricesProvider,
     this.walletsProvider,
     this._globalProvider,
-    this._quoteStreamService,
-  ) {
+    this._quoteStreamService, {
+    String? initialFromCoinSymbol,
+  }) {
+    final trimmed = initialFromCoinSymbol?.trim() ?? '';
+    if (trimmed.isNotEmpty) {
+      _initialFromSymbol = trimmed.toUpperCase();
+    }
     authProvider.addListener(notifyListeners);
     _coinsPricesProvider.addListener(_onStreamedCoinsUpdated);
     _globalProvider.addListener(_onInputsChanged);
     _syncCoinsFromPrices();
     fromAmountController.addListener(_onInputsChanged);
   }
+
+  /// Pre-selected `from` coin symbol applied on the first successful sync
+  /// from [CoinsPricesProvider]. Cleared after it has been applied so later
+  /// SSE updates respect the user's manual selection.
+  String? _initialFromSymbol;
 
   final AuthProvider authProvider;
   final CoinsPricesProvider _coinsPricesProvider;
@@ -145,20 +155,38 @@ class SwapProvider extends ChangeNotifier {
     final previousFromSymbol = _fromCoin?.symbol;
     final previousToSymbol = _toCoin?.symbol;
 
-    if (_fromCoin != null) {
-      _fromCoin =
-          _coins.where((c) => c.symbol == _fromCoin!.symbol).firstOrNull ??
-          _coins.first;
-    } else {
-      _fromCoin = _coins.first;
+    final pendingInitial = _initialFromSymbol;
+    CoinModel? initialFromMatch;
+    if (pendingInitial != null) {
+      initialFromMatch = _coins
+          .where((c) => c.symbol.toUpperCase() == pendingInitial)
+          .firstOrNull;
     }
 
-    if (_toCoin != null) {
-      _toCoin =
-          _coins.where((c) => c.symbol == _toCoin!.symbol).firstOrNull ??
-          (_coins.length > 1 ? _coins[1] : _coins.first);
+    if (initialFromMatch != null) {
+      _fromCoin = initialFromMatch;
+      // Pick the first coin that isn't the pre-selected one as the `to` coin.
+      _toCoin = _coins.firstWhere(
+        (c) => c.symbol.toUpperCase() != pendingInitial,
+        orElse: () => _coins.first,
+      );
+      _initialFromSymbol = null;
     } else {
-      _toCoin = _coins.length > 1 ? _coins[1] : _coins.first;
+      if (_fromCoin != null) {
+        _fromCoin =
+            _coins.where((c) => c.symbol == _fromCoin!.symbol).firstOrNull ??
+            _coins.first;
+      } else {
+        _fromCoin = _coins.first;
+      }
+
+      if (_toCoin != null) {
+        _toCoin =
+            _coins.where((c) => c.symbol == _toCoin!.symbol).firstOrNull ??
+            (_coins.length > 1 ? _coins[1] : _coins.first);
+      } else {
+        _toCoin = _coins.length > 1 ? _coins[1] : _coins.first;
+      }
     }
 
     _validateLocal();

@@ -396,7 +396,10 @@ class CoinDetailsView extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: const ReceiveSendSwapActions(),
+          child: ReceiveSendSwapActions(
+            coinSymbol: coinModel?.symbol,
+            isDetailsPage: true,
+          ),
         ),
         const SizedBox(height: 48),
       ],

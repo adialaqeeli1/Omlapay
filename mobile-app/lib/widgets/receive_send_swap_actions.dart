@@ -5,14 +5,29 @@ import 'package:go_router/go_router.dart';
 import '../core/extentions/context_extensions.dart';
 import '../core/l10n/app_localizations.dart';
 import '../core/theme/theme.dart';
+import '../modules/send_receive_swap_coin/send/view/send_coin_view.dart';
+import '../modules/send_receive_swap_coin/swap/view/swap_coin_view.dart';
 import '../routes/app_router.dart';
 
 class ReceiveSendSwapActions extends StatelessWidget {
-  const ReceiveSendSwapActions({super.key});
+  const ReceiveSendSwapActions({
+    super.key,
+    this.coinSymbol,
+    this.isDetailsPage = false,
+  });
+
+  /// When provided, the send/swap actions navigate with the symbol
+  /// pre-selected (send: as the source coin; swap: as the `from` coin).
+  final String? coinSymbol;
+
+  final bool isDetailsPage;
 
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = context.l10n!;
+    final String? preselected = coinSymbol?.trim().isEmpty ?? true
+        ? null
+        : coinSymbol!.trim();
 
     return Row(
       mainAxisAlignment: .spaceBetween,
@@ -31,7 +46,12 @@ class ReceiveSendSwapActions extends StatelessWidget {
             context,
             icon: 'assets/icons/send.svg',
             label: l10n.send,
-            onTap: () => context.push(Routes.sendCoin),
+            onTap: () => context.push(
+              Routes.sendCoin,
+              extra: preselected == null
+                  ? null
+                  : SendCoinExtra(initialCoinSymbol: preselected),
+            ),
           ),
         ),
         Flexible(
@@ -39,7 +59,12 @@ class ReceiveSendSwapActions extends StatelessWidget {
             context,
             icon: 'assets/icons/swap.svg',
             label: l10n.swap,
-            onTap: () => context.push(Routes.swapCoin),
+            onTap: () => context.push(
+              Routes.swapCoin,
+              extra: preselected == null
+                  ? null
+                  : SwapCoinExtra(initialFromCoinSymbol: preselected),
+            ),
           ),
         ),
       ],
@@ -52,10 +77,6 @@ class ReceiveSendSwapActions extends StatelessWidget {
     required String label,
     required VoidCallback onTap,
   }) {
-    bool isDetailsPage = GoRouter.of(context).routeInformationProvider.value.uri
-        .toString()
-        .startsWith(Routes.coinDetails);
-
     return MaterialButton(
       onPressed: onTap,
       color: context.isDarkMode

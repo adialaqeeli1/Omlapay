@@ -17,6 +17,17 @@ import '../../../../providers/kyc_status_provider.dart';
 import '../../../../providers/wallets_provider.dart';
 import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
 
+/// Route extra for [Routes.swapCoin] used to pre-fill the swap form.
+///
+/// When [initialFromCoinSymbol] is provided, [SwapProvider] selects that
+/// coin as the `from` coin and picks the next available coin in the list
+/// as the `to` coin on construction.
+class SwapCoinExtra {
+  const SwapCoinExtra({this.initialFromCoinSymbol});
+
+  final String? initialFromCoinSymbol;
+}
+
 class SwapCoinView extends StatelessWidget {
   const SwapCoinView({super.key});
 
