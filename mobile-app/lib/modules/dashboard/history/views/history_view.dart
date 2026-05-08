@@ -111,52 +111,70 @@ class HistoryView extends StatelessWidget {
     }
 
     if (provider.transactions.isEmpty) {
-      return const Center(child: NoTransactionsFound());
+      return RefreshIndicator(
+        onRefresh: provider.refresh,
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: const Center(child: NoTransactionsFound()),
+            ),
+          ),
+        ),
+      );
     }
 
     final groupedTransactions = _groupTransactionsByDate(provider.transactions);
     final isLoadingMore = provider.isLoadingMore;
     final hasMore = provider.hasMore;
 
-    return NotificationListener<ScrollNotification>(
-      onNotification: (notification) {
-        if (notification.metrics.axis != Axis.vertical) return false;
-        if (!hasMore || isLoadingMore) return false;
-        if (notification.metrics.pixels >=
-            notification.metrics.maxScrollExtent - 200) {
-          provider.loadMore();
-        }
-        return false;
-      },
-      child: ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-        itemCount: groupedTransactions.length + (isLoadingMore ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index == groupedTransactions.length) {
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Center(child: CommonLoadingIndicator()),
-            );
+    return RefreshIndicator(
+      onRefresh: provider.refresh,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification.metrics.axis != Axis.vertical) return false;
+          if (!hasMore || isLoadingMore) return false;
+          if (notification.metrics.pixels >=
+              notification.metrics.maxScrollExtent - 200) {
+            provider.loadMore();
           }
-          final group = groupedTransactions[index];
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TransactionSectionHeader(
-                date: group['date'] as DateTime,
-                isFirst: index == 0,
-              ),
-              ...(group['transactions'] as List<TransactionModel>).map(
-                (transaction) => TransactionItem(
-                  transaction: transaction,
-                  onTap: () {
-                    context.push(Routes.transactionDetail, extra: transaction);
-                  },
-                ),
-              ),
-            ],
-          );
+          return false;
         },
+        child: ListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          itemCount: groupedTransactions.length + (isLoadingMore ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index == groupedTransactions.length) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(child: CommonLoadingIndicator()),
+              );
+            }
+            final group = groupedTransactions[index];
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TransactionSectionHeader(
+                  date: group['date'] as DateTime,
+                  isFirst: index == 0,
+                ),
+                ...(group['transactions'] as List<TransactionModel>).map(
+                  (transaction) => TransactionItem(
+                    transaction: transaction,
+                    onTap: () {
+                      context.push(
+                        Routes.transactionDetail,
+                        extra: transaction,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
