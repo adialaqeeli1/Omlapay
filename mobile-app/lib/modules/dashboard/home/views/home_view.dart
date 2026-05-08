@@ -332,7 +332,11 @@ class _HomeViewState extends State<HomeView> {
         child: Center(child: CircularProgressIndicator()),
       );
     }
-    final List<CoinModel> coins = coinsPrices.coins;
+    final List<CoinModel> coins = [...coinsPrices.coins]..sort((a, b) {
+      final aBalance = walletsProvider.rawBalanceForCoin(a.symbol);
+      final bBalance = walletsProvider.rawBalanceForCoin(b.symbol);
+      return bBalance.compareTo(aBalance);
+    });
     final l10n = context.l10n!;
 
     return Directionality(

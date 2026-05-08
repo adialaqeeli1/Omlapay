@@ -67,6 +67,22 @@ class WalletsProvider extends ChangeNotifier {
     return '0.0000';
   }
 
+  /// Returns the raw coin balance as a double for [symbol], or `0.0` when
+  /// the symbol isn't held in any wallet. Useful for sorting/comparisons.
+  double rawBalanceForCoin(String symbol) {
+    final key = symbol.trim().toUpperCase();
+    if (key.isEmpty) return 0.0;
+
+    for (final network in _wallets) {
+      for (final coin in network.coins) {
+        if (coin.symbol.toUpperCase() == key) {
+          return coin.balance;
+        }
+      }
+    }
+    return 0.0;
+  }
+
   /// Returns the fiat balance for a coin symbol based on the selected currency.
   ///
   /// Searches across all networks. Returns `currentBalance` when USD is
