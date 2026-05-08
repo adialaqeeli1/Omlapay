@@ -80,13 +80,85 @@ class AuthService {
     return response;
   }
 
+  /// Final step of the OTP-based hard-login. The token is what
+  /// `loginVerifyOtp` returned in `data.otpVerificationToken`.
+  /// Backend: POST /v1/auth/login.
   static Future<Map<String, dynamic>> login({
+    required String passcode,
+    required String otpVerificationToken,
+  }) async {
+    final response = await ApiHelper.post(
+      Endpoints.login,
+      {
+        "passcode": passcode,
+        "otpVerificationToken": otpVerificationToken,
+      },
+    );
+    return response;
+  }
+
+  /// Step 1 of the OTP-based hard-login: trigger an SMS OTP for the given phone.
+  /// Backend: POST /v1/auth/login/send-otp.
+  static Future<Map<String, dynamic>> loginSendOtp({
+    required String countryCode,
+    required String mobileNumber,
+  }) async {
+    final response = await ApiHelper.post(
+      Endpoints.loginSendOtp,
+      {
+        "country_code": countryCode,
+        "mobile_number": mobileNumber,
+      },
+    );
+    return response;
+  }
+
+  /// Step 1 (resend) of the OTP-based hard-login: re-trigger the SMS OTP.
+  /// Backend: POST /v1/auth/login/resend-otp.
+  static Future<Map<String, dynamic>> loginResendOtp({
+    required String countryCode,
+    required String mobileNumber,
+  }) async {
+    final response = await ApiHelper.post(
+      Endpoints.loginResendOtp,
+      {
+        "country_code": countryCode,
+        "mobile_number": mobileNumber,
+      },
+    );
+    return response;
+  }
+
+  /// Step 2 of the OTP-based hard-login: verify the OTP. On success the
+  /// response carries `data.otpVerificationToken` which is consumed by the
+  /// final `login` call (in a later task).
+  /// Backend: POST /v1/auth/login/verify-otp.
+  static Future<Map<String, dynamic>> loginVerifyOtp({
+    required String countryCode,
+    required String mobileNumber,
+    required String otp,
+  }) async {
+    final response = await ApiHelper.post(
+      Endpoints.loginVerifyOtp,
+      {
+        "country_code": countryCode,
+        "mobile_number": mobileNumber,
+        "otp": otp,
+      },
+    );
+    return response;
+  }
+
+  /// Silent re-login with phone + passcode (no OTP). Backend returns the same
+  /// shape as the OTP-based `login` (access_token, refresh_token, user).
+  /// Backend: POST /v1/auth/login/passcode.
+  static Future<Map<String, dynamic>> loginPasscode({
     required String countryCode,
     required String mobileNumber,
     required String passcode,
   }) async {
     final response = await ApiHelper.post(
-      Endpoints.login,
+      Endpoints.loginPasscode,
       {
         "country_code": countryCode,
         "mobile_number": mobileNumber,

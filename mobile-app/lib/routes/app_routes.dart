@@ -7,6 +7,7 @@ class Routes {
   static const String enterOrSetPasscode = _Paths.enterOrSetPasscode;
   static const String forgotPasscode = _Paths.forgotPasscode;
   static const String registerVerification = _Paths.registerVerification;
+  static const String loginVerification = _Paths.loginVerification;
   static const String changePasscodeSuccess = _Paths.changePasscodeSuccess;
   static const String changeEmailIntro = _Paths.changeEmailIntro;
   static const String changeEmailVerifyPhone = _Paths.changeEmailVerifyPhone;
@@ -60,6 +61,7 @@ abstract class _Paths {
   static const String enterOrSetPasscode = '/enter-or-set-passcode';
   static const String forgotPasscode = '/forgot-passcode';
   static const String registerVerification = '/register-verification';
+  static const String loginVerification = '/login-verification';
   static const String changePasscodeSuccess = '/change-passcode-success';
   static const String changeEmailIntro = '/change-email-intro';
   static const String changeEmailVerifyPhone = '/change-email-verify-phone';

@@ -11,8 +11,9 @@ import '../core/models/wallet_model/wallet_model.dart';
 import '../core/mock_data/mock_data.dart';
 import '../core/services/push_notification_service.dart';
 import '../core/services/storage_helper.dart';
-import '../core/utils/app_exception.dart';
 import '../core/utils/api_message_helper.dart';
+import '../core/utils/app_exception.dart';
+import '../core/utils/user_auth_phone.dart';
 import '../modules/auth/providers/passcode_provider.dart';
 import '../modules/auth/services/auth_service.dart';
 import '../modules/auth/services/forgot_passcode_service.dart';
@@ -72,22 +73,17 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> login(
-    String mobileNumber,
-    String countryCode,
-    String password,
-  ) async {
+  Future<bool> login({
+    required String passcode,
+    required String otpVerificationToken,
+  }) async {
     try {
       _state = state.copyWith(isLoading: true, errorMessage: null);
       notifyListeners();
 
-      final normalizedPhone = mobileNumber.replaceAll(RegExp(r'[^0-9]'), '');
-      final normalizedCountry = countryCode.trim();
-
       final rawResponse = await AuthService.login(
-        countryCode: normalizedCountry,
-        mobileNumber: normalizedPhone,
-        passcode: password,
+        passcode: passcode,
+        otpVerificationToken: otpVerificationToken,
       );
 
       final int? statusCode = rawResponse['statusCode'] as int?;
@@ -112,16 +108,18 @@ class AuthProvider extends ChangeNotifier {
           user != null &&
           accessToken != null &&
           accessToken.isNotEmpty) {
-        // Keep the entered credentials locally so flows like change-phone,
-        // disable-2FA, etc. can hard-login again (API user may omit these fields).
+        // The OTP login API returns `user.mobile_number` as the full combined
+        // number (e.g. "+917709922711") with no separate `country_code` field,
+        // so the parsed UserModel has empty `countryCode` / `mobileNumber`.
+        // Derive the parts from `fullMobileNumber` so silent-relogin flows
+        // (disable 2FA, change passcode, etc.) have valid credentials to send.
+        final parts = (user.countryCode.isEmpty || user.mobileNumber.isEmpty)
+            ? splitFullMobileNumber(user.fullMobileNumber)
+            : (countryCode: user.countryCode, mobileNumber: user.mobileNumber);
         final userToPersist = user.copyWith(
-          password: password,
-          countryCode: normalizedCountry.isNotEmpty
-              ? normalizedCountry
-              : user.countryCode,
-          mobileNumber: normalizedPhone.isNotEmpty
-              ? normalizedPhone
-              : user.mobileNumber,
+          password: passcode,
+          countryCode: user.countryCode.isEmpty ? parts.countryCode : user.countryCode,
+          mobileNumber: user.mobileNumber.isEmpty ? parts.mobileNumber : user.mobileNumber,
         );
         _state = state.copyWith(
           authStatus: AuthStatus.authorized,
@@ -142,6 +140,111 @@ class AuthProvider extends ChangeNotifier {
         notifyListeners();
         onUnlockCallback?.call();
         // Refresh account details in background to sync latest profile data
+        fetchAccountDetails();
+        // Register FCM push-notification device token with backend (fire-and-forget).
+        unawaited(PushNotificationService.instance.registerCurrentDevice());
+        return true;
+      }
+
+      final l10n = appLocalizationsFromStoredLocale();
+      final errorMsg = _localizedMessageFromRawResponse(
+        rawResponse,
+        fallback: l10n.loginFailed,
+      );
+      _state = state.copyWith(isLoading: false, errorMessage: errorMsg);
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// Silent re-login via `/v1/auth/login/passcode` — the OTP-less variant
+  /// used after server-side session revocation (change passcode, disable 2FA,
+  /// change phone) and after registration. Returns true on success and
+  /// updates `_state` + tokens like [login] does.
+  Future<bool> loginWithPasscode({
+    required String mobileNumber,
+    required String countryCode,
+    required String passcode,
+  }) async {
+    try {
+      _state = state.copyWith(isLoading: true, errorMessage: null);
+      notifyListeners();
+
+      final normalizedPhone = mobileNumber.replaceAll(RegExp(r'[^0-9]'), '');
+      final normalizedCountry = countryCode.trim();
+
+      final rawResponse = await AuthService.loginPasscode(
+        countryCode: normalizedCountry,
+        mobileNumber: normalizedPhone,
+        passcode: passcode,
+      );
+
+      final int? statusCode = rawResponse['statusCode'] as int?;
+      final bool isSuccess =
+          (statusCode != null && statusCode >= 200 && statusCode < 300) ||
+          rawResponse['status']?.toString() == 'success';
+      final Map<String, dynamic>? data =
+          rawResponse['data'] is Map<String, dynamic>
+          ? rawResponse['data'] as Map<String, dynamic>
+          : null;
+      final String? accessToken = data?['access_token']?.toString();
+      final String? refreshToken = data?['refresh_token']?.toString();
+      final dynamic userData = data?['user'];
+      final Map<String, dynamic>? userJson = userData is Map<String, dynamic>
+          ? userData
+          : null;
+      final UserModel? user = userJson != null
+          ? UserModel.fromJson(userJson)
+          : null;
+
+      if (isSuccess &&
+          user != null &&
+          accessToken != null &&
+          accessToken.isNotEmpty) {
+        // Persist the entered passcode + the entered phone/country so flows
+        // like change-phone or disable-2FA can hard-login again later (the
+        // API user payload may omit these fields). If even those aren't
+        // available, derive from the full mobile number as a last resort.
+        final fallbackParts =
+            splitFullMobileNumber(user.fullMobileNumber);
+        final resolvedCountry = normalizedCountry.isNotEmpty
+            ? normalizedCountry
+            : (user.countryCode.isNotEmpty
+                ? user.countryCode
+                : fallbackParts.countryCode);
+        final resolvedPhone = normalizedPhone.isNotEmpty
+            ? normalizedPhone
+            : (user.mobileNumber.isNotEmpty
+                ? user.mobileNumber
+                : fallbackParts.mobileNumber);
+        final userToPersist = user.copyWith(
+          password: passcode,
+          countryCode: resolvedCountry,
+          mobileNumber: resolvedPhone,
+        );
+        _state = state.copyWith(
+          authStatus: AuthStatus.authorized,
+          user: userToPersist,
+          isLoading: false,
+          errorMessage: null,
+        );
+
+        await StorageService.setString(AppConstants.tokenKey, accessToken);
+        if (refreshToken != null && refreshToken.isNotEmpty) {
+          await StorageService.setString('refresh_token', refreshToken);
+        }
+        await StorageService.setString(
+          AppConstants.userKey,
+          jsonEncode(userToPersist.toJson()),
+        );
+
+        notifyListeners();
+        onUnlockCallback?.call();
+        // Refresh account details in background to sync latest profile data.
         fetchAccountDetails();
         // Register FCM push-notification device token with backend (fire-and-forget).
         unawaited(PushNotificationService.instance.registerCurrentDevice());
@@ -359,7 +462,12 @@ class AuthProvider extends ChangeNotifier {
         confirmPasscode: confirmPasscode,
       );
 
-      final loggedIn = await login(phoneNumber, countryCode, newPasscode);
+      // After server-side reset, silent re-login with the new passcode.
+      final loggedIn = await loginWithPasscode(
+        mobileNumber: phoneNumber,
+        countryCode: countryCode,
+        passcode: newPasscode,
+      );
       return loggedIn;
     } catch (e) {
       _state = state.copyWith(isLoading: false, errorMessage: e.toString());
@@ -485,7 +593,7 @@ class AuthProvider extends ChangeNotifier {
 
       if (!enabled) {
         // Session revoked on disable — clear only tokens, keep user data
-        // so login() can use the stored credentials.
+        // so loginWithPasscode can use the stored credentials.
         final phone = currentUser.mobileNumber.replaceAll(
           RegExp(r'[^0-9]'),
           '',
@@ -494,7 +602,11 @@ class AuthProvider extends ChangeNotifier {
         final passcode = currentUser.password;
 
         await _clearSessionTokens();
-        final loggedIn = await login(phone, country, passcode);
+        final loggedIn = await loginWithPasscode(
+          mobileNumber: phone,
+          countryCode: country,
+          passcode: passcode,
+        );
 
         if (!loggedIn) {
           final err = _state.errorMessage ?? l10n.loginFailed;
@@ -591,10 +703,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// After change-phone succeeds on the server, clears the old session and performs
-  /// hard login with the **new** number and the passcode from the last successful
-  /// login (stored on [UserModel.password]). If no passcode is stored locally,
-  /// falls back to [updatePhoneForCurrentUser] only.
   Future<bool> completePhoneChangeAndRefreshSession({
     required String countryCode,
     required String phoneNumber,
@@ -609,6 +717,8 @@ class AuthProvider extends ChangeNotifier {
     final passcode = user.password;
 
     if (passcode.length != PasscodeProvider.passcodeLength) {
+      // No stored passcode — can't silent re-login. Fall back to local-only
+      // phone/country update.
       return updatePhoneForCurrentUser(
         countryCode: normalizedCountry,
         phoneNumber: normalizedPhone,
@@ -617,7 +727,11 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       await _clearSessionTokens();
-      return await login(normalizedPhone, normalizedCountry, passcode);
+      return await loginWithPasscode(
+        mobileNumber: normalizedPhone,
+        countryCode: normalizedCountry,
+        passcode: passcode,
+      );
     } catch (_) {
       return false;
     }
@@ -663,14 +777,13 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Updates passcode on the server, then [logout] and hard [login] with the
-  /// same phone and **new** passcode so tokens and cached [UserModel] stay in sync.
+  /// Updates passcode on the server, then clears local auth state so the
+  /// caller can route the user back to the login screen. (The new OTP-based
+  /// login flow can no longer silently re-login here.)
   Future<String> changePasscodeAndRefreshSession({
     required String currentPasscode,
     required String newPasscode,
     required String confirmPasscode,
-    required String countryCode,
-    required String mobileNumber,
   }) async {
     try {
       _state = state.copyWith(isLoading: true, errorMessage: null);
@@ -698,14 +811,25 @@ class AuthProvider extends ChangeNotifier {
         fallback: l10n.passcodeChangedSuccessfully,
       );
 
-      final normalizedPhone = mobileNumber.replaceAll(RegExp(r'[^0-9]'), '');
-      final normalizedCountry = countryCode.trim();
+      // Server revokes the old session; restore silently with the new passcode.
+      final currentUser = _state.user;
+      if (currentUser == null) {
+        // Unexpected — state shouldn't lose user mid-flow. Bail out cleanly.
+        _state = state.copyWith(isLoading: false, errorMessage: null);
+        notifyListeners();
+        return successMessage;
+      }
+      final phone = currentUser.mobileNumber.replaceAll(
+        RegExp(r'[^0-9]'),
+        '',
+      );
+      final country = currentUser.countryCode.trim();
 
       await _clearSessionTokens();
-      final loggedIn = await login(
-        normalizedPhone,
-        normalizedCountry,
-        newPasscode,
+      final loggedIn = await loginWithPasscode(
+        mobileNumber: phone,
+        countryCode: country,
+        passcode: newPasscode,
       );
 
       if (!loggedIn) {

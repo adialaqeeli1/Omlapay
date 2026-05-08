@@ -21,6 +21,14 @@ class Endpoints {
 
   /// Auth
   static String get login => '$apiVersion/auth/login';
+  static String get loginSendOtp => '$apiVersion/auth/login/send-otp';
+  static String get loginResendOtp => '$apiVersion/auth/login/resend-otp';
+  static String get loginVerifyOtp => '$apiVersion/auth/login/verify-otp';
+
+  /// Silent re-login: phone + country + passcode, no OTP. Used by flows that
+  /// re-establish a session after the server revokes it (change passcode,
+  /// disable 2FA, change phone, forgot-passcode reset).
+  static String get loginPasscode => '$apiVersion/auth/login/passcode';
   static String get softLogin => '$apiVersion/auth/soft-login';
   static String get checkUser => '$apiVersion/auth/check-user';
   static String get inviteUser => '$apiVersion/user/invite';
@@ -32,8 +40,10 @@ class Endpoints {
       '$apiVersion/auth/forgot-passcode/resend-otp';
   static String get forgotPasscodeVerifyOtp =>
       '$apiVersion/auth/forgot-passcode/verify-otp';
-  static String get forgotPasscodeReset => '$apiVersion/auth/forgot-passcode/reset';
-  static String get changePasscode => '$apiVersion/user/settings/change-passcode';
+  static String get forgotPasscodeReset =>
+      '$apiVersion/auth/forgot-passcode/reset';
+  static String get changePasscode =>
+      '$apiVersion/user/settings/change-passcode';
 
   /// Settings → change phone (5-step flow).
   static String get changePhoneStep1Request =>
@@ -83,8 +93,7 @@ class Endpoints {
 
   /// Validates a wallet address for a given coin before sending.
   /// Query params: `address` (required), `coin` (required).
-  static String get sendValidateAddress =>
-      '$apiVersion/send/validate-address';
+  static String get sendValidateAddress => '$apiVersion/send/validate-address';
 
   /// Returns authoritative fee/amount quote for a prospective send.
   /// Query params: `coin`, `recipient`, `amount` (all required).
@@ -164,11 +173,10 @@ class Endpoints {
 
   /// About content; supports query param `language` (e.g. en, ar).
   static String get about => '$apiVersion/about';
-  static String get twoFactorEnable =>
-      '$apiVersion/user/settings/2fa/enable';
-  static String get twoFactorDisable =>
-      '$apiVersion/user/settings/2fa/disable';
-  static String get userSettingsCurrency => '$apiVersion/user/settings/currency';
+  static String get twoFactorEnable => '$apiVersion/user/settings/2fa/enable';
+  static String get twoFactorDisable => '$apiVersion/user/settings/2fa/disable';
+  static String get userSettingsCurrency =>
+      '$apiVersion/user/settings/currency';
   static String get userSettingsAppearance =>
       '$apiVersion/user/settings/appearance';
   static String get userSettingsLanguage =>

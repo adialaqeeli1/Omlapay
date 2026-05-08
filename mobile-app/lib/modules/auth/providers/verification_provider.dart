@@ -210,6 +210,7 @@ class VerificationProvider extends ChangeNotifier {
           return true;
         } else {
           _hasError = true;
+          _otp = '';
           return false;
         }
       } else {
@@ -219,11 +220,17 @@ class VerificationProvider extends ChangeNotifier {
           _otp,
           requireResetToken: !_isChangePasscodeVerification,
         );
-        _hasError = !isValid;
+        if (!isValid) {
+          _hasError = true;
+          _otp = '';
+        } else {
+          _hasError = false;
+        }
         return isValid;
       }
     } catch (e) {
       _hasError = true;
+      _otp = '';
       rethrow;
     } finally {
       _isVerifying = false;

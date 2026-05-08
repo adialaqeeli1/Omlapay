@@ -103,6 +103,7 @@ class ChangePhoneCurrentOtpProvider extends ChangeNotifier {
       return true;
     } on AppException catch (e) {
       _hasError = true;
+      _otp = '';
       _verifyErrorKey = e.messageKey ?? 'requestFailed';
       return false;
     } finally {

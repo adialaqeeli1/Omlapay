@@ -90,8 +90,6 @@ class _VerificationScreenState extends State<VerificationScreen> {
           currentPasscode: current,
           newPasscode: next,
           confirmPasscode: next,
-          countryCode: provider.countryCode,
-          mobileNumber: provider.phoneNumber,
         );
         if (!mounted) {
           return;
