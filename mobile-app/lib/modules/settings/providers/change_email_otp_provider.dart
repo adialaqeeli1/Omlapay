@@ -84,6 +84,7 @@ class ChangeEmailPhoneOtpProvider extends ChangeNotifier {
       return true;
     } on AppException {
       _hasError = true;
+      _otp = '';
       rethrow;
     } finally {
       _isVerifying = false;
@@ -207,6 +208,7 @@ class ChangeEmailNewEmailOtpProvider extends ChangeNotifier {
       return true;
     } on AppException {
       _hasError = true;
+      _otp = '';
       rethrow;
     } finally {
       _isVerifying = false;

@@ -18,6 +18,8 @@ import '../modules/auth/views/enter_or_set_passcode.dart';
 import '../modules/auth/views/forgot_passcode.dart';
 import '../modules/auth/views/login_or_register_screen.dart';
 import '../modules/auth/views/verification_screen.dart';
+import '../modules/auth/providers/login_verification_provider.dart';
+import '../modules/auth/views/login_verification_screen.dart';
 import '../modules/auth/views/change_passcode_success_view.dart';
 import '../modules/auth/providers/verification_provider.dart';
 import '../modules/coin_details/views/coin_details_view.dart';
@@ -186,6 +188,10 @@ class AppRouter {
           final resetToken = routePayload is Map<String, dynamic>
               ? routePayload[LoginProvider.extraResetTokenKey] as String?
               : null;
+          final otpVerificationToken = routePayload is Map<String, dynamic>
+              ? routePayload[LoginProvider.extraOtpVerificationTokenKey]
+                  as String?
+              : null;
 
           // Use a key that changes when switching to confirm passcode so we get
           // a fresh PasscodeProvider with empty state. Otherwise the same provider
@@ -215,6 +221,7 @@ class AppRouter {
               changeEmailToken: changeEmailToken,
               changePhoneToken: changePhoneToken,
               registrationToken: registrationToken,
+              otpVerificationToken: otpVerificationToken,
             ),
           );
         },
@@ -284,6 +291,30 @@ class AppRouter {
           );
         },
         redirect: AuthMiddleware.registerVerification,
+      ),
+      GoRoute(
+        path: Routes.loginVerification,
+        name: 'loginVerification',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final countryCode =
+              extra?[LoginProvider.extraCountryCodeKey] as String? ?? '';
+          final phoneNumber =
+              extra?[LoginProvider.extraPhoneNumberKey] as String? ?? '';
+          final maskedMobile = extra?['maskedMobile'] as String?;
+          final otpExpirySeconds = extra?['otpExpirySeconds'] as int? ??
+              LoginVerificationProvider.countdownStartSeconds;
+          return ChangeNotifierProvider(
+            create: (_) => LoginVerificationProvider(
+              countryCode: countryCode,
+              phoneNumber: phoneNumber,
+              maskedMobile: maskedMobile,
+              initialCountdown: otpExpirySeconds,
+            ),
+            child: const LoginVerificationScreen(),
+          );
+        },
+        redirect: AuthMiddleware.isUnauthenticated,
       ),
       GoRoute(
         path: Routes.changePasscodeSuccess,

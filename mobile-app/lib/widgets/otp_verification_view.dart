@@ -70,6 +70,17 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
   }
 
   @override
+  void didUpdateWidget(OtpVerificationView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Auto-clear the pin field when verification fails so the user can
+    // retype without manually deleting digits. The error styling persists
+    // until the user types again (which clears `hasError` in the provider).
+    if (!oldWidget.hasError && widget.hasError) {
+      _pinController.clear();
+    }
+  }
+
+  @override
   void dispose() {
     _pinController.dispose();
     super.dispose();

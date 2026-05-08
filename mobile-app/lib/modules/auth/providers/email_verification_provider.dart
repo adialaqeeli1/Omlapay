@@ -89,10 +89,16 @@ class EmailVerificationProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final result = await EmailVerificationService.verifyOtp(_otp);
-      _hasError = !result;
+      if (!result) {
+        _hasError = true;
+        _otp = '';
+      } else {
+        _hasError = false;
+      }
       return result;
     } on AppException {
       _hasError = true;
+      _otp = '';
       rethrow;
     } finally {
       _isVerifying = false;

@@ -33,6 +33,11 @@ class LoginProvider extends ChangeNotifier {
   static const String extraPendingPasscodeKey = 'pendingPasscode';
   static const String extraCurrentPasscodeKey = 'currentPasscode';
   static const String extraResetTokenKey = 'resetToken';
+
+  /// Token returned by `/v1/auth/login/verify-otp`, consumed by the final
+  /// `/v1/auth/login` call. Plumbed via route extras.
+  static const String extraOtpVerificationTokenKey = 'otpVerificationToken';
+
   static const String extraPendingEmailKey = 'pendingEmail';
 
   /// Settings → change phone verify route: server-masked destination (e.g. +91 ******6660).
@@ -214,14 +219,57 @@ class LoginProvider extends ChangeNotifier {
 
         if (userExists) {
           if (hasPasscode) {
-            context.go(
-              Routes.enterOrSetPasscode,
-              extra: {
-                extraModeKey: modeHardLogin,
-                extraCountryCodeKey: currentPhoneCode,
-                extraPhoneNumberKey: digitsOnlyPhone,
-              },
-            );
+            try {
+              final sendOtpResponse = await AuthService.loginSendOtp(
+                countryCode: currentPhoneCode,
+                mobileNumber: digitsOnlyPhone,
+              );
+
+              if (!context.mounted) {
+                _isSubmitting = false;
+                notifyListeners();
+                return;
+              }
+
+              if (!_isApiSuccess(sendOtpResponse)) {
+                SnackbarHelper.showError(
+                  context,
+                  ApiMessageHelper.localizedFromResponse(
+                    sendOtpResponse,
+                    fallback: l10n.requestFailed,
+                    context: context,
+                  ),
+                );
+                _isSubmitting = false;
+                notifyListeners();
+                return;
+              }
+
+              final sendOtpData = _asJsonMap(sendOtpResponse['data']);
+              final otpExpirySeconds =
+                  sendOtpData?['otp_expiry_seconds'] as int? ??
+                  sendOtpData?['expires_in'] as int? ??
+                  sendOtpData?['expires_in_seconds'] as int? ??
+                  60;
+              final maskedMobile = sendOtpData?['masked_mobile']?.toString();
+
+              context.push(
+                Routes.loginVerification,
+                extra: {
+                  extraCountryCodeKey: currentPhoneCode,
+                  extraPhoneNumberKey: digitsOnlyPhone,
+                  'maskedMobile': maskedMobile,
+                  'otpExpirySeconds': otpExpirySeconds,
+                },
+              );
+            } catch (e) {
+              if (context.mounted) {
+                final message = e is AppException
+                    ? e.localizedMessage(context.l10n)
+                    : context.l10n!.unknownError;
+                SnackbarHelper.showError(context, message);
+              }
+            }
           } else {
             final registerResponse = await AuthService.registerRequest(
               countryCode: currentPhoneCode,

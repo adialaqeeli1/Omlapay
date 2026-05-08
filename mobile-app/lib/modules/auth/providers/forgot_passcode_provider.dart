@@ -191,6 +191,8 @@ class ForgotPasscodeProvider extends ChangeNotifier {
       return true;
     } catch (_) {
       _hasError = true;
+      _phoneOtp = '';
+      _emailOtp = '';
       rethrow;
     } finally {
       _isVerifying = false;

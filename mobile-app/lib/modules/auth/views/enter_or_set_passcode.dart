@@ -37,6 +37,7 @@ class EnterOrSetPasscodeScreen extends StatefulWidget {
     this.changeEmailToken,
     this.changePhoneToken,
     this.registrationToken,
+    this.otpVerificationToken,
   });
 
   final bool isSoftLogin;
@@ -48,6 +49,7 @@ class EnterOrSetPasscodeScreen extends StatefulWidget {
   final String? changeEmailToken;
   final String? changePhoneToken;
   final String? registrationToken;
+  final String? otpVerificationToken;
 
   @override
   State<EnterOrSetPasscodeScreen> createState() =>
@@ -679,18 +681,20 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
                     widget.registrationToken!.isNotEmpty) {
                   final isRegSuccess = await authProvider
                       .setRegistrationPasscode(
-                        registrationToken: widget.registrationToken!,
-                        passcode: passcode,
-                        confirmPasscode: passcode,
-                      );
-                  if (isRegSuccess) {
-                    return await authProvider.login(
-                      phoneNumber,
-                      countryCode,
-                      passcode,
-                    );
-                  }
-                  return false;
+                    registrationToken: widget.registrationToken!,
+                    passcode: passcode,
+                    confirmPasscode: passcode,
+                  );
+                  if (!isRegSuccess) return false;
+                  // Server has accepted the new passcode but did not return
+                  // session tokens. Acquire a session via the OTP-less
+                  // `/v1/auth/login/passcode` endpoint so the user lands on
+                  // Home with a valid auth state.
+                  return await authProvider.loginWithPasscode(
+                    mobileNumber: phoneNumber,
+                    countryCode: countryCode,
+                    passcode: passcode,
+                  );
                 }
                 return await authProvider.setPasscode(
                   phoneNumber,
@@ -775,8 +779,6 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
             currentPasscode: oldPasscode,
             newPasscode: newPasscode,
             confirmPasscode: newPasscode,
-            countryCode: provider.countryCode,
-            mobileNumber: provider.phoneNumber,
           );
           if (navigator.mounted) {
             navigator.pop();
@@ -925,13 +927,21 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
         return;
       }
 
+      final token = widget.otpVerificationToken;
+      if (token == null || token.isEmpty) {
+        SnackbarHelper.showError(context, context.l10n!.unknownError);
+        return;
+      }
       final isValid = await provider.verify(
         verifyPasscode:
             ({
               required String phoneNumber,
               required String countryCode,
               required String passcode,
-            }) => authProvider.login(phoneNumber, countryCode, passcode),
+            }) => authProvider.login(
+              passcode: passcode,
+              otpVerificationToken: token,
+            ),
       );
       if (!context.mounted || !isValid) {
         return;
