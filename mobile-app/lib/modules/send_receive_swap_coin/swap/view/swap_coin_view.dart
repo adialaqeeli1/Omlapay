@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/constants/constants.dart';
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/extentions/number_extensions.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
@@ -118,7 +119,10 @@ class SwapCoinView extends StatelessWidget {
                             hintText: provider.fromCoinSwapMinAmount > 0
                                 ? l10n.minAmountHint(
                                     provider.fromCoinSwapMinAmount
-                                        .toFormattedAmount(),
+                                        .toFormattedAmount(
+                                          decimals:
+                                              AppConstants.minAmountDecimals,
+                                        ),
                                   )
                                 : null,
                             bottomHelper: _buildFromCoinMaxRow(
@@ -368,7 +372,8 @@ class SwapCoinView extends StatelessWidget {
           style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
         ),
         Text(
-          '${max.toFormattedAmount()} $ticker'.trim(),
+          '${max.toFormattedAmount(decimals: AppConstants.maxAmountDecimals)} $ticker'
+              .trim(),
           style: TextStyle(color: colorScheme.onSurface, fontSize: 12),
         ),
       ],

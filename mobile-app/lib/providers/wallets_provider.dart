@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../core/constants/constants.dart';
 import '../core/extentions/number_extensions.dart';
 import '../core/models/wallet_model/wallet_model.dart';
 import '../modules/send_receive_swap_coin/receive/services/receive_wallets_service.dart';
@@ -54,7 +55,7 @@ class WalletsProvider extends ChangeNotifier {
   /// selected, `currentBalanceSar` when SAR is selected.
   String balanceForCoin(String symbol) {
     final key = symbol.trim().toUpperCase();
-    if (key.isEmpty) return '0.0000';
+    if (key.isEmpty) return 0.toFormattedAmount();
 
     for (final network in _wallets) {
       for (final coin in network.coins) {
@@ -64,7 +65,7 @@ class WalletsProvider extends ChangeNotifier {
         }
       }
     }
-    return '0.0000';
+    return 0.toFormattedAmount();
   }
 
   /// Returns the raw coin balance as a double for [symbol], or `0.0` when
@@ -89,7 +90,9 @@ class WalletsProvider extends ChangeNotifier {
   /// selected, `currentBalanceSar` when SAR is selected.
   String balanceForCoinConverted(String symbol) {
     final key = symbol.trim().toUpperCase();
-    if (key.isEmpty) return '0.00';
+    if (key.isEmpty) {
+      return 0.toFormattedAmount(decimals: AppConstants.fiatValueDecimals);
+    }
 
     for (final network in _wallets) {
       for (final coin in network.coins) {
@@ -98,11 +101,13 @@ class WalletsProvider extends ChangeNotifier {
               _globalProvider.selectedCurrency.toUpperCase() == 'SAR'
               ? coin.currentBalanceSar
               : coin.currentBalance;
-          return balance.toFormattedAmount(decimals: 2);
+          return balance.toFormattedAmount(
+            decimals: AppConstants.fiatValueDecimals,
+          );
         }
       }
     }
-    return '0.00';
+    return 0.toFormattedAmount(decimals: AppConstants.fiatValueDecimals);
   }
 
   /// Returns the current user's deposit address for [symbol] on [network].

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/constants.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/l10n/app_localizations_from_storage.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
@@ -232,7 +233,9 @@ class SwapProvider extends ChangeNotifier {
     if (coin == null) return;
     final swapMax = double.tryParse(coin.swapMaxAmount ?? '');
     if (swapMax != null && swapMax > 0) {
-      fromAmountController.text = swapMax.toStringAsFixed(4);
+      fromAmountController.text = swapMax.toStringAsFixed(
+        AppConstants.coinAmountDecimals,
+      );
     } else {
       fromAmountController.text = coin.amount;
     }
@@ -333,7 +336,9 @@ class SwapProvider extends ChangeNotifier {
         _streamFailure = null;
         _transportError = null;
         final receive = double.tryParse(quote.youReceive);
-        final formatted = receive == null ? '' : receive.toStringAsFixed(4);
+        final formatted = receive == null
+            ? ''
+            : receive.toStringAsFixed(AppConstants.coinAmountDecimals);
         if (toAmountController.text != formatted) {
           toAmountController.text = formatted;
         }
