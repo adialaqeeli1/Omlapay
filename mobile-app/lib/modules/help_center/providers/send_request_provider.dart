@@ -2,14 +2,21 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
+import '../../../core/services/device_identifier_service.dart';
 import '../../../core/utils/app_exception.dart';
+import '../../../providers/auth_provider.dart';
 import '../services/help_center_service.dart';
 
 class SendRequestProvider extends ChangeNotifier {
   final HelpCenterService _service;
+  final AuthProvider _authProvider;
 
-  SendRequestProvider({HelpCenterService? service})
-    : _service = service ?? HelpCenterService();
+  SendRequestProvider(
+    this._authProvider, {
+    HelpCenterService? service,
+  }) : _service = service ?? HelpCenterService();
+
+  bool get isGuest => !_authProvider.state.isAuthenticated;
 
   final FormGroup form = FormGroup({
     'title': FormControl<String>(
@@ -57,8 +64,14 @@ class SendRequestProvider extends ChangeNotifier {
 
     try {
       String? attachmentUrl;
+      String? macAddress;
 
-      if (_selectedFile?.path != null) {
+      if (isGuest) {
+        // Guests can't upload files (auth-only endpoint) — skip upload and
+        // send the request to the guest endpoint with a device identifier.
+        macAddress = await DeviceIdentifierService.instance
+            .getDeviceIdentifier();
+      } else if (_selectedFile?.path != null) {
         attachmentUrl = await _service.uploadFile(
           filePath: _selectedFile!.path!,
           fileName: _selectedFile!.name,
@@ -69,6 +82,7 @@ class SendRequestProvider extends ChangeNotifier {
         title: titleControl.value!.trim(),
         description: descriptionControl.value!.trim(),
         attachmentUrl: attachmentUrl,
+        macAddress: macAddress,
       );
 
       return true;

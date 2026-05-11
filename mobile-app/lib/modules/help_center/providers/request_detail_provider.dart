@@ -1,19 +1,34 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/services/device_identifier_service.dart';
 import '../../../core/utils/app_exception.dart';
+import '../../../providers/auth_provider.dart';
 import '../models/support_request_detail_model.dart';
 import '../services/help_center_service.dart';
 
 class RequestDetailProvider extends ChangeNotifier {
   final HelpCenterService _service;
+  final AuthProvider _authProvider;
   final String requestId;
+  String? _cachedMacAddress;
 
   RequestDetailProvider({
     required this.requestId,
+    required AuthProvider authProvider,
     HelpCenterService? service,
-  }) : _service = service ?? HelpCenterService() {
+  }) : _authProvider = authProvider,
+       _service = service ?? HelpCenterService() {
     fetchDetail();
+  }
+
+  bool get isGuest => !_authProvider.state.isAuthenticated;
+
+  Future<String?> _resolveMacAddress() async {
+    if (!isGuest) return null;
+    _cachedMacAddress ??= await DeviceIdentifierService.instance
+        .getDeviceIdentifier();
+    return _cachedMacAddress;
   }
 
   SupportRequestDetailModel? _detail;
@@ -49,7 +64,11 @@ class RequestDetailProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _detail = await _service.fetchRequestDetail(requestId);
+      final macAddress = await _resolveMacAddress();
+      _detail = await _service.fetchRequestDetail(
+        requestId,
+        macAddress: macAddress,
+      );
       // Fetch file sizes for all attachments
       for (final attachment in _detail!.attachments) {
         _fetchFileSize(attachment.url);
@@ -65,7 +84,7 @@ class RequestDetailProvider extends ChangeNotifier {
   }
 
   Future<void> reopenTicket() async {
-    if (_isReopening) return;
+    if (_isReopening || isGuest) return;
 
     _isReopening = true;
     notifyListeners();

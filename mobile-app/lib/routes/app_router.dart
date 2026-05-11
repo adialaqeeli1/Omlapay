@@ -190,7 +190,7 @@ class AppRouter {
               : null;
           final otpVerificationToken = routePayload is Map<String, dynamic>
               ? routePayload[LoginProvider.extraOtpVerificationTokenKey]
-                  as String?
+                    as String?
               : null;
 
           // Use a key that changes when switching to confirm passcode so we get
@@ -302,7 +302,8 @@ class AppRouter {
           final phoneNumber =
               extra?[LoginProvider.extraPhoneNumberKey] as String? ?? '';
           final maskedMobile = extra?['maskedMobile'] as String?;
-          final otpExpirySeconds = extra?['otpExpirySeconds'] as int? ??
+          final otpExpirySeconds =
+              extra?['otpExpirySeconds'] as int? ??
               LoginVerificationProvider.countdownStartSeconds;
           return ChangeNotifierProvider(
             create: (_) => LoginVerificationProvider(
@@ -427,8 +428,8 @@ class AppRouter {
                     if (!innerCtx.mounted || !valid) return;
                     final confirmedEmail =
                         provider.verifiedEmail?.trim().isNotEmpty == true
-                            ? provider.verifiedEmail!.trim()
-                            : pendingEmail;
+                        ? provider.verifiedEmail!.trim()
+                        : pendingEmail;
                     await innerCtx
                         .read<AuthProvider>()
                         .updateEmailForCurrentUser(confirmedEmail);
@@ -468,8 +469,9 @@ class AppRouter {
           final fallbackMaskedEmail = user?.email != null
               ? maskedEmailForDisplay(user!.email!)
               : '';
-          final effectiveMaskedEmail =
-              maskedEmail.isNotEmpty ? maskedEmail : fallbackMaskedEmail;
+          final effectiveMaskedEmail = maskedEmail.isNotEmpty
+              ? maskedEmail
+              : fallbackMaskedEmail;
           final l10n = AppLocalizations.of(context)!;
           return ChangeNotifierProvider(
             create: (_) => ChangePhoneCurrentOtpProvider(
@@ -665,7 +667,7 @@ class AppRouter {
         path: Routes.helpCenter,
         name: 'helpCenter',
         builder: (context, state) => const HelpCenterView(),
-        redirect: AuthMiddleware.isAuthenticated,
+        // redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
         path: Routes.kycVerification,
@@ -700,7 +702,8 @@ class AppRouter {
         path: Routes.sendRequest,
         name: 'sendRequest',
         builder: (context, state) => ChangeNotifierProvider(
-          create: (_) => SendRequestProvider(),
+          create: (context) =>
+              SendRequestProvider(context.read<AuthProvider>()),
           child: const SendRequestView(),
         ),
       ),
@@ -708,10 +711,10 @@ class AppRouter {
         path: Routes.pastRequests,
         name: 'pastRequests',
         builder: (context, state) => ChangeNotifierProvider(
-          create: (_) => HelpCenterProvider(),
+          create: (context) =>
+              HelpCenterProvider(context.read<AuthProvider>()),
           child: const PastRequestsView(),
         ),
-        redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
         path: Routes.requestDetail,
@@ -719,11 +722,13 @@ class AppRouter {
         builder: (context, state) {
           final requestId = state.extra as String;
           return ChangeNotifierProvider(
-            create: (_) => RequestDetailProvider(requestId: requestId),
+            create: (context) => RequestDetailProvider(
+              requestId: requestId,
+              authProvider: context.read<AuthProvider>(),
+            ),
             child: const RequestDetailView(),
           );
         },
-        redirect: AuthMiddleware.isAuthenticated,
       ),
       GoRoute(
         path: Routes.coinDetails,

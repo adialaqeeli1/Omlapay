@@ -96,24 +96,32 @@ class RequestDetailView extends StatelessWidget {
               ),
             ],
           ),
-          bottomSheet: _BottomBar(
-            status: detail.status,
-            isReopening: provider.isReopening,
-            onReopen: () async {
-              await provider.reopenTicket();
-              if (context.mounted) {
-                if (provider.errorKey != null) {
-                  SnackbarHelper.showError(
-                    context,
-                    AppException.resolveErrorKey(l10n, provider.errorKey!) ??
-                        l10n.somethingWentWrong,
-                  );
-                } else {
-                  SnackbarHelper.showSuccess(context, l10n.requestReopened);
-                }
-              }
-            },
-          ),
+          bottomSheet: provider.isGuest
+              ? null
+              : _BottomBar(
+                  status: detail.status,
+                  isReopening: provider.isReopening,
+                  onReopen: () async {
+                    await provider.reopenTicket();
+                    if (context.mounted) {
+                      if (provider.errorKey != null) {
+                        SnackbarHelper.showError(
+                          context,
+                          AppException.resolveErrorKey(
+                                l10n,
+                                provider.errorKey!,
+                              ) ??
+                              l10n.somethingWentWrong,
+                        );
+                      } else {
+                        SnackbarHelper.showSuccess(
+                          context,
+                          l10n.requestReopened,
+                        );
+                      }
+                    }
+                  },
+                ),
         );
       },
     );

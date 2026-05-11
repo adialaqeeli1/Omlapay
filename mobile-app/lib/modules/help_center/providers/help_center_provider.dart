@@ -1,16 +1,31 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/services/device_identifier_service.dart';
 import '../../../core/utils/app_exception.dart';
+import '../../../providers/auth_provider.dart';
 import '../models/support_request_model.dart';
 import '../services/help_center_service.dart';
 import '../widgets/filter_bottom_sheet.dart';
 
 class HelpCenterProvider extends ChangeNotifier {
   final HelpCenterService _service;
+  final AuthProvider _authProvider;
+  String? _cachedMacAddress;
 
-  HelpCenterProvider({HelpCenterService? service})
-    : _service = service ?? HelpCenterService() {
+  HelpCenterProvider(
+    this._authProvider, {
+    HelpCenterService? service,
+  }) : _service = service ?? HelpCenterService() {
     fetchRequests();
+  }
+
+  bool get _isGuest => !_authProvider.state.isAuthenticated;
+
+  Future<String?> _resolveMacAddress() async {
+    if (!_isGuest) return null;
+    _cachedMacAddress ??= await DeviceIdentifierService.instance
+        .getDeviceIdentifier();
+    return _cachedMacAddress;
   }
 
   List<SupportRequestModel> _items = [];
@@ -49,9 +64,11 @@ class HelpCenterProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      final macAddress = await _resolveMacAddress();
       final response = await _service.fetchSupportRequests(
         status: _statusParam,
         page: _currentPage,
+        macAddress: macAddress,
       );
       _items = response.requests;
       _totalPages = response.pagination?.totalPages ?? 1;
@@ -74,9 +91,11 @@ class HelpCenterProvider extends ChangeNotifier {
 
     try {
       _currentPage++;
+      final macAddress = await _resolveMacAddress();
       final response = await _service.fetchSupportRequests(
         status: _statusParam,
         page: _currentPage,
+        macAddress: macAddress,
       );
       _items = [..._items, ...response.requests];
       _totalPages = response.pagination?.totalPages ?? 1;
