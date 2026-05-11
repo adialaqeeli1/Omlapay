@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -294,6 +295,9 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                               isSent ? l10n.sendTo : l10n.sender,
                               senderValue,
                               isAddress: true,
+                              onCopy: _isWalletAddressDisplayed(transaction)
+                                  ? () => _copyToClipboard(senderValue)
+                                  : null,
                             ),
                           if (addressValue != null && addressValue.isNotEmpty)
                             _buildDetailRow(
@@ -301,6 +305,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                               l10n.address,
                               addressValue,
                               isAddress: true,
+                              onCopy: () => _copyToClipboard(addressValue),
                             ),
                         ],
                         if (transaction.txHash != null &&
@@ -409,8 +414,25 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     bool isAddress = false,
     bool isError = false,
     bool isDateTime = false,
+    VoidCallback? onCopy,
   }) {
     final isDarkMode = context.isDarkMode;
+    final valueTextStyle = context.textTheme.bodyMedium?.copyWith(
+      color: isError
+          ? Colors.red
+          : isDarkMode
+          ? AppColors.white
+          : AppColors.textBlack,
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      overflow: isAddress ? TextOverflow.visible : TextOverflow.clip,
+    );
+    final valueText = Text(
+      value,
+      textDirection: isDateTime ? TextDirection.ltr : null,
+      style: valueTextStyle,
+      textAlign: TextAlign.end,
+    );
     return Column(
       crossAxisAlignment: .center,
       mainAxisAlignment: .center,
@@ -430,10 +452,10 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: isNetwork
-                      ? Container(
+                child: isNetwork
+                    ? Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 6,
@@ -451,25 +473,32 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                        )
-                      : Text(
-                          value,
-                          textDirection: isDateTime ? TextDirection.ltr : null,
-                          style: context.textTheme.bodyMedium?.copyWith(
-                            color: isError
-                                ? Colors.red
-                                : isDarkMode
-                                ? AppColors.white
-                                : AppColors.textBlack,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            overflow: isAddress
-                                ? TextOverflow.visible
-                                : TextOverflow.clip,
-                          ),
-                          textAlign: TextAlign.end,
                         ),
-                ),
+                      )
+                    : onCopy != null
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Flexible(child: valueText),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: onCopy,
+                            behavior: HitTestBehavior.opaque,
+                            child: Icon(
+                              Icons.copy_rounded,
+                              size: 16,
+                              color: isDarkMode
+                                  ? AppColors.textLightGrey
+                                  : AppColors.textGrey,
+                            ),
+                          ),
+                        ],
+                      )
+                    : Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: valueText,
+                      ),
               ),
             ],
           ),
@@ -481,6 +510,21 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
         ),
       ],
     );
+  }
+
+  /// True when the sender/sendTo row is currently displaying the wallet
+  /// address (not the counterparty phone number). Used to gate the copy
+  /// icon so we only offer copy on actual wallet addresses.
+  bool _isWalletAddressDisplayed(TransactionModel tx) {
+    final phone = tx.counterpartyPhone?.trim();
+    return phone == null || phone.isEmpty;
+  }
+
+  void _copyToClipboard(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return;
+    Clipboard.setData(ClipboardData(text: trimmed));
+    _showBanner(context.l10n!.addressCopiedToast);
   }
 
   /// Formats a swap asset as `<amount> <symbol>` for the From / To detail

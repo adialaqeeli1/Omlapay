@@ -463,6 +463,12 @@ class CoinDetailsView extends StatelessWidget {
                 label: l10n.received,
                 isSelected: selectedType == HistoryTxType.received,
               ),
+              _buildFilterMenuItem(
+                context,
+                value: HistoryTxType.swap,
+                label: l10n.swap,
+                isSelected: selectedType == HistoryTxType.swap,
+              ),
             ],
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -540,6 +546,8 @@ class CoinDetailsView extends StatelessWidget {
         return l10n.sent;
       case HistoryTxType.received:
         return l10n.received;
+      case HistoryTxType.swap:
+        return l10n.swap;
       default:
         return l10n.all;
     }
