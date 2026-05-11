@@ -203,6 +203,7 @@ class _TransactionList extends StatelessWidget {
                     style: TextStyle(
                       color: colorScheme.onSurfaceVariant,
                       fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
@@ -296,8 +297,9 @@ class _TransactionItem extends StatelessWidget {
       ),
       title: Text(
         transaction.assetSymbol,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.bold,
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
           color: colorScheme.onSurface,
         ),
       ),
@@ -310,9 +312,10 @@ class _TransactionItem extends StatelessWidget {
       ),
       trailing: Text(
         '+${double.parse(transaction.amount).toFormattedAmount()} ${transaction.assetSymbol}',
-        style: TextStyle(
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
           color: AppColors.greenColor,
-          fontWeight: FontWeight.bold,
         ),
       ),
     );

@@ -35,10 +35,8 @@ class HistoryView extends StatelessWidget {
             leading: const CommonBackButton(),
             title: Text(
               l10n.transactionHistory,
-              style: theme.textTheme.titleLarge?.copyWith(
-                color: theme.brightness == Brightness.dark
-                    ? AppColors.white
-                    : AppColors.textBlack,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: context.isDarkMode ? Colors.white : Colors.black,
                 fontWeight: FontWeight.bold,
               ),
             ),
