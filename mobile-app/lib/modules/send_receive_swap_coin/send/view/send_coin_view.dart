@@ -122,8 +122,6 @@ class SendCoinView extends StatelessWidget {
                     ),
                   ],
 
-                  _buildMaxRange(context, provider, l10n),
-
                   // Available Balance
                   const SizedBox(height: 8),
                   Row(
@@ -331,59 +329,87 @@ class SendCoinView extends StatelessWidget {
   Widget _buildAmountField(BuildContext context, SendProvider provider) {
     final l10n = context.l10n!;
     final colorScheme = Theme.of(context).colorScheme;
+    final showMaxAction = provider.selectedCoin != null;
+    final max = provider.maxSendAmount;
+    final ticker = provider.selectedCoin?.localizedCoinTicker(context) ?? '';
     return Container(
       decoration: _sendFieldBoxDecoration(context),
-      child: TextField(
-        controller: provider.amountController,
-        style: TextStyle(color: colorScheme.onSurface),
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        onTapOutside: (event) => FocusScope.of(context).unfocus(),
-        decoration: InputDecoration(
-          hintText: l10n.minAmountHint(
-            provider.minSendAmount.toFormattedAmount(
-              decimals: AppConstants.minAmountDecimals,
-            ),
-          ),
-          hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
-          border: InputBorder.none,
-        ),
-      ),
-    );
-  }
-
-  /// Renders a "Max" row under the amount field that mirrors the
-  /// "Available" row's layout (label on the start, value on the end). Hidden
-  /// when the selected coin has no max (<= 0), so coins without a max limit
-  /// don't render an empty line. Min is intentionally not surfaced here
-  /// because the amount input's placeholder already shows it.
-  Widget _buildMaxRange(
-    BuildContext context,
-    SendProvider provider,
-    AppLocalizations l10n,
-  ) {
-    final max = provider.maxSendAmount;
-    if (max <= 0) return const SizedBox.shrink();
-
-    final ticker = provider.selectedCoin?.localizedCoinTicker(context) ?? '';
-    final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            l10n.sendAmountMaxShortLabel,
-            style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: provider.amountController,
+                  style: TextStyle(color: colorScheme.onSurface),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  onTapOutside: (event) => FocusScope.of(context).unfocus(),
+                  decoration: InputDecoration(
+                    hintText: l10n.minAmountHint(
+                      provider.minSendAmount.toFormattedAmount(
+                        decimals: AppConstants.minAmountDecimals,
+                      ),
+                    ),
+                    hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              if (showMaxAction) ...[
+                Container(
+                  margin: const EdgeInsetsDirectional.only(start: 8),
+                  width: 1,
+                  height: 28,
+                  color: colorScheme.outlineVariant,
+                ),
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 8, end: 16),
+                  child: GestureDetector(
+                    onTap: provider.setMaxAmount,
+                    child: Text(
+                      l10n.sendAmountMaxShortLabel,
+                      style: const TextStyle(
+                        color: AppColors.tealColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
-          Text(
-            '${max.toFormattedAmount(decimals: AppConstants.maxAmountDecimals)} $ticker'
-                .trim(),
-            style: TextStyle(color: colorScheme.onSurface, fontSize: 12),
-          ),
+          if (max > 0)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    l10n.sendAmountMaxShortLabel,
+                    style: TextStyle(
+                      color: colorScheme.onSurfaceVariant,
+                      fontSize: 12,
+                    ),
+                  ),
+                  Text(
+                    '${max.toFormattedAmount(decimals: AppConstants.maxAmountDecimals)} $ticker'
+                        .trim(),
+                    style: TextStyle(
+                      color: colorScheme.onSurface,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
