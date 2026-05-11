@@ -183,11 +183,10 @@ class _HomeViewState extends State<HomeView> {
             iconSize: iconSize,
             iconPadding: iconPadding,
             onTap: () async {
-              context.push(Routes.notifications);
+              await context.push(Routes.notifications);
               if (context.mounted) {
                 context.read<HomeProvider>().fetchHomeData();
               }
-              //Todo: Uncomment later
               if (kDebugMode) {
                 await PushNotificationService.instance
                     .showDemoNotification()
@@ -332,11 +331,12 @@ class _HomeViewState extends State<HomeView> {
         child: Center(child: CircularProgressIndicator()),
       );
     }
-    final List<CoinModel> coins = [...coinsPrices.coins]..sort((a, b) {
-      final aBalance = walletsProvider.rawBalanceForCoin(a.symbol);
-      final bBalance = walletsProvider.rawBalanceForCoin(b.symbol);
-      return bBalance.compareTo(aBalance);
-    });
+    final List<CoinModel> coins = [...coinsPrices.coins]
+      ..sort((a, b) {
+        final aBalance = walletsProvider.rawBalanceForCoin(a.symbol);
+        final bBalance = walletsProvider.rawBalanceForCoin(b.symbol);
+        return bBalance.compareTo(aBalance);
+      });
     final l10n = context.l10n!;
 
     return Directionality(
