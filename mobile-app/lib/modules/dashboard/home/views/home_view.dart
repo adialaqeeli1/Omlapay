@@ -183,10 +183,6 @@ class _HomeViewState extends State<HomeView> {
             iconSize: iconSize,
             iconPadding: iconPadding,
             onTap: () async {
-              await context.push(Routes.notifications);
-              if (context.mounted) {
-                context.read<HomeProvider>().fetchHomeData();
-              }
               if (kDebugMode) {
                 await PushNotificationService.instance
                     .showDemoNotification()
@@ -194,6 +190,10 @@ class _HomeViewState extends State<HomeView> {
                       log("$error");
                       return false;
                     });
+              }
+              await context.push(Routes.notifications);
+              if (context.mounted) {
+                context.read<HomeProvider>().fetchHomeData();
               }
             },
           ),
