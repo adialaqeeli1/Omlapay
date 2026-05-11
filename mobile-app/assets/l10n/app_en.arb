@@ -252,6 +252,8 @@
     "transactionInformation": "Transaction Information",
     "type": "Type",
     "fee": "Fee",
+    "exchangeRate": "Exchange Rate",
+    "pair": "Pair",
     "transactionHash": "Transaction Hash",
     "fromAddress": "From Address",
     "toAddress": "To Address",

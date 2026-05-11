@@ -690,6 +690,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fee => 'الرسوم';
 
   @override
+  String get exchangeRate => 'سعر الصرف';
+
+  @override
+  String get pair => 'الزوج';
+
+  @override
   String get transactionHash => 'رمز المعاملة';
 
   @override

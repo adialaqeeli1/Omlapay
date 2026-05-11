@@ -699,6 +699,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fee => 'Fee';
 
   @override
+  String get exchangeRate => 'Exchange Rate';
+
+  @override
+  String get pair => 'Pair';
+
+  @override
   String get transactionHash => 'Transaction Hash';
 
   @override

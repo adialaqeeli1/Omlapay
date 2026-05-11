@@ -85,10 +85,7 @@ class HistoryService {
 
   Future<TransactionModel> fetchTransactionDetail(String id) async {
     if (id.isEmpty) {
-      throw AppException(
-        'Missing transaction id',
-        messageKey: 'requestFailed',
-      );
+      throw AppException('Missing transaction id', messageKey: 'requestFailed');
     }
 
     final response = await ApiHelper.get(Endpoints.historyDetail(id));
@@ -120,17 +117,32 @@ class HistoryService {
   /// both shapes. For the detail endpoint, also fold `amountDisplay` into
   /// `amount` so the model's display-formatted amount stays consistent
   /// between list and detail responses.
+  ///
+  /// Swap detail responses omit top-level `assetSymbol` / `amount` and
+  /// expose `fromAsset` / `toAsset` instead — fall back to `toAsset` (the
+  /// receive side) so the required `amount` / `assetSymbol` fields parse.
   Map<String, dynamic> _normalize(Map<String, dynamic> raw) {
+    final toAsset = raw['toAsset'];
+    final Map<String, dynamic>? toAssetMap = toAsset is Map<String, dynamic>
+        ? toAsset
+        : null;
+
     final normalized = <String, dynamic>{
       ...raw,
-      'coin_symbol': raw['coin_symbol'] ?? raw['assetSymbol'],
-      'coinName': raw['coinName'] ?? raw['assetName'],
-      'coinName_ar': raw['coinName_ar'] ?? raw['assetName_ar'],
+      'coin_symbol':
+          raw['coin_symbol'] ?? raw['assetSymbol'] ?? toAssetMap?['symbol'],
+      'coinName': raw['coinName'] ?? raw['assetName'] ?? toAssetMap?['name'],
+      'coinName_ar':
+          raw['coinName_ar'] ?? raw['assetName_ar'] ?? toAssetMap?['name_ar'],
     };
-    final amountDisplay = raw['amountDisplay'];
+
+    final amountDisplay = raw['amountDisplay'] ?? toAssetMap?['amountDisplay'];
     if (amountDisplay is String && amountDisplay.isNotEmpty) {
       normalized['amount'] = amountDisplay;
+    } else if (raw['amount'] == null && toAssetMap?['amount'] is String) {
+      normalized['amount'] = toAssetMap!['amount'];
     }
+
     return normalized;
   }
 }

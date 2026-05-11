@@ -31,6 +31,18 @@ _TransactionModel _$TransactionModelFromJson(Map<String, dynamic> json) =>
       receiverAddress: json['receiverAddress'] as String?,
       counterpartyPhone: json['counterpartyPhone'] as String?,
       transactionType: json['txType'] as String?,
+      pairLabel: json['pairLabel'] as String?,
+      fromAsset: json['fromAsset'] == null
+          ? null
+          : TransactionSwapAsset.fromJson(
+              json['fromAsset'] as Map<String, dynamic>,
+            ),
+      toAsset: json['toAsset'] == null
+          ? null
+          : TransactionSwapAsset.fromJson(
+              json['toAsset'] as Map<String, dynamic>,
+            ),
+      exchangeRate: json['exchangeRate'] as String?,
     );
 
 Map<String, dynamic> _$TransactionModelToJson(_TransactionModel instance) =>
@@ -58,4 +70,8 @@ Map<String, dynamic> _$TransactionModelToJson(_TransactionModel instance) =>
       'receiverAddress': instance.receiverAddress,
       'counterpartyPhone': instance.counterpartyPhone,
       'txType': instance.transactionType,
+      'pairLabel': instance.pairLabel,
+      'fromAsset': instance.fromAsset,
+      'toAsset': instance.toAsset,
+      'exchangeRate': instance.exchangeRate,
     };

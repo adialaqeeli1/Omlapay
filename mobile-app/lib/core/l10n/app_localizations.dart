@@ -1358,6 +1358,18 @@ abstract class AppLocalizations {
   /// **'Fee'**
   String get fee;
 
+  /// No description provided for @exchangeRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Exchange Rate'**
+  String get exchangeRate;
+
+  /// No description provided for @pair.
+  ///
+  /// In en, this message translates to:
+  /// **'Pair'**
+  String get pair;
+
   /// No description provided for @transactionHash.
   ///
   /// In en, this message translates to:

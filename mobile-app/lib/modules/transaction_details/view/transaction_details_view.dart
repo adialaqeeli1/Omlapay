@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/models/transaction_model/transaction_model.dart';
+import '../../../core/models/transaction_model/transaction_swap_asset.dart';
 import '../../../core/theme/theme.dart';
 import '../../../widgets/common_back_button.dart';
 import '../../../widgets/theme_aware_icon.dart';
@@ -93,12 +94,14 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     }
 
     final isSent = transaction.isSent;
+    final isSwap = transaction.isSwap;
     final isArabic = Localizations.localeOf(context).languageCode == 'ar';
     final txTypeLabel = _txTypeLabel(context, transaction);
     final amountValue = double.tryParse(transaction.amount) ?? 0;
     final amountSign = isSent ? '-' : '+';
     final amountText =
         '$amountSign${NumberFormat('#,##0.########').format(amountValue.abs())} ${transaction.assetSymbol}';
+    final pairLabel = transaction.pairLabel?.trim();
     final approxAmount = _approxAmountText(context, transaction, isArabic);
     final localizedError = isArabic
         ? (transaction.errorMessageAr?.trim().isNotEmpty == true
@@ -191,6 +194,21 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                                       fontSize: 24,
                                     ),
                               ),
+                              // Swap pair label
+                              if (isSwap &&
+                                  pairLabel != null &&
+                                  pairLabel.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  pairLabel,
+                                  textDirection: TextDirection.ltr,
+                                  style: context.textTheme.bodyMedium?.copyWith(
+                                    color: AppColors.textGrey,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                               // Approx fiat amount
                               if (approxAmount != null) ...[
                                 const SizedBox(height: 4),
@@ -236,26 +254,55 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                           ).format(transaction.createdAt.toLocal()),
                           isDateTime: true,
                         ),
-                        _buildDetailRow(
-                          context,
-                          l10n.network,
-                          transaction.network ?? 'N/A',
-                          isNetwork: true,
-                        ),
-                        if (senderValue != null && senderValue.isNotEmpty)
+                        if (isSwap) ...[
+                          if (_swapAssetText(transaction.fromAsset) != null)
+                            _buildDetailRow(
+                              context,
+                              l10n.swapDirectionFrom,
+                              _swapAssetText(transaction.fromAsset)!,
+                            ),
+                          if (_swapAssetText(transaction.toAsset) != null)
+                            _buildDetailRow(
+                              context,
+                              l10n.swapDirectionTo,
+                              _swapAssetText(transaction.toAsset)!,
+                            ),
+                          if ((transaction.exchangeRate ?? '')
+                              .trim()
+                              .isNotEmpty)
+                            _buildDetailRow(
+                              context,
+                              l10n.exchangeRate,
+                              _formatExchangeRate(transaction),
+                            ),
+                          if ((transaction.fee ?? '').trim().isNotEmpty)
+                            _buildDetailRow(
+                              context,
+                              l10n.fee,
+                              '${transaction.fee} ${transaction.assetSymbol}',
+                            ),
+                        ] else ...[
                           _buildDetailRow(
                             context,
-                            isSent ? l10n.sendTo : l10n.sender,
-                            senderValue,
-                            isAddress: true,
+                            l10n.network,
+                            transaction.network ?? 'N/A',
+                            isNetwork: true,
                           ),
-                        if (addressValue != null && addressValue.isNotEmpty)
-                          _buildDetailRow(
-                            context,
-                            l10n.address,
-                            addressValue,
-                            isAddress: true,
-                          ),
+                          if (senderValue != null && senderValue.isNotEmpty)
+                            _buildDetailRow(
+                              context,
+                              isSent ? l10n.sendTo : l10n.sender,
+                              senderValue,
+                              isAddress: true,
+                            ),
+                          if (addressValue != null && addressValue.isNotEmpty)
+                            _buildDetailRow(
+                              context,
+                              l10n.address,
+                              addressValue,
+                              isAddress: true,
+                            ),
+                        ],
                         if (transaction.txHash != null &&
                             transaction.txHash!.trim().isNotEmpty)
                           _buildDetailRow(
@@ -436,6 +483,40 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     );
   }
 
+  /// Formats a swap asset as `<amount> <symbol>` for the From / To detail
+  /// rows. Prefers `amountDisplay` (already signed) and falls back to a
+  /// formatted `amount` when the display string is missing.
+  String? _swapAssetText(TransactionSwapAsset? asset) {
+    if (asset == null) return null;
+    final symbol = asset.symbol?.trim() ?? '';
+    final display = asset.amountDisplay?.trim();
+    if (display != null && display.isNotEmpty) {
+      return symbol.isEmpty ? display : '$display $symbol';
+    }
+    final raw = asset.amount?.trim();
+    if (raw == null || raw.isEmpty) return null;
+    final value = double.tryParse(raw);
+    final formatted = value != null
+        ? NumberFormat('#,##0.########').format(value)
+        : raw;
+    return symbol.isEmpty ? formatted : '$formatted $symbol';
+  }
+
+  /// Renders the exchange rate as `1 <from> = <rate> <to>` so the direction
+  /// of the quote is unambiguous. Falls back to the raw rate when the
+  /// from/to symbols aren't available.
+  String _formatExchangeRate(TransactionModel tx) {
+    final rate = tx.exchangeRate?.trim() ?? '';
+    final value = double.tryParse(rate);
+    final formattedRate = value != null
+        ? NumberFormat('#,##0.########').format(value)
+        : rate;
+    final fromSymbol = tx.fromAsset?.symbol?.trim() ?? '';
+    final toSymbol = tx.toAsset?.symbol?.trim() ?? '';
+    if (fromSymbol.isEmpty || toSymbol.isEmpty) return formattedRate;
+    return '1 $fromSymbol = $formattedRate $toSymbol';
+  }
+
   String? _txTypeLabel(BuildContext context, TransactionModel tx) {
     final l10n = context.l10n!;
     switch (tx.txType) {
@@ -530,17 +611,38 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
       '${l10n.amountLabel}: $amountWithFiat',
       '${l10n.date}: $dateText',
     ];
-    if ((tx.network ?? '').trim().isNotEmpty) {
-      lines.add('${l10n.network}: ${tx.network}');
-    }
-    if ((tx.fee ?? '').trim().isNotEmpty) {
-      lines.add('${l10n.fee}: ${tx.fee} ${tx.assetSymbol}');
-    }
-    if (senderValue != null && senderValue.trim().isNotEmpty) {
-      lines.add('${isSent ? l10n.sendTo : l10n.sender}: $senderValue');
-    }
-    if (recipientValue != null && recipientValue.trim().isNotEmpty) {
-      lines.add('${l10n.recipient}: $recipientValue');
+    if (tx.isSwap) {
+      final pair = tx.pairLabel?.trim();
+      if (pair != null && pair.isNotEmpty) {
+        lines.add('${l10n.pair}: $pair');
+      }
+      final fromText = _swapAssetText(tx.fromAsset);
+      if (fromText != null) {
+        lines.add('${l10n.swapDirectionFrom}: $fromText');
+      }
+      final toText = _swapAssetText(tx.toAsset);
+      if (toText != null) {
+        lines.add('${l10n.swapDirectionTo}: $toText');
+      }
+      if ((tx.exchangeRate ?? '').trim().isNotEmpty) {
+        lines.add('${l10n.exchangeRate}: ${_formatExchangeRate(tx)}');
+      }
+      if ((tx.fee ?? '').trim().isNotEmpty) {
+        lines.add('${l10n.fee}: ${tx.fee} ${tx.assetSymbol}');
+      }
+    } else {
+      if ((tx.network ?? '').trim().isNotEmpty) {
+        lines.add('${l10n.network}: ${tx.network}');
+      }
+      if ((tx.fee ?? '').trim().isNotEmpty) {
+        lines.add('${l10n.fee}: ${tx.fee} ${tx.assetSymbol}');
+      }
+      if (senderValue != null && senderValue.trim().isNotEmpty) {
+        lines.add('${isSent ? l10n.sendTo : l10n.sender}: $senderValue');
+      }
+      if (recipientValue != null && recipientValue.trim().isNotEmpty) {
+        lines.add('${l10n.recipient}: $recipientValue');
+      }
     }
     if ((tx.txHash ?? '').trim().isNotEmpty) {
       lines.add('${l10n.transactionHash}: ${tx.txHash}');
