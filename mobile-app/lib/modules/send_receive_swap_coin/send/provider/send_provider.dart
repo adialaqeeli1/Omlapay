@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/constants.dart';
 import '../../../../core/l10n/app_localizations_from_storage.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/contact_model/contact_model.dart';
@@ -210,10 +211,16 @@ class SendProvider extends ChangeNotifier {
   }
 
   void setMaxAmount() {
-    if (_selectedCoin != null) {
+    if (_selectedCoin == null) return;
+    final apiMax = maxSendAmount;
+    if (apiMax > 0) {
+      amountController.text = apiMax.toStringAsFixed(
+        AppConstants.coinAmountDecimals,
+      );
+    } else {
       amountController.text = _selectedCoin!.amount.replaceAll(',', '');
-      _validate();
     }
+    _validate();
   }
 
   /// Runs the send pre-flight: validate-address then fetch-quote.
