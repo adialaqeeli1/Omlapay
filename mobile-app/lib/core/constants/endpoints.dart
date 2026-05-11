@@ -197,4 +197,15 @@ class Endpoints {
   /// Reopen a support request; path param {id}.
   static String supportRequestReopen(String id) =>
       '$apiVersion/user/support-requests/$id/reopen';
+
+  /// Guest support requests (no auth required); used when the user is not
+  /// logged in. `macAddress` is required as a body field (POST) or query
+  /// parameter (GET) so the backend can scope requests to a device.
+  static String get guestSupportRequests =>
+      '$apiVersion/guest/support-requests';
+
+  /// Single guest support request detail; path param {id}, query
+  /// parameter `macAddress`.
+  static String guestSupportRequestDetail(String id) =>
+      '$apiVersion/guest/support-requests/$id';
 }

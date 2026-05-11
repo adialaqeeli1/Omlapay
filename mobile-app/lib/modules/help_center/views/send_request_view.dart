@@ -121,33 +121,38 @@ class SendRequestView extends StatelessWidget {
                       l10n.descriptionMustNotExceedCharacters(200),
                 },
               ),
-              const SizedBox(height: 24),
-              CommonFormLabel(label: l10n.attachment),
-              const SizedBox(height: 8),
-              CommonAttachmentField(
-                onTap: () async {
-                  try {
-                    await provider.pickFile();
-                  } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.errorPickingFile('$e'))),
-                      );
+              // Attachments require the authenticated upload endpoint, so
+              // hide the picker for guests — they can still submit the
+              // request via the guest endpoint without a file.
+              if (!provider.isGuest) ...[
+                const SizedBox(height: 24),
+                CommonFormLabel(label: l10n.attachment),
+                const SizedBox(height: 8),
+                CommonAttachmentField(
+                  onTap: () async {
+                    try {
+                      await provider.pickFile();
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(l10n.errorPickingFile('$e'))),
+                        );
+                      }
                     }
-                  }
-                },
-                selectedFile: provider.selectedFile,
-                allowedExtensions: SendRequestProvider.allowedExtensions,
-                placeholder: l10n.attachFileDescription(
-                  SendRequestProvider.allowedExtensions
-                      .map((e) => e.toUpperCase())
-                      .join(
-                        Localizations.localeOf(context).languageCode == 'ar'
-                            ? ' أو '
-                            : ', ',
-                      ),
+                  },
+                  selectedFile: provider.selectedFile,
+                  allowedExtensions: SendRequestProvider.allowedExtensions,
+                  placeholder: l10n.attachFileDescription(
+                    SendRequestProvider.allowedExtensions
+                        .map((e) => e.toUpperCase())
+                        .join(
+                          Localizations.localeOf(context).languageCode == 'ar'
+                              ? ' أو '
+                              : ', ',
+                        ),
+                  ),
                 ),
-              ),
+              ],
               SizedBox(height: MediaQuery.of(context).size.height * 0.05),
               CommonButton(
                 onPressed: () {

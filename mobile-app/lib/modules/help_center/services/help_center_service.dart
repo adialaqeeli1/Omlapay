@@ -7,10 +7,17 @@ import '../models/support_request_model.dart';
 import '../models/support_request_detail_model.dart';
 
 class HelpCenterService {
+  /// Fetches the support request list.
+  ///
+  /// When [macAddress] is provided, hits the guest endpoint
+  /// (`/v1/guest/support-requests`) and scopes the list to that device.
+  /// When `null`, hits the authenticated endpoint and relies on the user
+  /// from the bearer token.
   Future<SupportRequestsResponse> fetchSupportRequests({
     String? status,
     int page = 1,
     int limit = 10,
+    String? macAddress,
   }) async {
     final queryParams = <String, dynamic>{
       'page': page,
@@ -19,9 +26,16 @@ class HelpCenterService {
     if (status != null) {
       queryParams['status'] = status;
     }
+    if (macAddress != null && macAddress.isNotEmpty) {
+      queryParams['macAddress'] = macAddress;
+    }
+
+    final endpoint = macAddress != null && macAddress.isNotEmpty
+        ? Endpoints.guestSupportRequests
+        : Endpoints.supportRequests;
 
     final response = await ApiHelper.get(
-      Endpoints.supportRequests,
+      endpoint,
       queryParameters: queryParams,
     );
 
@@ -62,10 +76,17 @@ class HelpCenterService {
     );
   }
 
+  /// Creates a support request.
+  ///
+  /// When [macAddress] is provided, hits the guest endpoint and includes
+  /// `macAddress` in the body. Otherwise hits the authenticated endpoint.
+  /// Guests cannot attach files, so [attachmentUrl] should be `null` in
+  /// that case (callers are responsible).
   Future<void> submitRequest({
     required String title,
     required String description,
     String? attachmentUrl,
+    String? macAddress,
   }) async {
     final body = <String, dynamic>{
       'title': title,
@@ -74,15 +95,28 @@ class HelpCenterService {
     if (attachmentUrl != null) {
       body['attachmentUrl'] = attachmentUrl;
     }
-
-    await ApiHelper.post(Endpoints.supportRequests, body);
+    if (macAddress != null && macAddress.isNotEmpty) {
+      body['macAddress'] = macAddress;
+      await ApiHelper.post(Endpoints.guestSupportRequests, body);
+    } else {
+      await ApiHelper.post(Endpoints.supportRequests, body);
+    }
   }
 
+  /// Fetches a single support request.
+  ///
+  /// When [macAddress] is provided, hits the guest endpoint with
+  /// `macAddress` as a query param so the backend can scope ownership.
   Future<SupportRequestDetailModel> fetchRequestDetail(
-    String requestId,
-  ) async {
+    String requestId, {
+    String? macAddress,
+  }) async {
+    final isGuest = macAddress != null && macAddress.isNotEmpty;
     final response = await ApiHelper.get(
-      Endpoints.supportRequestDetail(requestId),
+      isGuest
+          ? Endpoints.guestSupportRequestDetail(requestId)
+          : Endpoints.supportRequestDetail(requestId),
+      queryParameters: isGuest ? {'macAddress': macAddress} : null,
     );
 
     final dynamic data = response['data'];
