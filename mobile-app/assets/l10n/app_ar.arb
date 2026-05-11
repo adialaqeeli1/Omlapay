@@ -242,6 +242,8 @@
     "type": "النوع",
     "date": "التاريخ",
     "fee": "الرسوم",
+    "exchangeRate": "سعر الصرف",
+    "pair": "الزوج",
     "transactionHash": "رمز المعاملة",
     "fromAddress": "من العنوان",
     "toAddress": "إلى العنوان",

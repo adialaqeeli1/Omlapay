@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'transaction_swap_asset.dart';
+
 part 'transaction_model.freezed.dart';
 part 'transaction_model.g.dart';
 
@@ -31,6 +33,10 @@ abstract class TransactionModel with _$TransactionModel {
     String? receiverAddress,
     String? counterpartyPhone,
     @JsonKey(name: 'txType') String? transactionType,
+    String? pairLabel,
+    TransactionSwapAsset? fromAsset,
+    TransactionSwapAsset? toAsset,
+    String? exchangeRate,
   }) = _TransactionModel;
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) =>
