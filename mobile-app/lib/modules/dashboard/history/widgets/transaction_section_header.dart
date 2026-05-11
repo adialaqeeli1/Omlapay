@@ -30,13 +30,10 @@ class TransactionSectionHeader extends StatelessWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.only(
-        top: isFirst ? 0 : 24,
-        bottom: 12,
-      ),
+      padding: EdgeInsets.only(top: isFirst ? 0 : 24, bottom: 12),
       child: Text(
         sectionTitle,
-        style: context.textTheme.bodyMedium?.copyWith(
+        style: TextStyle(
           color: isDarkMode ? AppColors.textLightGrey : AppColors.textGrey,
           fontSize: 14,
           fontWeight: FontWeight.w500,

@@ -11,6 +11,7 @@ class HistoryTxType {
   static const String all = 'ALL';
   static const String sent = 'SENT';
   static const String received = 'RECEIVE';
+  static const String swap = 'SWAP';
 }
 
 class HistoryProvider extends ChangeNotifier {
@@ -34,7 +35,7 @@ class HistoryProvider extends ChangeNotifier {
 
   String?
   _selectedCoinFilter; // null = All, or coin symbol like 'USDT', 'BTC', etc.
-  String? _selectedTypeFilter; // null = All, or 'SENT', 'RECEIVE'.
+  String? _selectedTypeFilter; // null = All, or 'SENT', 'RECEIVE', 'SWAP'.
   DateTime? _dateStart;
   DateTime? _dateEnd;
 

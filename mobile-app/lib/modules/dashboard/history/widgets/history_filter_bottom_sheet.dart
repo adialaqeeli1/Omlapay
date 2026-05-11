@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/custom_date_picker_dialog.dart';
+import '../providers/history_provider.dart';
 
 class HistoryFilterBottomSheet extends StatefulWidget {
   const HistoryFilterBottomSheet({
@@ -122,16 +123,23 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
         theme.textTheme.bodyMedium?.color ?? AppColors.textLightGrey;
     final labelColor = AppColors.textLightGrey;
 
-    final typeOptions = <String?>[null, 'SENT', 'RECEIVE'];
+    final typeOptions = <String?>[
+      null,
+      HistoryTxType.sent,
+      HistoryTxType.received,
+      HistoryTxType.swap,
+    ];
 
     String getTypeLabel(String? type) {
       if (type == null) return l10n.all;
       switch (type.toUpperCase()) {
-        case 'SENT':
+        case HistoryTxType.sent:
           return l10n.sent;
-        case 'RECEIVE':
+        case HistoryTxType.received:
         case 'RECEIVED':
           return l10n.received;
+        case HistoryTxType.swap:
+          return l10n.swap;
         default:
           return type;
       }
