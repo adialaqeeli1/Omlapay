@@ -8,7 +8,7 @@ class NotificationsProvider extends ChangeNotifier {
   final NotificationsService _service;
 
   NotificationsProvider({NotificationsService? service})
-      : _service = service ?? NotificationsService();
+    : _service = service ?? NotificationsService();
 
   List<NotificationModel> _items = [];
   int _unreadCount = 0;
@@ -55,9 +55,7 @@ class NotificationsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _service.fetchNotifications(
-        cursor: _nextCursor,
-      );
+      final response = await _service.fetchNotifications(cursor: _nextCursor);
       _items = [..._items, ...response.notifications];
       _unreadCount = response.unreadCount;
       _hasMore = response.pagination?.hasMore ?? false;
@@ -73,27 +71,28 @@ class NotificationsProvider extends ChangeNotifier {
   }
 
   Future<void> markAsRead(String id) async {
-    final index = _items.indexWhere((e) => e.id == id);
-    if (index == -1 || _items[index].isRead || _isActionLoading) return;
+    // Todo: Uncomment later
+    // final index = _items.indexWhere((e) => e.id == id);
+    // if (index == -1 || _items[index].isRead || _isActionLoading) return;
 
-    _isActionLoading = true;
-    notifyListeners();
+    // _isActionLoading = true;
+    // notifyListeners();
 
-    try {
-      await _service.markAsRead(id);
-      _items = [
-        for (int i = 0; i < _items.length; i++)
-          if (i == index) _items[i].copyWith(isRead: true) else _items[i],
-      ];
-      _unreadCount = (_unreadCount - 1).clamp(0, _unreadCount);
-    } on AppException catch (e) {
-      _errorKey = e.messageKey ?? 'requestFailed';
-    } catch (_) {
-      _errorKey = 'failedToMarkNotificationAsRead';
-    } finally {
-      _isActionLoading = false;
-      notifyListeners();
-    }
+    // try {
+    //   await _service.markAsRead(id);
+    //   _items = [
+    //     for (int i = 0; i < _items.length; i++)
+    //       if (i == index) _items[i].copyWith(isRead: true) else _items[i],
+    //   ];
+    //   _unreadCount = (_unreadCount - 1).clamp(0, _unreadCount);
+    // } on AppException catch (e) {
+    //   _errorKey = e.messageKey ?? 'requestFailed';
+    // } catch (_) {
+    //   _errorKey = 'failedToMarkNotificationAsRead';
+    // } finally {
+    //   _isActionLoading = false;
+    //   notifyListeners();
+    // }
   }
 
   Future<void> markAllAsRead() async {
