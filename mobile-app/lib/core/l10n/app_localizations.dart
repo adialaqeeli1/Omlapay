@@ -2132,6 +2132,18 @@ abstract class AppLocalizations {
   /// **'Hide zero balance'**
   String get hideZeroBalance;
 
+  /// No description provided for @noCoinsToShow.
+  ///
+  /// In en, this message translates to:
+  /// **'No coins to show.'**
+  String get noCoinsToShow;
+
+  /// No description provided for @uncheckToSeeAllCoins.
+  ///
+  /// In en, this message translates to:
+  /// **'Uncheck \'Hide zero balance\' to view all coins.'**
+  String get uncheckToSeeAllCoins;
+
   /// No description provided for @contactsSheetTitle.
   ///
   /// In en, this message translates to:
