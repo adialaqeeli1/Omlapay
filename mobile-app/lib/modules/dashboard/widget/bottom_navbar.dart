@@ -118,7 +118,7 @@ class _NavItem extends StatelessWidget {
 
   void _showLoginDialog(BuildContext context) {
     final l10n = context.l10n!;
-    final theme = Theme.of(context);
+    final theme = context.theme;
     final isDark = theme.brightness == Brightness.dark;
 
     showDialog(
