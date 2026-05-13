@@ -17,6 +17,7 @@ import '../providers/passcode_provider.dart';
 import '../services/forgot_passcode_service.dart';
 import '../../settings/services/change_email_service.dart';
 import '../../settings/services/change_phone_service.dart';
+import '../../settings/view/widgets/change_detail_back_to_intro.dart';
 
 class EnterOrSetPasscodeScreen extends StatefulWidget {
   /// Prevents overlapping forgot-passcode OTP requests before the loading overlay
@@ -170,7 +171,13 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
     final isAccountPasscodeStep =
         isChangeEmailPasscodeStep || isChangePhonePasscodeStep;
 
-    return Scaffold(
+    final VoidCallback? onAccountStepBack = isChangeEmailPasscodeStep
+        ? () => popToChangeEmailIntro(context)
+        : isChangePhonePasscodeStep
+            ? () => popToChangePhoneIntro(context)
+            : null;
+
+    final scaffold = Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: !widget.isSoftLogin,
         leading: context.canPop() == false
@@ -181,6 +188,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
                   ? CommonBackButton()
                   : _changePasscodeBackButton(context) ??
                         _changeEmailPasscodeBackButton(context) ??
+                        _changePhonePasscodeBackButton(context) ??
                         (context.canPop() ? CommonBackButton() : null)),
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -418,6 +426,16 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
         ),
       ),
     );
+
+    if (onAccountStepBack == null) return scaffold;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        onAccountStepBack();
+      },
+      child: scaffold,
+    );
   }
 
   static void _showLogoutAlert(BuildContext context) {
@@ -434,50 +452,39 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
   /// Leading control for the change-passcode flow. Step transitions use
   /// [context.pushReplacement] so the `[home, settings]` stack prefix is
   /// preserved, letting the default pop-based back button work all the way out.
+  /// Returns null when the current mode isn't a change-passcode step so the
+  /// caller's `??` chain can fall through to the other flow-specific handlers.
   Widget? _changePasscodeBackButton(BuildContext context) {
-    // if (mode == LoginProvider.modeChangePasscodeNew) {
-    //   return CommonBackButton(
-    //     onPressed: () {
-    //       final provider = context.read<PasscodeProvider>();
-    //       context.push(
-    //         Routes.enterOrSetPasscode,
-    //         extra: {
-    //           LoginProvider.extraModeKey:
-    //               LoginProvider.modeChangePasscodeCurrent,
-    //           LoginProvider.extraCountryCodeKey: provider.countryCode,
-    //           LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
-    //         },
-    //       );
-    //     },
-    //   );
-    // }
-    // if (mode == LoginProvider.modeChangePasscodeConfirm) {
-    //   return CommonBackButton(
-    //     onPressed: () {
-    //       final provider = context.read<PasscodeProvider>();
-    //       context.pushReplacement(
-    //         Routes.enterOrSetPasscode,
-    //         extra: {
-    //           LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeNew,
-    //           LoginProvider.extraCountryCodeKey: provider.countryCode,
-    //           LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
-    //           LoginProvider.extraCurrentPasscodeKey: currentPasscode,
-    //         },
-    //       );
-    //     },
-    //   );
-    // }
+    final mode = widget.mode;
+    final isChangePasscodeMode =
+        mode == LoginProvider.modeChangePasscodeCurrent ||
+        mode == LoginProvider.modeChangePasscodeNew ||
+        mode == LoginProvider.modeChangePasscodeConfirm;
+    if (!isChangePasscodeMode) return null;
     return CommonBackButton();
   }
 
-  /// Back navigation for change-email passcode confirmation (step 3).
-  /// The screen is reached via [context.push] from the verify-phone step,
-  /// so the default pop is correct here.
+  /// Back navigation for change-email passcode confirmation (step 2 of the
+  /// listed flow). Pops the stack until the change-email intro is on top so
+  /// the user always returns to step 1.
   Widget? _changeEmailPasscodeBackButton(BuildContext context) {
     if (widget.mode != LoginProvider.modeChangeEmailConfirmPasscode) {
       return null;
     }
-    return context.canPop() ? const CommonBackButton() : null;
+    return CommonBackButton(
+      onPressed: () => popToChangeEmailIntro(context),
+    );
+  }
+
+  /// Back navigation for change-phone passcode confirmation. Same behavior as
+  /// the change-email variant — back returns to the change-phone intro.
+  Widget? _changePhonePasscodeBackButton(BuildContext context) {
+    if (widget.mode != LoginProvider.modeChangePhoneConfirmPasscode) {
+      return null;
+    }
+    return CommonBackButton(
+      onPressed: () => popToChangePhoneIntro(context),
+    );
   }
 
   bool _showForgotPasscodeLink() {

@@ -78,6 +78,7 @@ import '../modules/settings/view/change_phone_number/change_phone_intro_view.dar
 import '../modules/settings/view/change_phone_number/change_phone_success_view.dart';
 import '../modules/settings/view/change_phone_number/change_phone_verify_current_otp_view.dart';
 import '../modules/settings/view/change_phone_number/change_phone_verify_otp_view.dart';
+import '../modules/settings/view/widgets/change_detail_back_to_intro.dart';
 import '../modules/settings/providers/change_email_form_provider.dart';
 import '../modules/settings/providers/change_email_otp_provider.dart';
 import '../modules/settings/providers/change_phone_current_otp_provider.dart';
@@ -347,6 +348,7 @@ class AppRouter {
                   appBarTitle: l10n.changeEmail,
                   title: l10n.verifyCurrentPhoneNumber,
                   subtitle: phoneSubtitle,
+                  onBackPressed: () => popToChangeEmailIntro(ctx),
                   otpLength: ChangeEmailPhoneOtpProvider.otpLength,
                   countdownSeconds: provider.countdownSeconds,
                   canResend: provider.canResend,
@@ -417,6 +419,7 @@ class AppRouter {
                   appBarTitle: l10n.changeEmail,
                   title: l10n.verifyNewEmailAddress,
                   subtitle: l10n.changeEmailEmailOtpSent(pendingEmail),
+                  onBackPressed: () => popToChangeEmailIntro(ctx),
                   otpLength: ChangeEmailNewEmailOtpProvider.otpLength,
                   countdownSeconds: provider.countdownSeconds,
                   canResend: provider.canResend,
@@ -488,6 +491,7 @@ class AppRouter {
                   subtitle: maskedEmailForView.isNotEmpty
                       ? l10n.twoFactorEmailOtpSent(maskedEmailForView)
                       : l10n.twoFactorEmailOtpSent('...'),
+                  onBackPressed: () => popToChangePhoneIntro(ctx),
                   onVerified: (innerCtx) async {
                     final token = innerCtx
                         .read<ChangePhoneCurrentOtpProvider>()
@@ -564,6 +568,7 @@ class AppRouter {
               appBarTitle: l10n.changePhoneNumber,
               title: l10n.verifyNewPhoneNumber,
               subtitle: l10n.changePhoneNewOtpSent(displayPhone),
+              onBackPressed: () => popToChangePhoneIntro(context),
               onVerified: (ctx) async {
                 final l10n = AppLocalizations.of(ctx)!;
                 final applied = await ctx

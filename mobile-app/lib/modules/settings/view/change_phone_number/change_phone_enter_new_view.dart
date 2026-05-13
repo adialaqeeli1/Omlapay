@@ -12,6 +12,7 @@ import '../../../../modules/auth/providers/login_provider.dart';
 import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_text_field.dart';
 import '../../providers/change_phone_form_provider.dart';
+import '../widgets/change_detail_back_to_intro.dart';
 import '../widgets/change_detail_enter_new_view.dart';
 
 class ChangePhoneEnterNewView extends StatelessWidget {
@@ -35,6 +36,7 @@ class ChangePhoneEnterNewView extends StatelessWidget {
       appBarTitle: l10n.changePhoneNumber,
       title: l10n.enterNewPhoneNumber,
       subtitle: l10n.changePhoneEnterNewSubtitle,
+      onBackPressed: () => popToChangePhoneIntro(context),
       inputField: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

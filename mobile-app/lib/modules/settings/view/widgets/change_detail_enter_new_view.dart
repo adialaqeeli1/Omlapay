@@ -14,6 +14,7 @@ class ChangeDetailEnterNewView extends StatelessWidget {
     required this.onContinue,
     this.validationErrorText,
     this.isContinueLoading = false,
+    this.onBackPressed,
   });
 
   final String appBarTitle;
@@ -24,14 +25,16 @@ class ChangeDetailEnterNewView extends StatelessWidget {
   final VoidCallback onContinue;
   final String? validationErrorText;
   final bool isContinueLoading;
+  final VoidCallback? onBackPressed;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final onBack = onBackPressed;
 
-    return Scaffold(
+    final scaffold = Scaffold(
       appBar: AppBar(
-        leading: const CommonBackButton(),
+        leading: CommonBackButton(onPressed: onBack),
         title: Text(
           appBarTitle,
           style: theme.textTheme.titleMedium?.copyWith(
@@ -110,6 +113,16 @@ class ChangeDetailEnterNewView extends StatelessWidget {
           ),
         ),
       ),
+    );
+
+    if (onBack == null) return scaffold;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        onBack();
+      },
+      child: scaffold,
     );
   }
 }

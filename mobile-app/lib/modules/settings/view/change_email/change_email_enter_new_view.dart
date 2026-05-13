@@ -11,6 +11,7 @@ import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_text_field.dart';
 import '../../providers/change_email_form_provider.dart';
 import '../../services/change_email_service.dart';
+import '../widgets/change_detail_back_to_intro.dart';
 import '../widgets/change_detail_enter_new_view.dart';
 
 class ChangeEmailEnterNewView extends StatelessWidget {
@@ -30,6 +31,7 @@ class ChangeEmailEnterNewView extends StatelessWidget {
       appBarTitle: l10n.changeEmail,
       title: l10n.enterNewEmailAddress,
       subtitle: l10n.enterYourNewEmailAddressToReceiveOtp,
+      onBackPressed: () => popToChangeEmailIntro(context),
       inputField: CommonTextField(
         fillColor: Colors.transparent,
         keyboardType: TextInputType.emailAddress,
