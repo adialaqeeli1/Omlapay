@@ -1123,6 +1123,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hideZeroBalance => 'Hide zero balance';
 
   @override
+  String get noCoinsToShow => 'No coins to show.';
+
+  @override
+  String get uncheckToSeeAllCoins =>
+      'Uncheck \'Hide zero balance\' to view all coins.';
+
+  @override
   String get contactsSheetTitle => 'Contacts';
 
   @override

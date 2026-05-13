@@ -1113,6 +1113,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get hideZeroBalance => 'إخفاء الرصيد الصفري';
 
   @override
+  String get noCoinsToShow => 'لا توجد عملات للعرض.';
+
+  @override
+  String get uncheckToSeeAllCoins =>
+      'قم بإلغاء تحديد \'إخفاء الرصيد الصفري\' لعرض جميع العملات.';
+
+  @override
   String get contactsSheetTitle => 'جهات الاتصال';
 
   @override

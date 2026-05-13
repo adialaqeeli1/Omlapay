@@ -478,6 +478,8 @@
     "saveImage": "Save image",
     "shareAction": "Share",
     "hideZeroBalance": "Hide zero balance",
+    "noCoinsToShow": "No coins to show.",
+    "uncheckToSeeAllCoins": "Uncheck 'Hide zero balance' to view all coins.",
     "contactsSheetTitle": "Contacts",
     "sendSuccessRecipientLine": "To: {recipient}",
     "@sendSuccessRecipientLine": {

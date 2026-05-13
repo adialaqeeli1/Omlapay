@@ -8,6 +8,7 @@ import '../core/theme/theme.dart';
 import '../providers/global_provider.dart';
 import '../providers/wallets_provider.dart';
 import 'common_coin_icon.dart';
+import 'no_transactions_found.dart';
 
 class CoinSelectionSheet extends StatefulWidget {
   final String title;
@@ -136,28 +137,29 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: TextField(
-              controller: _searchController,
-              style: TextStyle(color: colorScheme.onSurface),
-              decoration: InputDecoration(
-                hintText: l10n.searchHint,
-                hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-                filled: true,
-                fillColor: colorScheme.surfaceContainerHighest,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-              ),
-            ),
-          ),
+          // Search field hidden per Figma. Uncomment to re-enable.
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          //   child: TextField(
+          //     controller: _searchController,
+          //     style: TextStyle(color: colorScheme.onSurface),
+          //     decoration: InputDecoration(
+          //       hintText: l10n.searchHint,
+          //       hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+          //       prefixIcon: Icon(
+          //         Icons.search,
+          //         color: colorScheme.onSurfaceVariant,
+          //       ),
+          //       filled: true,
+          //       fillColor: colorScheme.surfaceContainerHighest,
+          //       border: OutlineInputBorder(
+          //         borderRadius: BorderRadius.circular(12),
+          //         borderSide: BorderSide.none,
+          //       ),
+          //       contentPadding: const EdgeInsets.symmetric(vertical: 0),
+          //     ),
+          //   ),
+          // ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4.0),
             child: Row(
@@ -189,7 +191,15 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
           ),
           const SizedBox(height: 10),
           Expanded(
-            child: ListView.separated(
+            child: sortedCoins.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: NoTransactionsFound(
+                      title: l10n.noCoinsToShow,
+                      subtitle: l10n.uncheckToSeeAllCoins,
+                    ),
+                  )
+                : ListView.separated(
               itemCount: sortedCoins.length,
               separatorBuilder: (context, index) => const SizedBox(height: 8),
               padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -478,6 +478,8 @@
     "saveImage": "حفظ الصورة",
     "shareAction": "مشاركة",
     "hideZeroBalance": "إخفاء الرصيد الصفري",
+    "noCoinsToShow": "لا توجد عملات للعرض.",
+    "uncheckToSeeAllCoins": "قم بإلغاء تحديد 'إخفاء الرصيد الصفري' لعرض جميع العملات.",
     "contactsSheetTitle": "جهات الاتصال",
     "sendSuccessRecipientLine": "إلى: {recipient}",
     "@sendSuccessRecipientLine": {
