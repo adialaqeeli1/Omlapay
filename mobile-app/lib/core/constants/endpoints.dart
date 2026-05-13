@@ -1,10 +1,12 @@
 /// API endpoint paths and base URL configuration for OmlaPay backend.
 class Endpoints {
   /// Protocol for API requests.
-  static String get protocol => 'https';
+  // static String get protocol => 'https';
+  static String get protocol => 'http';
 
   /// API host domain.
-  static String get domain => 'api.omlapay.xyz';
+  // static String get domain => 'api.omlapay.xyz';
+  static String get domain => '3.111.76.244:3000';
 
   /// Full base URL for all API requests (e.g. https://api.omlapay.xyz).
   static String get baseUrl => '$protocol://$domain';

@@ -132,18 +132,18 @@ class _CommonGridBgWrapperDelegate extends SliverPersistentHeaderDelegate {
         fit: StackFit.expand,
         clipBehavior: Clip.antiAliasWithSaveLayer,
         children: [
-          Positioned.directional(
-            top: 0,
-            start: 0,
-            end: 0,
-            height: maxExtent / (bottomWidget != null ? 1.2 : 1.5),
-            textDirection: context.textDirection,
-            child: SvgPicture.asset(
-              'assets/icons/grid_bg.svg',
-              fit: BoxFit.fill,
-              alignment: Alignment.topCenter,
-            ),
-          ),
+          // Positioned.directional(
+          //   top: 0,
+          //   start: 0,
+          //   end: 0,
+          //   height: maxExtent / (bottomWidget != null ? 1.2 : 1.5),
+          //   textDirection: context.textDirection,
+          //   child: SvgPicture.asset(
+          //     'assets/icons/grid_bg.svg',
+          //     fit: BoxFit.fill,
+          //     alignment: Alignment.topCenter,
+          //   ),
+          // ),
           if (headerChild != null)
             Positioned(
               top: -5,
