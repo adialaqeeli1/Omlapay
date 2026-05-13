@@ -216,6 +216,7 @@
     "usd": "دولار أمريكي",
     "sar": "ريال سعودي",
     "transactions": "المعاملات",
+    "viewAll": "عرض الكل",
     "noTransactionsFound": "لم يتم العثور على معاملات.",
     "allIncomingTransactionsListed": "سيتم إدراج جميع المعاملات الواردة هنا.",
     "tetherUsdt": "تيثر USDT",

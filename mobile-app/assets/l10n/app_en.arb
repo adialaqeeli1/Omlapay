@@ -216,6 +216,7 @@
     "usd": "USD",
     "sar": "SAR",
     "transactions": "Transactions",
+    "viewAll": "View all",
     "noTransactionsFound": "No Transactions found.",
     "allIncomingTransactionsListed": "All incoming Transactions will be listed here.",
     "tetherUsdt": "Tether USDT",
