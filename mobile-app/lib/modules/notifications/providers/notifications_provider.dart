@@ -71,28 +71,27 @@ class NotificationsProvider extends ChangeNotifier {
   }
 
   Future<void> markAsRead(String id) async {
-    // Todo: Uncomment later
-    // final index = _items.indexWhere((e) => e.id == id);
-    // if (index == -1 || _items[index].isRead || _isActionLoading) return;
+    final index = _items.indexWhere((e) => e.id == id);
+    if (index == -1 || _items[index].isRead || _isActionLoading) return;
 
-    // _isActionLoading = true;
-    // notifyListeners();
+    _isActionLoading = true;
+    notifyListeners();
 
-    // try {
-    //   await _service.markAsRead(id);
-    //   _items = [
-    //     for (int i = 0; i < _items.length; i++)
-    //       if (i == index) _items[i].copyWith(isRead: true) else _items[i],
-    //   ];
-    //   _unreadCount = (_unreadCount - 1).clamp(0, _unreadCount);
-    // } on AppException catch (e) {
-    //   _errorKey = e.messageKey ?? 'requestFailed';
-    // } catch (_) {
-    //   _errorKey = 'failedToMarkNotificationAsRead';
-    // } finally {
-    //   _isActionLoading = false;
-    //   notifyListeners();
-    // }
+    try {
+      await _service.markAsRead(id);
+      _items = [
+        for (int i = 0; i < _items.length; i++)
+          if (i == index) _items[i].copyWith(isRead: true) else _items[i],
+      ];
+      _unreadCount = (_unreadCount - 1).clamp(0, _unreadCount);
+    } on AppException catch (e) {
+      _errorKey = e.messageKey ?? 'requestFailed';
+    } catch (_) {
+      _errorKey = 'failedToMarkNotificationAsRead';
+    } finally {
+      _isActionLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> markAllAsRead() async {
