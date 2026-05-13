@@ -69,4 +69,10 @@ class AppColors {
 
   /// KYC banner fill, dark mode: #D80027 @ alpha 0x80 (Figma #D8002780).
   static const Color kycVerificationBannerBackgroundDark = Color(0x80D80027);
+
+  /// Support-ticket status: rejected banner / pill text (Figma #FA2929).
+  static const Color statusRejectedRed = Color(0xFFFA2929);
+
+  /// Support-ticket status: in-review banner / pill text (Figma #F57A00).
+  static const Color statusInReviewOrange = Color(0xFFF57A00);
 }

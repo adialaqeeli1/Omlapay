@@ -12,6 +12,7 @@ import '../../../../widgets/common_coin_icon.dart';
 import '../../../../widgets/kyc_verification_required_banner.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/l10n/app_localizations.dart';
+import '../../../../core/utils/date_time_format.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/no_transactions_found.dart';
 import '../../../../core/models/transaction_model/transaction_model.dart';
@@ -304,10 +305,7 @@ class _TransactionItem extends StatelessWidget {
         ),
       ),
       subtitle: Text(
-        DateFormat(
-          'yyyy-MM-dd h:mm a',
-          AppLocalizations.of(context)!.localeName,
-        ).format(transaction.createdAt.toLocal()),
+        transaction.createdAt.toAppDateTime(),
         style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
       ),
       trailing: Text(

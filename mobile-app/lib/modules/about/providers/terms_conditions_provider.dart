@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../../../core/services/legal_service.dart';
-import '../../../../../core/utils/app_exception.dart';
+import '../../../core/services/legal_service.dart';
+import '../../../core/utils/app_exception.dart';
 
 class TermsConditionsProvider extends ChangeNotifier {
   TermsConditionsProvider({required this.language}) {

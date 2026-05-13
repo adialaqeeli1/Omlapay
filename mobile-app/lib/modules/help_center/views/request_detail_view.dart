@@ -1,18 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/utils/app_exception.dart';
+import '../../../core/utils/date_time_format.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../widgets/common_back_button.dart';
 import '../../../widgets/common_loading_indicator.dart';
 import '../models/support_request_detail_model.dart';
 import '../models/support_request_model.dart';
 import '../providers/request_detail_provider.dart';
+
+DateTime? _latestAdminResponseDate(List<SupportRequestResponse> responses) {
+  DateTime? latest;
+  for (final r in responses) {
+    if (!r.isAdminResponse) continue;
+    if (latest == null || r.createdAt.isAfter(latest)) latest = r.createdAt;
+  }
+  return latest;
+}
 
 class RequestDetailView extends StatelessWidget {
   const RequestDetailView({super.key});
@@ -49,7 +58,7 @@ class RequestDetailView extends StatelessWidget {
             ),
             title: Text(
               l10n.pastRequests,
-              style: theme.textTheme.titleLarge?.copyWith(
+              style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.brightness == Brightness.dark
                     ? Colors.white
                     : Colors.black,
@@ -82,6 +91,7 @@ class RequestDetailView extends StatelessWidget {
               _StatusBanner(
                 status: detail.status,
                 statusColor: detail.statusColor,
+                statusChangedAt: _latestAdminResponseDate(detail.responses),
               ),
               Expanded(
                 child: RefreshIndicator(
@@ -131,8 +141,13 @@ class RequestDetailView extends StatelessWidget {
 class _StatusBanner extends StatelessWidget {
   final SupportRequestStatus status;
   final String? statusColor;
+  final DateTime? statusChangedAt;
 
-  const _StatusBanner({required this.status, this.statusColor});
+  const _StatusBanner({
+    required this.status,
+    this.statusColor,
+    this.statusChangedAt,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -141,13 +156,16 @@ class _StatusBanner extends StatelessWidget {
     final statusText = _getStatusText(l10n);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: color,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          ),
         ),
         child: Row(
           children: [
@@ -158,24 +176,24 @@ class _StatusBanner extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
+                  fontStyle: FontStyle.italic,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(width: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 _getStatusLabel(l10n),
                 style: TextStyle(
                   color: color,
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
+                  height: 1.1,
                 ),
               ),
             ),
@@ -191,9 +209,13 @@ class _StatusBanner extends StatelessWidget {
       case SupportRequestStatus.pending:
         return l10n.inReview as String;
       case SupportRequestStatus.solved:
-        return l10n.resolvedStatus as String;
+        return statusChangedAt != null
+            ? l10n.solutionSentOn(statusChangedAt!.toAppDateTime()) as String
+            : l10n.resolvedStatus as String;
       case SupportRequestStatus.rejected:
-        return l10n.rejectedStatus as String;
+        return statusChangedAt != null
+            ? l10n.rejectionSentOn(statusChangedAt!.toAppDateTime()) as String
+            : l10n.rejectedStatus as String;
     }
   }
 
@@ -213,23 +235,23 @@ class _StatusBanner extends StatelessWidget {
     if (statusColor != null) {
       switch (statusColor) {
         case 'green':
-          return Colors.green;
+          return AppColors.primaryColor;
         case 'red':
-          return Colors.red;
+          return AppColors.statusRejectedRed;
         case 'yellow':
-          return Colors.orange;
+          return AppColors.statusInReviewOrange;
         case 'blue':
           return Colors.blue;
       }
     }
     switch (status) {
       case SupportRequestStatus.solved:
-        return Colors.green;
+        return AppColors.primaryColor;
       case SupportRequestStatus.rejected:
-        return Colors.red;
+        return AppColors.statusRejectedRed;
       case SupportRequestStatus.open:
       case SupportRequestStatus.pending:
-        return Colors.orange;
+        return AppColors.statusInReviewOrange;
     }
   }
 }
@@ -376,9 +398,7 @@ class _TimelineItem extends StatelessWidget {
                                 const SizedBox(height: 2),
                                 Text(
                                   l10n.createdOn(
-                                    DateFormat(
-                                      'yyyy-MM-dd HH:mm:ss',
-                                    ).format(data.createdAt.toLocal()),
+                                    data.createdAt.toAppDateTime(),
                                   ),
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: AppColors.textLightGrey,

@@ -1443,6 +1443,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rejectedStatus => 'Rejected';
 
   @override
+  String solutionSentOn(String date) {
+    return 'Solution sent on $date';
+  }
+
+  @override
+  String rejectionSentOn(String date) {
+    return 'Rejection sent on $date';
+  }
+
+  @override
   String get failureReason => 'Reason';
 
   @override

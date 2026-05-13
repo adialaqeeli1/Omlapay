@@ -1,11 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/extentions/context_extensions.dart';
 import '../../widgets/common_back_button.dart';
+import '../../widgets/common_loading_indicator.dart';
+import '../../widgets/markdown_html_view.dart';
+import 'providers/terms_conditions_provider.dart';
 
 class TermsConditionsView extends StatelessWidget {
   const TermsConditionsView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final language = Localizations.localeOf(context).languageCode;
+    return ChangeNotifierProvider(
+      key: ValueKey('terms-$language'),
+      create: (_) => TermsConditionsProvider(language: language),
+      child: const _TermsConditionsBody(),
+    );
+  }
+}
+
+class _TermsConditionsBody extends StatelessWidget {
+  const _TermsConditionsBody();
 
   @override
   Widget build(BuildContext context) {
@@ -13,6 +31,7 @@ class TermsConditionsView extends StatelessWidget {
     final theme = Theme.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final horizontalPadding = screenWidth * 0.05;
+    final provider = context.watch<TermsConditionsProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -27,26 +46,77 @@ class TermsConditionsView extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: ClampingScrollPhysics(),
-        ),
-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      body: _buildBody(context, provider, horizontalPadding),
+    );
+  }
+
+  Widget _buildBody(
+    BuildContext context,
+    TermsConditionsProvider provider,
+    double horizontalPadding,
+  ) {
+    if (provider.isLoading && !provider.hasContent) {
+      return const Center(
+        child: SizedBox.square(dimension: 48, child: CommonLoadingIndicator()),
+      );
+    }
+
+    if (provider.hasError && !provider.hasContent) {
+      return _TermsError(
+        message: provider.errorMessage,
+        onRetry: provider.retry,
+        horizontalPadding: horizontalPadding,
+      );
+    }
+
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(
+        parent: ClampingScrollPhysics(),
+      ),
+      padding: EdgeInsets.symmetric(
+        horizontal: horizontalPadding,
+      ).add(EdgeInsets.only(bottom: context.mediaQuery.viewPadding.bottom)),
+      child: MarkdownHtmlView(
+        data: provider.content ?? '',
+        textScale: 0.85,
+        headingScale: 0.85,
+      ),
+    );
+  }
+}
+
+class _TermsError extends StatelessWidget {
+  const _TermsError({
+    required this.message,
+    required this.onRetry,
+    required this.horizontalPadding,
+  });
+
+  final String? message;
+  final VoidCallback onRetry;
+  final double horizontalPadding;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n!;
+    final theme = Theme.of(context);
+    final displayMessage = (message != null && message!.trim().isNotEmpty)
+        ? message!
+        : l10n.requestFailed;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: MediaQuery.of(context).size.height * 0.03),
             Text(
-              l10n.termsAndConditionsContent,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.brightness == Brightness.dark
-                    ? Colors.white
-                    : Colors.black,
-                fontSize: 16,
-                height: 1.5,
-              ),
+              displayMessage,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyLarge,
             ),
+            const SizedBox(height: 16),
+            TextButton(onPressed: onRetry, child: Text(l10n.tryAgain)),
           ],
         ),
       ),

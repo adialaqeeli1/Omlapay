@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../../../core/services/about_service.dart';
+import '../../../core/services/about_service.dart';
 
 class AboutProvider extends ChangeNotifier {
   AboutProvider({required this.language}) {

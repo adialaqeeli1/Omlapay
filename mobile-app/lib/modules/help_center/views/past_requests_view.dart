@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../../core/extentions/context_extensions.dart';
 import '../../../routes/app_router.dart';
 import '../../../core/utils/app_exception.dart';
+import '../../../core/utils/date_time_format.dart';
 import '../../../core/theme/theme.dart';
 import '../../../widgets/common_back_button.dart';
 import '../../../widgets/common_loading_indicator.dart';
@@ -28,7 +29,7 @@ class PastRequestsView extends StatelessWidget {
         leading: CommonBackButton(onPressed: () => GoRouter.of(context).pop()),
         title: Text(
           l10n.pastRequests,
-          style: theme.textTheme.titleLarge?.copyWith(
+          style: theme.textTheme.titleMedium?.copyWith(
             color: theme.brightness == Brightness.dark
                 ? Colors.white
                 : Colors.black,
@@ -212,9 +213,7 @@ class _RequestItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    DateFormat(
-                      'yyyy-MM-dd HH:mm:ss',
-                    ).format(request.createdAt.toLocal()),
+                    request.createdAt.toAppDateTime(),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: AppColors.textLightGrey,
                     ),
