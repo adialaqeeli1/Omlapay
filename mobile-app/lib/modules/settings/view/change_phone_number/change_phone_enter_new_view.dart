@@ -101,10 +101,7 @@ class ChangePhoneEnterNewView extends StatelessWidget {
               onChanged: provider.onPhoneChanged,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(
-                  color: phoneFieldBorderColor,
-                  width: 1,
-                ),
+                borderSide: BorderSide(color: phoneFieldBorderColor, width: 1),
               ),
               focusedBorder: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -127,8 +124,7 @@ class ChangePhoneEnterNewView extends StatelessWidget {
           context.push(
             Routes.changePhoneVerifyNew,
             extra: {
-              LoginProvider.extraChangePhoneTokenKey:
-                  provider.changePhoneToken,
+              LoginProvider.extraChangePhoneTokenKey: provider.changePhoneToken,
               LoginProvider.extraCountryCodeKey: countryCode,
               LoginProvider.extraPhoneNumberKey: provider.digitsOnly,
               LoginProvider.extraMaskedMobileKey: result.maskedMobile ?? '',
@@ -155,8 +151,8 @@ class ChangePhoneEnterNewView extends StatelessWidget {
         return l10n.enterValidPhoneNumber;
       case ChangePhoneValidationError.invalidLength:
         return l10n.enterValidPhoneNumber;
-      case ChangePhoneValidationError.sameAsCurrent:
-        return l10n.enterValidPhoneNumber;
+      // case ChangePhoneValidationError.sameAsCurrent:
+      //   return l10n.enterValidPhoneNumber;
       case null:
         return null;
     }

@@ -15,10 +15,7 @@ import '../widgets/change_detail_back_to_intro.dart';
 import '../widgets/change_detail_enter_new_view.dart';
 
 class ChangeEmailEnterNewView extends StatelessWidget {
-  const ChangeEmailEnterNewView({
-    super.key,
-    required this.changeEmailToken,
-  });
+  const ChangeEmailEnterNewView({super.key, required this.changeEmailToken});
 
   final String changeEmailToken;
 
@@ -66,8 +63,8 @@ class ChangeEmailEnterNewView extends StatelessWidget {
           final refreshedToken = result.changeEmailToken;
           final nextToken =
               (refreshedToken != null && refreshedToken.isNotEmpty)
-                  ? refreshedToken
-                  : changeEmailToken;
+              ? refreshedToken
+              : changeEmailToken;
           context.push(
             Routes.changeEmailVerifyNewEmail,
             extra: {
@@ -93,8 +90,8 @@ class ChangeEmailEnterNewView extends StatelessWidget {
       case ChangeEmailValidationError.empty:
         return l10n.pleaseEnterYourEmail;
       case ChangeEmailValidationError.invalid:
-      case ChangeEmailValidationError.sameAsCurrent:
-        return l10n.enterValidEmailAddress;
+      // case ChangeEmailValidationError.sameAsCurrent:
+      //   return l10n.enterValidEmailAddress;
       case null:
         return null;
     }

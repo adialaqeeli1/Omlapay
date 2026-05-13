@@ -31,9 +31,9 @@ class ChangeEmailFormProvider extends ChangeNotifier {
     if (!isValidEmail) {
       return ChangeEmailValidationError.invalid;
     }
-    if (isSameAsCurrentEmail) {
-      return ChangeEmailValidationError.sameAsCurrent;
-    }
+    // if (isSameAsCurrentEmail) {
+    //   return ChangeEmailValidationError.sameAsCurrent;
+    // }
     return null;
   }
 
@@ -49,4 +49,4 @@ class ChangeEmailFormProvider extends ChangeNotifier {
   }
 }
 
-enum ChangeEmailValidationError { empty, invalid, sameAsCurrent }
+enum ChangeEmailValidationError { empty, invalid }

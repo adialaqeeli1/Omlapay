@@ -55,9 +55,9 @@ class ChangePhoneFormProvider extends ChangeNotifier {
     if (!isValidPhone) {
       return ChangePhoneValidationError.invalidLength;
     }
-    if (isSameAsCurrentPhone) {
-      return ChangePhoneValidationError.sameAsCurrent;
-    }
+    // if (isSameAsCurrentPhone) {
+    //   return ChangePhoneValidationError.sameAsCurrent;
+    // }
     return null;
   }
 
@@ -131,4 +131,4 @@ class ChangePhoneFormProvider extends ChangeNotifier {
   }
 }
 
-enum ChangePhoneValidationError { empty, invalidLength, sameAsCurrent }
+enum ChangePhoneValidationError { empty, invalidLength }
