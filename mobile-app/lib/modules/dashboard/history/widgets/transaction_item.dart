@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart' hide TextDirection;
 import 'package:provider/provider.dart';
 import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/utils/date_time_format.dart';
 import '../../../../core/extentions/number_extensions.dart';
 import '../../../../core/models/transaction_model/transaction_model.dart';
 import '../../../../core/theme/theme.dart';
@@ -128,6 +128,6 @@ class TransactionItem extends StatelessWidget {
   }
 
   String _formatDateTime(DateTime date) {
-    return DateFormat('yyyy-MM-dd h:mm a').format(date.toLocal());
+    return date.toAppDateTime();
   }
 }

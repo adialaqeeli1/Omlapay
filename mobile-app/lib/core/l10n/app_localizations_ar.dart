@@ -1430,6 +1430,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rejectedStatus => 'مرفوض';
 
   @override
+  String solutionSentOn(String date) {
+    return 'تم إرسال الحل في $date';
+  }
+
+  @override
+  String rejectionSentOn(String date) {
+    return 'تم إرسال الرفض في $date';
+  }
+
+  @override
   String get failureReason => 'السبب';
 
   @override

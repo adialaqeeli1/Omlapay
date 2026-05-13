@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../../../core/services/legal_service.dart';
-import '../../../../../core/utils/app_exception.dart';
+import '../../../core/services/legal_service.dart';
+import '../../../core/utils/app_exception.dart';
 
 class PrivacyPolicyProvider extends ChangeNotifier {
   PrivacyPolicyProvider({required this.language}) {

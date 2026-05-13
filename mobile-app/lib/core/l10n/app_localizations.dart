@@ -2708,6 +2708,18 @@ abstract class AppLocalizations {
   /// **'Rejected'**
   String get rejectedStatus;
 
+  /// No description provided for @solutionSentOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Solution sent on {date}'**
+  String solutionSentOn(String date);
+
+  /// No description provided for @rejectionSentOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejection sent on {date}'**
+  String rejectionSentOn(String date);
+
   /// No description provided for @failureReason.
   ///
   /// In en, this message translates to:

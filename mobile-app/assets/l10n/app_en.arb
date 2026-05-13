@@ -630,6 +630,22 @@
     },
     "resolvedStatus": "Resolved",
     "rejectedStatus": "Rejected",
+    "solutionSentOn": "Solution sent on {date}",
+    "@solutionSentOn": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "rejectionSentOn": "Rejection sent on {date}",
+    "@rejectionSentOn": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
     "failureReason": "Reason",
     "approximateAmount": "≈{amount} {currency}",
     "@approximateAmount": {

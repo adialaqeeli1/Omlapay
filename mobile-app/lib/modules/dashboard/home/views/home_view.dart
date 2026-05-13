@@ -23,7 +23,7 @@ import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_grid_bg_wrapper.dart';
 import '../../../../widgets/common_icon_button.dart';
 import 'package:omlapay_mobile_app/widgets/asset_card.dart';
-import 'package:intl/intl.dart' hide TextDirection;
+import 'package:omlapay_mobile_app/core/utils/date_time_format.dart';
 import 'package:omlapay_mobile_app/widgets/common_coin_icon.dart';
 import 'package:omlapay_mobile_app/widgets/no_transactions_found.dart';
 import 'package:provider/provider.dart';
@@ -456,9 +456,7 @@ class _HomeViewState extends State<HomeView> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        DateFormat(
-                          'yyyy-MM-dd h:mm a',
-                        ).format(transaction.createdAt.toLocal()),
+                        transaction.createdAt.toAppDateTime(),
                         textDirection: TextDirection.ltr,
                         style: context.textTheme.bodySmall?.copyWith(
                           color: AppColors.textGrey,

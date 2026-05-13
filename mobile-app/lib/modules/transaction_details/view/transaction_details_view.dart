@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../core/utils/date_time_format.dart';
 import '../../../core/models/transaction_model/transaction_model.dart';
 import '../../../core/models/transaction_model/transaction_swap_asset.dart';
 import '../../../core/theme/theme.dart';
@@ -259,9 +260,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                         _buildDetailRow(
                           context,
                           l10n.date,
-                          DateFormat(
-                            'yyyy-MM-dd hh:mm a',
-                          ).format(transaction.createdAt.toLocal()),
+                          transaction.createdAt.toAppDateTime(),
                           isDateTime: true,
                         ),
                         if (isSwap) ...[
@@ -642,7 +641,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
         : tx.isCompleted
         ? l10n.completed
         : l10n.pending;
-    final dateText = DateFormat('yyyy-MM-dd hh:mm:ss a').format(tx.createdAt);
+    final dateText = tx.createdAt.toAppDateTime();
 
     final counterparty = tx.counterpartyPhone?.trim();
     // Matches the on-screen "Send To" / "Sender" row.

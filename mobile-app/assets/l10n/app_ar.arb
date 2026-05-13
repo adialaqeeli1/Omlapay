@@ -616,6 +616,22 @@
     },
     "resolvedStatus": "تم الحل",
     "rejectedStatus": "مرفوض",
+    "solutionSentOn": "تم إرسال الحل في {date}",
+    "@solutionSentOn": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "rejectionSentOn": "تم إرسال الرفض في {date}",
+    "@rejectionSentOn": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
     "failureReason": "السبب",
     "approximateAmount": "≈{amount} {currency}",
     "@approximateAmount": {

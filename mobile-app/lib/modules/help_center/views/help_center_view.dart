@@ -22,7 +22,7 @@ class HelpCenterView extends StatelessWidget {
         leading: CommonBackButton(onPressed: () => GoRouter.of(context).pop()),
         title: Text(
           l10n.helpCenter,
-          style: theme.textTheme.titleLarge?.copyWith(
+          style: theme.textTheme.titleMedium?.copyWith(
             color: theme.brightness == Brightness.dark
                 ? Colors.white
                 : Colors.black,

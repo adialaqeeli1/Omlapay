@@ -30,7 +30,7 @@ class SendRequestView extends StatelessWidget {
         leading: CommonBackButton(onPressed: () => GoRouter.of(context).pop()),
         title: Text(
           l10n.sendRequest,
-          style: theme.textTheme.titleLarge?.copyWith(
+          style: theme.textTheme.titleMedium?.copyWith(
             color: isDark ? Colors.white : Colors.black,
             fontWeight: FontWeight.bold,
           ),
@@ -197,7 +197,11 @@ class SendRequestView extends StatelessWidget {
                     } else if (provider.errorKey != null) {
                       SnackbarHelper.showError(
                         context,
-                        AppException.resolveErrorKey(l10n, provider.errorKey!) ?? l10n.unknownError,
+                        AppException.resolveErrorKey(
+                              l10n,
+                              provider.errorKey!,
+                            ) ??
+                            l10n.unknownError,
                       );
                     }
                   });

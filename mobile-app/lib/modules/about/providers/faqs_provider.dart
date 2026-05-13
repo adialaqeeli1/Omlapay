@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../../../core/models/faq_model/faq_model.dart';
-import '../../../../../core/services/faq_service.dart';
-import '../../../../../core/utils/app_exception.dart';
+import '../../../core/models/faq_model/faq_model.dart';
+import '../../../core/services/faq_service.dart';
+import '../../../core/utils/app_exception.dart';
 
 class FaqsProvider extends ChangeNotifier {
   FaqsProvider({required this.language}) {
