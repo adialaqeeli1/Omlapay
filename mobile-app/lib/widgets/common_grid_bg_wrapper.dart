@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:omlapay_mobile_app/widgets/common_transparent_card.dart';
 
@@ -22,6 +21,7 @@ class CommonGridBgWrapper extends StatelessWidget {
     this.appBarLeading,
     this.appBarLeadingWidth,
     this.applyHorizontalPaddingToHeaderButtonsOnly = false,
+    this.headerSubTitleFontSize = 14,
   });
 
   final Widget child;
@@ -34,6 +34,7 @@ class CommonGridBgWrapper extends StatelessWidget {
   final Widget? appBarLeading;
   final double? appBarLeadingWidth;
   final bool applyHorizontalPaddingToHeaderButtonsOnly;
+  final double headerSubTitleFontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +73,7 @@ class CommonGridBgWrapper extends StatelessWidget {
                       headerChild: headerChild,
                       bottomWidget: bottomWidget,
                       horizontalPadding: horizontalPadding,
+                      headerSubTitleFontSize: headerSubTitleFontSize,
                     ),
                   ),
                   SliverPadding(
@@ -100,6 +102,7 @@ class _CommonGridBgWrapperDelegate extends SliverPersistentHeaderDelegate {
     this.headerChild,
     this.bottomWidget,
     required this.horizontalPadding,
+    required this.headerSubTitleFontSize,
   });
 
   final String headerTitle;
@@ -107,6 +110,7 @@ class _CommonGridBgWrapperDelegate extends SliverPersistentHeaderDelegate {
   final Widget? headerChild;
   final Widget? bottomWidget;
   final double horizontalPadding;
+  final double headerSubTitleFontSize;
 
   @override
   double get maxExtent => bottomWidget != null ? 200 : 250;
@@ -197,7 +201,7 @@ class _CommonGridBgWrapperDelegate extends SliverPersistentHeaderDelegate {
                                       ? AppColors.textGrey
                                       : AppColors.textLightGrey,
                                   fontWeight: FontWeight.w400,
-                                  fontSize: 14,
+                                  fontSize: headerSubTitleFontSize,
                                 ),
                               ),
                             ],
