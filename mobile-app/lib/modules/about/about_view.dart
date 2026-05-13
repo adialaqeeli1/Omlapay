@@ -69,7 +69,7 @@ class _AboutBody extends StatelessWidget {
                     ? AppColors.textWhite
                     : AppColors.textGrey,
                 fontWeight: FontWeight.bold,
-                fontSize: 24,
+                fontSize: 20, //Todo: May need update
               ),
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.02),
