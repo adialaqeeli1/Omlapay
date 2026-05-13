@@ -113,7 +113,7 @@ class _NavItem extends StatelessWidget {
         return;
       }
     }
-    GoRouter.of(context).push(route);
+    context.push(route);
   }
 
   void _showLoginDialog(BuildContext context) {
