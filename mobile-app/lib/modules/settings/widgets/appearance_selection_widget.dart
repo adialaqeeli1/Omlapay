@@ -29,11 +29,16 @@ class AppearanceSelectionWidget extends StatelessWidget {
       l10n.system: ThemeMode.system,
     };
 
+    Future<void> applyAndClose(ThemeMode mode) async {
+      await themeProvider.setThemeMode(mode);
+      if (context.mounted) Navigator.of(context).pop();
+    }
+
     return RadioGroup<ThemeMode>(
       groupValue: themeProvider.themeMode,
       onChanged: (value) {
         if (value != null) {
-          themeProvider.setThemeMode(value);
+          applyAndClose(value);
         }
       },
       child: CommonBottomSheet(
@@ -45,7 +50,7 @@ class AppearanceSelectionWidget extends StatelessWidget {
             _ => l10n.usesDeviceSettings,
           };
           return ListTile(
-            onTap: () => themeProvider.setThemeMode(e.value),
+            onTap: () => applyAndClose(e.value),
             title: Text(e.key.capitalizeFirst!),
             subtitle: Text(
               description,
