@@ -29,6 +29,7 @@ class ProfileView extends StatelessWidget {
     return CommonGridBgWrapper(
       horizontalPadding: horizontalPadding,
       headerSubTitle: l10n.fundsSafeSecure,
+      headerSubTitleFontSize: 12,
       headerTitle: l10n.hello,
       bottomWidget: isAuthenticated && user != null
           ? _buildAuthenticatedHeader(
