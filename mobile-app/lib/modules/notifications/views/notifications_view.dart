@@ -88,7 +88,7 @@ class _NotificationsViewState extends State<NotificationsView> {
                         return _NotificationTile(
                           item: item,
                           isDark: isDark,
-                          onTap: () => provider.markAsRead(item.id),
+                          // onTap: () => provider.markAsRead(item.id),
                         );
                       },
                     ),
@@ -208,12 +208,12 @@ class _NotificationsViewState extends State<NotificationsView> {
 class _NotificationTile extends StatelessWidget {
   final NotificationModel item;
   final bool isDark;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _NotificationTile({
     required this.item,
     required this.isDark,
-    required this.onTap,
+    this.onTap,
   });
 
   @override
