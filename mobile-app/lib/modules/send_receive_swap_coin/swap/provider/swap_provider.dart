@@ -148,7 +148,7 @@ class SwapProvider extends ChangeNotifier {
     if (_coins.isEmpty) {
       _fromCoin = null;
       _toCoin = null;
-      _validateLocal();
+      // _validateLocal();
       notifyListeners();
       return;
     }
@@ -190,7 +190,7 @@ class SwapProvider extends ChangeNotifier {
       }
     }
 
-    _validateLocal();
+    // _validateLocal();
     final selectionChanged =
         previousFromSymbol != _fromCoin?.symbol ||
         previousToSymbol != _toCoin?.symbol;
@@ -205,7 +205,7 @@ class SwapProvider extends ChangeNotifier {
       _toCoin = _fromCoin;
     }
     _fromCoin = coin;
-    _validateLocal();
+    // _validateLocal();
     _onInputsChanged();
     notifyListeners();
   }
@@ -223,7 +223,7 @@ class SwapProvider extends ChangeNotifier {
     final temp = _fromCoin;
     _fromCoin = _toCoin;
     _toCoin = temp;
-    _validateLocal();
+    // _validateLocal();
     _onInputsChanged();
     notifyListeners();
   }
@@ -234,41 +234,41 @@ class SwapProvider extends ChangeNotifier {
     final swapMax = double.tryParse(coin.swapMaxAmount ?? '');
     if (swapMax != null && swapMax > 0) {
       fromAmountController.text = swapMax.toStringAsFixed(
-        AppConstants.coinAmountDecimals,
+        AppConstants.maxAmountDecimals,
       );
     } else {
       fromAmountController.text = coin.amount;
     }
-    _validateLocal();
+    // _validateLocal();
   }
 
-  void _validateLocal() {
-    final l10n = appLocalizationsFromStoredLocale();
-    _localError = null;
-    final text = fromAmountController.text;
-    if (text.isEmpty) return;
+  // void _validateLocal() {
+  //   final l10n = appLocalizationsFromStoredLocale();
+  //   _localError = null;
+  //   final text = fromAmountController.text;
+  //   if (text.isEmpty) return;
 
-    final amount = double.tryParse(text);
-    if (amount == null) {
-      _localError = l10n.sendValidationInvalidAmount;
-      return;
-    }
-    if (_fromCoin != null) {
-      final balanceStr = walletsProvider
-          .balanceForCoin(_fromCoin!.symbol)
-          .replaceAll(',', '');
-      final balance = double.tryParse(balanceStr) ?? 0.0;
-      if (amount > balance) {
-        _localError = l10n.sendValidationInsufficientBalance;
-      }
-    }
-  }
+  //   final amount = double.tryParse(text);
+  //   if (amount == null) {
+  //     _localError = l10n.sendValidationInvalidAmount;
+  //     return;
+  //   }
+  //   if (_fromCoin != null) {
+  //     final balanceStr = walletsProvider
+  //         .balanceForCoin(_fromCoin!.symbol)
+  //         .replaceAll(',', '');
+  //     final balance = double.tryParse(balanceStr) ?? 0.0;
+  //     if (amount > balance) {
+  //       _localError = l10n.sendValidationInsufficientBalance;
+  //     }
+  //   }
+  // }
 
   /// Single entry point for any input change (amount, coin, currency).
   /// Validates locally, cancels any in-flight stream, and schedules a
   /// debounced reconnect when inputs are complete.
   void _onInputsChanged() {
-    _validateLocal();
+    // _validateLocal();
 
     final amountText = fromAmountController.text.trim();
     final parsed = double.tryParse(amountText);

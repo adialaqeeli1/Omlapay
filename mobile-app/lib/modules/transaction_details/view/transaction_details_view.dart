@@ -112,10 +112,19 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
               ? transaction.errorMessage
               : transaction.errorMessageAr);
     final counterparty = transaction.counterpartyPhone?.trim();
-    final senderValue = counterparty != null && counterparty.isNotEmpty
+    // First party row ("Send To" for outgoing, "Sender" for incoming):
+    //   - When a counterparty phone is available, surface it (most user-
+    //     friendly identity).
+    //   - Otherwise fall back to the *other party's* wallet address:
+    //       SENT     → receiverAddress (where the coin went)
+    //       RECEIVED → senderAddress  (where the coin came from)
+    final primaryPartyValue = counterparty != null && counterparty.isNotEmpty
         ? counterparty
-        : transaction.senderAddress;
-    final addressValue = transaction.receiverAddress;
+        : (isSent ? transaction.receiverAddress : transaction.senderAddress);
+    // Second "Address" row renders the user's own wallet address. It only
+    // makes sense for outgoing transfers — for incoming the address would
+    // just be the receiving wallet, which the user already knows.
+    final addressValue = isSent ? transaction.senderAddress : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -289,14 +298,15 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                             transaction.network ?? 'N/A',
                             isNetwork: true,
                           ),
-                          if (senderValue != null && senderValue.isNotEmpty)
+                          if (primaryPartyValue != null &&
+                              primaryPartyValue.isNotEmpty)
                             _buildDetailRow(
                               context,
                               isSent ? l10n.sendTo : l10n.sender,
-                              senderValue,
+                              primaryPartyValue,
                               isAddress: true,
                               onCopy: _isWalletAddressDisplayed(transaction)
-                                  ? () => _copyToClipboard(senderValue)
+                                  ? () => _copyToClipboard(primaryPartyValue)
                                   : null,
                             ),
                           if (addressValue != null && addressValue.isNotEmpty)
@@ -635,10 +645,12 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     final dateText = DateFormat('yyyy-MM-dd hh:mm:ss a').format(tx.createdAt);
 
     final counterparty = tx.counterpartyPhone?.trim();
-    final senderValue = counterparty != null && counterparty.isNotEmpty
+    // Matches the on-screen "Send To" / "Sender" row.
+    final primaryPartyValue = counterparty != null && counterparty.isNotEmpty
         ? counterparty
-        : tx.senderAddress;
-    final recipientValue = isSent ? tx.receiverAddress : tx.senderAddress;
+        : (isSent ? tx.receiverAddress : tx.senderAddress);
+    // Matches the on-screen "Address" row — only shown for outgoing.
+    final ownerAddressValue = isSent ? tx.senderAddress : null;
     final localizedError = isArabic
         ? (tx.errorMessageAr?.trim().isNotEmpty == true
               ? tx.errorMessageAr
@@ -681,11 +693,11 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
       if ((tx.fee ?? '').trim().isNotEmpty) {
         lines.add('${l10n.fee}: ${tx.fee} ${tx.assetSymbol}');
       }
-      if (senderValue != null && senderValue.trim().isNotEmpty) {
-        lines.add('${isSent ? l10n.sendTo : l10n.sender}: $senderValue');
+      if (primaryPartyValue != null && primaryPartyValue.trim().isNotEmpty) {
+        lines.add('${isSent ? l10n.sendTo : l10n.sender}: $primaryPartyValue');
       }
-      if (recipientValue != null && recipientValue.trim().isNotEmpty) {
-        lines.add('${l10n.recipient}: $recipientValue');
+      if (ownerAddressValue != null && ownerAddressValue.trim().isNotEmpty) {
+        lines.add('${l10n.address}: $ownerAddressValue');
       }
     }
     if ((tx.txHash ?? '').trim().isNotEmpty) {
