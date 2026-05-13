@@ -27,6 +27,7 @@ class OtpVerificationView extends StatefulWidget {
     this.activeProgressSteps = 2,
     this.titleStyle,
     this.bottomSection,
+    this.onBackPressed,
   });
 
   final String appBarTitle;
@@ -45,6 +46,7 @@ class OtpVerificationView extends StatefulWidget {
   final int activeProgressSteps;
   final TextStyle? titleStyle;
   final Widget? bottomSection;
+  final VoidCallback? onBackPressed;
 
   @override
   State<OtpVerificationView> createState() => _OtpVerificationViewState();
@@ -103,10 +105,11 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
       alpha: isDark ? 0.16 : 0.20,
     );
 
-    return Scaffold(
+    final onBack = widget.onBackPressed;
+    final scaffold = Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        leading: const CommonBackButton(),
+        leading: CommonBackButton(onPressed: onBack),
         title: Text(
           widget.appBarTitle,
           style: theme.textTheme.titleMedium?.copyWith(
@@ -243,6 +246,16 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
           ),
         ),
       ),
+    );
+
+    if (onBack == null) return scaffold;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        onBack();
+      },
+      child: scaffold,
     );
   }
 }

@@ -16,12 +16,14 @@ class ChangePhoneVerifyCurrentOtpView extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onVerified,
+    this.onBackPressed,
   });
 
   final String appBarTitle;
   final String title;
   final String subtitle;
   final Future<void> Function(BuildContext context) onVerified;
+  final VoidCallback? onBackPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +35,7 @@ class ChangePhoneVerifyCurrentOtpView extends StatelessWidget {
       appBarTitle: appBarTitle,
       title: title,
       subtitle: subtitle,
+      onBackPressed: onBackPressed,
       otpLength: ChangePhoneCurrentOtpProvider.otpLength,
       countdownSeconds: provider.countdownSeconds,
       canResend: provider.canResend,

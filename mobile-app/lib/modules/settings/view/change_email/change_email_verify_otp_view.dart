@@ -25,6 +25,7 @@ class ChangeEmailVerifyOtpView extends StatelessWidget {
     required this.onOtpChanged,
     required this.onOtpCompleted,
     required this.onResend,
+    this.onBackPressed,
   });
 
   final String appBarTitle;
@@ -38,6 +39,7 @@ class ChangeEmailVerifyOtpView extends StatelessWidget {
   final void Function(String value) onOtpChanged;
   final Future<void> Function(BuildContext context) onOtpCompleted;
   final Future<void> Function() onResend;
+  final VoidCallback? onBackPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +49,7 @@ class ChangeEmailVerifyOtpView extends StatelessWidget {
       appBarTitle: appBarTitle,
       title: title,
       subtitle: subtitle,
+      onBackPressed: onBackPressed,
       otpLength: otpLength,
       countdownSeconds: countdownSeconds,
       canResend: canResend,
