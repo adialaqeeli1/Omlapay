@@ -566,6 +566,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get transactions => 'المعاملات';
 
   @override
+  String get viewAll => 'عرض الكل';
+
+  @override
   String get noTransactionsFound => 'لم يتم العثور على معاملات.';
 
   @override

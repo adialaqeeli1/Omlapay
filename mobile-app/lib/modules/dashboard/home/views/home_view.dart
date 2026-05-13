@@ -297,15 +297,33 @@ class _HomeViewState extends State<HomeView> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.max,
               children: [
-                Text(
-                  l10n.transactions,
-                  style: context.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: context.isDarkMode
-                        ? AppColors.white
-                        : AppColors.textBlack,
-                    fontSize: 18.0,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      l10n.transactions,
+                      style: context.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: context.isDarkMode
+                            ? AppColors.white
+                            : AppColors.textBlack,
+                        fontSize: 18.0,
+                      ),
+                    ),
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => context.push(Routes.history),
+                      child: Text(
+                        l10n.viewAll,
+                        style: context.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primaryColor,
+                          fontSize: 14.0,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 _buildRecentTransactions(context),

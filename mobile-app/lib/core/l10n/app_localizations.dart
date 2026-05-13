@@ -1142,6 +1142,12 @@ abstract class AppLocalizations {
   /// **'Transactions'**
   String get transactions;
 
+  /// No description provided for @viewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View all'**
+  String get viewAll;
+
   /// No description provided for @noTransactionsFound.
   ///
   /// In en, this message translates to:

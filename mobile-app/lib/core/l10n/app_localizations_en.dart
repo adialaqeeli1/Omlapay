@@ -575,6 +575,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactions => 'Transactions';
 
   @override
+  String get viewAll => 'View all';
+
+  @override
   String get noTransactionsFound => 'No Transactions found.';
 
   @override
