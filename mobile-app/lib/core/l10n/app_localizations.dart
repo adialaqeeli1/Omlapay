@@ -1550,6 +1550,18 @@ abstract class AppLocalizations {
   /// **'Forgot passcode'**
   String get forgotPasscodeTitle;
 
+  /// No description provided for @forgotPasscodePhoneOtpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'An 6 digit verification code has been sent via WhatsApp to {phone}.'**
+  String forgotPasscodePhoneOtpSent(String phone);
+
+  /// No description provided for @forgotPasscodeEmailOtpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'A 6-digit verification code has been sent to {email}.'**
+  String forgotPasscodeEmailOtpSent(String email);
+
   /// No description provided for @verifyYourPhoneNumber.
   ///
   /// In en, this message translates to:

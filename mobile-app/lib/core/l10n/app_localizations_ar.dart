@@ -791,6 +791,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get forgotPasscodeTitle => 'نسيت رمز المرور';
 
   @override
+  String forgotPasscodePhoneOtpSent(String phone) {
+    return 'تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى $phone.';
+  }
+
+  @override
+  String forgotPasscodeEmailOtpSent(String email) {
+    return 'تم إرسال رمز تحقق مكون من 6 أرقام إلى $email.';
+  }
+
+  @override
   String get verifyYourPhoneNumber => 'تحقق من رقم هاتفك';
 
   @override

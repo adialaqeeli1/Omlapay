@@ -114,6 +114,9 @@ class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
                     children: [
                       _OtpSection(
                         sectionTitle: l10n.verifyYourPhoneNumber,
+                        subtitle: l10n.forgotPasscodePhoneOtpSent(
+                          provider.formattedPhoneForDisplay,
+                        ),
                         subtitleColor: subtitleColor,
                         pinController: _phonePinController,
                         autoFocus: true,
@@ -121,19 +124,34 @@ class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
                         onChanged: provider.setPhoneOtpFromString,
                         onCompleted: (_) =>
                             _onPhoneOtpCompleted(provider, isEmailRequired),
-                        statusText: _StatusText(provider: provider),
+                        statusText: _StatusText(
+                          countdownSeconds: provider.phoneCountdownSeconds,
+                          canResend: provider.canResendPhone,
+                          onResend: () => provider.resendOtp(
+                            channel: ForgotPasscodeProvider.channelMobile,
+                          ),
+                        ),
                       ),
                       if (isEmailRequired) ...[
                         const SizedBox(height: 28),
                         _OtpSection(
                           sectionTitle: l10n.verifyYourEmail,
+                          subtitle: l10n.forgotPasscodeEmailOtpSent(
+                            provider.maskedEmail ?? '',
+                          ),
                           subtitleColor: subtitleColor,
                           pinController: _emailPinController,
                           autoFocus: false,
                           pinBorderColor: pinBorderColor,
                           onChanged: provider.setEmailOtpFromString,
                           onCompleted: (_) => _verifyOtp(provider),
-                          statusText: _StatusText(provider: provider),
+                          statusText: _StatusText(
+                            countdownSeconds: provider.emailCountdownSeconds,
+                            canResend: provider.canResendEmail,
+                            onResend: () => provider.resendOtp(
+                              channel: ForgotPasscodeProvider.channelEmail,
+                            ),
+                          ),
                         ),
                       ],
                     ],
@@ -209,6 +227,7 @@ class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
 class _OtpSection extends StatelessWidget {
   const _OtpSection({
     required this.sectionTitle,
+    required this.subtitle,
     required this.subtitleColor,
     required this.pinController,
     required this.autoFocus,
@@ -219,6 +238,7 @@ class _OtpSection extends StatelessWidget {
   });
 
   final String sectionTitle;
+  final String subtitle;
   final Color subtitleColor;
   final PinInputController pinController;
   final bool autoFocus;
@@ -243,6 +263,18 @@ class _OtpSection extends StatelessWidget {
           ),
           textAlign: TextAlign.start,
         ),
+        if (subtitle.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: subtitleColor,
+            ),
+            textAlign: TextAlign.start,
+          ),
+        ],
         const SizedBox(height: 20),
         LayoutBuilder(
           builder: (context, constraints) {
@@ -298,9 +330,15 @@ class _OtpSection extends StatelessWidget {
 }
 
 class _StatusText extends StatelessWidget {
-  const _StatusText({required this.provider});
+  const _StatusText({
+    required this.countdownSeconds,
+    required this.canResend,
+    required this.onResend,
+  });
 
-  final ForgotPasscodeProvider provider;
+  final int countdownSeconds;
+  final bool canResend;
+  final Future<String?> Function() onResend;
 
   @override
   Widget build(BuildContext context) {
@@ -308,7 +346,7 @@ class _StatusText extends StatelessWidget {
     final theme = context.theme;
     final mutedColor = theme.colorScheme.onSurface.withValues(alpha: 0.6);
 
-    if (provider.countdownSeconds > 0) {
+    if (countdownSeconds > 0) {
       return RichText(
         textAlign: TextAlign.start,
         text: TextSpan(
@@ -320,7 +358,7 @@ class _StatusText extends StatelessWidget {
           children: [
             TextSpan(text: '${l10n.verificationCodesIn} '),
             TextSpan(
-              text: l10n.secondsCount(provider.countdownSeconds),
+              text: l10n.secondsCount(countdownSeconds),
               style: const TextStyle(
                 color: AppColors.primaryColor,
                 fontWeight: FontWeight.w600,
@@ -348,10 +386,10 @@ class _StatusText extends StatelessWidget {
             alignment: PlaceholderAlignment.baseline,
             baseline: TextBaseline.alphabetic,
             child: GestureDetector(
-              onTap: provider.canResend
+              onTap: canResend
                   ? () async {
                       try {
-                        final message = await provider.resendOtp();
+                        final message = await onResend();
                         if (!context.mounted) return;
                         SnackbarHelper.showSuccess(
                           context,
@@ -367,9 +405,7 @@ class _StatusText extends StatelessWidget {
               child: Text(
                 l10n.resendOtp,
                 style: TextStyle(
-                  color: provider.canResend
-                      ? AppColors.primaryColor
-                      : mutedColor,
+                  color: canResend ? AppColors.primaryColor : mutedColor,
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                   decoration: TextDecoration.underline,

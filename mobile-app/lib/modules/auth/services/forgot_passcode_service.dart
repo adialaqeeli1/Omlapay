@@ -51,13 +51,21 @@ class ForgotPasscodeService {
     return _parseOtpResponse(response);
   }
 
+  /// Resends the OTP for the forgot-passcode flow.
+  ///
+  /// [channel] selects which code(s) the backend should re-issue:
+  /// - `mobile` — only the SMS/WhatsApp OTP
+  /// - `email`  — only the email OTP (requires 2FA enabled)
+  /// - `both`   — both (default; only meaningful when 2FA is enabled)
   static Future<ForgotPasscodeOtpResponse> resendOtp(
     String phoneNumber,
-    String countryCode,
-  ) async {
+    String countryCode, {
+    String channel = 'both',
+  }) async {
     final response = await ApiHelper.post(Endpoints.forgotPasscodeResendOtp, {
       "country_code": countryCode,
       "mobile_number": phoneNumber,
+      "channel": channel,
     });
     return _parseOtpResponse(response);
   }

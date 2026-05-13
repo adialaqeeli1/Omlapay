@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
@@ -21,25 +22,31 @@ class ForgotPasscodeProvider extends ChangeNotifier {
        _verificationType = verificationType {
     // If the caller already triggered the request OTP API (e.g. from the
     // "Forgot passcode" tap on the previous screen) and passed a positive
-    // [initialCountdown], start the countdown immediately so the screen does
-    // not fire a duplicate request when it mounts.
+    // [initialCountdown], start countdowns immediately so the screen does
+    // not fire a duplicate request when it mounts. The initial request is
+    // always `both` channels, so seed both timers.
     if (initialCountdown > 0) {
-      _countdownSeconds = initialCountdown;
-      _countdownTimer = Timer.periodic(
-        const Duration(seconds: 1),
-        _onCountdownTick,
-      );
+      _phoneCountdownSeconds = initialCountdown;
+      _emailCountdownSeconds = initialCountdown;
+      _startTimerIfNeeded();
     }
   }
 
   static const int otpLength = 6;
+
+  /// Resend channel values accepted by the backend.
+  static const String channelMobile = 'mobile';
+  static const String channelEmail = 'email';
+  static const String channelBoth = 'both';
+
   final String _phoneNumber;
   final String _countryCode;
   final int _initialCountdown;
 
   String _phoneOtp = '';
   String _emailOtp = '';
-  int _countdownSeconds = 0;
+  int _phoneCountdownSeconds = 0;
+  int _emailCountdownSeconds = 0;
   Timer? _countdownTimer;
   bool _isVerifying = false;
   bool _hasError = false;
@@ -72,8 +79,16 @@ class ForgotPasscodeProvider extends ChangeNotifier {
 
   String get phoneOtp => _phoneOtp;
   String get emailOtp => _emailOtp;
-  int get countdownSeconds => _countdownSeconds;
-  bool get isResendCooldown => _countdownSeconds > 0;
+
+  int get phoneCountdownSeconds => _phoneCountdownSeconds;
+  int get emailCountdownSeconds => _emailCountdownSeconds;
+
+  /// Larger of the two channel countdowns. Useful for guards that just
+  /// need to know whether any cooldown is active (e.g. the screen's
+  /// "skip duplicate request" check on mount).
+  int get countdownSeconds =>
+      math.max(_phoneCountdownSeconds, _emailCountdownSeconds);
+
   bool get isVerifying => _isVerifying;
   bool get hasError => _hasError;
   bool get isRequestingOtp => _isRequestingOtp;
@@ -82,7 +97,11 @@ class ForgotPasscodeProvider extends ChangeNotifier {
   bool get isComplete =>
       isPhoneOtpComplete && (!isEmailOtpRequired || isEmailOtpComplete);
   bool get canEnterDigits => !_isVerifying;
-  bool get canResend => _countdownSeconds <= 0 && !_isRequestingOtp;
+
+  bool get canResendPhone =>
+      _phoneCountdownSeconds <= 0 && !_isRequestingOtp;
+  bool get canResendEmail =>
+      _emailCountdownSeconds <= 0 && !_isRequestingOtp;
   String? get resetToken => _resetToken;
 
   /// Sets phone OTP from full string (e.g. from single TextField). Keeps
@@ -119,7 +138,7 @@ class ForgotPasscodeProvider extends ChangeNotifier {
         _phoneNumber,
         _countryCode,
       );
-      _applyOtpResponse(response);
+      _applyOtpResponse(response, channel: channelBoth);
       return response.message;
     } finally {
       _isRequestingOtp = false;
@@ -127,19 +146,30 @@ class ForgotPasscodeProvider extends ChangeNotifier {
     }
   }
 
-  Future<String?> resendOtp() async {
-    if (!canResend || _isRequestingOtp) return null;
+  /// Resends the OTP for the given [channel]:
+  /// - [channelMobile]: re-issues the SMS/WhatsApp code only
+  /// - [channelEmail] : re-issues the email code only (2FA must be enabled)
+  /// - [channelBoth]  : re-issues both
+  Future<String?> resendOtp({String channel = channelBoth}) async {
+    final allowed = _canResendForChannel(channel);
+    if (!allowed || _isRequestingOtp) return null;
+
     _isRequestingOtp = true;
-    _phoneOtp = '';
-    _emailOtp = '';
+    if (channel == channelMobile || channel == channelBoth) {
+      _phoneOtp = '';
+    }
+    if (channel == channelEmail || channel == channelBoth) {
+      _emailOtp = '';
+    }
     notifyListeners();
 
     try {
       final response = await ForgotPasscodeService.resendOtp(
         _phoneNumber,
         _countryCode,
+        channel: channel,
       );
-      _applyOtpResponse(response);
+      _applyOtpResponse(response, channel: channel);
       return response.message;
     } finally {
       _isRequestingOtp = false;
@@ -147,13 +177,45 @@ class ForgotPasscodeProvider extends ChangeNotifier {
     }
   }
 
-  void _applyOtpResponse(ForgotPasscodeOtpResponse response) {
+  bool _canResendForChannel(String channel) {
+    switch (channel) {
+      case channelMobile:
+        return canResendPhone;
+      case channelEmail:
+        return canResendEmail;
+      case channelBoth:
+      default:
+        return canResendPhone && canResendEmail;
+    }
+  }
+
+  void _applyOtpResponse(
+    ForgotPasscodeOtpResponse response, {
+    required String channel,
+  }) {
     _maskedMobile = response.maskedMobile ?? _maskedMobile;
     _maskedEmail = response.maskedEmail;
     _verificationType = response.verificationType ?? _verificationType;
-    _countdownSeconds = response.otpExpirySeconds > 0
+
+    final expiry = response.otpExpirySeconds > 0
         ? response.otpExpirySeconds
         : _initialCountdown;
+
+    if (channel == channelMobile || channel == channelBoth) {
+      _phoneCountdownSeconds = expiry;
+    }
+    if (channel == channelEmail || channel == channelBoth) {
+      _emailCountdownSeconds = expiry;
+    }
+    _startTimerIfNeeded();
+  }
+
+  void _startTimerIfNeeded() {
+    if (_phoneCountdownSeconds <= 0 && _emailCountdownSeconds <= 0) {
+      _countdownTimer?.cancel();
+      _countdownTimer = null;
+      return;
+    }
     _countdownTimer?.cancel();
     _countdownTimer = Timer.periodic(
       const Duration(seconds: 1),
@@ -162,12 +224,11 @@ class ForgotPasscodeProvider extends ChangeNotifier {
   }
 
   void _onCountdownTick(Timer timer) {
-    if (_countdownSeconds <= 1) {
+    if (_phoneCountdownSeconds > 0) _phoneCountdownSeconds--;
+    if (_emailCountdownSeconds > 0) _emailCountdownSeconds--;
+    if (_phoneCountdownSeconds <= 0 && _emailCountdownSeconds <= 0) {
       _countdownTimer?.cancel();
       _countdownTimer = null;
-      _countdownSeconds = 0;
-    } else {
-      _countdownSeconds--;
     }
     notifyListeners();
   }

@@ -298,6 +298,22 @@
     },
     "markAsRead": "Mark as read",
     "forgotPasscodeTitle": "Forgot passcode",
+    "forgotPasscodePhoneOtpSent": "An 6 digit verification code has been sent via WhatsApp to {phone}.",
+    "@forgotPasscodePhoneOtpSent": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "forgotPasscodeEmailOtpSent": "A 6-digit verification code has been sent to {email}.",
+    "@forgotPasscodeEmailOtpSent": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
     "verifyYourPhoneNumber": "Verify your phone number",
     "verifyYourAccount": "Verify your account",
     "verificationCodeSentViaSmsTo": "An 6 digit verification code has been sent via SMS to {phone}.",
