@@ -215,7 +215,7 @@ class SendProvider extends ChangeNotifier {
     final apiMax = maxSendAmount;
     if (apiMax > 0) {
       amountController.text = apiMax.toStringAsFixed(
-        AppConstants.coinAmountDecimals,
+        AppConstants.maxAmountDecimals,
       );
     } else {
       amountController.text = _selectedCoin!.amount.replaceAll(',', '');
