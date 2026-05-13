@@ -298,6 +298,22 @@
     },
     "markAsRead": "تعليم كمقروء",
     "forgotPasscodeTitle": "نسيت رمز المرور",
+    "forgotPasscodePhoneOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى {phone}.",
+    "@forgotPasscodePhoneOtpSent": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "forgotPasscodeEmailOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام إلى {email}.",
+    "@forgotPasscodeEmailOtpSent": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
     "verifyYourPhoneNumber": "تحقق من رقم هاتفك",
     "verifyYourAccount": "تحقق من حسابك",
     "verificationCodeSentViaSmsTo": "تم إرسال رمز التحقق المكون من 6 أرقام عبر الرسائل القصيرة إلى {phone}.",

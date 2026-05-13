@@ -32,11 +32,17 @@ class SendVerificationView extends StatelessWidget {
       onOtpChanged: provider.setOtpInput,
       onOtpCompleted: () => _verify(context, provider),
       onResend: () => _resend(context, provider),
-      bottomSection: Text(
-        l10n.needHelpContactSupport,
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
-          decoration: TextDecoration.underline,
+      bottomSection: TextButton(
+        onPressed: () => context.push(Routes.helpCenter),
+        child: Text(
+          l10n.needHelpContactSupport,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: theme.colorScheme.onSurface,
+            decoration: TextDecoration.underline,
+          ),
+          textAlign: TextAlign.center,
         ),
       ),
     );

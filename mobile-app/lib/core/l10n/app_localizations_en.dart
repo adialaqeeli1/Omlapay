@@ -800,6 +800,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get forgotPasscodeTitle => 'Forgot passcode';
 
   @override
+  String forgotPasscodePhoneOtpSent(String phone) {
+    return 'An 6 digit verification code has been sent via WhatsApp to $phone.';
+  }
+
+  @override
+  String forgotPasscodeEmailOtpSent(String email) {
+    return 'A 6-digit verification code has been sent to $email.';
+  }
+
+  @override
   String get verifyYourPhoneNumber => 'Verify your phone number';
 
   @override

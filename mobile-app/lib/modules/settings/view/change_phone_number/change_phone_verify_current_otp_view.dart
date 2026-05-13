@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/utils/app_exception.dart';
 import '../../../../core/utils/snackbar_helper.dart';
+import '../../../../routes/app_router.dart';
 import '../../../../widgets/otp_verification_view.dart';
 import '../../providers/change_phone_current_otp_provider.dart';
 
@@ -39,11 +41,17 @@ class ChangePhoneVerifyCurrentOtpView extends StatelessWidget {
       onOtpChanged: provider.setOtp,
       onOtpCompleted: () => _verify(context, provider),
       onResend: () => _safeResend(context, provider),
-      bottomSection: Text(
-        l10n.needHelpContactSupport,
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
-          decoration: TextDecoration.underline,
+      bottomSection: TextButton(
+        onPressed: () => context.push(Routes.helpCenter),
+        child: Text(
+          l10n.needHelpContactSupport,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: theme.colorScheme.onSurface,
+            decoration: TextDecoration.underline,
+          ),
+          textAlign: TextAlign.center,
         ),
       ),
     );
