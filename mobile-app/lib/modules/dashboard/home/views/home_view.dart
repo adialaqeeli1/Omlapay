@@ -394,6 +394,7 @@ class _HomeViewState extends State<HomeView> {
 
         Color getAmountColor() {
           if (transaction.isFailed) return Colors.red;
+          if (transaction.isSwap) return AppColors.white;
           if (transaction.isSent) return Colors.red;
           if (transaction.isReceived) return AppColors.greenColor;
           return isDarkMode ? AppColors.white : AppColors.textBlack;

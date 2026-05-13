@@ -121,6 +121,7 @@ class TransactionItem extends StatelessWidget {
   }
 
   Color _getAmountColor(TransactionModel tx, bool isDarkMode) {
+    if (tx.isSwap) return AppColors.white;
     if (tx.isSent) return Colors.red;
     if (tx.isReceived) return AppColors.greenColor;
     return isDarkMode ? AppColors.white : AppColors.textBlack;
