@@ -281,7 +281,9 @@ class CoinDetailsView extends StatelessWidget {
               Text(
                 l10n.yourTotalBalance,
                 style: context.textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textGrey,
+                  color: context.isDarkMode
+                      ? AppColors.white
+                      : AppColors.textGrey,
                 ),
               ),
               IconButton(
