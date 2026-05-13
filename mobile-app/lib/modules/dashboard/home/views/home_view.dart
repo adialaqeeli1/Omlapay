@@ -311,18 +311,19 @@ class _HomeViewState extends State<HomeView> {
                         fontSize: 18.0,
                       ),
                     ),
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => context.push(Routes.history),
-                      child: Text(
-                        l10n.viewAll,
-                        style: context.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primaryColor,
-                          fontSize: 14.0,
+                    if (authState.isAuthenticated)
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => context.push(Routes.history),
+                        child: Text(
+                          l10n.viewAll,
+                          style: context.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primaryColor,
+                            fontSize: 14.0,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
