@@ -416,7 +416,11 @@ class _HomeViewState extends State<HomeView> {
 
         Color getAmountColor() {
           if (transaction.isFailed) return Colors.red;
-          if (transaction.isSwap) return AppColors.white;
+          // Swap uses the neutral primary text color (not red/green) so it
+          // stays legible in both light and dark themes.
+          if (transaction.isSwap) {
+            return isDarkMode ? AppColors.white : AppColors.textBlack;
+          }
           if (transaction.isSent) return Colors.red;
           if (transaction.isReceived) return AppColors.greenColor;
           return isDarkMode ? AppColors.white : AppColors.textBlack;
