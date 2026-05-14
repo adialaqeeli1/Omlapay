@@ -262,7 +262,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
                       //   ),
                       //   textAlign: TextAlign.center,
                       // ),
-                      child: Icon(Icons.login, color: AppColors.primaryColor),
+                      child: Icon(Icons.logout, color: AppColors.primaryColor),
                     ),
                   ),
                 ),
