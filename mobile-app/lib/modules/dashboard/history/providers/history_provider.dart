@@ -33,6 +33,9 @@ class HistoryProvider extends ChangeNotifier {
   final CoinsPricesProvider _coinsPrices;
   final HistoryService _service;
 
+  /// Sentinel for the "All coins" tab — internal value only, never displayed.
+  static const String allCoinsTab = 'All';
+
   String?
   _selectedCoinFilter; // null = All, or coin symbol like 'USDT', 'BTC', etc.
   String? _selectedTypeFilter; // null = All, or 'SENT', 'RECEIVE', 'SWAP'.
@@ -56,6 +59,21 @@ class HistoryProvider extends ChangeNotifier {
   bool get isLoadingMore => _isLoadingMore;
   bool get hasMore => _hasMore;
   String? get errorMessage => _errorMessage;
+
+  /// Tab list for the coin filter: the `'All'` sentinel followed by each
+  /// distinct coin symbol from the SSE stream. `'All'` is an internal
+  /// sentinel, not a display string — the view localizes the label and
+  /// converts it back to `null` before calling [setCoinFilter].
+  List<String> get uniqueCoinSymbols {
+    final seen = <String>{};
+    final allSymbols = <String>[];
+    for (final c in _coinsPrices.coins) {
+      if (seen.add(c.symbol.toUpperCase())) {
+        allSymbols.add(c.symbol.toUpperCase());
+      }
+    }
+    return [allCoinsTab, ...allSymbols];
+  }
 
   void _onStreamedCoinsUpdated() {
     final before = _selectedCoinFilter;
