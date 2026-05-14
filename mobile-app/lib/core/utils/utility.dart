@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path_helper;
 
 import '../constants/endpoints.dart';
+import '../models/scanned_qr_payload/scanned_qr_payload.dart';
 import '../models/wallet_model/wallet_model.dart';
 import '../services/api_helper.dart';
 
@@ -459,45 +460,107 @@ class Utility {
     return "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/${symbol.toLowerCase()}.png";
   }
 
-  /// Validates a scanned QR payload that should encode a [WalletCoinModel].
+  /// Parses a scanned QR string into a normalised [ScannedQrPayload].
   ///
-  /// Returns `null` if the payload is a well-formed wallet JSON, its address
-  /// matches a known chain format, and the backend accepts it. Otherwise
-  /// returns a [QrValidationError] describing what went wrong so callers can
-  /// show a specific error message.
+  /// Supports three encodings:
+  /// 1. OmlaPay JSON — `{"symbol": "...", "address": "...", ...}`.
+  /// 2. URI form — `<scheme>:<address>?amount=...&...`. A `solana:` scheme
+  ///    resolves `symbol` to `SOL`; any other scheme leaves `symbol` empty.
+  ///    `spl-token`, `reference` and `label` query params are ignored.
+  /// 3. Bare address — the raw string is treated as the address.
+  ///
+  /// Returns `null` when the input is empty or cannot be parsed into any
+  /// known shape (e.g. a JSON array).
+  static ScannedQrPayload? parseScannedWallet(String raw) {
+    final value = raw.trim();
+    if (value.isEmpty) return null;
+
+    // 1. JSON object.
+    try {
+      final decoded = jsonDecode(value);
+      if (decoded is Map<String, dynamic>) {
+        final wallet = WalletCoinModel.fromJson(decoded);
+        return ScannedQrPayload(
+          address: wallet.address?.trim(),
+          symbol: wallet.symbol.trim(),
+        );
+      }
+      if (decoded is List) {
+        // Valid JSON but a collection, not a wallet payload.
+        return null;
+      }
+      // Scalar JSON (number/bool/string) — fall through to URI / bare-address.
+    } catch (_) {
+      // Not JSON — fall through to URI / bare-address handling.
+    }
+
+    // 2. URI form (`<scheme>:<address>?amount=...`).
+    final uri = Uri.tryParse(value);
+    if (uri != null && uri.scheme.isNotEmpty) {
+      final address = uri.path.trim();
+      if (address.isNotEmpty) {
+        final amount = double.tryParse(uri.queryParameters['amount'] ?? '');
+        final symbol = uri.scheme.toLowerCase() == 'solana' ? 'SOL' : '';
+        return ScannedQrPayload(
+          address: address,
+          symbol: symbol,
+          amount: amount,
+        );
+      }
+    }
+
+    // 3. Bare address.
+    return ScannedQrPayload(address: value);
+  }
+
+  /// Formats a scanned numeric amount for display in a text input.
+  ///
+  /// Returns `null` when [amount] is `null` or non-finite (`NaN`,
+  /// `Infinity`). A whole-number amount is rendered without a trailing
+  /// `.0` (e.g. `1` instead of `1.0`); a fractional amount keeps its
+  /// decimals.
+  static String? formatScannedAmount(double? amount) {
+    if (amount == null || !amount.isFinite) return null;
+    if (amount == amount.truncateToDouble()) {
+      return amount.toInt().toString();
+    }
+    return amount.toString();
+  }
+
+  /// Validates a scanned QR payload that may encode a wallet address.
+  ///
+  /// Accepts OmlaPay JSON, Solana Pay URIs, and bare addresses via
+  /// [parseScannedWallet]. Returns `null` when the payload is valid;
+  /// otherwise returns a [QrValidationError] describing what went wrong.
   ///
   /// Steps:
-  /// 1. `jsonDecode` the raw value — must be a `Map<String, dynamic>`.
-  /// 2. Parse into [WalletCoinModel] and require non-empty `symbol`/`address`.
+  /// 1. Parse the raw value with [parseScannedWallet].
+  /// 2. Require a non-empty address.
   /// 3. Run client-side regex on the address (cheap local reject).
-  /// 4. Call `GET /v1/send/validate-address?address=...&coin=...` and require
-  ///    a non-null `data` payload.
+  /// 4. If a coin symbol is present, call
+  ///    `GET /v1/send/validate-address?address=...&coin=...` and require a
+  ///    non-null `data` payload. With no symbol, the regex check is final.
   static Future<QrValidationError?> isValidWalletAddress(String value) async {
-    final dynamic decoded;
-    try {
-      decoded = jsonDecode(value);
-    } catch (_) {
-      return QrValidationError.invalidFormat;
-    }
-    if (decoded is! Map<String, dynamic>) {
+    final payload = parseScannedWallet(value);
+    if (payload == null) {
       return QrValidationError.invalidFormat;
     }
 
-    final WalletCoinModel wallet;
-    try {
-      wallet = WalletCoinModel.fromJson(decoded);
-    } catch (_) {
-      return QrValidationError.invalidFormat;
-    }
-
-    final symbol = wallet.symbol.trim();
-    final address = wallet.address?.trim() ?? '';
-    if (symbol.isEmpty || address.isEmpty) {
+    final symbol = payload.symbol.trim();
+    final address = payload.address?.trim() ?? '';
+    if (address.isEmpty) {
       return QrValidationError.invalidFormat;
     }
 
     if (!_matchesKnownAddressFormat(address)) {
       return QrValidationError.invalidAddress;
+    }
+
+    // Without a coin symbol there is nothing to send to the backend's
+    // validate-address endpoint, so the client-side regex above is the
+    // only check we can run.
+    if (symbol.isEmpty) {
+      return null;
     }
 
     try {

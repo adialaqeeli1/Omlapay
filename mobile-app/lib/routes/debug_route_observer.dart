@@ -1,16 +1,20 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// A [NavigatorObserver] that logs route transitions for debugging.
 /// Logs are emitted only when [kDebugMode] is true.
 class DebugRouteObserver extends NavigatorObserver {
-  static const String _tag = '[Route]';
+  static const String _tag = 'Route';
 
   void _log(String action, Route<dynamic> route, [Object? extra]) {
     if (!kDebugMode) return;
     final name = route.settings.name ?? route.settings.arguments?.toString() ?? 'unknown';
     final extraStr = extra != null ? ' | $extra' : '';
-    debugPrint('$_tag $action: $name$extraStr');
+    // Use developer.log (not debugPrint) so route logs share the same stream
+    // as API/widget logs and stay correctly ordered in the console.
+    developer.log('$action: $name$extraStr', name: _tag);
   }
 
   @override

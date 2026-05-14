@@ -19,8 +19,10 @@ import 'invalid_qr_code_dialog.dart';
 /// to open app settings).
 ///
 /// [onScanned] is called with the raw string value when a QR code is
-/// successfully scanned. The scanner stops after the first successful scan
-/// to prevent multiple callbacks.
+/// successfully scanned. The camera is stopped as soon as a code is detected
+/// and stays stopped while the payload is validated, so a code is never
+/// processed more than once. It only resumes if the user retries an invalid
+/// code.
 ///
 /// When [permissionProvider] is provided, permission logic is delegated to it.
 /// Otherwise, the widget manages permission internally.
@@ -234,38 +236,50 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
     if (_hasScanned || _isValidating) return;
 
     final barcodes = capture.barcodes;
-    // developer.log(
-    //   'QR detect: ${barcodes.length} barcode(s) in capture',
-    //   name: 'QrScannerWidget',
-    // );
     if (barcodes.isEmpty) return;
-
-    // for (var i = 0; i < barcodes.length; i++) {
-    //   final b = barcodes[i];
-    // developer.log(
-    //   'QR barcode[$i]: format=${b.format}, type=${b.type}, '
-    //   'rawValue="${b.rawValue}", displayValue="${b.displayValue}"',
-    //   name: 'QrScannerWidget',
-    // );
-    // }
 
     final barcode = barcodes.first;
     final rawValue = barcode.rawValue;
+    final validator = widget.validator;
+
+    // A QR/barcode was detected but its value couldn't be decoded (e.g. a
+    // stylised or damaged code). Surface this as an invalid QR code instead
+    // of silently ignoring it, so the user gets feedback and can retry.
+    // Without a validator there is no error UI to show, so we just skip.
     if (rawValue == null || rawValue.isEmpty) {
+      if (validator == null) return;
       developer.log(
-        'QR detect: rawValue is null/empty, skipping',
+        'QR detect: rawValue is null/empty, showing invalid QR error',
         name: 'QrScannerWidget',
       );
+      // Claim the detection synchronously so repeat frames don't stack
+      // dialogs, then stop the camera while the error dialog is shown.
+      _isValidating = true;
+      await _controller?.stop();
+      if (!mounted) return;
+      _isValidating = false;
+      await _showInvalidQrCodeDialog(QrValidationError.invalidFormat);
       return;
     }
 
-    final validator = widget.validator;
+    // Claim this detection synchronously — before the first `await` below — so
+    // rapid repeat frames from the camera cannot start a second validation.
+    // Then stop the camera entirely so no further frames are processed while
+    // we verify the payload. It is resumed only if the user chooses to retry
+    // an invalid code (see [_showInvalidQrCodeDialog]).
+    if (validator != null) {
+      setState(() => _isValidating = true);
+    } else {
+      _hasScanned = true;
+    }
+    await _controller?.stop();
+    if (!mounted) return;
+
     if (validator != null) {
       developer.log(
         'QR validate: running validator on "$rawValue"',
         name: 'QrScannerWidget',
       );
-      setState(() => _isValidating = true);
       final QrValidationError? error;
       try {
         error = await validator(rawValue);
@@ -283,9 +297,9 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
         await _showInvalidQrCodeDialog(error);
         return;
       }
+      _hasScanned = true;
     }
 
-    _hasScanned = true;
     developer.log(
       'QR scanned: "$rawValue" (length: ${rawValue.length})',
       name: 'QrScannerWidget',
@@ -305,7 +319,9 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
 
     if (!mounted) return;
     if (result == true) {
-      // Try again - allow scanning again (no-op, _hasScanned stays false)
+      // Try again - resume the camera so the user can rescan. `_hasScanned`
+      // and `_isValidating` are already false, so detection works normally.
+      await _controller?.start();
     } else {
       // Cancel - pop the scanner
       context.pop();

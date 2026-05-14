@@ -21,11 +21,14 @@ class SendProvider extends ChangeNotifier {
     this.walletsProvider, {
     String? initialCoinSymbol,
     String? initialRecipient,
+    String? initialAmount,
   }) {
     networkController = TextEditingController();
 
     // Apply initial state before syncing coins so the first sync picks the
-    // pre-selected coin instead of defaulting to the first entry.
+    // pre-selected coin instead of defaulting to the first entry, and so the
+    // pre-filled recipient/amount are in place before _syncCoinsFromPrices()
+    // triggers the first _validate().
     final trimmedSymbol = initialCoinSymbol?.trim() ?? '';
     if (trimmedSymbol.isNotEmpty) {
       _userPickedCoin = true;
@@ -33,6 +36,9 @@ class SendProvider extends ChangeNotifier {
     }
     if (initialRecipient != null && initialRecipient.isNotEmpty) {
       recipientController.text = initialRecipient;
+    }
+    if (initialAmount != null && initialAmount.isNotEmpty) {
+      amountController.text = initialAmount;
     }
 
     authProvider.addListener(notifyListeners);

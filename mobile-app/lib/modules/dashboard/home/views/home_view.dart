@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:badges/badges.dart' as badges;
@@ -14,7 +13,6 @@ import '../../../../core/extentions/number_extensions.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
-import '../../../../core/models/wallet_model/wallet_model.dart';
 import '../../../../core/services/push_notification_service.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/utility.dart';
@@ -211,13 +209,18 @@ class _HomeViewState extends State<HomeView> {
               ),
             );
             if (scanned == null || !context.mounted) return;
-            final wallet = _parseScannedWallet(scanned);
-            if (wallet == null) return;
+            final payload = Utility.parseScannedWallet(scanned);
+            if (payload == null) return;
+            final address = payload.address?.trim() ?? '';
+            if (address.isEmpty) return;
             context.push(
               Routes.sendCoin,
               extra: SendCoinExtra(
-                initialCoinSymbol: wallet.symbol.isEmpty ? null : wallet.symbol,
-                initialRecipient: wallet.address,
+                initialCoinSymbol: payload.symbol.isEmpty
+                    ? null
+                    : payload.symbol,
+                initialRecipient: address,
+                initialAmount: Utility.formatScannedAmount(payload.amount),
               ),
             );
           },
@@ -757,19 +760,5 @@ class _HomeViewState extends State<HomeView> {
         ? normalizedCountry
         : '+$normalizedCountry';
     return '$countryWithPlus $normalizedMobile'.trim();
-  }
-
-  /// Defensive parse of a scanned QR payload back into a [WalletCoinModel].
-  ///
-  /// The scanner's validator already accepted the value, so a parse failure
-  /// here would mean someone bypassed validation; we just bail out silently.
-  WalletCoinModel? _parseScannedWallet(String value) {
-    try {
-      final decoded = jsonDecode(value);
-      if (decoded is! Map<String, dynamic>) return null;
-      return WalletCoinModel.fromJson(decoded);
-    } catch (_) {
-      return null;
-    }
   }
 }
