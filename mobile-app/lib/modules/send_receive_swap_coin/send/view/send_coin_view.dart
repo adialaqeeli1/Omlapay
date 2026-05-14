@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -12,7 +10,6 @@ import '../../../../core/extentions/number_extensions.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
-import '../../../../core/models/wallet_model/wallet_model.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../core/utils/utility.dart';
@@ -31,14 +28,19 @@ import '../widgets/contact_selection_sheet.dart';
 
 /// Route extra for [Routes.sendCoin] used to pre-fill the send form.
 ///
-/// Both fields are optional; providing them causes [SendProvider] to
+/// All fields are optional; providing them causes [SendProvider] to
 /// auto-select the matching coin (and therefore its network) and to
-/// populate the recipient field on construction.
+/// populate the recipient and amount fields on construction.
 class SendCoinExtra {
-  const SendCoinExtra({this.initialCoinSymbol, this.initialRecipient});
+  const SendCoinExtra({
+    this.initialCoinSymbol,
+    this.initialRecipient,
+    this.initialAmount,
+  });
 
   final String? initialCoinSymbol;
   final String? initialRecipient;
+  final String? initialAmount;
 }
 
 class SendCoinView extends StatelessWidget {
@@ -605,29 +607,24 @@ class SendCoinView extends StatelessWidget {
     );
     if (result == null || !context.mounted) return;
 
-    final wallet = _parseScannedWallet(result);
-    if (wallet == null) return;
+    final payload = Utility.parseScannedWallet(result);
+    if (payload == null) return;
 
-    final address = wallet.address?.trim() ?? '';
+    final address = payload.address?.trim() ?? '';
     if (address.isNotEmpty) {
       provider.recipientController.text = address;
     }
 
-    final symbol = wallet.symbol.trim().toUpperCase();
+    final amount = Utility.formatScannedAmount(payload.amount);
+    if (amount != null) {
+      provider.amountController.text = amount;
+    }
+
+    final symbol = payload.symbol.trim().toUpperCase();
     if (symbol.isEmpty) return;
     final match = _findCoinBySymbol(provider.coins, symbol);
     if (match != null) {
       provider.setSelectedCoin(match);
-    }
-  }
-
-  WalletCoinModel? _parseScannedWallet(String value) {
-    try {
-      final decoded = jsonDecode(value);
-      if (decoded is! Map<String, dynamic>) return null;
-      return WalletCoinModel.fromJson(decoded);
-    } catch (_) {
-      return null;
     }
   }
 

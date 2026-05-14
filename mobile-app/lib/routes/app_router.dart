@@ -795,6 +795,7 @@ class AppRouter {
               context.read<WalletsProvider>(),
               initialCoinSymbol: extra?.initialCoinSymbol,
               initialRecipient: extra?.initialRecipient,
+              initialAmount: extra?.initialAmount,
             ),
             child: const SendCoinView(),
           );
