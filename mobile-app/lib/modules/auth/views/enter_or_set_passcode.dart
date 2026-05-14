@@ -174,8 +174,8 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
     final VoidCallback? onAccountStepBack = isChangeEmailPasscodeStep
         ? () => popToChangeEmailIntro(context)
         : isChangePhonePasscodeStep
-            ? () => popToChangePhoneIntro(context)
-            : null;
+        ? () => popToChangePhoneIntro(context)
+        : null;
 
     final scaffold = Scaffold(
       appBar: AppBar(
@@ -251,17 +251,18 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       alignment: Alignment.center,
-                      child: Text(
-                        l10n.logout,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                          height: 1.3,
-                          letterSpacing: 0,
-                          color: AppColors.primaryColor,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                      // child: Text(
+                      //   l10n.logout,
+                      //   style: theme.textTheme.titleMedium?.copyWith(
+                      //     fontWeight: FontWeight.w500,
+                      //     fontSize: 16,
+                      //     height: 1.3,
+                      //     letterSpacing: 0,
+                      //     color: AppColors.primaryColor,
+                      //   ),
+                      //   textAlign: TextAlign.center,
+                      // ),
+                      child: Icon(Icons.login, color: AppColors.primaryColor),
                     ),
                   ),
                 ),
@@ -471,9 +472,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
     if (widget.mode != LoginProvider.modeChangeEmailConfirmPasscode) {
       return null;
     }
-    return CommonBackButton(
-      onPressed: () => popToChangeEmailIntro(context),
-    );
+    return CommonBackButton(onPressed: () => popToChangeEmailIntro(context));
   }
 
   /// Back navigation for change-phone passcode confirmation. Same behavior as
@@ -482,9 +481,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
     if (widget.mode != LoginProvider.modeChangePhoneConfirmPasscode) {
       return null;
     }
-    return CommonBackButton(
-      onPressed: () => popToChangePhoneIntro(context),
-    );
+    return CommonBackButton(onPressed: () => popToChangePhoneIntro(context));
   }
 
   bool _showForgotPasscodeLink() {
@@ -688,10 +685,10 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
                     widget.registrationToken!.isNotEmpty) {
                   final isRegSuccess = await authProvider
                       .setRegistrationPasscode(
-                    registrationToken: widget.registrationToken!,
-                    passcode: passcode,
-                    confirmPasscode: passcode,
-                  );
+                        registrationToken: widget.registrationToken!,
+                        passcode: passcode,
+                        confirmPasscode: passcode,
+                      );
                   if (!isRegSuccess) return false;
                   // Server has accepted the new passcode but did not return
                   // session tokens. Acquire a session via the OTP-less
