@@ -11,6 +11,7 @@ import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/coin_brand_color.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../core/utils/utility.dart';
 import '../../../../routes/app_router.dart';
@@ -198,7 +199,11 @@ class SendCoinView extends StatelessWidget {
                 if (coin != null) ...[
                   CommonCoinIcon(
                     symbol: coin.symbol,
-                    iconBackgroundColor: _getCoinColor(coin.symbol),
+                    iconBackgroundColor: coinBrandColor(
+                      coin.symbol,
+                      isDarkMode: context.isDarkMode,
+                      fallback: Colors.grey,
+                    ),
                     radius: 20,
                     networkIconUrl: coin.networkIconUrl,
                   ),
@@ -692,10 +697,4 @@ class SendCoinView extends StatelessWidget {
     );
   }
 
-  Color _getCoinColor(String symbol) {
-    if (symbol == 'USDT') return AppColors.usdtColor;
-    if (symbol == 'BTC') return AppColors.bitcoinColor;
-    if (symbol == 'ETH') return AppColors.textWhite;
-    return Colors.grey;
-  }
 }

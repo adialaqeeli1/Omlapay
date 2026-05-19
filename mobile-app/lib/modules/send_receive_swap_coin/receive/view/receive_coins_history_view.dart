@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/extentions/number_extensions.dart';
+import '../../../../core/utils/coin_brand_color.dart';
 import '../../../../providers/coins_prices_provider.dart';
 import '../../../../providers/kyc_status_provider.dart';
 import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
@@ -281,14 +282,14 @@ class _TransactionItem extends StatelessWidget {
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-          color: _getCoinColor(transaction.assetSymbol).withValues(alpha: 0.1),
+          color: coinBrandColor(transaction.assetSymbol, isDarkMode: context.isDarkMode).withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
         child: Center(
           child: CommonCoinIcon(
             symbol: transaction.assetSymbol,
             radius: 20,
-            iconBackgroundColor: _getCoinColor(transaction.assetSymbol),
+            iconBackgroundColor: coinBrandColor(transaction.assetSymbol, isDarkMode: context.isDarkMode),
             networkIconUrl:
                 transaction.networkIconUrl ??
                 transaction.assetIconUrl ??
@@ -319,18 +320,4 @@ class _TransactionItem extends StatelessWidget {
     );
   }
 
-  Color _getCoinColor(String symbol) {
-    switch (symbol.toUpperCase()) {
-      case 'USDT':
-        return AppColors.usdtColor;
-      case 'BTC':
-        return AppColors.bitcoinColor;
-      case 'ETH':
-        return AppColors.textWhite;
-      case 'SOL':
-        return const Color(0xFF9945FF);
-      default:
-        return AppColors.primaryColor;
-    }
-  }
 }

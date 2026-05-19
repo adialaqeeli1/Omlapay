@@ -73,6 +73,11 @@ class AssetCard extends StatelessWidget {
                     iconBackgroundColor: iconBackgroundColor,
                     fallbackIcon: icon,
                     networkIconUrl: networkIconUrl,
+                    // Home assets card sits on a dark gradient regardless of
+                    // theme, so the ETH icon image's near-white plate already
+                    // has plenty of contrast — skip the brand-blue treatment
+                    // we apply elsewhere in light mode.
+                    useEthLightBrandBg: false,
                   ),
                   Expanded(
                     child: Column(
