@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/constants.dart';
-import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/l10n/app_localizations_from_storage.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/swap_quote_model/swap_quote_model.dart';
 import '../../../../core/models/swap_quote_stream_model/swap_quote_stream_event.dart';
 import '../../../../core/models/swap_quote_stream_model/swap_quote_stream_model.dart';
 import '../../../../core/services/swap_quote_stream_service.dart';
+import '../../../../core/utils/api_message_helper.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/coins_prices_provider.dart';
 import '../../../../providers/global_provider.dart';
@@ -361,20 +361,11 @@ class SwapProvider extends ChangeNotifier {
 
   String _resolveFailureMessage(SwapQuoteStreamFailure failure) {
     final l10n = appLocalizationsFromStoredLocale();
-    final isArabic = _isArabicLocale(l10n);
-
-    switch (failure.code) {
-      case 'INSUFFICIENT_BALANCE':
-        return l10n.swapErrorInsufficientBalance;
-      default:
-        if (isArabic && failure.messageAr.isNotEmpty) return failure.messageAr;
-        if (failure.messageEn.isNotEmpty) return failure.messageEn;
-        return l10n.requestFailed;
-    }
-  }
-
-  bool _isArabicLocale(AppLocalizations l10n) {
-    return l10n.localeName.toLowerCase().startsWith('ar');
+    return ApiMessageHelper.localizedText(
+      message: failure.messageEn,
+      messageAr: failure.messageAr,
+      fallback: l10n.requestFailed,
+    );
   }
 
   /// Calls the swap quote API. Rethrows exceptions so the UI layer

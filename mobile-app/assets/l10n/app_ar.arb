@@ -508,7 +508,6 @@
     "swapExchangeRate": "سعر الصرف",
     "swapFeeOmlapay": "رسوم أوملاباي",
     "swapFeeBinance": "رسوم بينانس",
-    "swapErrorInsufficientBalance": "المبلغ يتجاوز الرصيد المتاح.",
     "transferToLabel": "إلى",
     "addressCopiedToast": "تم النسخ",
     "availableShortLabel": "المتاح",
