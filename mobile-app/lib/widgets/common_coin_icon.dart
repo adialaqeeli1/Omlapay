@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:omlapay_mobile_app/core/extentions/context_extensions.dart';
 import 'package:omlapay_mobile_app/widgets/common_loading_indicator.dart';
 
+import '../core/theme/theme.dart';
 import '../core/utils/utility.dart';
 
 class CommonCoinIcon extends StatelessWidget {
@@ -62,7 +63,7 @@ class CommonCoinIcon extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        color: context.theme.colorScheme.primary,
+        color: AppColors.darkBackground, //Todo: Maybe need to update later
         shape: BoxShape.circle,
       ),
       child: avatar,
