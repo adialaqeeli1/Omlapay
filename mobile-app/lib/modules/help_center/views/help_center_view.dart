@@ -19,7 +19,7 @@ class HelpCenterView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: CommonBackButton(onPressed: () => GoRouter.of(context).pop()),
+        leading: CommonBackButton(onPressed: () => context.pop()),
         title: Text(
           l10n.helpCenter,
           style: theme.textTheme.titleMedium?.copyWith(
