@@ -194,6 +194,41 @@ class _HomeViewState extends State<HomeView> {
                 context.read<HomeProvider>().fetchHomeData();
               }
             },
+            // Debug-only: long-press schedules a test notification 10s out
+            // and skips immediate navigation, so the dev can log out or
+            // background the app (auto-lock fires after 60s) before the
+            // notification arrives. Tapping the banner then exercises the
+            // full deep-link replay path through auth / app-lock gates.
+            onLongPress: kDebugMode
+                ? () async {
+                    final messenger = ScaffoldMessenger.maybeOf(context);
+                    final scheduled = await PushNotificationService.instance
+                        .showDemoNotification(
+                          title: 'OmlaPay scheduled test',
+                          body:
+                              'Tap me to test deep-link replay through '
+                              'auth / app-lock.',
+                          delay: const Duration(seconds: 10),
+                        )
+                        .onError((error, stackTrace) {
+                          log('$error');
+                          return false;
+                        });
+                    messenger?.showSnackBar(
+                      SnackBar(
+                        duration: const Duration(seconds: 6),
+                        content: Text(
+                          scheduled
+                              ? 'Test notification in 10s. Log out, or '
+                                    'background the app for 60s+ to test '
+                                    'app-lock. Tap the banner when it fires.'
+                              : 'Could not schedule test notification — '
+                                    'check notification permission.',
+                        ),
+                      ),
+                    );
+                  }
+                : null,
           ),
         ),
         // Scan Icon

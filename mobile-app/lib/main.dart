@@ -1,6 +1,7 @@
 import 'package:country_picker/country_picker.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -141,6 +142,16 @@ class MyApp extends StatelessWidget {
                 seconds: AppConstants.appLockBackgroundThresholdSeconds,
               ),
             );
+            // Chain the unlock callback so a pending notification deep link
+            // (set in PushNotificationService when the user tapped the
+            // banner) is replayed after a successful login / soft-login.
+            // `AppLockProvider` already owns the original callback
+            // (`markUnlocked`); we wrap it to also flush the deep link.
+            final lockUnlock = authProvider.onUnlockCallback;
+            authProvider.onUnlockCallback = () {
+              lockUnlock?.call();
+              PushNotificationService.instance.replayPendingDeepLink();
+            };
             return lock;
           },
           update: (_, auth, prev) => prev!,

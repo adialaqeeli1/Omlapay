@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io' show Platform;
-import 'dart:ui' show Color;
 
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../routes/app_router.dart';
 import '../constants/constants.dart';
@@ -98,8 +98,10 @@ class PushNotificationService {
   /// Call once from `main()` after `Firebase.initializeApp()` and before
   /// `runApp()`.
   Future<void> initializeNotifications() async {
+    log('$_logTag initializeNotifications: start');
     final languageCode =
         StorageService.getString(AppConstants.localeKey) ?? 'en';
+    log('$_logTag initializeNotifications: languageCode=$languageCode');
     await AwesomeNotifications().initialize(
       // null falls back to the application's launcher icon.
       null,
@@ -124,11 +126,13 @@ class PushNotificationService {
     await AwesomeNotifications().setListeners(
       onActionReceivedMethod: _onActionReceivedMethod,
     );
+    log('$_logTag initializeNotifications: AwesomeNotifications listeners set');
 
     // Background handler must be registered before runApp(). It runs in a
     // separate isolate when a message arrives while the app is killed or
     // backgrounded.
     FirebaseMessaging.onBackgroundMessage(pushNotificationBackgroundHandler);
+    log('$_logTag initializeNotifications: FCM background handler registered');
 
     // Foreground messages — display via Awesome Notifications (FCM does not
     // show a banner in foreground by default).
@@ -136,25 +140,39 @@ class PushNotificationService {
     _foregroundSubscription = FirebaseMessaging.onMessage.listen(
       _displayForegroundMessage,
     );
+    log('$_logTag initializeNotifications: onMessage subscribed');
 
     // User tapped the notification while app was in background.
     _openedAppSubscription?.cancel();
     _openedAppSubscription = FirebaseMessaging.onMessageOpenedApp.listen(
       _routeFromMessage,
     );
+    log('$_logTag initializeNotifications: onMessageOpenedApp subscribed');
 
     // App was launched (cold start) by tapping a notification.
     final initialMessage = await _messaging.getInitialMessage();
     if (initialMessage != null) {
+      log(
+        '$_logTag initializeNotifications: cold-start tap detected '
+        '(messageId=${initialMessage.messageId})',
+      );
       _routeFromMessage(initialMessage);
+    } else {
+      log('$_logTag initializeNotifications: no cold-start tap');
     }
 
     // Ensure system-level notification permission is granted. Same OS
     // permission as FCM `requestPermission` — calling both is safe.
     final isAllowed = await AwesomeNotifications().isNotificationAllowed();
+    log('$_logTag initializeNotifications: isNotificationAllowed=$isAllowed');
     if (!isAllowed) {
-      await AwesomeNotifications().requestPermissionToSendNotifications();
+      final granted = await AwesomeNotifications()
+          .requestPermissionToSendNotifications();
+      log(
+        '$_logTag initializeNotifications: requestPermission granted=$granted',
+      );
     }
+    log('$_logTag initializeNotifications: done');
   }
 
   // ---------------------------------------------------------------------------
@@ -174,10 +192,17 @@ class PushNotificationService {
   /// result, errors) so silent failures are debuggable from the console.
   ///
   /// Returns `true` if the notification was scheduled, `false` otherwise.
+  ///
+  /// [delay] — when greater than zero, schedules the notification to fire
+  /// after the given duration via [NotificationInterval]. Useful for testing
+  /// the auth-gated / app-locked tap flow: trigger this with a 10s delay,
+  /// then log out or background the app, then tap the notification when it
+  /// fires to verify the deep-link replay path.
   Future<bool> showDemoNotification({
     String title = 'OmlaPay test notification',
     String body =
         'If you can see this, Awesome Notifications is wired up correctly.',
+    Duration delay = Duration.zero,
   }) async {
     try {
       final isAllowed = await AwesomeNotifications().isNotificationAllowed();
@@ -199,9 +224,39 @@ class PushNotificationService {
         1 << 31,
       );
 
-      // Sample JSON the API/backend would return. Encoding both the outer
-      // wrapper and the `payload` inner map as strings mirrors how FCM
-      // actually transports nested data (`Map<String, String>` only).
+      if (delay > Duration.zero) {
+        // Scheduled path. Uses `createNotification` (not the JSON helper)
+        // so we can attach a `NotificationInterval` schedule. The tap still
+        // flows through `_onActionReceivedMethod` → `_navigateToNotificationsList`,
+        // which is the exact path real FCM taps take.
+        log(
+          '$_logTag demo: scheduling in ${delay.inSeconds}s '
+          'id=$notificationId',
+        );
+        final scheduled = await AwesomeNotifications().createNotification(
+          content: NotificationContent(
+            id: notificationId,
+            channelKey: defaultChannelKey,
+            title: title,
+            body: body,
+            notificationLayout: NotificationLayout.Default,
+            wakeUpScreen: true,
+            payload: const {'source': 'demo_scheduled'},
+          ),
+          schedule: NotificationInterval(
+            interval: delay,
+            preciseAlarm: true,
+            allowWhileIdle: true,
+            repeats: false,
+          ),
+        );
+        log('$_logTag demo: createNotification scheduled=$scheduled');
+        return scheduled;
+      }
+
+      // Immediate path. Sample JSON mirrors what the backend would return
+      // and exercises the same `createNotificationFromJsonData` code path
+      // as real FCM data messages.
       final String apiJsonResponse = jsonEncode({
         'content': {
           'id': notificationId,
@@ -287,7 +342,17 @@ class PushNotificationService {
   // Tap → navigation
   // ---------------------------------------------------------------------------
 
+  /// Remembered destination from the most recent notification tap. Kept
+  /// across login / app-lock overlays so the user lands on the intended
+  /// screen instead of `home` after the auth gate is cleared. Cleared once
+  /// replayed.
+  String? _pendingDeepLink;
+
   void _routeFromMessage(RemoteMessage message) {
+    log(
+      '$_logTag tap (FCM): messageId=${message.messageId} '
+      'data=${message.data}',
+    );
     _navigateToNotificationsList();
   }
 
@@ -295,15 +360,74 @@ class PushNotificationService {
   static Future<void> _onActionReceivedMethod(
     ReceivedAction receivedAction,
   ) async {
+    log(
+      '$_logTag tap (AwesomeNotifications): id=${receivedAction.id} '
+      'channelKey=${receivedAction.channelKey} '
+      'buttonKeyPressed=${receivedAction.buttonKeyPressed} '
+      'payload=${receivedAction.payload}',
+    );
     instance._navigateToNotificationsList();
   }
 
   void _navigateToNotificationsList() {
-    try {
-      AppRouter.router.go(Routes.notifications);
-    } catch (e) {
-      debugPrint('$_logTag tap routing failed: $e');
+    // Stash the intent BEFORE attempting navigation so it survives the
+    // auth-middleware redirect (unauthenticated → loginOrRegister) and the
+    // AppLockProvider passcode overlay. `replayPendingDeepLink` flushes it
+    // after the user signs in or unlocks.
+    _pendingDeepLink = Routes.notifications;
+
+    final isAuthed = StorageService.getString(AppConstants.tokenKey) != null;
+    final target = isAuthed ? Routes.notifications : Routes.loginOrRegister;
+    log(
+      '$_logTag navigate: isAuthed=$isAuthed pending=$_pendingDeepLink '
+      'target=$target',
+    );
+
+    // Defer to the next frame. Two reasons:
+    //   1. Background-resume tap: when the user taps a banner while the app
+    //      was paused/hidden, `_onActionReceivedMethod` can fire before
+    //      Flutter has composited a frame post-resume. A synchronous
+    //      `router.go` in that window is silently lost and the user lands
+    //      on whatever screen they minimized from.
+    //   2. Foreground tap: `addPostFrameCallback` runs after the current
+    //      microtask, which is harmless (sub-frame latency).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        AppRouter.router.go(target);
+        log('$_logTag navigate: router.go($target) dispatched (post-frame)');
+        // Only clear when we reached the actual final destination. The
+        // `loginOrRegister` redirect path leaves the pending intent in
+        // place so `replayPendingDeepLink` can flush it after auth completes.
+        if (isAuthed && _pendingDeepLink == Routes.notifications) {
+          _pendingDeepLink = null;
+          log('$_logTag navigate: cleared pending deep link');
+        }
+      } catch (e) {
+        debugPrint('$_logTag tap routing failed: $e');
+      }
+    });
+  }
+
+  /// Replays the pending notification deep link (if any). Call after a
+  /// successful login / soft-login so the user lands on the screen they
+  /// tapped from instead of `home`. Scheduled on the next frame so it wins
+  /// over the auth screen's own `context.go(Routes.home)`.
+  void replayPendingDeepLink() {
+    final target = _pendingDeepLink;
+    if (target == null) {
+      log('$_logTag replayPendingDeepLink: nothing to replay');
+      return;
     }
+    _pendingDeepLink = null;
+    log('$_logTag replayPendingDeepLink: scheduling go($target) post-frame');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        AppRouter.router.go(target);
+        log('$_logTag replayPendingDeepLink: router.go($target) dispatched');
+      } catch (e) {
+        debugPrint('$_logTag deep-link replay failed: $e');
+      }
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -315,7 +439,11 @@ class PushNotificationService {
   Future<String?> currentDeviceToken() async {
     try {
       final token = await _messaging.getToken();
-      if (token == null || token.isEmpty) return null;
+      if (token == null || token.isEmpty) {
+        log('$_logTag currentDeviceToken: null/empty');
+        return null;
+      }
+      log('$_logTag currentDeviceToken: ${_redactToken(token)}');
       return token;
     } catch (e) {
       debugPrint('$_logTag currentDeviceToken failed: $e');
@@ -334,14 +462,20 @@ class PushNotificationService {
   ///
   /// All exceptions are caught and logged. Never rethrows.
   Future<void> registerCurrentDevice() async {
+    log('$_logTag registerCurrentDevice: start');
     try {
-      await _messaging.requestPermission();
+      final settings = await _messaging.requestPermission();
+      log(
+        '$_logTag registerCurrentDevice: permission '
+        'authorizationStatus=${settings.authorizationStatus.name}',
+      );
 
       final token = await _messaging.getToken();
       if (token == null || token.isEmpty) {
         debugPrint('$_logTag getToken returned null/empty — skipping');
         return;
       }
+      log('$_logTag registerCurrentDevice: token=${_redactToken(token)}');
 
       final uuid = await _readDeviceUuid();
       if (uuid == null || uuid.isEmpty) {
@@ -350,6 +484,10 @@ class PushNotificationService {
       }
 
       final model = await _readDeviceModel();
+      log(
+        '$_logTag registerCurrentDevice: device model=$model '
+        'uuid=${_redactToken(uuid)}',
+      );
 
       await _registerWithBackend(
         deviceToken: token,
@@ -361,6 +499,15 @@ class PushNotificationService {
       debugPrint('$_logTag registration failed: $e');
       debugPrintStack(stackTrace: stack, label: _logTag);
     }
+  }
+
+  /// Returns a short, log-safe representation of a token / UUID: first 6 and
+  /// last 4 characters with the middle elided. Use whenever a sensitive
+  /// identifier needs to land in console output.
+  String _redactToken(String value) {
+    if (value.length <= 12) return '****';
+    return '${value.substring(0, 6)}…${value.substring(value.length - 4)} '
+        '(len=${value.length})';
   }
 
   /// Sends the FCM device registration to the backend.
@@ -384,10 +531,15 @@ class PushNotificationService {
   /// the new token. Idempotent — calling twice replaces the previous
   /// subscription.
   void startTokenRefreshListener({required bool Function() isAuthenticated}) {
+    log('$_logTag startTokenRefreshListener: attached');
     _isAuthenticatedCheck = isAuthenticated;
     _refreshSubscription?.cancel();
     _refreshSubscription = _messaging.onTokenRefresh.listen(
-      (_) {
+      (token) {
+        log(
+          '$_logTag onTokenRefresh: fired token=${_redactToken(token)} '
+          'authed=${_isAuthenticatedCheck?.call() == true}',
+        );
         if (_isAuthenticatedCheck?.call() == true) {
           unawaited(registerCurrentDevice());
         } else {
