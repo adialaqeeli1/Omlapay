@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +12,7 @@ import '../../../../providers/kyc_status_provider.dart';
 import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_coin_icon.dart';
 import '../../../../widgets/common_loading_indicator.dart';
+import '../../../../widgets/copied_toast.dart';
 import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../../../../widgets/common_back_button.dart';
 import '../../../../widgets/kyc_verification_required_banner.dart';
@@ -100,47 +100,6 @@ class ReceiveCoinView extends StatelessWidget {
               child: ColoredBox(
                 color: colorScheme.surface.withValues(alpha: 0.6),
                 child: Center(child: CommonLoadingIndicator()),
-              ),
-            ),
-
-          // Copied message overlay
-          if (provider.addressCopiedVisible)
-            Positioned(
-              bottom: 30,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.inverseSurface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: AppColors.tealColor.withValues(alpha: 0.5),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.check_circle,
-                        color: colorScheme.primary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        l10n.addressCopiedToast,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onInverseSurface,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ),
             ),
         ],
@@ -284,11 +243,7 @@ class ReceiveCoinView extends StatelessWidget {
             context,
             icon: Icons.copy_rounded,
             onTap: canUseActions
-                ? () {
-                    final address = (coin.address ?? '').trim();
-                    Clipboard.setData(ClipboardData(text: address));
-                    provider.copyAddress(address);
-                  }
+                ? () => CopiedToast.copy(context, coin.address ?? '')
                 : null,
           ),
         ],
@@ -464,9 +419,7 @@ class ReceiveCoinView extends StatelessWidget {
                         style: TextStyle(color: colorScheme.onSurfaceVariant),
                       ),
                       onTap: () {
-                        final address = (coin.address ?? '').trim();
-                        Clipboard.setData(ClipboardData(text: address));
-                        provider.copyAddress(address);
+                        CopiedToast.copy(context, coin.address ?? '');
                         Navigator.of(context).pop();
                       },
                     ),

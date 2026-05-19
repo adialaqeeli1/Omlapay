@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -11,6 +10,7 @@ import '../../../core/models/transaction_model/transaction_model.dart';
 import '../../../core/models/transaction_model/transaction_swap_asset.dart';
 import '../../../core/theme/theme.dart';
 import '../../../widgets/common_back_button.dart';
+import '../../../widgets/copied_toast.dart';
 import '../../../widgets/theme_aware_icon.dart';
 import '../../dashboard/history/widgets/save_as_bottom_sheet.dart';
 import '../provider/transaction_details_provider.dart';
@@ -530,10 +530,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
   }
 
   void _copyToClipboard(String value) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty) return;
-    Clipboard.setData(ClipboardData(text: trimmed));
-    _showBanner(context.l10n!.addressCopiedToast);
+    CopiedToast.copy(context, value);
   }
 
   /// Formats a swap asset as `<amount> <symbol>` for the From / To detail

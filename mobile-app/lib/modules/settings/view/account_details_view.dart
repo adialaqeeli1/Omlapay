@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +9,7 @@ import '../../../core/theme/theme.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/wallets_provider.dart';
 import '../../../widgets/common_back_button.dart';
+import '../../../widgets/copied_toast.dart';
 
 class AccountDetailsView extends StatelessWidget {
   const AccountDetailsView({super.key});
@@ -148,14 +148,6 @@ class _WalletsSectionState extends State<_WalletsSection>
     with SingleTickerProviderStateMixin {
   TabController? _tabController;
   int _networkCount = 0;
-  bool _addressCopiedVisible = false;
-
-  void _showCopiedOverlay() {
-    setState(() => _addressCopiedVisible = true);
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _addressCopiedVisible = false);
-    });
-  }
 
   void _syncTabController(int count) {
     if (count == _networkCount && _tabController != null) return;
@@ -194,173 +186,121 @@ class _WalletsSectionState extends State<_WalletsSection>
     final textColor =
         theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface;
 
-    final colorScheme = theme.colorScheme;
-
     return SizedBox(
       height: context.height - (context.height / 2),
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: .start,
+        mainAxisSize: .min,
         children: [
-          Column(
-            crossAxisAlignment: .start,
-            mainAxisSize: .min,
-            children: [
-              Text(
-                widget.l10n.walletsAddress,
-                style: context.textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textLightGrey,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  fontFamily: GoogleFonts.poppins().fontFamily,
-                ),
-              ),
-              const SizedBox(height: 16),
-              TabBar(
-                controller: tabController,
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-                labelColor: AppColors.primaryColor,
-                unselectedLabelColor: AppColors.textLightGrey,
-                labelStyle: context.textTheme.bodyMedium?.copyWith(
-                  color: AppColors.primaryColor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: GoogleFonts.poppins().fontFamily,
-                ),
-                unselectedLabelStyle: context.textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textLightGrey,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  fontFamily: GoogleFonts.poppins().fontFamily,
-                ),
-                indicatorColor: AppColors.primaryColor,
-                indicatorWeight: 2,
-                dividerHeight: 0,
-                indicatorSize: TabBarIndicatorSize.tab,
-                tabs: networks.map((network) {
-                  final displayText = network.networkDisplayName.isNotEmpty
-                      ? network.networkDisplayName
-                      : network.network;
-                  return Tab(text: displayText);
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: TabBarView(
-                  controller: tabController,
-                  children: networks.map((network) {
-                    if (network.coins.isEmpty) {
-                      return const SizedBox.shrink();
-                    }
-                    final coin = network.coins.first;
-                    final hasAddress =
-                        coin.address != null && coin.address!.isNotEmpty;
-                    final displayAddress = hasAddress
-                        ? coin.address!
-                        : widget.l10n.walletAddressMasked;
+          Text(
+            widget.l10n.walletsAddress,
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: AppColors.textLightGrey,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              fontFamily: GoogleFonts.poppins().fontFamily,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TabBar(
+            controller: tabController,
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            labelColor: AppColors.primaryColor,
+            unselectedLabelColor: AppColors.textLightGrey,
+            labelStyle: context.textTheme.bodyMedium?.copyWith(
+              color: AppColors.primaryColor,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              fontFamily: GoogleFonts.poppins().fontFamily,
+            ),
+            unselectedLabelStyle: context.textTheme.bodyMedium?.copyWith(
+              color: AppColors.textLightGrey,
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              fontFamily: GoogleFonts.poppins().fontFamily,
+            ),
+            indicatorColor: AppColors.primaryColor,
+            indicatorWeight: 2,
+            dividerHeight: 0,
+            indicatorSize: TabBarIndicatorSize.tab,
+            tabs: networks.map((network) {
+              final displayText = network.networkDisplayName.isNotEmpty
+                  ? network.networkDisplayName
+                  : network.network;
+              return Tab(text: displayText);
+            }).toList(),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: TabBarView(
+              controller: tabController,
+              children: networks.map((network) {
+                if (network.coins.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                final coin = network.coins.first;
+                final hasAddress =
+                    coin.address != null && coin.address!.isNotEmpty;
+                final displayAddress = hasAddress
+                    ? coin.address!
+                    : widget.l10n.walletAddressMasked;
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: .min,
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: .min,
+                  children: [
+                    Text(
+                      '${coin.name} (${coin.symbol})',
+                      style: TextStyle(
+                        color: AppColors.textLightGrey,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: GoogleFonts.poppins().fontFamily,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      spacing: 12,
+                      crossAxisAlignment: .start,
                       children: [
-                        Text(
-                          '${coin.name} (${coin.symbol})',
-                          style: TextStyle(
-                            color: AppColors.textLightGrey,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: GoogleFonts.poppins().fontFamily,
+                        Expanded(
+                          child: Text(
+                            displayAddress,
+                            style: TextStyle(
+                              color: hasAddress
+                                  ? textColor
+                                  : AppColors.textLightGrey,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              fontFamily: GoogleFonts.poppins().fontFamily,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Row(
-                          spacing: 12,
-                          crossAxisAlignment: .start,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                displayAddress,
-                                style: TextStyle(
-                                  color: hasAddress
-                                      ? textColor
-                                      : AppColors.textLightGrey,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                  fontFamily: GoogleFonts.poppins().fontFamily,
-                                ),
-                              ),
+                        Padding(
+                          padding: const EdgeInsetsDirectional.only(end: 16.0),
+                          child: InkWell(
+                            onTap: hasAddress
+                                ? () => CopiedToast.copy(context, coin.address!)
+                                : null,
+                            child: Icon(
+                              Icons.copy,
+                              size: 20,
+                              color: hasAddress
+                                  ? textColor
+                                  : AppColors.textLightGrey.withValues(
+                                      alpha: 0.4,
+                                    ),
                             ),
-                            Padding(
-                              padding: const EdgeInsetsDirectional.only(
-                                end: 16.0,
-                              ),
-                              child: InkWell(
-                                onTap: hasAddress
-                                    ? () {
-                                        Clipboard.setData(
-                                          ClipboardData(text: coin.address!),
-                                        );
-                                        _showCopiedOverlay();
-                                      }
-                                    : null,
-                                child: Icon(
-                                  Icons.copy,
-                                  size: 20,
-                                  color: hasAddress
-                                      ? textColor
-                                      : AppColors.textLightGrey.withValues(
-                                          alpha: 0.4,
-                                        ),
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ],
-                    );
-                  }).toList(),
-                ),
-              ),
-            ],
-          ),
-          if (_addressCopiedVisible)
-            Positioned(
-              bottom: 30,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.inverseSurface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: AppColors.tealColor.withValues(alpha: 0.5),
                     ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.check_circle,
-                        color: colorScheme.primary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        widget.l10n.addressCopiedToast,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onInverseSurface,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+                  ],
+                );
+              }).toList(),
             ),
+          ),
         ],
       ),
     );

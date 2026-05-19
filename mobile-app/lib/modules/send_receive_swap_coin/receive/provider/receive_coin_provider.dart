@@ -11,30 +11,18 @@ class ReciveCoinProvider extends ChangeNotifier {
   }
 
   final WalletsProvider _walletsProvider;
-  bool _addressCopiedVisible = false;
 
   // Delegate to global WalletsProvider
   List<WalletNetworkModel> get wallets => _walletsProvider.wallets;
   bool get isLoading => _walletsProvider.isLoading;
   String? get errorMessage => _walletsProvider.errorMessage;
   bool get kycRequired => _walletsProvider.kycRequired;
-  bool get addressCopiedVisible => _addressCopiedVisible;
 
   /// Triggers a global wallet refresh (e.g. pull-to-refresh).
   Future<void> refreshWallets() => _walletsProvider.refreshWallets();
 
   void _onWalletsUpdated() {
     notifyListeners();
-  }
-
-  void copyAddress(String address) {
-    _addressCopiedVisible = true;
-    notifyListeners();
-
-    Future.delayed(const Duration(seconds: 2), () {
-      _addressCopiedVisible = false;
-      notifyListeners();
-    });
   }
 
   @override
