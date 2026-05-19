@@ -126,7 +126,7 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
     final typeOptions = <String?>[
       null,
       HistoryTxType.sent,
-      HistoryTxType.received,
+      HistoryTxType.receive,
       HistoryTxType.swap,
     ];
 
@@ -135,9 +135,9 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
       switch (type.toUpperCase()) {
         case HistoryTxType.sent:
           return l10n.sent;
-        case HistoryTxType.received:
+        case HistoryTxType.receive:
         case 'RECEIVED':
-          return l10n.received;
+          return l10n.receive;
         case HistoryTxType.swap:
           return l10n.swap;
         default:

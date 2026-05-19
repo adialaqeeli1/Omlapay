@@ -10,7 +10,7 @@ import '../services/history_service.dart';
 class HistoryTxType {
   static const String all = 'ALL';
   static const String sent = 'SENT';
-  static const String received = 'RECEIVE';
+  static const String receive = 'RECEIVE';
   static const String swap = 'SWAP';
 }
 
@@ -217,7 +217,8 @@ class HistoryProvider extends ChangeNotifier {
 
   void clearFilter() {
     developer.log('HistoryProvider: Clearing filter');
-    final changed = _selectedCoinFilter != null ||
+    final changed =
+        _selectedCoinFilter != null ||
         _selectedTypeFilter != null ||
         _dateStart != null ||
         _dateEnd != null;

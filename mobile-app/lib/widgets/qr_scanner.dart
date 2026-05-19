@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
@@ -60,7 +61,7 @@ class QrScannerWidget extends StatefulWidget {
 }
 
 class _QrScannerWidgetState extends State<QrScannerWidget>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   MobileScannerController? _controller;
   bool _hasScanned = false;
   bool _isValidating = false;
@@ -75,6 +76,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _scanLineController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
@@ -88,12 +90,42 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final controller = _controller;
+    if (controller == null) return;
+    // Release the camera as soon as the app loses focus (lock screen,
+    // system task switcher, incoming call) so the hardware isn't held
+    // while the user is somewhere else. `MobileScanner` will start it
+    // again on rebuild when the app resumes.
+    switch (state) {
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.detached:
+        unawaited(controller.stop().catchError((_) {}));
+      case AppLifecycleState.resumed:
+        unawaited(controller.start().catchError((_) {}));
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _scanLineController.dispose();
     if (_useProvider) {
       widget.permissionProvider!.removeListener(_onProviderChanged);
     }
-    _controller?.dispose();
+    // Stop first so the camera is released synchronously from the
+    // platform's POV before `dispose()` tears down the controller. Without
+    // the explicit stop, the platform's async `dispose()` can race with
+    // the widget tree unmount and trigger
+    // `BufferQueue has been abandoned` warnings in logcat.
+    final controller = _controller;
+    if (controller != null) {
+      unawaited(controller.stop().catchError((_) {}));
+      unawaited(controller.dispose());
+      _controller = null;
+    }
     super.dispose();
   }
 
