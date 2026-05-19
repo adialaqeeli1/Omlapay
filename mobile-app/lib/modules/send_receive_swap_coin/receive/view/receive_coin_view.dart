@@ -229,7 +229,7 @@ class ReceiveCoinView extends StatelessWidget {
       child: Row(
         children: [
           // Network icon
-          _buildWalletIcon(wallet, coin),
+          _buildWalletIcon(context, wallet, coin),
           const SizedBox(width: 12),
 
           // Coin info
@@ -296,9 +296,12 @@ class ReceiveCoinView extends StatelessWidget {
     );
   }
 
-  Widget _buildWalletIcon(WalletNetworkModel wallet, WalletCoinModel coin) {
-    String assetPath;
-    const backgroundColor = AppColors.tealColor;
+  Widget _buildWalletIcon(
+    BuildContext context,
+    WalletNetworkModel wallet,
+    WalletCoinModel coin,
+  ) {
+    const tintColor = AppColors.tealColor;
     final network = wallet.network.trim().toUpperCase();
     final coinSymbol = coin.symbol.trim().toUpperCase();
     final useCoinIcon = coinSymbol == 'USDT' || coinSymbol == 'USDC';
@@ -306,61 +309,30 @@ class ReceiveCoinView extends StatelessWidget {
         ? Utility.getCryptoCoinIconFromSymbol(coinSymbol)
         : wallet.networkIconUrl.trim();
 
-    switch (network) {
-      case 'TRX':
-        assetPath = 'assets/icons/tron.svg';
-        break;
-      case 'BTC':
-        assetPath = 'assets/icons/bitcoin.svg';
-        break;
-      case 'ETH':
-        assetPath = 'assets/icons/evm.svg';
-        break;
-      case 'BNB':
-        assetPath = 'assets/icons/evm.svg';
-        break;
-      case 'SOL':
-        assetPath = 'assets/icons/solana.svg';
-        break;
-      default:
-        assetPath = 'assets/icons/bitcoin.svg';
-    }
+    // Network → fallback SVG when the remote icon URL fails to load.
+    final fallbackAsset = switch (network) {
+      'TRX' => 'assets/icons/tron.svg',
+      'BTC' => 'assets/icons/bitcoin.svg',
+      'ETH' => 'assets/icons/evm.svg',
+      'BNB' => 'assets/icons/evm.svg',
+      'SOL' => 'assets/icons/solana.svg',
+      _ => 'assets/icons/bitcoin.svg',
+    };
 
-    return SizedBox.square(
-      // width: 32,
-      // height: 32,
-      // padding: const EdgeInsets.all(6),
-      // decoration: BoxDecoration(
-      //   color: backgroundColor.withValues(alpha: 0.15),
-      //   borderRadius: BorderRadius.circular(8),
-      // ),
-      dimension: 30,
-      child: iconUrl.isNotEmpty
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                iconUrl,
-                fit: BoxFit.cover,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return const Center(child: CommonLoadingIndicator());
-                },
-                errorBuilder: (_, _, _) => SvgPicture.asset(
-                  assetPath,
-                  colorFilter: const ColorFilter.mode(
-                    backgroundColor,
-                    BlendMode.srcIn,
-                  ),
-                ),
-              ),
-            )
-          : SvgPicture.asset(
-              assetPath,
-              colorFilter: const ColorFilter.mode(
-                backgroundColor,
-                BlendMode.srcIn,
-              ),
-            ),
+    // For non-USDT/USDC rows the icon represents the network, so the
+    // ETH light-mode brand-blue ring should kick in when network == ETH.
+    // For USDT/USDC the icon represents the coin, so pass the coin
+    // symbol — neither is `ETH`, so the fix stays inactive.
+    final effectiveSymbol = useCoinIcon ? coinSymbol : network;
+
+    return CommonCoinIcon(
+      symbol: effectiveSymbol,
+      radius: 15,
+      networkIconUrl: iconUrl.isEmpty ? null : iconUrl,
+      fallbackIcon: SvgPicture.asset(
+        fallbackAsset,
+        colorFilter: const ColorFilter.mode(tintColor, BlendMode.srcIn),
+      ),
     );
   }
 

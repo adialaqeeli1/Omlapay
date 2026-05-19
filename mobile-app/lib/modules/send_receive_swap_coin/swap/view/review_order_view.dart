@@ -9,6 +9,7 @@ import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/app_exception.dart';
+import '../../../../core/utils/coin_brand_color.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_coin_icon.dart';
@@ -76,7 +77,7 @@ class ReviewOrderView extends StatelessWidget {
                                 // Coin Info
                                 Row(
                                   children: [
-                                    _buildCoinIcon(fromCoin),
+                                    _buildCoinIcon(context, fromCoin),
                                     const SizedBox(width: 12),
                                     Text(
                                       fromCoin?.localizedCoinTicker(context) ??
@@ -143,7 +144,7 @@ class ReviewOrderView extends StatelessWidget {
                                 // Coin Info
                                 Row(
                                   children: [
-                                    _buildCoinIcon(toCoin),
+                                    _buildCoinIcon(context, toCoin),
                                     const SizedBox(width: 12),
                                     Text(
                                       toCoin?.localizedCoinTicker(context) ??
@@ -327,34 +328,34 @@ class ReviewOrderView extends StatelessWidget {
     }
   }
 
-  Widget _buildCoinIcon(CoinModel? coin) {
+  Widget _buildCoinIcon(BuildContext context, CoinModel? coin) {
     final symbol = coin?.symbol ?? '';
-    Color iconBackgroundColor;
-    Widget? fallbackIcon;
+    final iconBackgroundColor = coinBrandColor(
+      symbol,
+      isDarkMode: context.isDarkMode,
+      fallback: Colors.grey,
+    );
 
-    if (symbol == 'USDT') {
-      iconBackgroundColor = AppColors.usdtColor;
-      fallbackIcon = const Icon(
-        CryptoFontIcons.USDT,
-        color: Colors.white,
-        size: 24,
-      );
-    } else if (symbol == 'ETH') {
-      iconBackgroundColor = AppColors.textWhite;
-      fallbackIcon = const Icon(
-        CryptoFontIcons.ETH,
-        color: Colors.black,
-        size: 24,
-      );
-    } else if (symbol == 'BTC') {
-      iconBackgroundColor = AppColors.bitcoinColor;
-      fallbackIcon = const Icon(
-        CryptoFontIcons.BTC,
-        color: Colors.white,
-        size: 24,
-      );
-    } else {
-      iconBackgroundColor = Colors.grey;
+    Widget? fallbackIcon;
+    switch (symbol) {
+      case 'USDT':
+        fallbackIcon = const Icon(
+          CryptoFontIcons.USDT,
+          color: Colors.white,
+          size: 24,
+        );
+      case 'ETH':
+        fallbackIcon = const Icon(
+          CryptoFontIcons.ETH,
+          color: Colors.black,
+          size: 24,
+        );
+      case 'BTC':
+        fallbackIcon = const Icon(
+          CryptoFontIcons.BTC,
+          color: Colors.white,
+          size: 24,
+        );
     }
 
     return CommonCoinIcon(
