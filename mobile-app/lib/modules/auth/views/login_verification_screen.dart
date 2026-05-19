@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../routes/app_router.dart';
+import '../../../widgets/common_auth_agreement_text.dart';
 import '../../../widgets/otp_verification_view.dart';
 import '../providers/login_provider.dart';
 import '../providers/login_verification_provider.dart';
@@ -58,6 +59,7 @@ class LoginVerificationScreen extends StatelessWidget {
         height: 1.24,
         color: theme.colorScheme.onSurface,
       ),
+      bottomSection: const CommonAuthAgreementText(),
     );
   }
 

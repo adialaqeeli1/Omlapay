@@ -8,6 +8,7 @@ import '../../../core/utils/snackbar_helper.dart';
 import '../../../providers/auth_provider.dart';
 import '../providers/login_provider.dart';
 import '../../../routes/app_router.dart';
+import '../../../widgets/common_auth_agreement_text.dart';
 import '../../../widgets/otp_verification_view.dart';
 import '../providers/verification_provider.dart';
 
@@ -62,6 +63,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
         height: 1.24,
         color: theme.colorScheme.onSurface,
       ),
+      bottomSection: const CommonAuthAgreementText(),
     );
   }
 
