@@ -94,11 +94,13 @@ class NotificationsProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> markAllAsRead() async {
+  Future<void> markAllAsRead({bool silent = false}) async {
     if (_isActionLoading || _unreadCount == 0) return;
 
-    _isActionLoading = true;
-    notifyListeners();
+    if (!silent) {
+      _isActionLoading = true;
+      notifyListeners();
+    }
 
     try {
       await _service.markAllAsRead();
@@ -108,11 +110,11 @@ class NotificationsProvider extends ChangeNotifier {
       ];
       _unreadCount = 0;
     } on AppException catch (e) {
-      _errorKey = e.messageKey ?? 'requestFailed';
+      if (!silent) _errorKey = e.messageKey ?? 'requestFailed';
     } catch (_) {
-      _errorKey = 'failedToMarkAllNotificationsAsRead';
+      if (!silent) _errorKey = 'failedToMarkAllNotificationsAsRead';
     } finally {
-      _isActionLoading = false;
+      if (!silent) _isActionLoading = false;
       notifyListeners();
     }
   }

@@ -27,8 +27,10 @@ class _NotificationsViewState extends State<NotificationsView> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<NotificationsProvider>().fetchNotifications();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final provider = context.read<NotificationsProvider>();
+      await provider.fetchNotifications();
+      await provider.markAllAsRead(silent: true);
     });
   }
 
