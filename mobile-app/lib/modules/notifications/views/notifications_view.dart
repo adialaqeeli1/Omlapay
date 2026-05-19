@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -8,6 +10,7 @@ import '../../../core/extentions/context_extensions.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/models/notification/notification_model.dart';
 import '../../../core/theme/theme.dart';
+import '../../../routes/app_router.dart';
 import '../../../widgets/common_back_button.dart';
 import '../../../widgets/common_loading_indicator.dart';
 import '../../../widgets/paginated_list_view.dart';
@@ -37,7 +40,11 @@ class _NotificationsViewState extends State<NotificationsView> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: const CommonBackButton(),
+        leading: CommonBackButton(
+          onPressed: context.canPop()
+              ? null
+              : () => context.pushReplacement(Routes.home),
+        ),
         title: Text(
           l10n.notifications,
           style: theme.textTheme.titleMedium?.copyWith(
@@ -221,7 +228,7 @@ class _NotificationTile extends StatelessWidget {
     final textColor = isDark ? AppColors.textWhite : AppColors.textBlack;
     final subColor = isDark ? AppColors.textLightGrey : AppColors.textGrey;
     final readOpacity = item.isRead ? 0.5 : 1.0;
-    final iconInfo = _iconForType(item.type);
+    final iconInfo = _iconForItem(item);
 
     final isAr = Localizations.localeOf(context).languageCode == 'ar';
 
@@ -242,7 +249,8 @@ class _NotificationTile extends StatelessWidget {
                   color: iconInfo.$2,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(iconInfo.$1, color: Colors.white, size: 24),
+                alignment: Alignment.center,
+                child: iconInfo.$1,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -286,13 +294,47 @@ class _NotificationTile extends StatelessWidget {
     );
   }
 
-  (IconData, Color) _iconForType(NotificationType type) {
-    return switch (type) {
-      NotificationType.tx => (Icons.swap_horiz, const Color(0xFF2196F3)),
-      NotificationType.security => (Icons.security, const Color(0xFFE53935)),
-      NotificationType.promo => (Icons.local_offer, const Color(0xFF9C27B0)),
-      NotificationType.system => (Icons.info_outline, AppColors.primaryColor),
-    };
+  static const Color _txBgColor = Color(0xFF2196F3);
+
+  (Widget, Color) _iconForItem(NotificationModel item) {
+    switch (item.type) {
+      case NotificationType.tx:
+        final title = item.title.trim().toLowerCase();
+        if (title.contains('sent')) {
+          return (_buildTxSvg('assets/icons/send.svg'), _txBgColor);
+        }
+        if (title.contains('receiv')) {
+          return (_buildTxSvg('assets/icons/Receive.svg'), _txBgColor);
+        }
+        return (
+          const Icon(Icons.swap_horiz, color: Colors.white, size: 24),
+          _txBgColor,
+        );
+      case NotificationType.security:
+        return (
+          const Icon(Icons.security, color: Colors.white, size: 24),
+          const Color(0xFFE53935),
+        );
+      case NotificationType.promo:
+        return (
+          const Icon(Icons.local_offer, color: Colors.white, size: 24),
+          const Color(0xFF9C27B0),
+        );
+      case NotificationType.system:
+        return (
+          const Icon(Icons.info_outline, color: Colors.white, size: 24),
+          AppColors.primaryColor,
+        );
+    }
+  }
+
+  Widget _buildTxSvg(String asset) {
+    return SvgPicture.asset(
+      asset,
+      width: 20,
+      height: 20,
+      colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+    );
   }
 }
 

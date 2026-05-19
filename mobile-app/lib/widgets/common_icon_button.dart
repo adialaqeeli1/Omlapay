@@ -9,6 +9,7 @@ class CommonIconButton extends StatelessWidget {
     required this.iconSize,
     required this.iconPadding,
     this.colorToInvert,
+    this.onLongPress,
   });
 
   final VoidCallback onTap;
@@ -16,6 +17,7 @@ class CommonIconButton extends StatelessWidget {
   final double? iconSize;
   final double? iconPadding;
   final Color? colorToInvert;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +29,7 @@ class CommonIconButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         child: InkWell(
           onTap: onTap,
+          onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(8),
           child: Padding(
             padding: iconPadding == null
