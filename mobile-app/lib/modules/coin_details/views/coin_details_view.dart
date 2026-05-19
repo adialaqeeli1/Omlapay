@@ -461,9 +461,9 @@ class CoinDetailsView extends StatelessWidget {
               ),
               _buildFilterMenuItem(
                 context,
-                value: HistoryTxType.received,
+                value: HistoryTxType.receive,
                 label: l10n.received,
-                isSelected: selectedType == HistoryTxType.received,
+                isSelected: selectedType == HistoryTxType.receive,
               ),
               _buildFilterMenuItem(
                 context,
@@ -546,8 +546,8 @@ class CoinDetailsView extends StatelessWidget {
     switch (type) {
       case HistoryTxType.sent:
         return l10n.sent;
-      case HistoryTxType.received:
-        return l10n.received;
+      case HistoryTxType.receive:
+        return l10n.receive;
       case HistoryTxType.swap:
         return l10n.swap;
       default:
