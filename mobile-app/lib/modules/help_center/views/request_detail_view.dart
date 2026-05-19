@@ -23,6 +23,12 @@ DateTime? _latestAdminResponseDate(List<SupportRequestResponse> responses) {
   return latest;
 }
 
+String? _ticketIdFromId(String? id) {
+  if (id == null || id.isEmpty) return null;
+  final first = id.split('-').first;
+  return first.isEmpty ? null : first.toUpperCase();
+}
+
 class RequestDetailView extends StatelessWidget {
   const RequestDetailView({super.key});
 
@@ -68,7 +74,9 @@ class RequestDetailView extends StatelessWidget {
             actions: [
               Consumer<RequestDetailProvider>(
                 builder: (context, provider, _) {
-                  final ticketId = provider.detail?.ticketId;
+                  final detail = provider.detail;
+                  final ticketId =
+                      detail?.ticketId ?? _ticketIdFromId(detail?.id);
                   if (ticketId == null) return const SizedBox.shrink();
                   return Padding(
                     padding: const EdgeInsetsDirectional.only(end: 16),
