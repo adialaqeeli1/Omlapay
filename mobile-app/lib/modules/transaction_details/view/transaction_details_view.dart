@@ -233,7 +233,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                                 ),
                               ],
                               // Status
-                              if (isSent) ...[
+                              if (isSent || isSwap) ...[
                                 const SizedBox(height: 8),
                                 Text(
                                   transaction.isFailed
