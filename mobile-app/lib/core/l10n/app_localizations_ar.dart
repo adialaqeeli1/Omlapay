@@ -1171,9 +1171,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get swapFeeBinance => 'رسوم بينانس';
 
   @override
-  String get swapErrorInsufficientBalance => 'المبلغ يتجاوز الرصيد المتاح.';
-
-  @override
   String get transferToLabel => 'إلى';
 
   @override

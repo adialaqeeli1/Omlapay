@@ -1181,10 +1181,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get swapFeeBinance => 'Binance fee';
 
   @override
-  String get swapErrorInsufficientBalance =>
-      'Amount exceeds available balance.';
-
-  @override
   String get transferToLabel => 'To';
 
   @override

@@ -508,7 +508,6 @@
     "swapExchangeRate": "Exchange Rate",
     "swapFeeOmlapay": "Omlapay fee",
     "swapFeeBinance": "Binance fee",
-    "swapErrorInsufficientBalance": "Amount exceeds available balance.",
     "transferToLabel": "To",
     "addressCopiedToast": "Copied",
     "availableShortLabel": "Available",
