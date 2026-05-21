@@ -146,7 +146,10 @@ class SwapProvider extends ChangeNotifier {
   void _syncCoinsFromPrices() {
     final incoming = _coinsPricesProvider.coins;
     _isLoading = _coinsPricesProvider.isLoading && incoming.isEmpty;
-    _coins = List<CoinModel>.from(incoming);
+    // Sort by fiat balance (highest first) so the list — and therefore the
+    // default `from`/`to` selection — matches the home assets list and the
+    // coin picker sheet.
+    _coins = walletsProvider.sortByFiatBalanceDesc(incoming);
 
     if (_coins.isEmpty) {
       _fromCoin = null;

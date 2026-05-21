@@ -161,7 +161,10 @@ class SendProvider extends ChangeNotifier {
   void _syncCoinsFromPrices() {
     final incoming = _coinsPricesProvider.coins;
     _isLoading = _coinsPricesProvider.isLoading && incoming.isEmpty;
-    _coins = List<CoinModel>.from(incoming);
+    // Sort by fiat balance (highest first) so the list — and therefore the
+    // default `_coins.first` selection — matches the home assets list and the
+    // coin picker sheet.
+    _coins = walletsProvider.sortByFiatBalanceDesc(incoming);
 
     if (_coins.isEmpty) {
       _selectedCoin = null;
@@ -422,7 +425,8 @@ class SendProvider extends ChangeNotifier {
     final amount = double.tryParse(amountText);
     final network = networkController.text.trim();
 
-    final hasAllInputs = coin != null &&
+    final hasAllInputs =
+        coin != null &&
         recipient.isNotEmpty &&
         amountText.isNotEmpty &&
         network.isNotEmpty &&
