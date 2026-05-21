@@ -711,6 +711,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionHash => 'Transaction Hash';
 
   @override
+  String get couldNotOpenLink => 'Couldn\'t open the link';
+
+  @override
   String get fromAddress => 'From Address';
 
   @override
