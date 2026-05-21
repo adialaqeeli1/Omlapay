@@ -128,12 +128,16 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     // transfers (where the coins were sent). Only meaningful for SENT — for
     // incoming the receiving wallet is the user's own, which they already know.
     final addressValue = isSent ? transaction.receiverAddress : null;
-    // Block-explorer link for the tx hash. Null when the network has no known
-    // explorer (or there's no hash) — the row then renders as plain text.
-    final explorerUrl = blockExplorerTxUrl(
-      network: transaction.network,
-      txHash: transaction.txHash,
-    );
+    // Block-explorer link for the tx hash. Prefer the backend-provided
+    // `blockchain_link`; fall back to a derived explorer URL when it's absent.
+    // Null when neither is available — the row then renders as plain text.
+    final backendLink = transaction.blockchainLink?.trim();
+    final explorerUrl = backendLink != null && backendLink.isNotEmpty
+        ? backendLink
+        : blockExplorerTxUrl(
+            network: transaction.network,
+            txHash: transaction.txHash,
+          );
 
     return Scaffold(
       appBar: AppBar(
