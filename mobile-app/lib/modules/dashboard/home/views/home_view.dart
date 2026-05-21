@@ -390,8 +390,8 @@ class _HomeViewState extends State<HomeView> {
     }
     final List<CoinModel> coins = [...coinsPrices.coins]
       ..sort((a, b) {
-        final aBalance = walletsProvider.rawBalanceForCoin(a.symbol);
-        final bBalance = walletsProvider.rawBalanceForCoin(b.symbol);
+        final aBalance = walletsProvider.balanceForCoinConverted(a.symbol);
+        final bBalance = walletsProvider.balanceForCoinConverted(b.symbol);
         return bBalance.compareTo(aBalance);
       });
     final l10n = context.l10n!;
