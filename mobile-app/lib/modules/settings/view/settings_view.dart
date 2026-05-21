@@ -16,8 +16,11 @@ import '../../../providers/locale_provider.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../providers/notification_provider.dart';
 import '../../../widgets/common_back_button.dart';
+import '../../../widgets/labeled_toggle_switch.dart';
 import '../widgets/appearance_selection_widget.dart';
-import '../widgets/language_selection_widget.dart';
+// Language bottom sheet replaced by an inline toggle; restore with the
+// commented language Consumer block in build().
+// import '../widgets/language_selection_widget.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
@@ -228,20 +231,43 @@ class _SettingsViewState extends State<SettingsView> {
                         );
                       },
                     ),
+                    // Language selection via bottom sheet — replaced by the
+                    // toggle below. Kept commented for easy restore if we ever
+                    // support more than two languages.
+                    // Consumer<LocaleProvider>(
+                    //   builder: (context, localeProvider, child) {
+                    //     String languageValue;
+                    //     if (localeProvider.locale.languageCode == 'ar') {
+                    //       languageValue = l10n.arabic;
+                    //     } else {
+                    //       languageValue = l10n.english;
+                    //     }
+                    //     return _buildSettingOption(
+                    //       context: context,
+                    //       label: l10n.language,
+                    //       value: languageValue,
+                    //       screenWidth: screenWidth,
+                    //       onTap: () => LanguageSelectionWidget.show(context),
+                    //     );
+                    //   },
+                    // ),
+                    // Language toggle (ON = Arabic, OFF = English). Track stays
+                    // primary in both states and shows the active code (EN/AR).
                     Consumer<LocaleProvider>(
                       builder: (context, localeProvider, child) {
-                        String languageValue;
-                        if (localeProvider.locale.languageCode == 'ar') {
-                          languageValue = l10n.arabic;
-                        } else {
-                          languageValue = l10n.english;
-                        }
-                        return _buildSettingOption(
+                        final isArabic =
+                            localeProvider.locale.languageCode == 'ar';
+                        return _buildLanguageToggle(
                           context: context,
                           label: l10n.language,
-                          value: languageValue,
-                          screenWidth: screenWidth,
-                          onTap: () => LanguageSelectionWidget.show(context),
+                          code: localeProvider.locale.languageCode
+                              .toUpperCase(),
+                          value: isArabic,
+                          onChanged: (value) {
+                            localeProvider.setLocale(
+                              Locale(value ? 'ar' : 'en'),
+                            );
+                          },
                         );
                       },
                     ),
@@ -394,6 +420,40 @@ class _SettingsViewState extends State<SettingsView> {
         size: 16,
         color: iconColor,
         fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  /// Language row: same title styling as the notification/2FA toggles, but the
+  /// trailing control is a [LabeledToggleSwitch] whose track stays primary in
+  /// both states and shows [code] (the active language, EN/AR).
+  Widget _buildLanguageToggle({
+    required BuildContext context,
+    required String label,
+    required String code,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    final theme = Theme.of(context);
+    final textColor =
+        theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface;
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(
+        label,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          fontFamily: GoogleFonts.poppins().fontFamily,
+          fontStyle: FontStyle.normal,
+        ),
+      ),
+      trailing: LabeledToggleSwitch(
+        value: value,
+        label: code,
+        onChanged: onChanged,
       ),
     );
   }
