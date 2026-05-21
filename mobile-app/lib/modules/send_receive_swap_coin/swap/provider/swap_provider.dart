@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/constants.dart';
+import '../../../../core/extentions/number_extensions.dart';
 import '../../../../core/l10n/app_localizations_from_storage.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/swap_quote_model/swap_quote_model.dart';
@@ -29,7 +30,7 @@ class SwapProvider extends ChangeNotifier {
     if (trimmed.isNotEmpty) {
       _initialFromSymbol = trimmed.toUpperCase();
     }
-    authProvider.addListener(notifyListeners);
+    authProvider.addListener(_notifySafely);
     _coinsPricesProvider.addListener(_onStreamedCoinsUpdated);
     _globalProvider.addListener(_onInputsChanged);
     _syncCoinsFromPrices();
@@ -48,6 +49,8 @@ class SwapProvider extends ChangeNotifier {
   final SwapQuoteStreamService _quoteStreamService;
 
   static const Duration _debounceDuration = Duration(milliseconds: 400);
+
+  bool _isDisposed = false;
 
   List<CoinModel> _coins = [];
   bool _isLoading = false;
@@ -133,7 +136,7 @@ class SwapProvider extends ChangeNotifier {
 
   Future<void> completeVerification() async {
     await authProvider.verifyUser();
-    notifyListeners();
+    _notifySafely();
   }
 
   void _onStreamedCoinsUpdated() {
@@ -149,7 +152,7 @@ class SwapProvider extends ChangeNotifier {
       _fromCoin = null;
       _toCoin = null;
       // _validateLocal();
-      notifyListeners();
+      _notifySafely();
       return;
     }
 
@@ -197,7 +200,7 @@ class SwapProvider extends ChangeNotifier {
     if (selectionChanged) {
       _onInputsChanged();
     }
-    notifyListeners();
+    _notifySafely();
   }
 
   void setFromCoin(CoinModel coin) {
@@ -207,7 +210,7 @@ class SwapProvider extends ChangeNotifier {
     _fromCoin = coin;
     // _validateLocal();
     _onInputsChanged();
-    notifyListeners();
+    _notifySafely();
   }
 
   void setToCoin(CoinModel coin) {
@@ -216,7 +219,7 @@ class SwapProvider extends ChangeNotifier {
     }
     _toCoin = coin;
     _onInputsChanged();
-    notifyListeners();
+    _notifySafely();
   }
 
   void swapCoins() {
@@ -225,7 +228,7 @@ class SwapProvider extends ChangeNotifier {
     _toCoin = temp;
     // _validateLocal();
     _onInputsChanged();
-    notifyListeners();
+    _notifySafely();
   }
 
   void setMaxAmount() {
@@ -242,37 +245,54 @@ class SwapProvider extends ChangeNotifier {
     // _validateLocal();
   }
 
-  // void _validateLocal() {
-  //   final l10n = appLocalizationsFromStoredLocale();
-  //   _localError = null;
-  //   final text = fromAmountController.text;
-  //   if (text.isEmpty) return;
+  /// Validates the `from` amount against the selected coin's swap minimum and
+  /// the user's balance, mirroring the send flow's [_validate]. Sets
+  /// [_localError] (surfaced via [error]). Empty input leaves it null for a
+  /// clean state; `0` falls through to the minimum check and surfaces the
+  /// below-minimum error, just like the send screen.
+  void _validateLocal() {
+    final l10n = appLocalizationsFromStoredLocale();
+    _localError = null;
 
-  //   final amount = double.tryParse(text);
-  //   if (amount == null) {
-  //     _localError = l10n.sendValidationInvalidAmount;
-  //     return;
-  //   }
-  //   if (_fromCoin != null) {
-  //     final balanceStr = walletsProvider
-  //         .balanceForCoin(_fromCoin!.symbol)
-  //         .replaceAll(',', '');
-  //     final balance = double.tryParse(balanceStr) ?? 0.0;
-  //     if (amount > balance) {
-  //       _localError = l10n.sendValidationInsufficientBalance;
-  //     }
-  //   }
-  // }
+    final text = fromAmountController.text.trim();
+    if (text.isEmpty) return;
+
+    final amount = double.tryParse(text);
+    if (amount == null) {
+      _localError = l10n.sendValidationInvalidAmount;
+      return;
+    }
+
+    final coin = _fromCoin;
+    if (coin == null) return;
+
+    final min = fromCoinSwapMinAmount;
+    if (min > 0 && amount < min) {
+      _localError = l10n.sendValidationBelowMinimum(
+        min.toFormattedAmount(decimals: AppConstants.minAmountDecimals),
+      );
+      return;
+    }
+
+    final balanceStr = walletsProvider
+        .balanceForCoin(coin.symbol)
+        .replaceAll(',', '');
+    final balance = double.tryParse(balanceStr) ?? 0.0;
+    if (amount > balance) {
+      _localError = l10n.sendValidationInsufficientBalance;
+    }
+  }
 
   /// Single entry point for any input change (amount, coin, currency).
   /// Validates locally, cancels any in-flight stream, and schedules a
   /// debounced reconnect when inputs are complete.
   void _onInputsChanged() {
-    // _validateLocal();
+    _validateLocal();
 
     final amountText = fromAmountController.text.trim();
     final parsed = double.tryParse(amountText);
     final inputsValid =
+        _localError == null &&
         _fromCoin != null &&
         _toCoin != null &&
         _fromCoin!.symbol != _toCoin!.symbol &&
@@ -292,17 +312,18 @@ class SwapProvider extends ChangeNotifier {
       if (toAmountController.text.isNotEmpty) {
         toAmountController.text = '';
       }
-      notifyListeners();
+      _notifySafely();
       return;
     }
 
     _debounceTimer = Timer(_debounceDuration, _connectStream);
-    notifyListeners();
+    _notifySafely();
   }
 
   Future<void> _connectStream() async {
     await _quoteSubscription?.cancel();
     _quoteSubscription = null;
+    if (_isDisposed) return;
 
     final fromCoin = _fromCoin;
     final toCoin = _toCoin;
@@ -316,7 +337,7 @@ class SwapProvider extends ChangeNotifier {
       toAmountController.text = '';
     }
     _isStreamLoading = true;
-    notifyListeners();
+    _notifySafely();
 
     _quoteSubscription = _quoteStreamService
         .streamSwapQuote(
@@ -329,6 +350,7 @@ class SwapProvider extends ChangeNotifier {
   }
 
   void _onStreamEvent(SwapQuoteStreamEvent event) {
+    if (_isDisposed) return;
     _isStreamLoading = false;
     switch (event) {
       case SwapQuoteStreamSuccess(:final quote):
@@ -348,15 +370,16 @@ class SwapProvider extends ChangeNotifier {
       // UI doesn't layout-shift when the server alternates ok/error at the
       // balance boundary. The error text is shown on top via `error`.
     }
-    notifyListeners();
+    _notifySafely();
   }
 
   void _onStreamError(Object error, [StackTrace? stackTrace]) {
+    if (_isDisposed) return;
     final l10n = appLocalizationsFromStoredLocale();
     _isStreamLoading = false;
     _transportError = l10n.requestFailed;
     // Preserve last good quote to avoid layout shift; see _onStreamEvent.
-    notifyListeners();
+    _notifySafely();
   }
 
   String _resolveFailureMessage(SwapQuoteStreamFailure failure) {
@@ -375,7 +398,7 @@ class SwapProvider extends ChangeNotifier {
     if (_fromCoin == null || _toCoin == null) return;
 
     _isSubmitting = true;
-    notifyListeners();
+    _notifySafely();
 
     try {
       _swapQuote = await SwapService.fetchSwapQuote(
@@ -385,7 +408,7 @@ class SwapProvider extends ChangeNotifier {
       );
     } finally {
       _isSubmitting = false;
-      notifyListeners();
+      _notifySafely();
     }
   }
 
@@ -397,7 +420,7 @@ class SwapProvider extends ChangeNotifier {
     if (fromAmountController.text.trim().isEmpty) return false;
 
     _isSubmitting = true;
-    notifyListeners();
+    _notifySafely();
 
     try {
       await SwapService.executeSwap(
@@ -409,17 +432,23 @@ class SwapProvider extends ChangeNotifier {
       return true;
     } finally {
       _isSubmitting = false;
-      notifyListeners();
+      _notifySafely();
     }
+  }
+
+  void _notifySafely() {
+    if (_isDisposed) return;
+    notifyListeners();
   }
 
   @override
   void dispose() {
+    _isDisposed = true;
     _debounceTimer?.cancel();
     _quoteSubscription?.cancel();
     _coinsPricesProvider.removeListener(_onStreamedCoinsUpdated);
     _globalProvider.removeListener(_onInputsChanged);
-    authProvider.removeListener(notifyListeners);
+    authProvider.removeListener(_notifySafely);
     fromAmountController.dispose();
     toAmountController.dispose();
     super.dispose();
