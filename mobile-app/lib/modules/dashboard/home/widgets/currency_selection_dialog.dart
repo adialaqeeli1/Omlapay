@@ -5,7 +5,7 @@ import '../../../../core/constants/constants.dart';
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/theme/theme.dart';
 
-class CurrencySelectionDialog extends StatefulWidget {
+class CurrencySelectionDialog extends StatelessWidget {
   final String initialCurrency;
   final ValueChanged<String> onCurrencyChanged;
 
@@ -15,18 +15,9 @@ class CurrencySelectionDialog extends StatefulWidget {
     required this.onCurrencyChanged,
   });
 
-  @override
-  State<CurrencySelectionDialog> createState() =>
-      _CurrencySelectionDialogState();
-}
-
-class _CurrencySelectionDialogState extends State<CurrencySelectionDialog> {
-  late String _selectedCurrency;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedCurrency = widget.initialCurrency;
+  void _selectCurrency(BuildContext context, String currency) {
+    onCurrencyChanged(currency);
+    Navigator.of(context).pop();
   }
 
   @override
@@ -73,10 +64,10 @@ class _CurrencySelectionDialogState extends State<CurrencySelectionDialog> {
 
             // Options
             RadioGroup<String>(
-              groupValue: _selectedCurrency,
+              groupValue: initialCurrency,
               onChanged: (value) {
                 if (value != null) {
-                  setState(() => _selectedCurrency = value);
+                  _selectCurrency(context, value);
                 }
               },
               child: Column(
@@ -87,65 +78,11 @@ class _CurrencySelectionDialogState extends State<CurrencySelectionDialog> {
                       context,
                       label: l10n.currencyName(currency.toLowerCase()),
                       value: currency,
-                      onTap: () => setState(() => _selectedCurrency = currency),
+                      onTap: () => _selectCurrency(context, currency),
                     ),
                   );
                 }).toList(),
               ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      l10n.cancel,
-                      style: context.textTheme.bodyLarge?.copyWith(
-                        color: isDark
-                            ? AppColors.textWhite
-                            : AppColors.textGrey,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      widget.onCurrencyChanged(_selectedCurrency);
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor.withValues(
-                        alpha: 0.1,
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      l10n.save,
-                      style: context.textTheme.bodyLarge?.copyWith(
-                        color: AppColors.primaryColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
             ),
           ],
         ),
@@ -175,32 +112,6 @@ class _CurrencySelectionDialogState extends State<CurrencySelectionDialog> {
             ),
           ),
           Radio<String>(value: value, activeColor: AppColors.primaryColor),
-          // Container(
-          //   width: 20,
-          //   height: 20,
-          //   padding: EdgeInsets.zero,
-          //   decoration: BoxDecoration(
-          //     shape: BoxShape.circle,
-          //     border: Border.all(
-          //       color: isSelected
-          //           ? AppColors.primaryColor
-          //           : (isDark ? Colors.white24 : Colors.black12),
-          //       width: 1,
-          //     ),
-          //     color: isSelected ? AppColors.primaryColor : Colors.transparent,
-          //   ),
-          //   child: isSelected
-          //       ? Center(
-          //           child: Container(
-          //             padding: EdgeInsets.all(8),
-          //             decoration: const BoxDecoration(
-          //               color: Colors.white,
-          //               shape: BoxShape.circle,
-          //             ),
-          //           ),
-          //         )
-          //       : null,
-          // ),
         ],
       ),
     );
