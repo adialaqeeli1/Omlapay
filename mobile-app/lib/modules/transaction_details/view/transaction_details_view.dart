@@ -584,11 +584,7 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
       return;
     }
     try {
-      final launched = await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      );
-      if (!launched && mounted) _showError(l10n.couldNotOpenLink);
+      await launchUrl(uri, mode: LaunchMode.platformDefault);
     } catch (_) {
       if (mounted) _showError(l10n.couldNotOpenLink);
     }
