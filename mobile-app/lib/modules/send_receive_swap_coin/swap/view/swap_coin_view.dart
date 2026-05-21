@@ -125,10 +125,10 @@ class SwapCoinView extends StatelessWidget {
                                         ),
                                   )
                                 : null,
-                            bottomHelper: _buildFromCoinMaxRow(
-                              context,
-                              provider,
-                            ),
+                            // bottomHelper: _buildFromCoinMaxRow(
+                            //   context,
+                            //   provider,
+                            // ),
                           ),
                         ),
                         // Swap Icon
