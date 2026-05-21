@@ -22,6 +22,7 @@ abstract class TransactionModel with _$TransactionModel {
     String? network,
     required DateTime createdAt,
     String? txHash,
+    @JsonKey(name: 'blockchain_link') String? blockchainLink,
     required String status,
     String? direction,
     String? type,
