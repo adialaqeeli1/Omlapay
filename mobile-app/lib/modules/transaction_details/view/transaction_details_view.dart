@@ -124,10 +124,10 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     final primaryPartyValue = counterparty != null && counterparty.isNotEmpty
         ? counterparty
         : (isSent ? transaction.receiverAddress : transaction.senderAddress);
-    // Second "Address" row renders the user's own wallet address. It only
-    // makes sense for outgoing transfers — for incoming the address would
-    // just be the receiving wallet, which the user already knows.
-    final addressValue = isSent ? transaction.senderAddress : null;
+    // Second "Address" row shows the destination wallet address for outgoing
+    // transfers (where the coins were sent). Only meaningful for SENT — for
+    // incoming the receiving wallet is the user's own, which they already know.
+    final addressValue = isSent ? transaction.receiverAddress : null;
     // Block-explorer link for the tx hash. Null when the network has no known
     // explorer (or there's no hash) — the row then renders as plain text.
     final explorerUrl = blockExplorerTxUrl(
@@ -702,8 +702,8 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     final primaryPartyValue = counterparty != null && counterparty.isNotEmpty
         ? counterparty
         : (isSent ? tx.receiverAddress : tx.senderAddress);
-    // Matches the on-screen "Address" row — only shown for outgoing.
-    final ownerAddressValue = isSent ? tx.senderAddress : null;
+    // Matches the on-screen "Address" row — destination address, outgoing only.
+    final addressRowValue = isSent ? tx.receiverAddress : null;
     final localizedError = isArabic
         ? (tx.errorMessageAr?.trim().isNotEmpty == true
               ? tx.errorMessageAr
@@ -749,8 +749,8 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
       if (primaryPartyValue != null && primaryPartyValue.trim().isNotEmpty) {
         lines.add('${isSent ? l10n.sendTo : l10n.sender}: $primaryPartyValue');
       }
-      if (ownerAddressValue != null && ownerAddressValue.trim().isNotEmpty) {
-        lines.add('${l10n.address}: $ownerAddressValue');
+      if (addressRowValue != null && addressRowValue.trim().isNotEmpty) {
+        lines.add('${l10n.address}: $addressRowValue');
       }
     }
     if ((tx.txHash ?? '').trim().isNotEmpty) {
