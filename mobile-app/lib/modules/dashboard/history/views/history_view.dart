@@ -140,8 +140,9 @@ class _HistoryViewBodyState extends State<_HistoryViewBody>
         bottom: TabBar(
           controller: _tabController,
           isScrollable: _tabs.length > 4,
-          tabAlignment:
-              _tabs.length > 4 ? TabAlignment.start : TabAlignment.fill,
+          tabAlignment: _tabs.length > 4
+              ? TabAlignment.start
+              : TabAlignment.fill,
           indicatorWeight: 0.1,
           indicatorPadding: const EdgeInsets.symmetric(horizontal: 4),
           indicatorAnimation: TabIndicatorAnimation.linear,
@@ -154,9 +155,8 @@ class _HistoryViewBodyState extends State<_HistoryViewBody>
           dividerColor: Colors.transparent,
           tabs: _tabs
               .map(
-                (e) => Tab(
-                  text: e == HistoryProvider.allCoinsTab ? l10n.all : e,
-                ),
+                (e) =>
+                    Tab(text: e == HistoryProvider.allCoinsTab ? l10n.all : e),
               )
               .toList(),
         ),
@@ -164,8 +164,7 @@ class _HistoryViewBodyState extends State<_HistoryViewBody>
       body: SafeArea(
         child: TabBarView(
           controller: _tabController,
-          children:
-              _tabs.map((_) => const _HistoryTransactionList()).toList(),
+          children: _tabs.map((_) => const _HistoryTransactionList()).toList(),
         ),
       ),
     );

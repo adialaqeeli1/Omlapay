@@ -86,24 +86,13 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
     super.dispose();
   }
 
-  double _coinBalance(WalletsProvider walletsProvider, CoinModel coin) {
-    final raw = walletsProvider.balanceForCoin(coin.symbol).replaceAll(',', '');
-    return double.tryParse(raw) ?? 0.0;
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
     final colorScheme = Theme.of(context).colorScheme;
     final selectedCurrency = context.watch<GlobalProvider>().selectedCurrency;
     final walletsProvider = context.watch<WalletsProvider>();
-    final sortedCoins = [..._filteredCoins]
-      ..sort(
-        (a, b) => _coinBalance(
-          walletsProvider,
-          b,
-        ).compareTo(_coinBalance(walletsProvider, a)),
-      );
+    final sortedCoins = walletsProvider.sortByFiatBalanceDesc(_filteredCoins);
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surface,

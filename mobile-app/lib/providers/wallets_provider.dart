@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../core/constants/constants.dart';
 import '../core/extentions/number_extensions.dart';
+import '../core/models/coin_model/coin_model.dart';
 import '../core/models/wallet_model/wallet_model.dart';
 import '../modules/send_receive_swap_coin/receive/services/receive_wallets_service.dart';
 import 'global_provider.dart';
@@ -108,6 +109,36 @@ class WalletsProvider extends ChangeNotifier {
       }
     }
     return 0.toFormattedAmount(decimals: AppConstants.fiatValueDecimals);
+  }
+
+  /// Returns the raw fiat balance as a double for [symbol] based on the
+  /// selected currency (`currentBalance` for USD, `currentBalanceSar` for SAR),
+  /// or `0.0` when the symbol isn't held. Useful for sorting/comparisons
+  /// (unlike [balanceForCoinConverted], which returns a formatted string).
+  double fiatBalanceForCoin(String symbol) {
+    final key = symbol.trim().toUpperCase();
+    if (key.isEmpty) return 0.0;
+
+    for (final network in _wallets) {
+      for (final coin in network.coins) {
+        if (coin.symbol.toUpperCase() == key) {
+          return _globalProvider.selectedCurrency.toUpperCase() == 'SAR'
+              ? coin.currentBalanceSar
+              : coin.currentBalance;
+        }
+      }
+    }
+    return 0.0;
+  }
+
+  /// Returns a new list of [coins] sorted by fiat balance, highest first,
+  /// based on the currently selected currency. Shared by the home assets list
+  /// and the send/swap coin picker sheet to keep ordering consistent.
+  List<CoinModel> sortByFiatBalanceDesc(List<CoinModel> coins) {
+    return [...coins]..sort(
+      (a, b) =>
+          fiatBalanceForCoin(b.symbol).compareTo(fiatBalanceForCoin(a.symbol)),
+    );
   }
 
   /// Returns the current user's deposit address for [symbol] on [network].

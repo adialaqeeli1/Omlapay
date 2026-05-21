@@ -70,11 +70,8 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
   }
 
   void _handleReset() {
-    setState(() {
-      _selectedType = null;
-      _dateStart = null;
-      _dateEnd = null;
-    });
+    widget.onApply(type: null, dateStart: null, dateEnd: null);
+    Navigator.of(context).pop();
   }
 
   void _handleApply() {
