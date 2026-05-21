@@ -231,18 +231,17 @@ class SwapProvider extends ChangeNotifier {
     _notifySafely();
   }
 
+  /// Fills the `from` amount with the user's full available balance for the
+  /// selected coin. Uses the same [WalletsProvider.balanceForCoin] source as
+  /// the displayed "Available" and the balance validation, comma-stripped so
+  /// it parses cleanly. The [fromAmountController] listener re-runs validation
+  /// and the stream gating.
   void setMaxAmount() {
     final coin = _fromCoin;
     if (coin == null) return;
-    final swapMax = double.tryParse(coin.swapMaxAmount ?? '');
-    if (swapMax != null && swapMax > 0) {
-      fromAmountController.text = swapMax.toStringAsFixed(
-        AppConstants.maxAmountDecimals,
-      );
-    } else {
-      fromAmountController.text = coin.amount;
-    }
-    // _validateLocal();
+    fromAmountController.text = walletsProvider
+        .balanceForCoin(coin.symbol)
+        .replaceAll(',', '');
   }
 
   /// Validates the `from` amount against the selected coin's swap minimum and
