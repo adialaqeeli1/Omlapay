@@ -337,8 +337,8 @@ class SendCoinView extends StatelessWidget {
     final l10n = context.l10n!;
     final colorScheme = Theme.of(context).colorScheme;
     final showMaxAction = provider.selectedCoin != null;
-    final max = provider.maxSendAmount;
-    final ticker = provider.selectedCoin?.localizedCoinTicker(context) ?? '';
+    // final max = provider.maxSendAmount;
+    // final ticker = provider.selectedCoin?.localizedCoinTicker(context) ?? '';
     return Container(
       decoration: _sendFieldBoxDecoration(context),
       child: Column(
@@ -393,30 +393,30 @@ class SendCoinView extends StatelessWidget {
               ],
             ],
           ),
-          if (max > 0)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    l10n.sendAmountMaxShortLabel,
-                    style: TextStyle(
-                      color: colorScheme.onSurfaceVariant,
-                      fontSize: 12,
-                    ),
-                  ),
-                  Text(
-                    '${max.toFormattedAmount(decimals: AppConstants.maxAmountDecimals)} $ticker'
-                        .trim(),
-                    style: TextStyle(
-                      color: colorScheme.onSurface,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          // if (max > 0)
+          //   Padding(
+          //     padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          //     child: Row(
+          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //       children: [
+          //         Text(
+          //           l10n.sendAmountMaxShortLabel,
+          //           style: TextStyle(
+          //             color: colorScheme.onSurfaceVariant,
+          //             fontSize: 12,
+          //           ),
+          //         ),
+          //         Text(
+          //           '${max.toFormattedAmount(decimals: AppConstants.maxAmountDecimals)} $ticker'
+          //               .trim(),
+          //           style: TextStyle(
+          //             color: colorScheme.onSurface,
+          //             fontSize: 12,
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //   ),
         ],
       ),
     );
@@ -696,5 +696,4 @@ class SendCoinView extends StatelessWidget {
       ),
     );
   }
-
 }
