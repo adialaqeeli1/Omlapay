@@ -702,6 +702,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get transactionHash => 'رمز المعاملة';
 
   @override
+  String get couldNotOpenLink => 'تعذر فتح الرابط';
+
+  @override
   String get fromAddress => 'من العنوان';
 
   @override

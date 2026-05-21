@@ -246,6 +246,7 @@
     "exchangeRate": "سعر الصرف",
     "pair": "الزوج",
     "transactionHash": "رمز المعاملة",
+    "couldNotOpenLink": "تعذر فتح الرابط",
     "fromAddress": "من العنوان",
     "toAddress": "إلى العنوان",
     "note": "ملاحظة",

@@ -1382,6 +1382,12 @@ abstract class AppLocalizations {
   /// **'Transaction Hash'**
   String get transactionHash;
 
+  /// No description provided for @couldNotOpenLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the link'**
+  String get couldNotOpenLink;
+
   /// No description provided for @fromAddress.
   ///
   /// In en, this message translates to:

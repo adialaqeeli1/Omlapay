@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../core/utils/block_explorer.dart';
 import '../../../core/utils/date_time_format.dart';
 import '../../../core/models/transaction_model/transaction_model.dart';
 import '../../../core/models/transaction_model/transaction_swap_asset.dart';
@@ -126,6 +128,12 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     // makes sense for outgoing transfers — for incoming the address would
     // just be the receiving wallet, which the user already knows.
     final addressValue = isSent ? transaction.senderAddress : null;
+    // Block-explorer link for the tx hash. Null when the network has no known
+    // explorer (or there's no hash) — the row then renders as plain text.
+    final explorerUrl = blockExplorerTxUrl(
+      network: transaction.network,
+      txHash: transaction.txHash,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -324,6 +332,9 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                             l10n.transactionHash,
                             transaction.txHash!,
                             isAddress: true,
+                            onOpenLink: explorerUrl != null
+                                ? () => _openExplorer(explorerUrl)
+                                : null,
                           ),
                         if (transaction.isFailed &&
                             localizedError != null &&
@@ -424,8 +435,10 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     bool isError = false,
     bool isDateTime = false,
     VoidCallback? onCopy,
+    VoidCallback? onOpenLink,
   }) {
     final isDarkMode = context.isDarkMode;
+    final isLink = onOpenLink != null;
     final valueTextStyle = context.textTheme.bodyMedium?.copyWith(
       color: isError
           ? Colors.red
@@ -484,6 +497,30 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                           ),
                         ),
                       )
+                    : isLink
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Flexible(
+                            child: GestureDetector(
+                              onTap: onOpenLink,
+                              behavior: HitTestBehavior.opaque,
+                              child: valueText,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: onOpenLink,
+                            behavior: HitTestBehavior.opaque,
+                            child: Icon(
+                              Icons.open_in_new_rounded,
+                              size: 16,
+                              color: AppColors.primaryColor,
+                            ),
+                          ),
+                        ],
+                      )
                     : onCopy != null
                     ? Row(
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -531,6 +568,26 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
 
   void _copyToClipboard(String value) {
     CopiedToast.copy(context, value);
+  }
+
+  /// Opens [url] (a block-explorer transaction page) in the external browser.
+  /// Surfaces a localized snackbar when the launch can't be handled.
+  Future<void> _openExplorer(String url) async {
+    final l10n = context.l10n!;
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      _showError(l10n.couldNotOpenLink);
+      return;
+    }
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && mounted) _showError(l10n.couldNotOpenLink);
+    } catch (_) {
+      if (mounted) _showError(l10n.couldNotOpenLink);
+    }
   }
 
   /// Formats a swap asset as `<amount> <symbol>` for the From / To detail

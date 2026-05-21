@@ -256,6 +256,7 @@
     "exchangeRate": "Exchange Rate",
     "pair": "Pair",
     "transactionHash": "Transaction Hash",
+    "couldNotOpenLink": "Couldn't open the link",
     "fromAddress": "From Address",
     "toAddress": "To Address",
     "note": "Note",
