@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/extentions/context_extensions.dart';
+import '../../core/utils/content_link_launcher.dart';
 import '../../widgets/common_back_button.dart';
 import '../../widgets/common_loading_indicator.dart';
 import '../../widgets/markdown_html_view.dart';
@@ -80,6 +81,7 @@ class _TermsConditionsBody extends StatelessWidget {
         data: provider.content ?? '',
         textScale: 0.85,
         headingScale: 0.85,
+        onLinkTap: (url) => launchContentLink(context, url),
       ),
     );
   }

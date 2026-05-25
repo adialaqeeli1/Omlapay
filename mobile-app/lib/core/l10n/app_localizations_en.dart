@@ -714,6 +714,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get couldNotOpenLink => 'Couldn\'t open the link';
 
   @override
+  String get supportEmailSubject => 'OmlaPay Support';
+
+  @override
   String get fromAddress => 'From Address';
 
   @override

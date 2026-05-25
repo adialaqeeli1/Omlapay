@@ -257,6 +257,7 @@
     "pair": "Pair",
     "transactionHash": "Transaction Hash",
     "couldNotOpenLink": "Couldn't open the link",
+    "supportEmailSubject": "OmlaPay Support",
     "fromAddress": "From Address",
     "toAddress": "To Address",
     "note": "Note",

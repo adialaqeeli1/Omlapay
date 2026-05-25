@@ -719,10 +719,43 @@ String _sanitizeUrl(String url) {
   return url;
 }
 
+/// Matches a bare email address. Anchored at the scan position via
+/// [RegExp.matchAsPrefix]; requires a domain with at least one dot and a
+/// letters-only TLD so trailing punctuation (e.g. `…@x.com.`) stays out.
+final _emailPattern = RegExp(r'[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}');
+
+/// Matches a candidate international phone number: a leading `+`, a digit, then
+/// digits and `( ) - space` separators ending in a digit. The digit count is
+/// validated separately (7–15) so short tokens like `+12` aren't linked.
+final _phonePattern = RegExp(r'\+\d[\d\s()\-]*\d');
+
+/// Characters that can appear in an email local part. Used to detect whether
+/// the scan position is at a token boundary (so we don't link mid-word).
+bool _isEmailLocalChar(int codeUnit) {
+  return _isAlphanumeric(codeUnit) ||
+      codeUnit == 0x2E || // .
+      codeUnit == 0x5F || // _
+      codeUnit == 0x25 || // %
+      codeUnit == 0x2B || // +
+      codeUnit == 0x2D; // -
+}
+
+bool _isAlphanumeric(int codeUnit) {
+  return (codeUnit >= 0x30 && codeUnit <= 0x39) || // 0-9
+      (codeUnit >= 0x41 && codeUnit <= 0x5A) || // A-Z
+      (codeUnit >= 0x61 && codeUnit <= 0x7A); // a-z
+}
+
 class _InlineScanner {
-  _InlineScanner(this.input);
+  _InlineScanner(this.input, {this.autolink = true});
 
   final String input;
+
+  /// When true, bare email addresses and international phone numbers in plain
+  /// text are promoted to `mailto:` / `tel:` links. Disabled while scanning the
+  /// text inside an existing link so we never produce a link nested in a link.
+  final bool autolink;
+
   int pos = 0;
 
   static const _inlineTagMap = {
@@ -805,6 +838,49 @@ class _InlineScanner {
         continue;
       }
 
+      // Bare email autolink: support@example.com -> mailto:support@example.com.
+      // Only attempt at a token boundary so we don't link a sub-span of a word.
+      if (autolink &&
+          (pos == 0 || !_isEmailLocalChar(input.codeUnitAt(pos - 1)))) {
+        final email = _emailPattern.matchAsPrefix(input, pos);
+        if (email != null) {
+          flush();
+          final address = email.group(0)!;
+          result.add(
+            InlineNode.link(
+              url: 'mailto:$address',
+              children: [InlineNode.text(address)],
+            ),
+          );
+          pos = email.end;
+          continue;
+        }
+      }
+
+      // Bare phone autolink: +995 555 123 456 -> tel:+995555123456. Conservative
+      // — requires a leading '+' with 7–15 digits, sitting at a boundary so we
+      // never treat `C++` or arithmetic like `5+5` as a phone number.
+      if (autolink &&
+          input[pos] == '+' &&
+          (pos == 0 || !_isAlphanumeric(input.codeUnitAt(pos - 1)))) {
+        final phone = _phonePattern.matchAsPrefix(input, pos);
+        if (phone != null) {
+          final raw = phone.group(0)!;
+          final digits = raw.replaceAll(RegExp(r'[^0-9]'), '');
+          if (digits.length >= 7 && digits.length <= 15) {
+            flush();
+            result.add(
+              InlineNode.link(
+                url: 'tel:+$digits',
+                children: [InlineNode.text(raw)],
+              ),
+            );
+            pos = phone.end;
+            continue;
+          }
+        }
+      }
+
       // Escape: backslash quotes the next character literally.
       if (input[pos] == r'\' && pos + 1 < input.length) {
         buffer.write(input[pos + 1]);
@@ -857,7 +933,7 @@ class _InlineScanner {
     final text = input.substring(pos + 1, closeBracket);
     final url = input.substring(closeBracket + 2, closeParen);
     final safeUrl = _sanitizeUrl(url);
-    final children = _InlineScanner(text).parseAll();
+    final children = _InlineScanner(text, autolink: false).parseAll();
     pos = closeParen + 1;
     return InlineNode.link(url: safeUrl, children: children);
   }
@@ -915,7 +991,7 @@ class _InlineScanner {
       pos = closeIdx + close.length;
       return InlineNode.link(
         url: href,
-        children: _InlineScanner(inner).parseAll(),
+        children: _InlineScanner(inner, autolink: false).parseAll(),
       );
     }
 
