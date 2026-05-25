@@ -138,6 +138,36 @@ void main() {
       expect((result[1] as ParagraphBlock).children,
           [const InlineNode.text('para two')]);
     });
+
+    test('two trailing spaces create a hard line break', () {
+      final p = parseMarkdown('Line one  \nLine two').first as ParagraphBlock;
+      expect(p.children, [
+        const InlineNode.text('Line one'),
+        const InlineNode.lineBreak(),
+        const InlineNode.text('Line two'),
+      ]);
+    });
+
+    test('a trailing backslash creates a hard line break', () {
+      final p = parseMarkdown('Line one\\\nLine two').first as ParagraphBlock;
+      expect(p.children[0], const InlineNode.text('Line one'));
+      expect(p.children[1], isA<LineBreakInline>());
+      expect(p.children[2], const InlineNode.text('Line two'));
+    });
+
+    test('hard breaks stack across consecutive lines and keep inline spans', () {
+      final p = parseMarkdown('**A:** 1  \n**B:** 2  \nplain').first
+          as ParagraphBlock;
+      final lineBreaks = p.children.whereType<LineBreakInline>().length;
+      expect(lineBreaks, 2);
+      expect(p.children.last, const InlineNode.text('plain'));
+    });
+
+    test('a single trailing space is still a soft break (space, not break)', () {
+      final p = parseMarkdown('Line one \nLine two').first as ParagraphBlock;
+      expect(p.children, [const InlineNode.text('Line one Line two')]);
+      expect(p.children.whereType<LineBreakInline>(), isEmpty);
+    });
   });
 
   group('parseMarkdown — horizontal rules', () {
