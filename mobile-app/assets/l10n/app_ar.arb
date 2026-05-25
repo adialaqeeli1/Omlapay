@@ -247,6 +247,7 @@
     "pair": "الزوج",
     "transactionHash": "رمز المعاملة",
     "couldNotOpenLink": "تعذر فتح الرابط",
+    "supportEmailSubject": "دعم OmlaPay",
     "fromAddress": "من العنوان",
     "toAddress": "إلى العنوان",
     "note": "ملاحظة",

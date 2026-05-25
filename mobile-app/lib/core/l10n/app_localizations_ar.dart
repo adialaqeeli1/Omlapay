@@ -705,6 +705,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get couldNotOpenLink => 'تعذر فتح الرابط';
 
   @override
+  String get supportEmailSubject => 'دعم OmlaPay';
+
+  @override
   String get fromAddress => 'من العنوان';
 
   @override

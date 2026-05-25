@@ -463,6 +463,150 @@ void main() {
     });
   });
 
+  group('parseMarkdown — bare email autolinking', () {
+    test('standalone email becomes a mailto link', () {
+      final p = parseMarkdown('support@omlapay.com').first as ParagraphBlock;
+      expect(p.children, [
+        const InlineNode.link(
+          url: 'mailto:support@omlapay.com',
+          children: [InlineNode.text('support@omlapay.com')],
+        ),
+      ]);
+    });
+
+    test('email embedded in a sentence keeps surrounding text', () {
+      final p = parseMarkdown('Reach support@omlapay.com now').first
+          as ParagraphBlock;
+      expect(p.children[0], const InlineNode.text('Reach '));
+      expect(
+        p.children[1],
+        const InlineNode.link(
+          url: 'mailto:support@omlapay.com',
+          children: [InlineNode.text('support@omlapay.com')],
+        ),
+      );
+      expect(p.children[2], const InlineNode.text(' now'));
+    });
+
+    test('trailing period is left outside the email', () {
+      final p = parseMarkdown('Email support@omlapay.com.').first
+          as ParagraphBlock;
+      expect(
+        p.children[1],
+        const InlineNode.link(
+          url: 'mailto:support@omlapay.com',
+          children: [InlineNode.text('support@omlapay.com')],
+        ),
+      );
+      expect(p.children.last, const InlineNode.text('.'));
+    });
+
+    test('email inside bold is still linked', () {
+      final p = parseMarkdown('**support@omlapay.com**').first
+          as ParagraphBlock;
+      final bold = p.children.first as BoldInline;
+      expect(bold.children.first, isA<LinkInline>());
+      expect(
+        (bold.children.first as LinkInline).url,
+        'mailto:support@omlapay.com',
+      );
+    });
+
+    test('email inside an existing mailto link is not double-linked', () {
+      final p = parseMarkdown(
+        '[support@omlapay.com](mailto:support@omlapay.com)',
+      ).first as ParagraphBlock;
+      final link = p.children.first as LinkInline;
+      expect(link.url, 'mailto:support@omlapay.com');
+      expect(link.children, [const InlineNode.text('support@omlapay.com')]);
+    });
+
+    test('text without a valid email is untouched', () {
+      final p = parseMarkdown('mention @handle and a@b').first
+          as ParagraphBlock;
+      expect(p.children, [const InlineNode.text('mention @handle and a@b')]);
+    });
+  });
+
+  group('parseMarkdown — bare phone autolinking (international +)', () {
+    test('spaced international number becomes a tel link', () {
+      final p = parseMarkdown('+995 555 123 456').first as ParagraphBlock;
+      expect(p.children, [
+        const InlineNode.link(
+          url: 'tel:+995555123456',
+          children: [InlineNode.text('+995 555 123 456')],
+        ),
+      ]);
+    });
+
+    test('dashed international number strips separators in the URL', () {
+      final p = parseMarkdown('+1-234-567-8900').first as ParagraphBlock;
+      expect(
+        p.children.first,
+        const InlineNode.link(
+          url: 'tel:+12345678900',
+          children: [InlineNode.text('+1-234-567-8900')],
+        ),
+      );
+    });
+
+    test('number with parentheses is linked', () {
+      final p = parseMarkdown('Call +1 (234) 567-8900 today').first
+          as ParagraphBlock;
+      expect(p.children[0], const InlineNode.text('Call '));
+      expect(
+        p.children[1],
+        const InlineNode.link(
+          url: 'tel:+12345678900',
+          children: [InlineNode.text('+1 (234) 567-8900')],
+        ),
+      );
+      expect(p.children[2], const InlineNode.text(' today'));
+    });
+
+    test('trailing period stays outside the number', () {
+      final p = parseMarkdown('Reach us at +995 555 123 456.').first
+          as ParagraphBlock;
+      expect(
+        p.children[1],
+        const InlineNode.link(
+          url: 'tel:+995555123456',
+          children: [InlineNode.text('+995 555 123 456')],
+        ),
+      );
+      expect(p.children.last, const InlineNode.text('.'));
+    });
+
+    test('too-short +number is left as text', () {
+      final p = parseMarkdown('discount +12 34 only').first as ParagraphBlock;
+      expect(p.children, [const InlineNode.text('discount +12 34 only')]);
+    });
+
+    test('plain numbers (years, sections) are never linked', () {
+      final p = parseMarkdown('age 18, year 2026, clause 4.7.1').first
+          as ParagraphBlock;
+      expect(p.children, [
+        const InlineNode.text('age 18, year 2026, clause 4.7.1'),
+      ]);
+    });
+
+    test('+ following an alphanumeric (e.g. C++) is not a phone number', () {
+      final p = parseMarkdown('written in C++ 1995 edition').first
+          as ParagraphBlock;
+      expect(p.children, [
+        const InlineNode.text('written in C++ 1995 edition'),
+      ]);
+    });
+
+    test('phone inside an existing tel link is not double-linked', () {
+      final p = parseMarkdown('[+995 555 123 456](tel:+995555123456)').first
+          as ParagraphBlock;
+      final link = p.children.first as LinkInline;
+      expect(link.url, 'tel:+995555123456');
+      expect(link.children, [const InlineNode.text('+995 555 123 456')]);
+    });
+  });
+
   group('parseMarkdown — images', () {
     test('![alt](url)', () {
       final p = parseMarkdown('![pic](https://x.y/img.png)').first

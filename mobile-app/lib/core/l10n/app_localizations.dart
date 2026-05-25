@@ -1388,6 +1388,12 @@ abstract class AppLocalizations {
   /// **'Couldn\'t open the link'**
   String get couldNotOpenLink;
 
+  /// No description provided for @supportEmailSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'OmlaPay Support'**
+  String get supportEmailSubject;
+
   /// No description provided for @fromAddress.
   ///
   /// In en, this message translates to:

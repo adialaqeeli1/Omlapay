@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/extentions/context_extensions.dart';
+import '../../core/utils/content_link_launcher.dart';
 import '../../widgets/common_back_button.dart';
 import '../../widgets/common_loading_indicator.dart';
 import '../../widgets/markdown_html_view.dart';
@@ -73,8 +74,15 @@ class _PrivacyPolicyBody extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(
         parent: ClampingScrollPhysics(),
       ),
-      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-      child: MarkdownHtmlView(data: provider.content ?? ''),
+      padding: EdgeInsets.symmetric(
+        horizontal: horizontalPadding,
+      ).add(EdgeInsets.only(bottom: context.mediaQuery.viewPadding.bottom)),
+      child: MarkdownHtmlView(
+        data: provider.content ?? '',
+        textScale: 0.85,
+        headingScale: 0.75,
+        onLinkTap: (url) => launchContentLink(context, url),
+      ),
     );
   }
 }
