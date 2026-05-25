@@ -270,10 +270,45 @@ List<BlockNode> _parseBlocks(List<String> lines, int from, int to) {
       if (RegExp(r'^<p(\s|>)', caseSensitive: false).hasMatch(cur)) break;
       i++;
     }
-    final text = lines.sublist(paraStart, i).join(' ');
+    final text = _joinInlineLines(lines.sublist(paraStart, i));
     blocks.add(ParagraphBlock(children: _parseInlines(text)));
   }
   return blocks;
+}
+
+/// Joins the lines of a paragraph into a single string for the inline phase,
+/// honouring Markdown line-break rules:
+///
+/// - A line ending in two or more spaces, or in a backslash, is a *hard* line
+///   break → emitted as `<br>` (which the inline scanner turns into a
+///   [LineBreakInline]).
+/// - Any other line boundary is a *soft* break → collapses to a single space.
+///
+/// Trailing whitespace is trimmed so soft breaks never produce double spaces.
+String _joinInlineLines(List<String> lines) {
+  final buffer = StringBuffer();
+  for (var k = 0; k < lines.length; k++) {
+    final line = lines[k];
+    final isLast = k == lines.length - 1;
+    if (isLast) {
+      buffer.write(line);
+      break;
+    }
+    if (RegExp(r' {2,}$').hasMatch(line)) {
+      buffer
+        ..write(line.trimRight())
+        ..write('<br>');
+    } else if (line.endsWith(r'\')) {
+      buffer
+        ..write(line.substring(0, line.length - 1).trimRight())
+        ..write('<br>');
+    } else {
+      buffer
+        ..write(line.trimRight())
+        ..write(' ');
+    }
+  }
+  return buffer.toString();
 }
 
 // ---------------------------------------------------------------------------
