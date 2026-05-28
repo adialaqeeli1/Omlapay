@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ScannedQrPayload {
 
- String? get address; String get symbol; double? get amount;
+ String? get address; String get symbol; String get network; double? get amount;
 /// Create a copy of ScannedQrPayload
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ScannedQrPayloadCopyWith<ScannedQrPayload> get copyWith => _$ScannedQrPayloadCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ScannedQrPayload&&(identical(other.address, address) || other.address == address)&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.amount, amount) || other.amount == amount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ScannedQrPayload&&(identical(other.address, address) || other.address == address)&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.network, network) || other.network == network)&&(identical(other.amount, amount) || other.amount == amount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,address,symbol,amount);
+int get hashCode => Object.hash(runtimeType,address,symbol,network,amount);
 
 @override
 String toString() {
-  return 'ScannedQrPayload(address: $address, symbol: $symbol, amount: $amount)';
+  return 'ScannedQrPayload(address: $address, symbol: $symbol, network: $network, amount: $amount)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ScannedQrPayloadCopyWith<$Res>  {
   factory $ScannedQrPayloadCopyWith(ScannedQrPayload value, $Res Function(ScannedQrPayload) _then) = _$ScannedQrPayloadCopyWithImpl;
 @useResult
 $Res call({
- String? address, String symbol, double? amount
+ String? address, String symbol, String network, double? amount
 });
 
 
@@ -65,10 +65,11 @@ class _$ScannedQrPayloadCopyWithImpl<$Res>
 
 /// Create a copy of ScannedQrPayload
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? address = freezed,Object? symbol = null,Object? amount = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? address = freezed,Object? symbol = null,Object? network = null,Object? amount = freezed,}) {
   return _then(_self.copyWith(
 address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String?,symbol: null == symbol ? _self.symbol : symbol // ignore: cast_nullable_to_non_nullable
+as String,network: null == network ? _self.network : network // ignore: cast_nullable_to_non_nullable
 as String,amount: freezed == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as double?,
   ));
@@ -155,10 +156,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? address,  String symbol,  double? amount)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? address,  String symbol,  String network,  double? amount)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ScannedQrPayload() when $default != null:
-return $default(_that.address,_that.symbol,_that.amount);case _:
+return $default(_that.address,_that.symbol,_that.network,_that.amount);case _:
   return orElse();
 
 }
@@ -176,10 +177,10 @@ return $default(_that.address,_that.symbol,_that.amount);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? address,  String symbol,  double? amount)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? address,  String symbol,  String network,  double? amount)  $default,) {final _that = this;
 switch (_that) {
 case _ScannedQrPayload():
-return $default(_that.address,_that.symbol,_that.amount);case _:
+return $default(_that.address,_that.symbol,_that.network,_that.amount);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +197,10 @@ return $default(_that.address,_that.symbol,_that.amount);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? address,  String symbol,  double? amount)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? address,  String symbol,  String network,  double? amount)?  $default,) {final _that = this;
 switch (_that) {
 case _ScannedQrPayload() when $default != null:
-return $default(_that.address,_that.symbol,_that.amount);case _:
+return $default(_that.address,_that.symbol,_that.network,_that.amount);case _:
   return null;
 
 }
@@ -211,11 +212,12 @@ return $default(_that.address,_that.symbol,_that.amount);case _:
 @JsonSerializable()
 
 class _ScannedQrPayload implements ScannedQrPayload {
-  const _ScannedQrPayload({this.address, this.symbol = '', this.amount});
+  const _ScannedQrPayload({this.address, this.symbol = '', this.network = '', this.amount});
   factory _ScannedQrPayload.fromJson(Map<String, dynamic> json) => _$ScannedQrPayloadFromJson(json);
 
 @override final  String? address;
 @override@JsonKey() final  String symbol;
+@override@JsonKey() final  String network;
 @override final  double? amount;
 
 /// Create a copy of ScannedQrPayload
@@ -231,16 +233,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ScannedQrPayload&&(identical(other.address, address) || other.address == address)&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.amount, amount) || other.amount == amount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ScannedQrPayload&&(identical(other.address, address) || other.address == address)&&(identical(other.symbol, symbol) || other.symbol == symbol)&&(identical(other.network, network) || other.network == network)&&(identical(other.amount, amount) || other.amount == amount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,address,symbol,amount);
+int get hashCode => Object.hash(runtimeType,address,symbol,network,amount);
 
 @override
 String toString() {
-  return 'ScannedQrPayload(address: $address, symbol: $symbol, amount: $amount)';
+  return 'ScannedQrPayload(address: $address, symbol: $symbol, network: $network, amount: $amount)';
 }
 
 
@@ -251,7 +253,7 @@ abstract mixin class _$ScannedQrPayloadCopyWith<$Res> implements $ScannedQrPaylo
   factory _$ScannedQrPayloadCopyWith(_ScannedQrPayload value, $Res Function(_ScannedQrPayload) _then) = __$ScannedQrPayloadCopyWithImpl;
 @override @useResult
 $Res call({
- String? address, String symbol, double? amount
+ String? address, String symbol, String network, double? amount
 });
 
 
@@ -268,10 +270,11 @@ class __$ScannedQrPayloadCopyWithImpl<$Res>
 
 /// Create a copy of ScannedQrPayload
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? address = freezed,Object? symbol = null,Object? amount = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? address = freezed,Object? symbol = null,Object? network = null,Object? amount = freezed,}) {
   return _then(_ScannedQrPayload(
 address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String?,symbol: null == symbol ? _self.symbol : symbol // ignore: cast_nullable_to_non_nullable
+as String,network: null == network ? _self.network : network // ignore: cast_nullable_to_non_nullable
 as String,amount: freezed == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as double?,
   ));
