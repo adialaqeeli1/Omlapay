@@ -15,6 +15,19 @@ void main() {
       expect(payload.amount, isNull);
     });
 
+    test('parses full OmlaPay JSON QR with network field', () {
+      final payload = Utility.parseScannedWallet(
+        '{"name":"Solana","symbol":"SOL","address":"$solAddress",'
+        '"addressTag":null,"network":"SOL","networkDisplayName":"Solana",'
+        '"networkIconUrl":"https://example.com/sol.png",'
+        '"balance":0.0,"currentBalance":0.0,"currentBalanceSar":0.0}',
+      );
+      expect(payload, isNotNull);
+      expect(payload!.address, solAddress);
+      expect(payload.symbol, 'SOL');
+      expect(payload.network, 'SOL');
+    });
+
     test('parses Solana Pay URI with query params', () {
       final payload = Utility.parseScannedWallet(
         'solana:$solAddress?amount=1&spl-token=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'

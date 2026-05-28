@@ -10,6 +10,7 @@ abstract class ScannedQrPayload with _$ScannedQrPayload {
   const factory ScannedQrPayload({
     String? address,
     @Default('') String symbol,
+    @Default('') String network,
     double? amount,
   }) = _ScannedQrPayload;
 

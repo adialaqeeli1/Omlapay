@@ -463,10 +463,10 @@ class Utility {
   /// Parses a scanned QR string into a normalised [ScannedQrPayload].
   ///
   /// Supports three encodings:
-  /// 1. OmlaPay JSON — `{"symbol": "...", "address": "...", ...}`.
+  /// 1. OmlaPay JSON — `{"symbol": "...", "address": "...", "network": ...}`.
   /// 2. URI form — `<scheme>:<address>?amount=...&...`. A `solana:` scheme
-  ///    resolves `symbol` to `SOL`; any other scheme leaves `symbol` empty.
-  ///    `spl-token`, `reference` and `label` query params are ignored.
+  ///    resolves `symbol`/`network` to `SOL`; any other scheme leaves them
+  ///    empty. `spl-token`, `reference` and `label` query params are ignored.
   /// 3. Bare address — the raw string is treated as the address.
   ///
   /// Returns `null` when the input is empty or cannot be parsed into any
@@ -483,6 +483,7 @@ class Utility {
         return ScannedQrPayload(
           address: wallet.address?.trim(),
           symbol: wallet.symbol.trim(),
+          network: wallet.network.trim(),
         );
       }
       if (decoded is List) {
@@ -500,10 +501,11 @@ class Utility {
       final address = uri.path.trim();
       if (address.isNotEmpty) {
         final amount = double.tryParse(uri.queryParameters['amount'] ?? '');
-        final symbol = uri.scheme.toLowerCase() == 'solana' ? 'SOL' : '';
+        final isSolana = uri.scheme.toLowerCase() == 'solana';
         return ScannedQrPayload(
           address: address,
-          symbol: symbol,
+          symbol: isSolana ? 'SOL' : '',
+          network: isSolana ? 'SOL' : '',
           amount: amount,
         );
       }
@@ -552,7 +554,11 @@ class Utility {
       return QrValidationError.invalidFormat;
     }
 
-    if (!_matchesKnownAddressFormat(address)) {
+    if (!_matchesKnownAddressFormat(
+      address,
+      symbol: symbol,
+      network: payload.network.trim(),
+    )) {
       return QrValidationError.invalidAddress;
     }
 
@@ -586,28 +592,61 @@ class Utility {
 
   /// Client-side regex check covering EVM (0x...), Bitcoin (1, 3, bc1),
   /// Tron (T...), and Solana (base58) address formats.
-  static bool _matchesKnownAddressFormat(String address) {
+  ///
+  /// When [symbol] or [network] is provided, only the matching format is
+  /// checked. With no hint, the address is accepted if it matches *any*
+  /// known format — prefixes like `1`, `3`, or `T` are not unique to a
+  /// single network (Solana base58 covers the same alphabet), so we must
+  /// not short-circuit on the leading character.
+  static bool _matchesKnownAddressFormat(
+    String address, {
+    String symbol = '',
+    String network = '',
+  }) {
     if (address.isEmpty || address.length < 20) return false;
 
-    if (address.startsWith('0x') && address.length == 42) {
-      return RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(address);
+    final hint = (network.isNotEmpty ? network : symbol).trim().toUpperCase();
+    final checks = _addressChecksForHint(hint);
+    for (final check in checks) {
+      if (check(address)) return true;
     }
-
-    if (address.startsWith('1') || address.startsWith('3')) {
-      return RegExp(r'^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$').hasMatch(address);
-    }
-    if (address.startsWith('bc1')) {
-      return address.length >= 42 && address.length <= 62;
-    }
-
-    if (address.startsWith('T') && address.length == 34) {
-      return RegExp(r'^T[1-9A-HJ-NP-Za-km-z]{33}$').hasMatch(address);
-    }
-
-    if (RegExp(r'^[1-9A-HJ-NP-Za-km-z]{32,44}$').hasMatch(address)) {
-      return true;
-    }
-
     return false;
   }
+
+  static List<bool Function(String)> _addressChecksForHint(String hint) {
+    switch (hint) {
+      case 'BTC':
+        return [_isBtcLegacy, _isBtcBech32];
+      case 'ETH':
+      case 'BSC':
+      case 'BNB':
+        return [_isEvm];
+      case 'TRX':
+        return [_isTron];
+      case 'SOL':
+        return [_isSolana];
+      case 'USDT':
+        // USDT lives on multiple chains (TRX, ETH, etc.) — accept any.
+        return [_isTron, _isEvm, _isSolana];
+      case 'USDC':
+        return [_isSolana, _isEvm];
+      default:
+        return [_isEvm, _isBtcBech32, _isBtcLegacy, _isTron, _isSolana];
+    }
+  }
+
+  static bool _isEvm(String a) =>
+      RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(a);
+
+  static bool _isBtcLegacy(String a) =>
+      RegExp(r'^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$').hasMatch(a);
+
+  static bool _isBtcBech32(String a) =>
+      a.startsWith('bc1') && a.length >= 42 && a.length <= 62;
+
+  static bool _isTron(String a) =>
+      RegExp(r'^T[1-9A-HJ-NP-Za-km-z]{33}$').hasMatch(a);
+
+  static bool _isSolana(String a) =>
+      RegExp(r'^[1-9A-HJ-NP-Za-km-z]{32,44}$').hasMatch(a);
 }
