@@ -1080,6 +1080,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sendValidationInvalidAmount => 'Invalid amount';
 
   @override
+  String get sendValidationCannotSendToSelf =>
+      'You can\'t send to your own account';
+
+  @override
   String get sendValidationInsufficientBalance => 'Insufficient balance';
 
   @override

@@ -1070,6 +1070,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sendValidationInvalidAmount => 'مبلغ غير صالح';
 
   @override
+  String get sendValidationCannotSendToSelf =>
+      'لا يمكنك الإرسال إلى حسابك الخاص';
+
+  @override
   String get sendValidationInsufficientBalance => 'الرصيد غير كافٍ';
 
   @override

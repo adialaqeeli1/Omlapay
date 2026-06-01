@@ -7,6 +7,7 @@ import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/contact_model/contact_model.dart';
 import '../../../../core/models/send_confirm_model/send_confirm_response_model.dart';
 import '../../../../core/models/send_quote_model/send_quote_model.dart';
+import '../../../../core/models/send_validate_address_model/send_validate_address_model.dart';
 import '../../../../core/utils/app_exception.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/coins_prices_provider.dart';
@@ -49,6 +50,7 @@ class SendProvider extends ChangeNotifier {
           recipientController.text != _selectedContact!.phoneNumber) {
         // Selection is mainly via sheet; manual entry can diverge from stored contact.
       }
+      _scheduleAddressValidation();
       _scheduleQuoteFetch();
       notifyListeners();
     });
@@ -72,6 +74,16 @@ class SendProvider extends ChangeNotifier {
   int _quoteRequestId = 0;
   String? _lastQuoteKey;
   static const Duration _quoteDebounce = Duration(milliseconds: 500);
+
+  // Reactive recipient validation (validate-address). Holds the localized
+  // reason the recipient is rejected (self-transfer, or a backend address
+  // validation error such as an address/network mismatch); `null` when valid.
+  // A non-null value disables [canSend] and surfaces via [recipientError].
+  String? _recipientError;
+  Timer? _addressDebounceTimer;
+  int _addressRequestId = 0;
+  String? _lastValidatedAddressKey;
+  static const Duration _addressDebounce = Duration(milliseconds: 500);
 
   // OTP / confirm flow state.
   String? _sendToken;
@@ -149,9 +161,22 @@ class SendProvider extends ChangeNotifier {
   // 4. User is verified
   bool get canSend =>
       _error == null &&
+      _recipientError == null &&
       amountController.text.isNotEmpty &&
       recipientController.text.trim().isNotEmpty &&
       isVerified;
+
+  /// Localized recipient validation error to display under the recipient
+  /// field, or `null` when the recipient is valid. Covers self-transfers and
+  /// backend address/network validation rejections.
+  String? get recipientError => _recipientError;
+
+  /// Updates the recipient validation error, notifying only on change.
+  void _setRecipientError(String? value) {
+    if (_recipientError == value) return;
+    _recipientError = value;
+    notifyListeners();
+  }
 
   void _onStreamedCoinsUpdated() {
     _syncCoinsFromPrices();
@@ -204,12 +229,14 @@ class SendProvider extends ChangeNotifier {
     _selectedCoin = coin;
     _updateNetwork();
     _validate();
+    _scheduleAddressValidation();
     _scheduleQuoteFetch();
   }
 
   void setSelectedContact(ContactModel contact) {
     _selectedContact = contact;
     recipientController.text = contact.phoneNumber;
+    _scheduleAddressValidation();
     notifyListeners();
   }
 
@@ -245,7 +272,19 @@ class SendProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await SendService.validateAddress(coin: coin.symbol, address: recipient);
+      final validation = await SendService.validateAddress(
+        coin: coin.symbol,
+        address: recipient,
+      );
+      // Final guard: block self-transfers even if the reactive check raced.
+      if (validation.isSelf) {
+        final message =
+            appLocalizationsFromStoredLocale().sendValidationCannotSendToSelf;
+        _setRecipientError(message);
+        _submitError = message;
+        return false;
+      }
+      _setRecipientError(null);
       _quote = await SendService.fetchQuote(
         coin: coin.symbol,
         recipient: recipient,
@@ -492,10 +531,145 @@ class SendProvider extends ChangeNotifier {
     }
   }
 
+  /// Debounces a `validate-address` call to surface recipient errors
+  /// ([recipientError]) — self-transfers and backend address/network
+  /// rejections. Runs as soon as a coin and a non-empty recipient are present
+  /// (independent of the amount). Identical inputs are deduped via
+  /// [_lastValidatedAddressKey].
+  void _scheduleAddressValidation() {
+    final coin = _selectedCoin;
+    final recipient = recipientController.text.trim();
+
+    if (coin == null || recipient.isEmpty) {
+      _addressDebounceTimer?.cancel();
+      _lastValidatedAddressKey = null;
+      // Invalidate any stale request so a late response can't re-flag.
+      _addressRequestId++;
+      _setRecipientError(null);
+      return;
+    }
+
+    final key = '${coin.symbol}|$recipient';
+    if (key == _lastValidatedAddressKey) return;
+    _lastValidatedAddressKey = key;
+
+    _addressDebounceTimer?.cancel();
+    _addressDebounceTimer = Timer(_addressDebounce, () {
+      _validateRecipientAddress(coin: coin, recipient: recipient);
+    });
+  }
+
+  Future<void> _validateRecipientAddress({
+    required CoinModel coin,
+    required String recipient,
+  }) async {
+    final requestId = ++_addressRequestId;
+    try {
+      final result = await SendService.validateAddress(
+        coin: coin.symbol,
+        address: recipient,
+      );
+      if (requestId != _addressRequestId) return;
+      if (result.isSelf) {
+        _setRecipientError(
+          appLocalizationsFromStoredLocale().sendValidationCannotSendToSelf,
+        );
+        return;
+      }
+      _setRecipientError(null);
+      _applyValidatedAddressMetadata(result);
+    } on AppException catch (e) {
+      if (requestId != _addressRequestId) return;
+      // A `requestFailed` here is a real backend validation rejection (e.g. an
+      // address/network mismatch); show its localized message and block the
+      // send. Transient network/transport errors fail open — the on-tap
+      // pre-flight in [prepareSendReview] re-checks before proceeding.
+      _setRecipientError(
+        e.messageKey == 'requestFailed'
+            ? e.localizedMessage(appLocalizationsFromStoredLocale())
+            : null,
+      );
+    } catch (_) {
+      if (requestId != _addressRequestId) return;
+      _setRecipientError(null);
+    }
+  }
+
+  /// Aligns the form's coin and network with a successfully validated address.
+  ///
+  /// - Coin: keeps the user's selection when it is still a valid candidate;
+  ///   otherwise falls back to the backend's [guessedCoin]/[coin] when it maps
+  ///   to an available coin.
+  /// - Network: prefers the entry from [networks] matching the selected coin's
+  ///   network, else the first network the backend returned.
+  void _applyValidatedAddressMetadata(SendValidateAddressModel result) {
+    var changed = false;
+
+    // Coin — only switch away from the user's selection when it isn't a valid
+    // candidate for this address (on a 200 the selection is usually valid, so
+    // this rarely fires; it mainly handles a raw address with a stale coin).
+    final candidates = result.candidates
+        .map((c) => c.trim().toUpperCase())
+        .where((c) => c.isNotEmpty)
+        .toSet();
+    final currentSymbol = _selectedCoin?.symbol.toUpperCase();
+    final selectionIsValid = currentSymbol != null &&
+        (candidates.isEmpty || candidates.contains(currentSymbol));
+    if (!selectionIsValid) {
+      final targetSymbol =
+          (result.guessedCoin ?? result.coin)?.trim().toUpperCase();
+      if (targetSymbol != null && targetSymbol.isNotEmpty) {
+        final match = _coinForSymbol(targetSymbol);
+        if (match != null && match.symbol != _selectedCoin?.symbol) {
+          _selectedCoin = match;
+          _userPickedCoin = true;
+          _userPickedSymbol = match.symbol;
+          _updateNetwork();
+          _lastValidatedAddressKey =
+              '${match.symbol}|${recipientController.text.trim()}';
+          changed = true;
+        }
+      }
+    }
+
+    // Network — populate from the authoritative networks the backend returned,
+    // preferring the one matching the (possibly updated) selected coin.
+    final networks = result.networks
+        .map((n) => n.trim())
+        .where((n) => n.isNotEmpty)
+        .toList();
+    if (networks.isNotEmpty) {
+      final coinNetwork = _selectedCoin?.network?.trim();
+      final matched = coinNetwork != null && coinNetwork.isNotEmpty
+          ? networks.firstWhere(
+              (n) => n.toUpperCase() == coinNetwork.toUpperCase(),
+              orElse: () => networks.first,
+            )
+          : networks.first;
+      if (networkController.text != matched) {
+        networkController.text = matched;
+        changed = true;
+      }
+    }
+
+    // [_validate] re-runs amount checks, reschedules the quote with the new
+    // coin/network, and notifies listeners.
+    if (changed) _validate();
+  }
+
+  CoinModel? _coinForSymbol(String symbol) {
+    final key = symbol.trim().toUpperCase();
+    for (final coin in _coins) {
+      if (coin.symbol.toUpperCase() == key) return coin;
+    }
+    return null;
+  }
+
   @override
   void dispose() {
     _otpTimer?.cancel();
     _quoteDebounceTimer?.cancel();
+    _addressDebounceTimer?.cancel();
     _coinsPricesProvider.removeListener(_onStreamedCoinsUpdated);
     authProvider.removeListener(notifyListeners);
     amountController.dispose();

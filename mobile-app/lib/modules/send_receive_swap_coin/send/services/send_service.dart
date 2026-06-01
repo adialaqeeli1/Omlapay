@@ -3,6 +3,7 @@ import '../../../../core/models/send_confirm_model/send_confirm_response_model.d
 import '../../../../core/models/send_initiate_model/send_initiate_response_model.dart';
 import '../../../../core/models/send_initiate_model/send_resend_otp_response_model.dart';
 import '../../../../core/models/send_quote_model/send_quote_model.dart';
+import '../../../../core/models/send_validate_address_model/send_validate_address_model.dart';
 import '../../../../core/services/api_helper.dart';
 import '../../../../core/utils/app_exception.dart';
 
@@ -13,9 +14,10 @@ class SendService {
 
   /// Validates a recipient address/identifier for the given coin.
   ///
-  /// Throws [AppException] when the backend rejects the request or the
-  /// response payload is missing the `data` object.
-  static Future<void> validateAddress({
+  /// Returns the parsed [SendValidateAddressModel] (notably [isSelf], used to
+  /// block self-transfers). Throws [AppException] when the backend rejects the
+  /// request or the response payload is missing/unparseable.
+  static Future<SendValidateAddressModel> validateAddress({
     required String coin,
     required String address,
   }) async {
@@ -29,6 +31,15 @@ class SendService {
 
     final data = response['data'];
     if (data is! Map<String, dynamic> || data.isEmpty) {
+      throw AppException(
+        'Address validation failed',
+        messageKey: 'requestFailed',
+      );
+    }
+
+    try {
+      return SendValidateAddressModel.fromJson(data);
+    } catch (_) {
       throw AppException(
         'Address validation failed',
         messageKey: 'requestFailed',

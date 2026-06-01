@@ -448,6 +448,7 @@
     "sendFormPhoneOrAddressLabel": "Phone Number Or Wallet Address",
     "sendFormAmountLabel": "Amount to be sent",
     "sendValidationInvalidAmount": "Invalid amount",
+    "sendValidationCannotSendToSelf": "You can't send to your own account",
     "sendValidationInsufficientBalance": "Insufficient balance",
     "sendValidationBelowMinimum": "Amount must be at least {amount}",
     "@sendValidationBelowMinimum": {

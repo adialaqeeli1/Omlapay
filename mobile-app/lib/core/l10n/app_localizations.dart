@@ -2054,6 +2054,12 @@ abstract class AppLocalizations {
   /// **'Invalid amount'**
   String get sendValidationInvalidAmount;
 
+  /// No description provided for @sendValidationCannotSendToSelf.
+  ///
+  /// In en, this message translates to:
+  /// **'You can\'t send to your own account'**
+  String get sendValidationCannotSendToSelf;
+
   /// No description provided for @sendValidationInsufficientBalance.
   ///
   /// In en, this message translates to:
