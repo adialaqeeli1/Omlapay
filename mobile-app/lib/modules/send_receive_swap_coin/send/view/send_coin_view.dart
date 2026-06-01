@@ -108,6 +108,17 @@ class SendCoinView extends StatelessWidget {
                   _buildLabel(context, l10n.sendFormPhoneOrAddressLabel),
                   const SizedBox(height: 8),
                   _buildRecipientField(context, provider),
+                  if (provider.recipientError != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      provider.recipientError!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.start,
+                    ),
+                  ],
                   const SizedBox(height: 20),
 
                   _buildLabel(context, l10n.sendFormAmountLabel),

@@ -448,6 +448,7 @@
     "sendFormPhoneOrAddressLabel": "رقم الهاتف أو عنوان المحفظة",
     "sendFormAmountLabel": "المبلغ المراد إرساله",
     "sendValidationInvalidAmount": "مبلغ غير صالح",
+    "sendValidationCannotSendToSelf": "لا يمكنك الإرسال إلى حسابك الخاص",
     "sendValidationInsufficientBalance": "الرصيد غير كافٍ",
     "sendValidationBelowMinimum": "يجب أن يكون المبلغ {amount} على الأقل",
     "@sendValidationBelowMinimum": {
