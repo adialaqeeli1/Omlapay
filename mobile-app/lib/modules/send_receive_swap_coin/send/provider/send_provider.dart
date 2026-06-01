@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/extentions/number_extensions.dart';
 import '../../../../core/l10n/app_localizations_from_storage.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/contact_model/contact_model.dart';
@@ -69,11 +70,23 @@ class SendProvider extends ChangeNotifier {
   bool _isSubmitting = false;
   String? _submitError;
   SendQuoteModel? _quote;
+  // Localized error from the live quote call (e.g. "Insufficient balance"),
+  // shown under the amount field and blocking [canSend]; `null` when valid.
+  String? _quoteError;
   bool _isFetchingQuote = false;
   Timer? _quoteDebounceTimer;
   int _quoteRequestId = 0;
   String? _lastQuoteKey;
   static const Duration _quoteDebounce = Duration(milliseconds: 500);
+
+  // "Max" send tracking. The amount field always displays the balance rounded
+  // to [AppConstants.coinAmountDecimals], but the API must receive the exact
+  // (unrounded) balance — rounding the display value up would exceed the real
+  // balance and the backend would reject with "Insufficient balance". So while
+  // Max is active we keep the full-precision value in [_maxRawAmount] and the
+  // shown 4-decimal string in [_maxDisplayAmount] to detect manual edits.
+  String? _maxRawAmount;
+  String? _maxDisplayAmount;
 
   // Reactive recipient validation (validate-address). Holds the localized
   // reason the recipient is rejected (self-transfer, or a backend address
@@ -162,9 +175,15 @@ class SendProvider extends ChangeNotifier {
   bool get canSend =>
       _error == null &&
       _recipientError == null &&
+      _quoteError == null &&
       amountController.text.isNotEmpty &&
       recipientController.text.trim().isNotEmpty &&
       isVerified;
+
+  /// Localized error returned by the live quote call (e.g. "Insufficient
+  /// balance"), to display under the amount field; `null` when the quote is
+  /// valid or not yet attempted.
+  String? get quoteError => _quoteError;
 
   /// Localized recipient validation error to display under the recipient
   /// field, or `null` when the recipient is valid. Covers self-transfers and
@@ -246,11 +265,38 @@ class SendProvider extends ChangeNotifier {
   }
 
   void setMaxAmount() {
-    if (_selectedCoin == null) return;
-    amountController.text = walletsProvider
-        .balanceForCoin(_selectedCoin!.symbol)
-        .replaceAll(',', '');
+    final coin = _selectedCoin;
+    if (coin == null) return;
+    final raw = walletsProvider.rawBalanceForCoin(coin.symbol);
+    // Show the rounded 4-decimal value, but remember the exact balance so the
+    // API receives the full precision (see [_maxRawAmount]).
+    _maxRawAmount = _plainAmount(raw);
+    _maxDisplayAmount = raw.toFormattedAmount().replaceAll(',', '');
+    amountController.text = _maxDisplayAmount!;
     _validate();
+  }
+
+  /// The amount string to send to the API: the exact (unrounded) balance while
+  /// "Max" is active and the field still shows that value, otherwise the
+  /// user-entered amount.
+  String get _amountForApi {
+    final text = amountController.text.trim();
+    if (_maxRawAmount != null && text == _maxDisplayAmount) {
+      return _maxRawAmount!;
+    }
+    return text;
+  }
+
+  /// Renders [value] as a plain decimal string (no thousands grouping, no
+  /// scientific notation, no rounding) suitable for API amount fields.
+  String _plainAmount(double value) {
+    final s = value.toString();
+    if (!s.contains('e') && !s.contains('E')) return s;
+    // Expand exponent notation (very small/large magnitudes) to plain decimals.
+    return value
+        .toStringAsFixed(18)
+        .replaceFirst(RegExp(r'0+$'), '')
+        .replaceFirst(RegExp(r'\.$'), '');
   }
 
   /// Runs the send pre-flight: validate-address then fetch-quote.
@@ -288,7 +334,7 @@ class SendProvider extends ChangeNotifier {
       _quote = await SendService.fetchQuote(
         coin: coin.symbol,
         recipient: recipient,
-        amount: amount,
+        amount: _amountForApi,
       );
       return true;
     } on AppException catch (e) {
@@ -322,9 +368,10 @@ class SendProvider extends ChangeNotifier {
     if (coin == null) return null;
 
     final recipient = recipientController.text.trim();
-    final amountText = amountController.text.trim();
-    final amount = double.tryParse(amountText);
-    if (recipient.isEmpty || amount == null) return null;
+    if (recipient.isEmpty || amountController.text.trim().isEmpty) return null;
+    // Send the exact balance while on Max (full precision), else the typed value.
+    final amount = double.tryParse(_amountForApi);
+    if (amount == null) return null;
 
     _isSubmitting = true;
     notifyListeners();
@@ -426,27 +473,35 @@ class SendProvider extends ChangeNotifier {
 
   void _validate() {
     final l10n = appLocalizationsFromStoredLocale();
-    _error = null;
     final text = amountController.text;
+    // Drop "Max" tracking once the user edits the field away from the rounded
+    // Max value, so we send the typed amount instead of the full balance.
+    final onMax = _maxRawAmount != null && text.trim() == _maxDisplayAmount;
+    if (_maxDisplayAmount != null && !onMax) {
+      _maxRawAmount = null;
+      _maxDisplayAmount = null;
+    }
+
+    _error = null;
     if (text.isEmpty) {
       _scheduleQuoteFetch();
       notifyListeners();
       return;
     }
 
-    final amount = double.tryParse(text);
-    if (amount == null) {
+    final displayAmount = double.tryParse(text);
+    if (displayAmount == null) {
       _error = l10n.sendValidationInvalidAmount;
     } else if (_selectedCoin != null) {
+      // Validate against the value actually sent (exact balance while on Max)
+      // and the real, unrounded wallet balance.
+      final amount = double.tryParse(_amountForApi) ?? displayAmount;
       final min = minSendAmount;
-      final balanceStr = walletsProvider
-          .balanceForCoin(_selectedCoin!.symbol)
-          .replaceAll(',', '');
-      final balance = double.tryParse(balanceStr) ?? 0.0;
+      final balance = walletsProvider.rawBalanceForCoin(_selectedCoin!.symbol);
 
       if (min > 0 && amount < min) {
         _error = l10n.sendValidationBelowMinimum(min.toString());
-      } else if (amount > balance) {
+      } else if (!onMax && amount > balance) {
         _error = l10n.sendValidationInsufficientBalance;
       }
     }
@@ -464,7 +519,8 @@ class SendProvider extends ChangeNotifier {
   void _scheduleQuoteFetch() {
     final coin = _selectedCoin;
     final recipient = recipientController.text.trim();
-    final amountText = amountController.text.trim();
+    // Quote against the exact value we'll send (full balance while on Max).
+    final amountText = _amountForApi;
     final amount = double.tryParse(amountText);
     final network = networkController.text.trim();
 
@@ -480,9 +536,10 @@ class SendProvider extends ChangeNotifier {
     if (!hasAllInputs) {
       _quoteDebounceTimer?.cancel();
       _lastQuoteKey = null;
-      if (_quote != null || _isFetchingQuote) {
+      if (_quote != null || _isFetchingQuote || _quoteError != null) {
         _quote = null;
         _isFetchingQuote = false;
+        _quoteError = null;
         notifyListeners();
       }
       return;
@@ -493,9 +550,10 @@ class SendProvider extends ChangeNotifier {
     _lastQuoteKey = key;
 
     _quoteDebounceTimer?.cancel();
-    // Drop any prior quote and start the loader immediately so the fee row
-    // shows a spinner during the debounce window instead of stale data.
+    // Drop any prior quote/error and start the loader immediately so the fee
+    // row shows a spinner during the debounce window instead of stale data.
     _quote = null;
+    _quoteError = null;
     _isFetchingQuote = true;
     notifyListeners();
     _quoteDebounceTimer = Timer(_quoteDebounce, () {
@@ -520,9 +578,20 @@ class SendProvider extends ChangeNotifier {
       );
       if (requestId != _quoteRequestId) return;
       _quote = result;
+      _quoteError = null;
+    } on AppException catch (e) {
+      if (requestId != _quoteRequestId) return;
+      _quote = null;
+      // Surface real backend rejections (e.g. "Insufficient balance.") under
+      // the amount field and block the send. Transient network/transport
+      // errors fail open so a flaky quote doesn't blanket-block the form.
+      _quoteError = e.messageKey == 'requestFailed'
+          ? e.localizedMessage(appLocalizationsFromStoredLocale())
+          : null;
     } catch (_) {
       if (requestId != _quoteRequestId) return;
       _quote = null;
+      _quoteError = null;
     } finally {
       if (requestId == _quoteRequestId) {
         _isFetchingQuote = false;
@@ -613,11 +682,13 @@ class SendProvider extends ChangeNotifier {
         .where((c) => c.isNotEmpty)
         .toSet();
     final currentSymbol = _selectedCoin?.symbol.toUpperCase();
-    final selectionIsValid = currentSymbol != null &&
+    final selectionIsValid =
+        currentSymbol != null &&
         (candidates.isEmpty || candidates.contains(currentSymbol));
     if (!selectionIsValid) {
-      final targetSymbol =
-          (result.guessedCoin ?? result.coin)?.trim().toUpperCase();
+      final targetSymbol = (result.guessedCoin ?? result.coin)
+          ?.trim()
+          .toUpperCase();
       if (targetSymbol != null && targetSymbol.isNotEmpty) {
         final match = _coinForSymbol(targetSymbol);
         if (match != null && match.symbol != _selectedCoin?.symbol) {
