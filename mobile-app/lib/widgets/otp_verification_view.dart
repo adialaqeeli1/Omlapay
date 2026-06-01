@@ -77,8 +77,14 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
     // Auto-clear the pin field when verification fails so the user can
     // retype without manually deleting digits. The error styling persists
     // until the user types again (which clears `hasError` in the provider).
+    //
+    // `didUpdateWidget` runs during the parent's build phase, and
+    // `_pinController.clear()` notifies its listeners (the pin field), which
+    // would trigger `markNeedsBuild() during build`. Defer to after the frame.
     if (!oldWidget.hasError && widget.hasError) {
-      _pinController.clear();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _pinController.clear();
+      });
     }
   }
 

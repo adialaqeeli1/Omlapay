@@ -6,6 +6,32 @@ class AppException implements Exception {
 
   AppException(this.message, {this.messageKey});
 
+  /// Whether this failure specifically describes an invalid/expired OTP.
+  ///
+  /// The backend returns generic `400`s with `messageKey: 'requestFailed'` and
+  /// a human-readable message for BOTH OTP rejections and unrelated failures
+  /// (e.g. "Transfer failed. Please try again."), with no machine-readable
+  /// error code to tell them apart. So OTP rejections are classified from the
+  /// localized message text. Callers use this to decide whether to surface an
+  /// OTP-field error vs. a generic snackbar only.
+  bool get isInvalidOtp {
+    if (messageKey == 'invalidOtpTryAgain') return true;
+    final lower = message.toLowerCase();
+    if (lower.contains('otp')) return true;
+    final mentionsCodeEn = lower.contains('verification code') ||
+        (lower.contains('code') &&
+            (lower.contains('invalid') ||
+                lower.contains('incorrect') ||
+                lower.contains('wrong') ||
+                lower.contains('expired')));
+    if (mentionsCodeEn) return true;
+    // Arabic: "رمز" (code) qualified as invalid/wrong/expired.
+    return message.contains('رمز') &&
+        (message.contains('غير صالح') ||
+            message.contains('خاطئ') ||
+            message.contains('منتهي'));
+  }
+
   /// Returns the best user-facing error text.
   ///
   /// Priority:
