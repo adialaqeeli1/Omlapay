@@ -333,9 +333,10 @@ class SendProvider extends ChangeNotifier {
   ///
   /// Returns `true` on success (and stores the queued transaction in
   /// [confirmResponse] plus the backend success message in [confirmMessage]).
-  /// Returns `false` when the backend rejects the OTP, setting [hasOtpError]
-  /// so the OTP input renders its error state. Non-OTP API failures are
-  /// rethrown as [AppException] so the view can show an error snackbar.
+  /// All backend failures are rethrown as [AppException] so the view can show
+  /// an error snackbar. Only an actual OTP rejection ([AppException.isInvalidOtp])
+  /// additionally sets [hasOtpError] so the OTP input renders its error state;
+  /// unrelated failures (e.g. "Transfer failed.") leave the OTP field untouched.
   Future<bool> confirmSendWithOtp(String otp) async {
     final token = _sendToken;
     if (token == null || token.isEmpty) return false;
@@ -351,8 +352,11 @@ class SendProvider extends ChangeNotifier {
       _confirmMessage = result.message;
       _stopOtpCountdown();
       return true;
-    } on AppException {
-      _hasOtpError = true;
+    } on AppException catch (e) {
+      // Only flag the OTP input as invalid when the backend actually rejected
+      // the OTP. Other failures (e.g. "Transfer failed. Please try again.")
+      // surface via the error snackbar instead of falsely marking the OTP.
+      _hasOtpError = e.isInvalidOtp;
       rethrow;
     } finally {
       _isOtpSubmitting = false;
