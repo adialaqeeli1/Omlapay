@@ -44,6 +44,12 @@ class GlobalProvider extends ChangeNotifier {
     }
   }
 
+  /// Toggles between the two supported fiat currencies (USD <-> SAR).
+  Future<void> toggleCurrency() {
+    final next = _selectedCurrency.toUpperCase() == 'USD' ? 'SAR' : 'USD';
+    return updateCurrency(next);
+  }
+
   Future<void> updateCurrency(String currency) async {
     if (_selectedCurrency.toLowerCase() == currency.toLowerCase()) return;
 
