@@ -176,6 +176,32 @@ class PushNotificationService {
   }
 
   // ---------------------------------------------------------------------------
+  // App-icon badge
+  // ---------------------------------------------------------------------------
+
+  /// Syncs the OS app-icon (launcher) badge to [count] — the backend
+  /// unread-notifications count.
+  ///
+  /// Why this is needed: the default channel has `channelShowBadge: true`, so
+  /// on iOS awesome_notifications auto-increments the global badge counter for
+  /// every notification it displays. Without an authoritative reset the badge
+  /// grows unbounded and never reflects the real unread state (it keeps a stale
+  /// number even after the user reads everything). Call this whenever a fresh
+  /// unread count is known — home fetch, notifications fetch/load-more,
+  /// mark-as-read, mark-all-read. Pass 0 to clear the badge.
+  ///
+  /// Never throws — badge support is best-effort and varies by launcher.
+  Future<void> syncAppBadge(int count) async {
+    final safe = count < 0 ? 0 : count;
+    try {
+      await AwesomeNotifications().setGlobalBadgeCounter(safe);
+      log('$_logTag syncAppBadge: set badge=$safe');
+    } catch (e) {
+      debugPrint('$_logTag syncAppBadge failed: $e');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Demo / debug
   // ---------------------------------------------------------------------------
 

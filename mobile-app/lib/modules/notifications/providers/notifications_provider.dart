@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/models/notification/notification_model.dart';
+import '../../../core/services/push_notification_service.dart';
 import '../../../core/utils/app_exception.dart';
 import '../services/notifications_service.dart';
 
@@ -38,6 +41,7 @@ class NotificationsProvider extends ChangeNotifier {
       _unreadCount = response.unreadCount;
       _hasMore = response.pagination?.hasMore ?? false;
       _nextCursor = response.pagination?.nextCursor;
+      _syncAppBadge();
     } on AppException catch (e) {
       _errorKey = e.messageKey ?? 'requestFailed';
     } catch (_) {
@@ -60,6 +64,7 @@ class NotificationsProvider extends ChangeNotifier {
       _unreadCount = response.unreadCount;
       _hasMore = response.pagination?.hasMore ?? false;
       _nextCursor = response.pagination?.nextCursor;
+      _syncAppBadge();
     } on AppException catch (e) {
       _errorKey = e.messageKey ?? 'requestFailed';
     } catch (_) {
@@ -84,6 +89,7 @@ class NotificationsProvider extends ChangeNotifier {
           if (i == index) _items[i].copyWith(isRead: true) else _items[i],
       ];
       _unreadCount = (_unreadCount - 1).clamp(0, _unreadCount);
+      _syncAppBadge();
     } on AppException catch (e) {
       _errorKey = e.messageKey ?? 'requestFailed';
     } catch (_) {
@@ -109,6 +115,7 @@ class NotificationsProvider extends ChangeNotifier {
           item.isRead ? item : item.copyWith(isRead: true),
       ];
       _unreadCount = 0;
+      _syncAppBadge();
     } on AppException catch (e) {
       if (!silent) _errorKey = e.messageKey ?? 'requestFailed';
     } catch (_) {
@@ -117,5 +124,11 @@ class NotificationsProvider extends ChangeNotifier {
       if (!silent) _isActionLoading = false;
       notifyListeners();
     }
+  }
+
+  /// Keeps the OS app-icon badge in sync with the backend unread count.
+  /// Fire-and-forget: badge updates must never block or fail the data flow.
+  void _syncAppBadge() {
+    unawaited(PushNotificationService.instance.syncAppBadge(_unreadCount));
   }
 }
