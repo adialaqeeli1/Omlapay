@@ -33,7 +33,6 @@ import '../../../../providers/wallets_provider.dart';
 import '../../../scan/view/qr_scanner_view.dart';
 import '../../../send_receive_swap_coin/send/view/send_coin_view.dart';
 import '../providers/home_provider.dart';
-import '../widgets/currency_selection_dialog.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -265,9 +264,6 @@ class _HomeViewState extends State<HomeView> {
         context,
         l10n,
         selectedCurrency: selectedCurrency,
-        onCurrencyChanged: (currency) {
-          context.read<GlobalProvider>().updateCurrency(currency);
-        },
         isAuthenticated: isAuthenticated,
       ),
       bottomWidget: isAuthenticated ? ReceiveSendSwapActions() : null,
@@ -623,7 +619,6 @@ class _HomeViewState extends State<HomeView> {
     BuildContext context,
     AppLocalizations l10n, {
     required String selectedCurrency,
-    required ValueChanged<String> onCurrencyChanged,
     required bool isAuthenticated,
   }) => Stack(
     fit: .expand,
@@ -685,15 +680,7 @@ class _HomeViewState extends State<HomeView> {
                   onTap:
                       (isAuthenticated &&
                           !context.watch<HomeProvider>().isLoading)
-                      ? () {
-                          showDialog(
-                            context: context,
-                            builder: (_) => CurrencySelectionDialog(
-                              initialCurrency: selectedCurrency,
-                              onCurrencyChanged: onCurrencyChanged,
-                            ),
-                          );
-                        }
+                      ? () => context.read<GlobalProvider>().toggleCurrency()
                       : () => context.push(Routes.loginOrRegister),
                   child: Padding(
                     padding: const EdgeInsetsDirectional.only(

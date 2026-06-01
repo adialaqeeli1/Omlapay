@@ -24,7 +24,6 @@ import '../../../widgets/receive_send_swap_actions.dart';
 import '../../dashboard/history/providers/history_provider.dart';
 import '../../dashboard/history/widgets/transaction_item.dart';
 import '../../dashboard/history/widgets/transaction_section_header.dart';
-import '../../dashboard/home/widgets/currency_selection_dialog.dart';
 
 class CoinDetailsView extends StatelessWidget {
   const CoinDetailsView({super.key, required this.coinModel});
@@ -356,19 +355,7 @@ class CoinDetailsView extends StatelessWidget {
               GestureDetector(
                 onTap: context.watch<CoinDetailsProvider>().isLoading
                     ? null
-                    : () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => CurrencySelectionDialog(
-                            initialCurrency: selectedCurrency,
-                            onCurrencyChanged: (currency) {
-                              context.read<GlobalProvider>().updateCurrency(
-                                currency,
-                              );
-                            },
-                          ),
-                        );
-                      },
+                    : () => context.read<GlobalProvider>().toggleCurrency(),
                 child: Row(
                   spacing: 4,
                   mainAxisAlignment: .center,
