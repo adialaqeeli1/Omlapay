@@ -125,14 +125,15 @@ class SendCoinView extends StatelessWidget {
                   const SizedBox(height: 8),
                   _buildAmountField(context, provider),
 
-                  if (provider.error != null) ...[
+                  if ((provider.error ?? provider.quoteError) != null) ...[
                     const SizedBox(height: 6),
                     Text(
-                      provider.error!,
+                      (provider.error ?? provider.quoteError)!,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.error,
                         fontSize: 12,
                       ),
+                      textAlign: TextAlign.start,
                     ),
                   ],
 
