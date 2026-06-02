@@ -668,9 +668,11 @@ class SendProvider extends ChangeNotifier {
   ///
   /// - Coin: keeps the user's selection when it is still a valid candidate;
   ///   otherwise falls back to the backend's [guessedCoin]/[coin] when it maps
-  ///   to an available coin.
+  ///   to an available coin. When the plural [candidates] list is empty, the
+  ///   singular resolved [coin] is used as the sole candidate.
   /// - Network: prefers the entry from [networks] matching the selected coin's
-  ///   network, else the first network the backend returned.
+  ///   network, else the first network the backend returned; when [networks]
+  ///   is empty it falls back to the singular [network].
   void _applyValidatedAddressMetadata(SendValidateAddressModel result) {
     var changed = false;
 
@@ -681,6 +683,17 @@ class SendProvider extends ChangeNotifier {
         .map((c) => c.trim().toUpperCase())
         .where((c) => c.isNotEmpty)
         .toSet();
+    // Fallback: when the backend omits the plural `candidates` list it still
+    // returns the resolved coin in the singular `coin` field (e.g. a SOL
+    // address validated while ETH was selected comes back as `coin: "SOL"`
+    // with an empty `candidates`). Fold it in so the selection is corrected
+    // instead of an empty list being treated as "any coin is valid".
+    if (candidates.isEmpty) {
+      final resolvedCoin = result.coin?.trim().toUpperCase();
+      if (resolvedCoin != null && resolvedCoin.isNotEmpty) {
+        candidates.add(resolvedCoin);
+      }
+    }
     final currentSymbol = _selectedCoin?.symbol.toUpperCase();
     final selectionIsValid =
         currentSymbol != null &&
@@ -709,6 +722,13 @@ class SendProvider extends ChangeNotifier {
         .map((n) => n.trim())
         .where((n) => n.isNotEmpty)
         .toList();
+    // Fallback: when the plural `networks` list is empty, use the singular
+    // `network` the backend resolved for the address (the common
+    // INTERNAL-recipient case, e.g. `network: "SOL"`).
+    if (networks.isEmpty) {
+      final single = result.network?.trim();
+      if (single != null && single.isNotEmpty) networks.add(single);
+    }
     if (networks.isNotEmpty) {
       final coinNetwork = _selectedCoin?.network?.trim();
       final matched = coinNetwork != null && coinNetwork.isNotEmpty
