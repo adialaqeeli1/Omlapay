@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/constants/constants.dart';
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/extentions/number_extensions.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
@@ -26,8 +27,22 @@ class ReviewSendView extends StatelessWidget {
         quote?.coin ??
         provider.selectedCoin?.localizedCoinTicker(context) ??
         '';
-    final displayAmount = quote?.amount ?? provider.amountController.text;
-    final displayAmountUsd = quote?.amountUsd ?? '';
+    // Format the send amount to the standard coin precision (truncated to
+    // [AppConstants.coinAmountDecimals]) like the fee row and success screen,
+    // so the hero card never shows a raw, full-precision value. Falls back to
+    // the raw string if it can't be parsed.
+    final rawAmount = quote?.amount ?? provider.amountController.text;
+    final parsedAmount = double.tryParse(rawAmount.trim());
+    final displayAmount = parsedAmount != null
+        ? parsedAmount.toFormattedAmount()
+        : rawAmount;
+    final rawAmountUsd = quote?.amountUsd ?? '';
+    final parsedAmountUsd = double.tryParse(rawAmountUsd.trim());
+    final displayAmountUsd = parsedAmountUsd != null
+        ? parsedAmountUsd.toFormattedAmount(
+            decimals: AppConstants.fiatValueDecimals,
+          )
+        : rawAmountUsd;
     final displayNetwork = (quote?.network.isNotEmpty ?? false)
         ? quote!.network
         : provider.network;
