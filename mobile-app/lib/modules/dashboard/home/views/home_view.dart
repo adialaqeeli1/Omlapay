@@ -243,8 +243,10 @@ class _HomeViewState extends State<HomeView> {
               ),
             );
             if (scanned == null || !context.mounted) return;
-            final payload = Utility.parseScannedWallet(scanned);
-            if (payload == null) return;
+            // Resolves the chain for a bare address (no embedded coin) so the
+            // send form can pre-select the matching coin/network.
+            final payload = await Utility.parseScannedWalletResolved(scanned);
+            if (payload == null || !context.mounted) return;
             final address = payload.address?.trim() ?? '';
             if (address.isEmpty) return;
             context.push(
