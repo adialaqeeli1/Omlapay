@@ -647,5 +647,13 @@
                 "type": "String"
             }
         }
+    },
+    "appVersion": "الإصدار: {version}",
+    "@appVersion": {
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
     }
 }
