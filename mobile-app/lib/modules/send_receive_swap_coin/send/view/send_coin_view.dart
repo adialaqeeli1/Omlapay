@@ -624,8 +624,10 @@ class SendCoinView extends StatelessWidget {
     );
     if (result == null || !context.mounted) return;
 
-    final payload = Utility.parseScannedWallet(result);
-    if (payload == null) return;
+    // Resolves the chain for a bare address (no embedded coin) so the
+    // matching coin/network can be auto-selected below.
+    final payload = await Utility.parseScannedWalletResolved(result);
+    if (payload == null || !context.mounted) return;
 
     final address = payload.address?.trim() ?? '';
     if (address.isNotEmpty) {

@@ -10,6 +10,7 @@ import '../constants/endpoints.dart';
 import '../models/scanned_qr_payload/scanned_qr_payload.dart';
 import '../models/wallet_model/wallet_model.dart';
 import '../services/api_helper.dart';
+import '../services/chain_resolver_service.dart';
 
 /// Reason a scanned QR code failed validation.
 ///
@@ -515,6 +516,32 @@ class Utility {
     return ScannedQrPayload(address: value);
   }
 
+  /// Like [parseScannedWallet], but for a bare address with no embedded coin
+  /// it resolves the chain from the raw address via [ChainResolverService]
+  /// (blockchain.com) and fills in `symbol`/`network` so callers can
+  /// auto-select the matching coin. Payloads that already carry a coin
+  /// (OmlaPay JSON / `solana:` URI) are returned unchanged.
+  ///
+  /// Resolution is best-effort: if the chain can't be determined the payload
+  /// is returned as-is (empty `symbol`), exactly like [parseScannedWallet].
+  /// The lookup is cached, so when the scan validator already resolved this
+  /// address there is no extra network round-trip here.
+  static Future<ScannedQrPayload?> parseScannedWalletResolved(
+    String raw,
+  ) async {
+    final payload = parseScannedWallet(raw);
+    if (payload == null) return null;
+    if (payload.symbol.trim().isNotEmpty) return payload;
+
+    final address = payload.address?.trim() ?? '';
+    if (address.isEmpty) return payload;
+
+    final chain = await ChainResolverService.resolveChain(address);
+    if (chain == null || chain.isEmpty) return payload;
+
+    return payload.copyWith(symbol: chain, network: chain);
+  }
+
   /// Formats a scanned numeric amount for display in a text input.
   ///
   /// Returns `null` when [amount] is `null` or non-finite (`NaN`,
@@ -539,9 +566,12 @@ class Utility {
   /// 1. Parse the raw value with [parseScannedWallet].
   /// 2. Require a non-empty address.
   /// 3. Run client-side regex on the address (cheap local reject).
-  /// 4. If a coin symbol is present, call
+  /// 4. Resolve the coin: use the embedded symbol when present, otherwise
+  ///    resolve the chain from the raw address via [ChainResolverService]
+  ///    (blockchain.com). When a coin is known, call
   ///    `GET /v1/send/validate-address?address=...&coin=...` and require a
-  ///    non-null `data` payload. With no symbol, the regex check is final.
+  ///    non-null `data` payload. When no coin can be resolved, the regex
+  ///    check is final (address accepted).
   static Future<QrValidationError?> isValidWalletAddress(String value) async {
     final payload = parseScannedWallet(value);
     if (payload == null) {
@@ -562,17 +592,26 @@ class Utility {
       return QrValidationError.invalidAddress;
     }
 
-    // Without a coin symbol there is nothing to send to the backend's
-    // validate-address endpoint, so the client-side regex above is the
-    // only check we can run.
-    if (symbol.isEmpty) {
-      return null;
+    // Determine the coin to validate against. QR payloads that embed a coin
+    // symbol (OmlaPay JSON / `solana:` URI) use it directly. A bare address
+    // carries no coin, so resolve the chain from the raw address via
+    // blockchain.com's explorer search and validate against that. Resolution
+    // is best-effort: if it can't determine a chain (lookup fails or returns
+    // nothing), the client-side regex above stays the final word and the
+    // address is accepted, exactly as before.
+    var coin = symbol;
+    if (coin.isEmpty) {
+      final resolvedChain = await ChainResolverService.resolveChain(address);
+      if (resolvedChain == null || resolvedChain.isEmpty) {
+        return null;
+      }
+      coin = resolvedChain;
     }
 
     try {
       final response = await ApiHelper.get(
         Endpoints.sendValidateAddress,
-        queryParameters: {'address': address, 'coin': symbol},
+        queryParameters: {'address': address, 'coin': coin},
       );
       final data = response['data'];
       if (data is! Map<String, dynamic> || data.isEmpty) {

@@ -9,6 +9,7 @@ import '../../../../core/models/contact_model/contact_model.dart';
 import '../../../../core/models/send_confirm_model/send_confirm_response_model.dart';
 import '../../../../core/models/send_quote_model/send_quote_model.dart';
 import '../../../../core/models/send_validate_address_model/send_validate_address_model.dart';
+import '../../../../core/services/chain_resolver_service.dart';
 import '../../../../core/utils/app_exception.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/coins_prices_provider.dart';
@@ -649,19 +650,59 @@ class SendProvider extends ChangeNotifier {
       _applyValidatedAddressMetadata(result);
     } on AppException catch (e) {
       if (requestId != _addressRequestId) return;
-      // A `requestFailed` here is a real backend validation rejection (e.g. an
-      // address/network mismatch); show its localized message and block the
-      // send. Transient network/transport errors fail open — the on-tap
-      // pre-flight in [prepareSendReview] re-checks before proceeding.
-      _setRecipientError(
-        e.messageKey == 'requestFailed'
-            ? e.localizedMessage(appLocalizationsFromStoredLocale())
-            : null,
-      );
+      // A `requestFailed` here is a real backend validation rejection — most
+      // often the address doesn't match the selected coin/network. Before
+      // surfacing it, fall back to resolving the address's chain via
+      // blockchain.com and auto-switching to the matching coin; the
+      // rescheduled validation then confirms the address against the right
+      // coin. Only switch when the resolved coin differs from the current
+      // selection (which also prevents a switch loop). Transient
+      // network/transport errors fail open — the on-tap pre-flight in
+      // [prepareSendReview] re-checks before proceeding.
+      if (e.messageKey == 'requestFailed') {
+        final switched = await _trySwitchCoinForResolvedChain(
+          recipient: recipient,
+          requestId: requestId,
+        );
+        if (switched) return;
+        _setRecipientError(
+          e.localizedMessage(appLocalizationsFromStoredLocale()),
+        );
+      } else {
+        _setRecipientError(null);
+      }
     } catch (_) {
       if (requestId != _addressRequestId) return;
       _setRecipientError(null);
     }
+  }
+
+  /// Resolves [recipient]'s chain via blockchain.com and, when it maps to a
+  /// known coin different from the current selection, switches to it so the
+  /// address validates against the right coin/network.
+  ///
+  /// Returns `true` when it either switched coins or the request was
+  /// superseded by a newer validation (caller should stop and let that one own
+  /// the outcome); `false` when no usable coin could be resolved so the caller
+  /// surfaces the original rejection. The lookup is cached, so a chain resolved
+  /// while scanning the QR is reused here without an extra round-trip.
+  Future<bool> _trySwitchCoinForResolvedChain({
+    required String recipient,
+    required int requestId,
+  }) async {
+    final chain = await ChainResolverService.resolveChain(recipient);
+    // A newer validation started while resolving — let it own the outcome.
+    if (requestId != _addressRequestId) return true;
+    if (chain == null || chain.isEmpty) return false;
+
+    final match = _coinForSymbol(chain);
+    if (match == null) return false;
+    if (match.symbol.toUpperCase() == _selectedCoin?.symbol.toUpperCase()) {
+      return false;
+    }
+
+    setSelectedCoin(match);
+    return true;
   }
 
   /// Aligns the form's coin and network with a successfully validated address.
