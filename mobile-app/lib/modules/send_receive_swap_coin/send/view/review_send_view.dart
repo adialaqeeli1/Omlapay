@@ -69,81 +69,92 @@ class ReviewSendView extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: Column(
-            children: [
-              _AmountHeroCard(
-                label: l10n.youWillSend,
-                amount: displayAmount,
-                ticker: ticker,
-                amountUsd: displayAmountUsd,
-              ),
-              const SizedBox(height: 32),
-              _DetailsList(
-                rows: [
-                  _DetailRowData(
-                    label: l10n.network,
-                    trailing: _NetworkPill(network: displayNetwork),
-                  ),
-                  if (senderAddress != null && senderAddress.isNotEmpty)
-                    _DetailRowData(
-                      label: l10n.walletAddress,
-                      valueText: senderAddress,
-                    ),
-                  if (recipientName.isNotEmpty)
-                    _DetailRowData(
-                      label: l10n.sendTo,
-                      valueText: recipientName,
-                      emphasized: true,
-                    ),
-                  _DetailRowData(
-                    label: l10n.transactionFees,
-                    valueText: displayFee,
-                  ),
-                ],
-              ),
-              const Spacer(),
-              _ConfirmationWarning(text: l10n.confirmationWarning),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: provider.isSubmitting
-                      ? null
-                      : () => _onConfirmPressed(context, provider),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.tealColor,
-                    foregroundColor: colorScheme.onPrimary,
-                    disabledBackgroundColor: AppColors.tealColor.withValues(
-                      alpha: 0.5,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(32),
-                    ),
-                  ),
-                  child: provider.isSubmitting
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.4,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        _AmountHeroCard(
+                          label: l10n.youWillSend,
+                          amount: displayAmount,
+                          ticker: ticker,
+                          amountUsd: displayAmountUsd,
+                        ),
+                        const SizedBox(height: 32),
+                        _DetailsList(
+                          rows: [
+                            _DetailRowData(
+                              label: l10n.network,
+                              trailing: _NetworkPill(network: displayNetwork),
                             ),
-                          ),
-                        )
-                      : Text(
-                          l10n.confirm,
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                            if (senderAddress != null &&
+                                senderAddress.isNotEmpty)
+                              _DetailRowData(
+                                label: l10n.walletAddress,
+                                valueText: senderAddress,
+                              ),
+                            if (recipientName.isNotEmpty)
+                              _DetailRowData(
+                                label: l10n.sendTo,
+                                valueText: recipientName,
+                                emphasized: true,
+                              ),
+                            _DetailRowData(
+                              label: l10n.transactionFees,
+                              valueText: displayFee,
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                        _ConfirmationWarning(text: l10n.confirmationWarning),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: provider.isSubmitting
+                                ? null
+                                : () => _onConfirmPressed(context, provider),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.tealColor,
+                              foregroundColor: colorScheme.onPrimary,
+                              disabledBackgroundColor: AppColors.tealColor
+                                  .withValues(alpha: 0.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(32),
+                              ),
+                            ),
+                            child: provider.isSubmitting
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.4,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    l10n.confirm,
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                           ),
                         ),
+                        const SizedBox(height: 12),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-            ],
+              );
+            },
           ),
         ),
       ),
