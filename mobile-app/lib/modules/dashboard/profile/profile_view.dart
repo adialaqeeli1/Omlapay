@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
@@ -45,7 +46,7 @@ class ProfileView extends StatelessWidget {
         children: [
           const Divider(thickness: 1),
           SizedBox(height: context.height * 0.01),
-          Flexible(
+          Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.start,
@@ -87,8 +88,38 @@ class ProfileView extends StatelessWidget {
               ],
             ),
           ),
+          _buildVersionFooter(context),
         ],
       ),
+    );
+  }
+
+  Widget _buildVersionFooter(BuildContext context) {
+    final l10n = context.l10n!;
+    final theme = Theme.of(context);
+    final versionColor = theme.brightness == Brightness.dark
+        ? AppColors.textGrey
+        : AppColors.textLightGrey;
+
+    return FutureBuilder<PackageInfo>(
+      future: PackageInfo.fromPlatform(),
+      builder: (context, snapshot) {
+        final info = snapshot.data;
+        if (info == null) return const SizedBox.shrink();
+
+        return Padding(
+          padding: const EdgeInsetsDirectional.only(top: 16, bottom: 12),
+          child: Text(
+            l10n.appVersion('${info.version}(${info.buildNumber})'),
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: versionColor,
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        );
+      },
     );
   }
 

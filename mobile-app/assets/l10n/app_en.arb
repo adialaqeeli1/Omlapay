@@ -661,5 +661,13 @@
                 "type": "String"
             }
         }
+    },
+    "appVersion": "Version: {version}",
+    "@appVersion": {
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
     }
 }

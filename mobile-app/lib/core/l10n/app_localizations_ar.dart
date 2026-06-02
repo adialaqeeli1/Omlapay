@@ -1460,4 +1460,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String approximateAmount(String amount, String currency) {
     return '≈$amount $currency';
   }
+
+  @override
+  String appVersion(String version) {
+    return 'الإصدار: $version';
+  }
 }
