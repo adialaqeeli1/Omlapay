@@ -606,6 +606,8 @@ class SendCoinView extends StatelessWidget {
           title: l10n.selectCoinTitle,
           coins: provider.coins,
           selectedCoin: provider.selectedCoin,
+          candidateSymbols: provider.candidateSymbols,
+          candidateCoinSymbol: provider.candidateCoinSymbol,
           onCoinSelected: (coin) {
             provider.setSelectedCoin(coin);
           },

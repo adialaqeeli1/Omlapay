@@ -198,6 +198,32 @@ class SendProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Coin symbols the last `validate-address` call reported as valid for the
+  /// current recipient (e.g. `["ETH", "BNB"]` for an EVM address). Empty when no
+  /// address has validated. Used by the coin selection sheet only to decide
+  /// which coin rows to badge, and only when ambiguous (2+ candidates).
+  List<String> _candidateSymbols = const [];
+  List<String> get candidateSymbols => _candidateSymbols;
+
+  /// The backend's resolved `coin` for the validated address (e.g. `"ETH"`).
+  /// The coin selection sheet renders this single coin's icon as the badge on
+  /// every candidate row; `null` when no address has validated.
+  String? _candidateCoinSymbol;
+  String? get candidateCoinSymbol => _candidateCoinSymbol;
+
+  /// Updates the validated candidates and resolved coin, notifying on change.
+  void _setCandidates(List<String> symbols, String? coinSymbol) {
+    final sameList =
+        _candidateSymbols.length == symbols.length &&
+        _candidateSymbols.asMap().entries.every(
+          (e) => e.value == symbols[e.key],
+        );
+    if (sameList && _candidateCoinSymbol == coinSymbol) return;
+    _candidateSymbols = symbols;
+    _candidateCoinSymbol = coinSymbol;
+    notifyListeners();
+  }
+
   void _onStreamedCoinsUpdated() {
     _syncCoinsFromPrices();
   }
@@ -616,6 +642,7 @@ class SendProvider extends ChangeNotifier {
       // Invalidate any stale request so a late response can't re-flag.
       _addressRequestId++;
       _setRecipientError(null);
+      _setCandidates(const [], null);
       return;
     }
 
@@ -644,6 +671,7 @@ class SendProvider extends ChangeNotifier {
         _setRecipientError(
           appLocalizationsFromStoredLocale().sendValidationCannotSendToSelf,
         );
+        _setCandidates(const [], null);
         return;
       }
       _setRecipientError(null);
@@ -668,6 +696,7 @@ class SendProvider extends ChangeNotifier {
         _setRecipientError(
           e.localizedMessage(appLocalizationsFromStoredLocale()),
         );
+        _setCandidates(const [], null);
       } else {
         _setRecipientError(null);
       }
@@ -735,6 +764,10 @@ class SendProvider extends ChangeNotifier {
         candidates.add(resolvedCoin);
       }
     }
+    // Expose the validated candidates (for matching rows) and the resolved
+    // `coin` (rendered as the badge icon) so the coin selection sheet can badge
+    // the matching coins. Only acts on this when there are 2+ — see the sheet.
+    _setCandidates(candidates.toList(), result.coin?.trim().toUpperCase());
     final currentSymbol = _selectedCoin?.symbol.toUpperCase();
     final selectionIsValid =
         currentSymbol != null &&
