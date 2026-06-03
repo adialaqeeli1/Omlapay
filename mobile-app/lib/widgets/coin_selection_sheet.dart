@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -5,6 +6,7 @@ import '../core/extentions/context_extensions.dart';
 import '../core/models/coin_model/coin_model.dart';
 import '../core/models/coin_model/coin_model_quote_display.dart';
 import '../core/theme/theme.dart';
+import '../core/utils/utility.dart';
 import '../providers/global_provider.dart';
 import '../providers/wallets_provider.dart';
 import 'common_coin_icon.dart';
@@ -17,6 +19,16 @@ class CoinSelectionSheet extends StatefulWidget {
   final ValueChanged<CoinModel> onCoinSelected;
   final Color? zeroBalanceColor;
 
+  /// Coin symbols the backend validated as valid candidates for the current
+  /// recipient address. When this holds 2+ symbols (an ambiguous EVM address),
+  /// the matching coin rows are badged. Empty/single-entry lists show no badges.
+  /// Used only for matching which rows to badge — not for the badge icon.
+  final List<String> candidateSymbols;
+
+  /// The backend's resolved coin symbol (e.g. `"ETH"`) whose icon is rendered as
+  /// the badge on every candidate row. `null` when there's nothing to badge.
+  final String? candidateCoinSymbol;
+
   const CoinSelectionSheet({
     super.key,
     required this.title,
@@ -24,6 +36,8 @@ class CoinSelectionSheet extends StatefulWidget {
     this.selectedCoin,
     required this.onCoinSelected,
     this.zeroBalanceColor,
+    this.candidateSymbols = const [],
+    this.candidateCoinSymbol,
   });
 
   @override
@@ -86,6 +100,58 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
     super.dispose();
   }
 
+  /// Builds the coin row's leading icon, overlaying a small circular badge
+  /// rendering [badgeSymbol]'s icon (the backend's resolved coin) when
+  /// [isCandidate] is true. The badge marks coins the backend validated as valid
+  /// for the current recipient address.
+  Widget _buildCoinLeading({
+    required CoinModel coin,
+    required Color? iconBackgroundColor,
+    required Widget? fallbackIcon,
+    required bool isCandidate,
+    required String badgeSymbol,
+  }) {
+    final icon = CommonCoinIcon(
+      symbol: coin.symbol,
+      iconBackgroundColor: iconBackgroundColor,
+      fallbackIcon: fallbackIcon,
+      networkIconUrl: coin.networkIconUrl,
+    );
+    if (!isCandidate) return icon;
+
+    final colorScheme = Theme.of(context).colorScheme;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        icon,
+        Positioned(
+          right: -2,
+          bottom: -2,
+          child: Container(
+            padding: const EdgeInsets.all(1.5),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              shape: BoxShape.circle,
+            ),
+            child: CircleAvatar(
+              radius: 8,
+              backgroundColor: colorScheme.surfaceContainerHighest,
+              child: ClipOval(
+                child: CachedNetworkImage(
+                  imageUrl: Utility.getCryptoCoinIconFromSymbol(badgeSymbol),
+                  width: 16,
+                  height: 16,
+                  fit: BoxFit.cover,
+                  errorWidget: (context, url, error) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
@@ -93,6 +159,15 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
     final selectedCurrency = context.watch<GlobalProvider>().selectedCurrency;
     final walletsProvider = context.watch<WalletsProvider>();
     final sortedCoins = walletsProvider.sortByFiatBalanceDesc(_filteredCoins);
+    // Only badge candidates when the address is ambiguous (2+ valid coins) and
+    // the backend resolved a coin whose icon we can show; a single candidate
+    // needs no disambiguation hint.
+    final String badgeSymbol = widget.candidateCoinSymbol?.trim() ?? '';
+    final bool showCandidateBadges =
+        widget.candidateSymbols.length > 1 && badgeSymbol.isNotEmpty;
+    final Set<String> candidateSet = showCandidateBadges
+        ? widget.candidateSymbols.map((s) => s.trim().toUpperCase()).toSet()
+        : const {};
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surface,
@@ -189,87 +264,93 @@ class _CoinSelectionSheetState extends State<CoinSelectionSheet> {
                     ),
                   )
                 : ListView.separated(
-              itemCount: sortedCoins.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemBuilder: (context, index) {
-                final coin = sortedCoins[index];
-                final isSelected = coin == widget.selectedCoin;
-                final theme = context.theme;
-                final itemColorScheme = theme.colorScheme;
-                Color? iconBackgroundColor;
-                Widget? fallbackIcon;
+                    itemCount: sortedCoins.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemBuilder: (context, index) {
+                      final coin = sortedCoins[index];
+                      final isSelected = coin == widget.selectedCoin;
+                      final theme = context.theme;
+                      final itemColorScheme = theme.colorScheme;
+                      Color? iconBackgroundColor;
+                      Widget? fallbackIcon;
 
-                final bool hasPrice =
-                    (double.tryParse(
-                          walletsProvider.balanceForCoinConverted(coin.symbol),
-                        ) ??
-                        0) >
-                    0;
+                      final bool hasPrice =
+                          (double.tryParse(
+                                walletsProvider.balanceForCoinConverted(
+                                  coin.symbol,
+                                ),
+                              ) ??
+                              0) >
+                          0;
 
-                return DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    border: isSelected
-                        ? Border.all(color: AppColors.tealColor)
-                        : null,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: ListTile(
-                    leading: CommonCoinIcon(
-                      symbol: coin.symbol,
-                      iconBackgroundColor: iconBackgroundColor,
-                      fallbackIcon: fallbackIcon,
-                      networkIconUrl: coin.networkIconUrl,
-                    ),
-                    title: Text(
-                      coin.localizedCoinPrimaryName(context),
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: itemColorScheme.onSurface,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Text(
-                      coin.localizedCoinTicker(context),
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: itemColorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          walletsProvider.balanceForCoin(coin.symbol),
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            // color: hasPrice
-                            //     ? itemColorScheme.onSurface
-                            //     : (widget.zeroBalanceColor ??
-                            //           AppColors.redColor),
-                            color:
-                                widget.zeroBalanceColor ??
-                                itemColorScheme.onSurface,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      return DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          border: isSelected
+                              ? Border.all(color: AppColors.tealColor)
+                              : null,
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        if (hasPrice)
-                          Text(
-                            '≈ ${walletsProvider.balanceForCoinConverted(coin.symbol)} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: itemColorScheme.onSurfaceVariant,
-                              fontSize: 12,
+                        child: ListTile(
+                          leading: _buildCoinLeading(
+                            coin: coin,
+                            iconBackgroundColor: iconBackgroundColor,
+                            fallbackIcon: fallbackIcon,
+                            isCandidate: candidateSet.contains(
+                              coin.symbol.toUpperCase(),
+                            ),
+                            badgeSymbol: badgeSymbol,
+                          ),
+                          title: Text(
+                            coin.localizedCoinPrimaryName(context),
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: itemColorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                      ],
-                    ),
-                    onTap: () {
-                      widget.onCoinSelected(coin);
-                      Navigator.of(context).pop();
+                          subtitle: Text(
+                            coin.localizedCoinTicker(context),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: itemColorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          trailing: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                walletsProvider.balanceForCoin(coin.symbol),
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  // color: hasPrice
+                                  //     ? itemColorScheme.onSurface
+                                  //     : (widget.zeroBalanceColor ??
+                                  //           AppColors.redColor),
+                                  color:
+                                      widget.zeroBalanceColor ??
+                                      itemColorScheme.onSurface,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              if (hasPrice)
+                                Text(
+                                  '≈ ${walletsProvider.balanceForCoinConverted(coin.symbol)} ${coin.quoteCurrencyLabel(context, selectedCurrency)}',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: itemColorScheme.onSurfaceVariant,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          onTap: () {
+                            widget.onCoinSelected(coin);
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      );
                     },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),
