@@ -101,6 +101,11 @@ part 'app_routes.dart';
 /// [AppLockProvider]) can push an overlay route onto the same navigator.
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
+/// Root scaffold messenger key. Exposed so app-wide code (e.g. the Shorebird
+/// code-push listener) can show snackbars without a Scaffold in context.
+final GlobalKey<ScaffoldMessengerState> appScaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
 class AppRouter {
   static final GoRouter router = GoRouter(
     navigatorKey: appNavigatorKey,
