@@ -2761,6 +2761,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Version: {version}'**
   String appVersion(String version);
+
+  /// No description provided for @appPatchVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Patch: {number}'**
+  String appPatchVersion(String number);
+
+  /// No description provided for @updateReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update ready'**
+  String get updateReadyTitle;
+
+  /// No description provided for @updateReadyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'A new update is ready. The app will close so the update can be applied. Please reopen it to continue.'**
+  String get updateReadyMessage;
+
+  /// No description provided for @updateReadyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get updateReadyAction;
 }
 
 class _AppLocalizationsDelegate

@@ -669,5 +669,16 @@
                 "type": "String"
             }
         }
-    }
+    },
+    "appPatchVersion": "Patch: {number}",
+    "@appPatchVersion": {
+        "placeholders": {
+            "number": {
+                "type": "String"
+            }
+        }
+    },
+    "updateReadyTitle": "Update ready",
+    "updateReadyMessage": "A new update is ready. The app will close so the update can be applied. Please reopen it to continue.",
+    "updateReadyAction": "OK"
 }
