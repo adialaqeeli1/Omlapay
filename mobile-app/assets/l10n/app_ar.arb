@@ -655,5 +655,16 @@
                 "type": "String"
             }
         }
-    }
+    },
+    "appPatchVersion": "رقم التصحيح: {number}",
+    "@appPatchVersion": {
+        "placeholders": {
+            "number": {
+                "type": "String"
+            }
+        }
+    },
+    "updateReadyTitle": "التحديث جاهز",
+    "updateReadyMessage": "يتوفر تحديث جديد. سيتم إغلاق التطبيق لتطبيق التحديث. الرجاء إعادة فتحه للمتابعة.",
+    "updateReadyAction": "حسنًا"
 }

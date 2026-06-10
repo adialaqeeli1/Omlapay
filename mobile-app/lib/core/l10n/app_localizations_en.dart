@@ -1477,4 +1477,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String appVersion(String version) {
     return 'Version: $version';
   }
+
+  @override
+  String appPatchVersion(String number) {
+    return 'Patch: $number';
+  }
+
+  @override
+  String get updateReadyTitle => 'Update ready';
+
+  @override
+  String get updateReadyMessage =>
+      'A new update is ready. The app will close so the update can be applied. Please reopen it to continue.';
+
+  @override
+  String get updateReadyAction => 'OK';
 }

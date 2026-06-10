@@ -1,9 +1,11 @@
 import 'package:country_picker/country_picker.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shorebird_code_push/shorebird_code_push.dart';
 
 import 'core/constants/constants.dart';
 import 'core/l10n/app_localizations.dart';
@@ -19,6 +21,7 @@ import 'modules/auth/providers/passcode_provider.dart';
 import 'modules/auth/views/enter_or_set_passcode.dart';
 import 'providers/app_lock_provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/code_push_provider.dart';
 import 'providers/coins_prices_provider.dart';
 import 'providers/connectivity_provider.dart';
 import 'providers/global_provider.dart';
@@ -28,6 +31,7 @@ import 'providers/notification_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/wallets_provider.dart';
 import 'routes/app_router.dart';
+import 'widgets/code_push_listener.dart';
 import 'widgets/offline_view.dart';
 
 Future<void> _initializeApp() async {
@@ -39,6 +43,31 @@ Future<void> _initializeApp() async {
 
 Future<void> _initFirebsae() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+}
+
+Future<void> _initCrashlytics() async {
+  // Route all Flutter framework errors to Crashlytics.
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+
+  // Route errors that occur outside the Flutter framework (async gaps,
+  // platform dispatcher) to Crashlytics as well.
+  WidgetsBinding.instance.platformDispatcher.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
+  // Tag every crash report with the active Shorebird patch number so we can
+  // tell which OTA patch a crash came from. Null when running the base
+  // release (no patch applied) or when Shorebird is unavailable.
+  try {
+    final patch = await ShorebirdUpdater().readCurrentPatch();
+    await FirebaseCrashlytics.instance.setCustomKey(
+      'shorebird_patch_number',
+      '${patch?.number}',
+    );
+  } catch (error) {
+    debugPrint('Failed to set Shorebird patch number for Crashlytics: $error');
+  }
 }
 
 ModalRoute<void>? _activeLockRoute;
@@ -99,6 +128,10 @@ void main() async {
   // Initialize firebase related settings
   await _initFirebsae();
 
+  // Initialize Crashlytics error handlers and tag reports with the active
+  // Shorebird patch number. Must run after Firebase init.
+  await _initCrashlytics();
+
   // Initialize Awesome Notifications + FCM bridging (foreground/background/
   // terminated handlers). Must run after Firebase init and before runApp().
   await PushNotificationService.instance.initializeNotifications();
@@ -126,6 +159,9 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<ConnectivityProvider>(
           create: (_) => ConnectivityProvider(),
+        ),
+        ChangeNotifierProvider<CodePushProvider>(
+          create: (_) => CodePushProvider(),
         ),
         ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
         ChangeNotifierProxyProvider<AuthProvider, AppLockProvider>(
@@ -204,6 +240,7 @@ class MyApp extends StatelessWidget {
       child: Consumer2<LocaleProvider, ThemeProvider>(
         builder: (context, localeProvider, themeProvider, child) =>
             MaterialApp.router(
+              scaffoldMessengerKey: appScaffoldMessengerKey,
               onGenerateTitle: (context) =>
                   AppLocalizations.of(context)!.appTitle,
               theme: AppTheme.lightTheme,
@@ -230,7 +267,9 @@ class MyApp extends StatelessWidget {
                     onRetry: () => connectivity.checkConnectivity(),
                   );
                 }
-                return child ?? const SizedBox.shrink();
+                return CodePushListener(
+                  child: child ?? const SizedBox.shrink(),
+                );
               },
             ),
       ),
