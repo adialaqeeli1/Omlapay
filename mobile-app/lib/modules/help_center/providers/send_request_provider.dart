@@ -43,7 +43,7 @@ class SendRequestProvider extends ChangeNotifier {
   static const List<String> allowedExtensions = ['png', 'jpg', 'pdf'];
 
   Future<void> pickFile() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: allowedExtensions,
     );

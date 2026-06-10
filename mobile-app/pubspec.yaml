@@ -19,7 +19,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+31
 
 environment:
-  sdk: ^3.10.3
+  sdk: ^3.12.1
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -45,7 +45,7 @@ dependencies:
   flutter_svg: ^2.2.4
   freezed_annotation: ^3.1.0
   image_picker: ^1.1.2
-  json_annotation: ^4.11.0
+  json_annotation: ^4.12.0
   google_fonts: ^8.0.2
   lottie: ^3.3.2
   collection: ^1.19.1
@@ -53,7 +53,7 @@ dependencies:
   path: ^1.9.1
   mime: ^2.0.0
   crypto_font_icons: ^1.0.1
-  file_picker: ^10.3.10
+  file_picker: ^11.0.2
   dio: ^5.9.2
   jwt_decoder: ^2.0.1
   dropdown_button2: ^3.0.0
@@ -119,6 +119,7 @@ flutter:
     - assets/icons/
     - assets/animations/
     - assets/logo/
+    - shorebird.yaml
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

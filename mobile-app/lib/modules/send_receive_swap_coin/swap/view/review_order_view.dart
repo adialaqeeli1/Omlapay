@@ -4,7 +4,7 @@ import 'package:omlapay_mobile_app/core/extentions/context_extensions.dart';
 import 'package:omlapay_mobile_app/core/extentions/number_extensions.dart';
 import 'package:omlapay_mobile_app/widgets/common_back_button.dart';
 import 'package:provider/provider.dart';
-import 'package:crypto_font_icons/crypto_font_icons.dart';
+import 'package:omlapay_mobile_app/core/constants/crypto_font_icons.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';

@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/common_coin_icon.dart';
-import 'package:crypto_font_icons/crypto_font_icons.dart';
+import 'package:omlapay_mobile_app/core/constants/crypto_font_icons.dart';
 
 class CurrencyInputCard extends StatelessWidget {
   final String title;
