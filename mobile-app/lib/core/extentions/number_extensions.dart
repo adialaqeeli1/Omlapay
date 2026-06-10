@@ -20,6 +20,18 @@ extension NumberExtensions on num {
     return NumberFormat(pattern, 'en_US').format(_truncateToDecimals(decimals));
   }
 
+  /// Formats this number for an editable amount input: fixed [decimals]
+  /// decimal places, *truncated* (floored toward zero) like
+  /// [toFormattedAmount], but **without** thousands grouping so the result
+  /// stays cleanly parseable when written into a text field controller.
+  ///
+  /// For example `0.00248923` becomes `0.0024`, never `0.0025`.
+  String toInputAmount({int decimals = AppConstants.coinAmountDecimals}) {
+    return _truncateToDecimals(
+      decimals,
+    ).toStringAsFixed(decimals < 0 ? 0 : decimals);
+  }
+
   /// Truncates (toward zero) to [decimals] places without rounding.
   ///
   /// Works on the string form at extra precision first so floating-point
