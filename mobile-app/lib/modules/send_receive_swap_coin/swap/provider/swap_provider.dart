@@ -360,9 +360,13 @@ class SwapProvider extends ChangeNotifier {
         _streamFailure = null;
         _transportError = null;
         final receive = double.tryParse(quote.youReceive);
+        // Truncate (not round) to the coin display precision so the receive
+        // amount never overstates what the user actually gets — mirroring
+        // toFormattedAmount used elsewhere in the swap flow. No thousands
+        // grouping so the value stays parseable inside the controller.
         final formatted = receive == null
             ? ''
-            : receive.toStringAsFixed(AppConstants.coinAmountDecimals);
+            : receive.toInputAmount(decimals: AppConstants.coinAmountDecimals);
         if (toAmountController.text != formatted) {
           toAmountController.text = formatted;
         }
