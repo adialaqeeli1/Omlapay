@@ -8,6 +8,7 @@ import '../../../core/extentions/context_extensions.dart';
 import '../../../core/models/user_model/user_model.dart';
 import '../../../core/theme/theme.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/code_push_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../../../widgets/common_grid_bg_wrapper.dart';
@@ -107,16 +108,35 @@ class ProfileView extends StatelessWidget {
         final info = snapshot.data;
         if (info == null) return const SizedBox.shrink();
 
+        final footerStyle = theme.textTheme.bodySmall?.copyWith(
+          color: versionColor,
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+        );
+        final patchNumber = context
+            .watch<CodePushProvider>()
+            .currentPatchNumber;
+
         return Padding(
           padding: const EdgeInsetsDirectional.only(top: 16, bottom: 12),
-          child: Text(
-            l10n.appVersion('${info.version}(${info.buildNumber})'),
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: versionColor,
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l10n.appVersion('${info.version}(${info.buildNumber})'),
+                textAlign: TextAlign.center,
+                style: footerStyle,
+              ),
+              if (patchNumber != null)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(top: 2),
+                  child: Text(
+                    l10n.appPatchVersion('$patchNumber'),
+                    textAlign: TextAlign.center,
+                    style: footerStyle,
+                  ),
+                ),
+            ],
           ),
         );
       },

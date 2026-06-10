@@ -1465,4 +1465,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String appVersion(String version) {
     return 'الإصدار: $version';
   }
+
+  @override
+  String appPatchVersion(String number) {
+    return 'رقم التصحيح: $number';
+  }
+
+  @override
+  String get updateReadyTitle => 'التحديث جاهز';
+
+  @override
+  String get updateReadyMessage =>
+      'يتوفر تحديث جديد. سيتم إغلاق التطبيق لتطبيق التحديث. الرجاء إعادة فتحه للمتابعة.';
+
+  @override
+  String get updateReadyAction => 'حسنًا';
 }
