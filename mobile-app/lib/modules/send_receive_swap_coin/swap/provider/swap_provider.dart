@@ -106,13 +106,23 @@ class SwapProvider extends ChangeNotifier {
   double get fromCoinSwapMaxAmount =>
       double.tryParse(_fromCoin?.swapMaxAmount ?? '') ?? 0;
 
-  /// Live fees — empty string when no quote yet.
+  /// Live fees — empty string when no quote yet. Trimmed for display (drops
+  /// floating-point artifacts and trailing zeros, e.g.
+  /// `0.00000300000000000005` → `0.000003`).
   String get totalFeeFromCoinAmount =>
-      _liveQuote?.fees?.total?.fromCoinAmount ?? '';
-  String get omlapayFeeFromCoinAmount =>
-      _liveQuote?.fees?.omlapay?.fromCoinAmount ?? '';
+      _formatFee(_liveQuote?.fees?.total?.fromCoinAmount);
   String get binanceFeeFromCoinAmount =>
-      _liveQuote?.fees?.binance?.fromCoinAmount ?? '';
+      _formatFee(_liveQuote?.fees?.binance?.fromCoinAmount);
+
+  /// Formats a raw fee string from the quote for display. Returns an empty
+  /// string when there is no fee yet, or the raw value when it isn't a
+  /// parseable number.
+  String _formatFee(String? raw) {
+    if (raw == null || raw.isEmpty) return '';
+    final parsed = double.tryParse(raw);
+    if (parsed == null) return raw;
+    return parsed.toTrimmedAmount();
+  }
 
   /// Display value for the "1 fromCoin ≈ X toCoin" row. Prefers `inverseRate`
   /// (matches the label direction). Falls back to `1/exchangeRate`. Empty
@@ -125,6 +135,17 @@ class SwapProvider extends ChangeNotifier {
     final direct = double.tryParse(quote.exchangeRate);
     if (direct == null || direct == 0) return '';
     return (1 / direct).toStringAsFixed(8);
+  }
+
+  /// The `from` amount string sent to the API: the user's input truncated
+  /// (floored toward zero) to [AppConstants.coinAmountDecimals] with no
+  /// thousands grouping, so what we send always matches the value shown in the
+  /// UI. Falls back to the raw text when it isn't a parseable number.
+  String get _amountForApi {
+    final text = fromAmountController.text.trim();
+    final parsed = double.tryParse(text);
+    if (parsed == null) return text;
+    return parsed.toInputAmount();
   }
 
   bool get canSwap =>
@@ -268,11 +289,13 @@ class SwapProvider extends ChangeNotifier {
     final coin = _fromCoin;
     if (coin == null) return;
 
+    // Validate against the value actually sent (truncated to the display
+    // precision), so what we check matches what the user sees and we send.
+    final sendAmount = double.tryParse(_amountForApi) ?? amount;
+
     final min = fromCoinSwapMinAmount;
-    if (min > 0 && amount < min) {
-      _localError = l10n.sendValidationBelowMinimum(
-        min.toFormattedAmount(decimals: AppConstants.minAmountDecimals),
-      );
+    if (min > 0 && sendAmount < min) {
+      _localError = l10n.sendValidationBelowMinimum(min.toFormattedMinAmount());
       return;
     }
 
@@ -280,7 +303,7 @@ class SwapProvider extends ChangeNotifier {
         .balanceForCoin(coin.symbol)
         .replaceAll(',', '');
     final balance = double.tryParse(balanceStr) ?? 0.0;
-    if (amount > balance) {
+    if (sendAmount > balance) {
       _localError = l10n.sendValidationInsufficientBalance;
     }
   }
@@ -345,7 +368,7 @@ class SwapProvider extends ChangeNotifier {
         .streamSwapQuote(
           fromCoin: fromCoin.symbol,
           toCoin: toCoin.symbol,
-          amount: amountText,
+          amount: _amountForApi,
           currency: _globalProvider.selectedCurrency,
         )
         .listen(_onStreamEvent, onError: _onStreamError, cancelOnError: false);
@@ -410,7 +433,7 @@ class SwapProvider extends ChangeNotifier {
       _swapQuote = await SwapService.fetchSwapQuote(
         fromCoin: _fromCoin!.symbol,
         toCoin: _toCoin!.symbol,
-        amount: fromAmountController.text.trim(),
+        amount: _amountForApi,
       );
     } finally {
       _isSubmitting = false;
@@ -432,7 +455,7 @@ class SwapProvider extends ChangeNotifier {
       await SwapService.executeSwap(
         fromCoin: _fromCoin!.symbol,
         toCoin: _toCoin!.symbol,
-        amount: fromAmountController.text.trim(),
+        amount: _amountForApi,
       );
       unawaited(walletsProvider.refreshWallets());
       return true;

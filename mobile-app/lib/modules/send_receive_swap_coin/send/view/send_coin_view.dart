@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/constants/constants.dart';
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/extentions/number_extensions.dart';
 import '../../../../core/l10n/app_localizations.dart';
@@ -368,9 +367,7 @@ class SendCoinView extends StatelessWidget {
                   onTapOutside: (event) => FocusScope.of(context).unfocus(),
                   decoration: InputDecoration(
                     hintText: l10n.minAmountHint(
-                      provider.minSendAmount.toFormattedAmount(
-                        decimals: AppConstants.minAmountDecimals,
-                      ),
+                      provider.minSendAmount.toFormattedMinAmount(),
                     ),
                     hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
                     contentPadding: const EdgeInsets.symmetric(

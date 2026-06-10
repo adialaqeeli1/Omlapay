@@ -119,10 +119,7 @@ class SwapCoinView extends StatelessWidget {
                             hintText: provider.fromCoinSwapMinAmount > 0
                                 ? l10n.minAmountHint(
                                     provider.fromCoinSwapMinAmount
-                                        .toFormattedAmount(
-                                          decimals:
-                                              AppConstants.minAmountDecimals,
-                                        ),
+                                        .toFormattedMinAmount(),
                                   )
                                 : null,
                             // bottomHelper: _buildFromCoinMaxRow(
@@ -228,27 +225,6 @@ class SwapCoinView extends StatelessWidget {
                         ),
                         if (provider.liveQuote != null) ...[
                           const SizedBox(height: 6),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                l10n.swapFeeOmlapay,
-                                style: TextStyle(
-                                  color: colorScheme.onSurfaceVariant,
-                                  fontSize: 11,
-                                ),
-                              ),
-                              Text(
-                                '${provider.omlapayFeeFromCoinAmount} '
-                                '${provider.fromCoin!.symbol}',
-                                style: TextStyle(
-                                  color: colorScheme.onSurface,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [

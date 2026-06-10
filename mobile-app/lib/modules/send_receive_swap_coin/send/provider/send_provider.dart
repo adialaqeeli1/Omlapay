@@ -80,15 +80,6 @@ class SendProvider extends ChangeNotifier {
   String? _lastQuoteKey;
   static const Duration _quoteDebounce = Duration(milliseconds: 500);
 
-  // "Max" send tracking. The amount field always displays the balance rounded
-  // to [AppConstants.coinAmountDecimals], but the API must receive the exact
-  // (unrounded) balance — rounding the display value up would exceed the real
-  // balance and the backend would reject with "Insufficient balance". So while
-  // Max is active we keep the full-precision value in [_maxRawAmount] and the
-  // shown 4-decimal string in [_maxDisplayAmount] to detect manual edits.
-  String? _maxRawAmount;
-  String? _maxDisplayAmount;
-
   // Reactive recipient validation (validate-address). Holds the localized
   // reason the recipient is rejected (self-transfer, or a backend address
   // validation error such as an address/network mismatch); `null` when valid.
@@ -294,36 +285,24 @@ class SendProvider extends ChangeNotifier {
   void setMaxAmount() {
     final coin = _selectedCoin;
     if (coin == null) return;
-    final raw = walletsProvider.rawBalanceForCoin(coin.symbol);
-    // Show the rounded 4-decimal value, but remember the exact balance so the
-    // API receives the full precision (see [_maxRawAmount]).
-    _maxRawAmount = _plainAmount(raw);
-    _maxDisplayAmount = raw.toFormattedAmount().replaceAll(',', '');
-    amountController.text = _maxDisplayAmount!;
+    // Fill with the balance truncated to the display precision. This same
+    // truncated value is what gets sent to the API, so what the user sees
+    // matches what is sent (see [_amountForApi]).
+    amountController.text = walletsProvider
+        .rawBalanceForCoin(coin.symbol)
+        .toInputAmount();
     _validate();
   }
 
-  /// The amount string to send to the API: the exact (unrounded) balance while
-  /// "Max" is active and the field still shows that value, otherwise the
-  /// user-entered amount.
+  /// The amount string to send to the API: the field value truncated (floored
+  /// toward zero) to the coin display precision with no thousands grouping, so
+  /// what we send always matches the value the user sees. Falls back to the raw
+  /// text when it isn't a parseable number.
   String get _amountForApi {
     final text = amountController.text.trim();
-    if (_maxRawAmount != null && text == _maxDisplayAmount) {
-      return _maxRawAmount!;
-    }
-    return text;
-  }
-
-  /// Renders [value] as a plain decimal string (no thousands grouping, no
-  /// scientific notation, no rounding) suitable for API amount fields.
-  String _plainAmount(double value) {
-    final s = value.toString();
-    if (!s.contains('e') && !s.contains('E')) return s;
-    // Expand exponent notation (very small/large magnitudes) to plain decimals.
-    return value
-        .toStringAsFixed(18)
-        .replaceFirst(RegExp(r'0+$'), '')
-        .replaceFirst(RegExp(r'\.$'), '');
+    final parsed = double.tryParse(text);
+    if (parsed == null) return text;
+    return parsed.toInputAmount();
   }
 
   /// Runs the send pre-flight: validate-address then fetch-quote.
@@ -396,7 +375,7 @@ class SendProvider extends ChangeNotifier {
 
     final recipient = recipientController.text.trim();
     if (recipient.isEmpty || amountController.text.trim().isEmpty) return null;
-    // Send the exact balance while on Max (full precision), else the typed value.
+    // Send the amount truncated to the display precision (see [_amountForApi]).
     final amount = double.tryParse(_amountForApi);
     if (amount == null) return null;
 
@@ -501,13 +480,6 @@ class SendProvider extends ChangeNotifier {
   void _validate() {
     final l10n = appLocalizationsFromStoredLocale();
     final text = amountController.text;
-    // Drop "Max" tracking once the user edits the field away from the rounded
-    // Max value, so we send the typed amount instead of the full balance.
-    final onMax = _maxRawAmount != null && text.trim() == _maxDisplayAmount;
-    if (_maxDisplayAmount != null && !onMax) {
-      _maxRawAmount = null;
-      _maxDisplayAmount = null;
-    }
 
     _error = null;
     if (text.isEmpty) {
@@ -520,15 +492,15 @@ class SendProvider extends ChangeNotifier {
     if (displayAmount == null) {
       _error = l10n.sendValidationInvalidAmount;
     } else if (_selectedCoin != null) {
-      // Validate against the value actually sent (exact balance while on Max)
-      // and the real, unrounded wallet balance.
+      // Validate against the value actually sent (truncated to the display
+      // precision) and the real, unrounded wallet balance.
       final amount = double.tryParse(_amountForApi) ?? displayAmount;
       final min = minSendAmount;
       final balance = walletsProvider.rawBalanceForCoin(_selectedCoin!.symbol);
 
       if (min > 0 && amount < min) {
-        _error = l10n.sendValidationBelowMinimum(min.toString());
-      } else if (!onMax && amount > balance) {
+        _error = l10n.sendValidationBelowMinimum(min.toFormattedMinAmount());
+      } else if (amount > balance) {
         _error = l10n.sendValidationInsufficientBalance;
       }
     }
@@ -546,7 +518,7 @@ class SendProvider extends ChangeNotifier {
   void _scheduleQuoteFetch() {
     final coin = _selectedCoin;
     final recipient = recipientController.text.trim();
-    // Quote against the exact value we'll send (full balance while on Max).
+    // Quote against the exact value we'll send (truncated to display precision).
     final amountText = _amountForApi;
     final amount = double.tryParse(amountText);
     final network = networkController.text.trim();
