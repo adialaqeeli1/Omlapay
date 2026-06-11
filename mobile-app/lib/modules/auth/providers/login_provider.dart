@@ -19,6 +19,10 @@ class LoginProvider extends ChangeNotifier {
   static const String modeSoftLogin = 'soft_login';
   static const String modeAppLock = 'app_lock';
   static const String modeRegister = 'register';
+
+  /// Registration step 2: re-enter the passcode chosen in [modeRegister] to
+  /// confirm it before the registration API is called.
+  static const String modeRegisterConfirm = 'register_confirm';
   static const String modeResetPasscode = 'reset_passcode';
   static const String modeConfirmPasscode = 'confirm_passcode';
 

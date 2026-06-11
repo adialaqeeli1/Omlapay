@@ -169,7 +169,9 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
     final indicatorInactiveColor = theme.colorScheme.onSurface.withValues(
       alpha: isDark ? 0.16 : 0.20,
     );
-    final isRegisterMode = widget.mode == LoginProvider.modeRegister;
+    final isRegisterMode =
+        widget.mode == LoginProvider.modeRegister ||
+        widget.mode == LoginProvider.modeRegisterConfirm;
     final isChangePasscodeFlow =
         widget.mode == LoginProvider.modeChangePasscodeCurrent ||
         widget.mode == LoginProvider.modeChangePasscodeNew ||
@@ -372,7 +374,9 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
                                             LoginProvider.modeConfirmPasscode ||
                                         widget.mode ==
                                             LoginProvider
-                                                .modeChangePasscodeConfirm
+                                                .modeChangePasscodeConfirm ||
+                                        widget.mode ==
+                                            LoginProvider.modeRegisterConfirm
                                     ? l10n.passcodesMismatchTryAgain
                                     : l10n.incorrectPasscodeTryAgain,
                                 style: theme.textTheme.titleMedium?.copyWith(
@@ -524,6 +528,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
     if (widget.mode == LoginProvider.modeResetPasscode ||
         widget.mode == LoginProvider.modeConfirmPasscode ||
         widget.mode == LoginProvider.modeRegister ||
+        widget.mode == LoginProvider.modeRegisterConfirm ||
         widget.mode == LoginProvider.modeChangePasscodeCurrent ||
         widget.mode == LoginProvider.modeChangePasscodeNew ||
         widget.mode == LoginProvider.modeChangePasscodeConfirm ||
@@ -609,6 +614,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
   String _titleForMode(dynamic l10n) {
     return switch (widget.mode) {
       LoginProvider.modeRegister => l10n.createAPasscode,
+      LoginProvider.modeRegisterConfirm => l10n.confirmYourPasscode,
       LoginProvider.modeChangePasscodeCurrent => l10n.enterYourCurrentPasscode,
       LoginProvider.modeChangePasscodeNew => l10n.enterYourNewPasscode,
       LoginProvider.modeChangePasscodeConfirm => l10n.confirmYourNewPasscode,
@@ -781,6 +787,23 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
       }
 
       if (widget.mode == LoginProvider.modeRegister) {
+        // Step 1: passcode chosen. Carry it (and the registration token)
+        // forward to the confirm step instead of registering immediately.
+        context.push(
+          Routes.enterOrSetPasscode,
+          extra: {
+            LoginProvider.extraModeKey: LoginProvider.modeRegisterConfirm,
+            LoginProvider.extraCountryCodeKey: provider.countryCode,
+            LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+            LoginProvider.extraPendingPasscodeKey: provider.passcode,
+            if (widget.registrationToken != null)
+              LoginProvider.extraRegistrationTokenKey: widget.registrationToken,
+          },
+        );
+        return;
+      }
+
+      if (widget.mode == LoginProvider.modeRegisterConfirm) {
         final isValid = await provider.verify(
           verifyPasscode:
               ({
@@ -788,6 +811,8 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
                 required String countryCode,
                 required String passcode,
               }) async {
+                // Re-entry must match the passcode set in step 1.
+                if (passcode != (widget.pendingPasscode ?? '')) return false;
                 if (widget.registrationToken != null &&
                     widget.registrationToken!.isNotEmpty) {
                   final isRegSuccess = await authProvider
