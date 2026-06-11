@@ -334,6 +334,10 @@ class AuthProvider extends ChangeNotifier {
     await StorageService.remove(AppConstants.userKey);
     await StorageService.remove(AppConstants.tokenKey);
     await StorageService.remove('refresh_token');
+    // Drop the device-global biometric preference so it can't leak to the next
+    // account signing in on this device. BiometricProvider.onAuthChanged
+    // re-syncs its in-memory flag off the back of the notify below.
+    await StorageService.remove(AppConstants.biometricEnabledKey);
     _state = const AuthState(authStatus: AuthStatus.unauthorized);
     notifyListeners();
   }
