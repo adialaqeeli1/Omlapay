@@ -265,6 +265,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get notification => 'الإشعارات';
 
   @override
+  String get biometric => 'القياسات الحيوية';
+
+  @override
+  String get biometricUnlockReason => 'المصادقة لإلغاء قفل التطبيق';
+
+  @override
+  String get biometricEnableReason => 'المصادقة لتفعيل تسجيل الدخول البيومتري';
+
+  @override
+  String get biometricEnableFailed => 'تعذّر تفعيل المصادقة البيومترية';
+
+  @override
   String get dark => 'داكن';
 
   @override

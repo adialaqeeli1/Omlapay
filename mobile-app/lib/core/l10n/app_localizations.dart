@@ -566,6 +566,30 @@ abstract class AppLocalizations {
   /// **'Notification'**
   String get notification;
 
+  /// No description provided for @biometric.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric'**
+  String get biometric;
+
+  /// No description provided for @biometricUnlockReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticate to unlock the app'**
+  String get biometricUnlockReason;
+
+  /// No description provided for @biometricEnableReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticate to enable biometric login'**
+  String get biometricEnableReason;
+
+  /// No description provided for @biometricEnableFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t enable biometric authentication'**
+  String get biometricEnableFailed;
+
   /// No description provided for @dark.
   ///
   /// In en, this message translates to:

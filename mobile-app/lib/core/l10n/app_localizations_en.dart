@@ -272,6 +272,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notification => 'Notification';
 
   @override
+  String get biometric => 'Biometric';
+
+  @override
+  String get biometricUnlockReason => 'Authenticate to unlock the app';
+
+  @override
+  String get biometricEnableReason => 'Authenticate to enable biometric login';
+
+  @override
+  String get biometricEnableFailed =>
+      'Couldn\'t enable biometric authentication';
+
+  @override
   String get dark => 'Dark';
 
   @override
