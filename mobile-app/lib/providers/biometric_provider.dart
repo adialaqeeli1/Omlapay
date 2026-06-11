@@ -89,10 +89,18 @@ class BiometricProvider extends ChangeNotifier {
       _service.authenticate(reason: reason);
 
   void onAuthChanged(bool isAuthenticated) {
+    // Re-sync the persisted flag on every auth transition. This is read-only:
+    // it never writes/clears the key here, so a cold start (which briefly
+    // reports `unauthorized` before auth resolves) can't erase a legitimately
+    // enabled preference. After logout/account removal the key is already gone
+    // from storage, so this drops the stale in-memory "enabled" state.
+    final wasEnabled = _isEnabled;
+    _loadEnabledFlag();
     if (isAuthenticated) {
-      _loadEnabledFlag();
       // ignore: discarded_futures
       refreshAvailability();
+      notifyListeners();
+    } else if (wasEnabled != _isEnabled) {
       notifyListeners();
     }
   }
