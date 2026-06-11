@@ -5,12 +5,15 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../core/services/biometric_service.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/biometric_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_back_button.dart';
 import '../../../widgets/common_loading_indicator.dart';
+import '../../../widgets/custom_svg_painter.dart';
 import '../../../widgets/logout_alert_dialog.dart';
 import '../providers/login_provider.dart';
 import '../providers/passcode_provider.dart';
@@ -61,6 +64,8 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   PasscodeProvider? _passcodeProvider;
+  bool _biometricInFlight = false;
+  bool _biometricAutoPromptDone = false;
 
   @override
   void initState() {
@@ -68,6 +73,8 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _focusNode.requestFocus();
+      // ignore: discarded_futures
+      _maybeAutoPromptBiometric();
     });
   }
 
@@ -144,6 +151,9 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
   @override
   Widget build(BuildContext context) {
     final passcodeProvider = context.watch<PasscodeProvider>();
+    // Watch the biometric provider so the retry icon appears/updates once the
+    // async availability check resolves (and reflects the right modality).
+    final biometricProvider = context.watch<BiometricProvider>();
     final l10n = context.l10n!;
     final theme = context.theme;
     final isDark = context.isDarkMode;
@@ -389,6 +399,28 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
                             textAlign: TextAlign.center,
                           ),
                         ),
+                      if (_shouldOfferBiometric())
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: IconButton(
+                            tooltip: l10n.biometricUnlockReason,
+                            onPressed: _biometricInFlight
+                                ? null
+                                : _tryBiometricUnlock,
+                            icon: biometricProvider.kind == BiometricKind.face
+                                ? CustomSvgPainterWidget(
+                                    assetPath: 'assets/icons/face_id.svg',
+                                    width: 36,
+                                    height: 36,
+                                    color: AppColors.primaryColor,
+                                  )
+                                : const Icon(
+                                    Icons.fingerprint,
+                                    size: 36,
+                                    color: AppColors.primaryColor,
+                                  ),
+                          ),
+                        ),
                       const Spacer(),
                       // Hidden capture field: drives the device numpad while
                       // staying invisible. The dots row above is the visible
@@ -502,6 +534,78 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
     return true;
   }
 
+  /// Biometric is offered only on the soft-login / app-lock screens, when the
+  /// user has enabled it, the device supports it, and a passcode is stored.
+  bool _shouldOfferBiometric() {
+    if (widget.mode != LoginProvider.modeSoftLogin &&
+        widget.mode != LoginProvider.modeAppLock) {
+      return false;
+    }
+    final bio = context.read<BiometricProvider>();
+    if (!bio.isEnabled || !bio.isAvailable) return false;
+    final stored = context.read<AuthProvider>().state.user?.password ?? '';
+    return stored.isNotEmpty;
+  }
+
+  Future<void> _maybeAutoPromptBiometric() async {
+    if (_biometricAutoPromptDone) return;
+    if (widget.mode != LoginProvider.modeSoftLogin &&
+        widget.mode != LoginProvider.modeAppLock) {
+      return;
+    }
+    final bio = context.read<BiometricProvider>();
+    if (!bio.isEnabled) return;
+    // Device capability is resolved asynchronously; on a fresh launch it may
+    // not be ready when this screen first appears (which previously skipped the
+    // auto-prompt). Wait for it before deciding.
+    await bio.refreshAvailability();
+    if (!mounted) return;
+    if (!_shouldOfferBiometric()) return;
+    _biometricAutoPromptDone = true;
+    await _tryBiometricUnlock();
+  }
+
+  /// Prompts biometrics and, on success, unlocks via the existing softLogin
+  /// using the stored passcode. Failure/cancel leaves the passcode pad active.
+  Future<void> _tryBiometricUnlock() async {
+    if (_biometricInFlight) return;
+    final authProvider = context.read<AuthProvider>();
+    final bio = context.read<BiometricProvider>();
+    final storedPasscode = authProvider.state.user?.password ?? '';
+    if (storedPasscode.isEmpty) return;
+
+    // setState so the retry button reflects the in-flight state and, crucially,
+    // re-enables after the scan finishes (the toggle below in `finally` would
+    // otherwise not trigger a rebuild, leaving the button stuck disabled).
+    setState(() => _biometricInFlight = true);
+    try {
+      final scanned = await bio.authenticate(
+        context.l10n!.biometricUnlockReason,
+      );
+      if (!scanned || !mounted) return;
+
+      final unlocked = await authProvider.softLogin(storedPasscode);
+      if (!unlocked || !mounted) return;
+
+      // modeAppLock: AuthProvider.onUnlockCallback removes the overlay route,
+      // so we must NOT navigate here. modeSoftLogin: navigate home like the
+      // manual soft-login path does.
+      if (widget.mode == LoginProvider.modeSoftLogin) {
+        context.go(Routes.home);
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarHelper.showError(context, e.toString());
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _biometricInFlight = false);
+      } else {
+        _biometricInFlight = false;
+      }
+    }
+  }
+
   String _titleForMode(dynamic l10n) {
     return switch (widget.mode) {
       LoginProvider.modeRegister => l10n.createAPasscode,
@@ -612,7 +716,6 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
     PasscodeProvider provider,
     String digit,
   ) async {
-    print(widget.mode);
     provider.addDigit(digit);
     if (!provider.isComplete) {
       return;

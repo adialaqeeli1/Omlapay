@@ -40,6 +40,8 @@
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>OmlaPay needs camera access to scan QR codes for wallet addresses and payments.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Use Face ID to unlock the app instead of typing your passcode.</string>
 	<key>NSContactsUsageDescription</key>
 	<string>OmlaPay needs access to your contacts to send payments to people in your address book.</string>
 	<key>NSLocalNetworkUsageDescription</key>

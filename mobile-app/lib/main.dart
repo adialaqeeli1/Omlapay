@@ -27,6 +27,7 @@ import 'providers/connectivity_provider.dart';
 import 'providers/global_provider.dart';
 import 'providers/kyc_status_provider.dart';
 import 'providers/locale_provider.dart';
+import 'providers/biometric_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/wallets_provider.dart';
@@ -241,6 +242,12 @@ class MyApp extends StatelessWidget {
           create: (_) => NotificationProvider(),
           update: (_, auth, notification) =>
               (notification ?? NotificationProvider())
+                ..onAuthChanged(auth.state.isAuthenticated),
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, BiometricProvider>(
+          create: (_) => BiometricProvider(),
+          update: (_, auth, biometric) =>
+              (biometric ?? BiometricProvider())
                 ..onAuthChanged(auth.state.isAuthenticated),
         ),
       ],

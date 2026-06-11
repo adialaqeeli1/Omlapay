@@ -14,6 +14,7 @@ import '../../../providers/auth_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../providers/locale_provider.dart';
 import '../../../providers/theme_provider.dart';
+import '../../../providers/biometric_provider.dart';
 import '../../../providers/notification_provider.dart';
 import '../../../widgets/common_back_button.dart';
 import '../../../widgets/labeled_toggle_switch.dart';
@@ -291,6 +292,32 @@ class _SettingsViewState extends State<SettingsView> {
                                     e.toString().replaceAll('Exception: ', ''),
                                   );
                                 }
+                              }
+                            },
+                          );
+                        },
+                      ),
+                    if (isLoggedIn)
+                      Consumer<BiometricProvider>(
+                        builder: (context, biometricProvider, child) {
+                          if (!biometricProvider.isAvailable) {
+                            return const SizedBox.shrink();
+                          }
+                          return _buildNotificationToggle(
+                            context: context,
+                            label: l10n.biometric,
+                            screenWidth: screenWidth,
+                            value: biometricProvider.isEnabled,
+                            onChanged: (value) async {
+                              final ok = await biometricProvider.toggle(
+                                value,
+                                reason: l10n.biometricEnableReason,
+                              );
+                              if (!ok && value && context.mounted) {
+                                SnackbarHelper.showError(
+                                  context,
+                                  l10n.biometricEnableFailed,
+                                );
                               }
                             },
                           );
