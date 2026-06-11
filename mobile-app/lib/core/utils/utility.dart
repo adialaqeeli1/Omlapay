@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
+import 'package:omlapay_mobile_app/core/utils/app_logger.dart';
 import 'dart:math';
 import 'dart:math' as math;
 
@@ -619,7 +619,7 @@ class Utility {
       }
       return null;
     } catch (e, stackTrace) {
-      developer.log(
+      appLog(
         'validate-address request failed: $e',
         name: 'Utility.isValidWalletAddress',
         error: e,

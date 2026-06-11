@@ -1,4 +1,4 @@
-import 'dart:developer' as developer;
+import 'package:omlapay_mobile_app/core/utils/app_logger.dart';
 
 import 'package:dio/dio.dart';
 
@@ -76,7 +76,7 @@ class ChainResolverService {
       }
       return null;
     } catch (e, stackTrace) {
-      developer.log(
+      appLog(
         'chain resolve failed for "$trimmed": $e',
         name: 'ChainResolverService',
         error: e,

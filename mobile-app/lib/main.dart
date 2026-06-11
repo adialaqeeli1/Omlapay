@@ -1,8 +1,8 @@
 import 'package:country_picker/country_picker.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
@@ -124,6 +124,13 @@ void _dismissLockOverlay() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Silence all debugPrint output in profile/release builds. debugPrint emits
+  // in every build mode by default, so override it to a no-op outside debug so
+  // production builds never leak logs to the device console.
+  if (!kDebugMode) {
+    debugPrint = (String? message, {int? wrapWidth}) {};
+  }
 
   // Initialize firebase related settings
   await _initFirebsae();

@@ -1,4 +1,4 @@
-import 'dart:developer';
+import 'package:omlapay_mobile_app/core/utils/app_logger.dart';
 
 import 'package:badges/badges.dart' as badges;
 import 'package:flutter/cupertino.dart';
@@ -184,7 +184,7 @@ class _HomeViewState extends State<HomeView> {
                 await PushNotificationService.instance
                     .showDemoNotification()
                     .onError((error, stackTrace) {
-                      log("$error");
+                      appLog("$error");
                       return false;
                     });
               }
@@ -210,7 +210,7 @@ class _HomeViewState extends State<HomeView> {
                           delay: const Duration(seconds: 10),
                         )
                         .onError((error, stackTrace) {
-                          log('$error');
+                          appLog('$error');
                           return false;
                         });
                     messenger?.showSnackBar(

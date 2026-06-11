@@ -265,6 +265,8 @@ class _OtpSection extends StatelessWidget {
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               onTapOutside: (event) => FocusScope.of(context).unfocus(),
+              enabled: true,
+              enablePaste: true,
               theme: MaterialPinTheme(
                 shape: MaterialPinShape.outlined,
                 cellSize: cellSize,
