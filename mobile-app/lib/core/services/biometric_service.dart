@@ -14,7 +14,7 @@ enum BiometricKind { face, fingerprint }
 /// the biometric platform channel. All methods are non-throwing.
 class BiometricService {
   BiometricService({LocalAuthentication? auth})
-      : _auth = auth ?? LocalAuthentication();
+    : _auth = auth ?? LocalAuthentication();
 
   final LocalAuthentication _auth;
 
@@ -53,13 +53,7 @@ class BiometricService {
   /// Returns false (never throws) on cancel, lockout, or unavailability.
   Future<bool> authenticate({required String reason}) async {
     try {
-      return await _auth.authenticate(
-        localizedReason: reason,
-        options: const AuthenticationOptions(
-          stickyAuth: true,
-          biometricOnly: true,
-        ),
-      );
+      return await _auth.authenticate(localizedReason: reason);
     } on PlatformException catch (e) {
       appLog('BiometricService.authenticate error: ${e.code}');
       return false;
