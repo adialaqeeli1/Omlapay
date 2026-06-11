@@ -300,6 +300,8 @@ class _OtpSection extends StatelessWidget {
               autoFocus: autoFocus,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              enabled: true,
+              enablePaste: true,
               theme: MaterialPinTheme(
                 shape: MaterialPinShape.outlined,
                 cellSize: cellSize,

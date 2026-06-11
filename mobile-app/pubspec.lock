@@ -244,10 +244,9 @@ packages:
   country_codes:
     dependency: "direct main"
     description:
-      name: country_codes
-      sha256: "80e441b8a4bec1e7a24d58955fe769e7c6199ffd025f4509d4172d8d0195dfc4"
-      url: "https://pub.dev"
-    source: hosted
+      path: "dependencies/country_codes-3.3.0"
+      relative: true
+    source: path
     version: "3.3.0"
   country_picker:
     dependency: "direct main"
@@ -1088,10 +1087,9 @@ packages:
   pin_code_fields:
     dependency: "direct main"
     description:
-      name: pin_code_fields
-      sha256: "0ae83c636a3c1ae00bc09bb496bc554ea290b01dfe396e3c77e12d3a3f9207e9"
-      url: "https://pub.dev"
-    source: hosted
+      path: "dependencies/pin_code_fields-9.4.0"
+      relative: true
+    source: path
     version: "9.4.0"
   platform:
     dependency: transitive

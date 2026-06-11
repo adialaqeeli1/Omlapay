@@ -1,4 +1,4 @@
-import 'dart:developer' as developer;
+import 'package:omlapay_mobile_app/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/models/transaction_model/transaction_model.dart';
@@ -195,28 +195,28 @@ class HistoryProvider extends ChangeNotifier {
         ? null
         : coinSymbol;
     if (normalized == _selectedCoinFilter) return;
-    developer.log('HistoryProvider: Setting coin filter to: $normalized');
+    appLog('HistoryProvider: Setting coin filter to: $normalized');
     _selectedCoinFilter = normalized;
     fetchTransactions();
   }
 
   void setTypeFilter(String? type) {
     if (type == _selectedTypeFilter) return;
-    developer.log('HistoryProvider: Setting type filter to: $type');
+    appLog('HistoryProvider: Setting type filter to: $type');
     _selectedTypeFilter = type;
     fetchTransactions();
   }
 
   void setDateRange(DateTime? start, DateTime? end) {
     if (start == _dateStart && end == _dateEnd) return;
-    developer.log('HistoryProvider: Setting date range: $start - $end');
+    appLog('HistoryProvider: Setting date range: $start - $end');
     _dateStart = start;
     _dateEnd = end;
     fetchTransactions();
   }
 
   void clearFilter() {
-    developer.log('HistoryProvider: Clearing filter');
+    appLog('HistoryProvider: Clearing filter');
     final changed =
         _selectedCoinFilter != null ||
         _selectedTypeFilter != null ||

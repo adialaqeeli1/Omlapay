@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
+import 'package:omlapay_mobile_app/core/utils/app_logger.dart';
 import 'dart:io' show Platform;
 
 import 'package:awesome_notifications/awesome_notifications.dart';
@@ -44,19 +44,19 @@ Future<void> pushNotificationBackgroundHandler(RemoteMessage message) async {
 void _logIncomingMessage(String origin, RemoteMessage message) {
   const tag = '[PushNotification]';
   final notification = message.notification;
-  log('$tag $origin payload received');
-  log('$tag   messageId: ${message.messageId}');
-  log('$tag   from: ${message.from}');
-  log('$tag   sentTime: ${message.sentTime}');
-  log('$tag   category: ${message.category}');
-  log('$tag   collapseKey: ${message.collapseKey}');
+  appLog('$tag $origin payload received');
+  appLog('$tag   messageId: ${message.messageId}');
+  appLog('$tag   from: ${message.from}');
+  appLog('$tag   sentTime: ${message.sentTime}');
+  appLog('$tag   category: ${message.category}');
+  appLog('$tag   collapseKey: ${message.collapseKey}');
   if (notification != null) {
-    log('$tag   notification.title: ${notification.title}');
-    log('$tag   notification.body: ${notification.body}');
+    appLog('$tag   notification.title: ${notification.title}');
+    appLog('$tag   notification.body: ${notification.body}');
   } else {
-    log('$tag   notification: <data-only payload>');
+    appLog('$tag   notification: <data-only payload>');
   }
-  log('$tag   data: ${message.data}');
+  appLog('$tag   data: ${message.data}');
 }
 
 /// Orchestrates FCM push-notification handling:
@@ -98,10 +98,10 @@ class PushNotificationService {
   /// Call once from `main()` after `Firebase.initializeApp()` and before
   /// `runApp()`.
   Future<void> initializeNotifications() async {
-    log('$_logTag initializeNotifications: start');
+    appLog('$_logTag initializeNotifications: start');
     final languageCode =
         StorageService.getString(AppConstants.localeKey) ?? 'en';
-    log('$_logTag initializeNotifications: languageCode=$languageCode');
+    appLog('$_logTag initializeNotifications: languageCode=$languageCode');
     await AwesomeNotifications().initialize(
       // null falls back to the application's launcher icon.
       null,
@@ -126,13 +126,13 @@ class PushNotificationService {
     await AwesomeNotifications().setListeners(
       onActionReceivedMethod: _onActionReceivedMethod,
     );
-    log('$_logTag initializeNotifications: AwesomeNotifications listeners set');
+    appLog('$_logTag initializeNotifications: AwesomeNotifications listeners set');
 
     // Background handler must be registered before runApp(). It runs in a
     // separate isolate when a message arrives while the app is killed or
     // backgrounded.
     FirebaseMessaging.onBackgroundMessage(pushNotificationBackgroundHandler);
-    log('$_logTag initializeNotifications: FCM background handler registered');
+    appLog('$_logTag initializeNotifications: FCM background handler registered');
 
     // Foreground messages — display via Awesome Notifications (FCM does not
     // show a banner in foreground by default).
@@ -140,39 +140,39 @@ class PushNotificationService {
     _foregroundSubscription = FirebaseMessaging.onMessage.listen(
       _displayForegroundMessage,
     );
-    log('$_logTag initializeNotifications: onMessage subscribed');
+    appLog('$_logTag initializeNotifications: onMessage subscribed');
 
     // User tapped the notification while app was in background.
     _openedAppSubscription?.cancel();
     _openedAppSubscription = FirebaseMessaging.onMessageOpenedApp.listen(
       _routeFromMessage,
     );
-    log('$_logTag initializeNotifications: onMessageOpenedApp subscribed');
+    appLog('$_logTag initializeNotifications: onMessageOpenedApp subscribed');
 
     // App was launched (cold start) by tapping a notification.
     final initialMessage = await _messaging.getInitialMessage();
     if (initialMessage != null) {
-      log(
+      appLog(
         '$_logTag initializeNotifications: cold-start tap detected '
         '(messageId=${initialMessage.messageId})',
       );
       _routeFromMessage(initialMessage);
     } else {
-      log('$_logTag initializeNotifications: no cold-start tap');
+      appLog('$_logTag initializeNotifications: no cold-start tap');
     }
 
     // Ensure system-level notification permission is granted. Same OS
     // permission as FCM `requestPermission` — calling both is safe.
     final isAllowed = await AwesomeNotifications().isNotificationAllowed();
-    log('$_logTag initializeNotifications: isNotificationAllowed=$isAllowed');
+    appLog('$_logTag initializeNotifications: isNotificationAllowed=$isAllowed');
     if (!isAllowed) {
       final granted = await AwesomeNotifications()
           .requestPermissionToSendNotifications();
-      log(
+      appLog(
         '$_logTag initializeNotifications: requestPermission granted=$granted',
       );
     }
-    log('$_logTag initializeNotifications: done');
+    appLog('$_logTag initializeNotifications: done');
   }
 
   // ---------------------------------------------------------------------------
@@ -195,7 +195,7 @@ class PushNotificationService {
     final safe = count < 0 ? 0 : count;
     try {
       await AwesomeNotifications().setGlobalBadgeCounter(safe);
-      log('$_logTag syncAppBadge: set badge=$safe');
+      appLog('$_logTag syncAppBadge: set badge=$safe');
     } catch (e) {
       debugPrint('$_logTag syncAppBadge failed: $e');
     }
@@ -232,11 +232,11 @@ class PushNotificationService {
   }) async {
     try {
       final isAllowed = await AwesomeNotifications().isNotificationAllowed();
-      log('$_logTag demo: isNotificationAllowed=$isAllowed');
+      appLog('$_logTag demo: isNotificationAllowed=$isAllowed');
       if (!isAllowed) {
         final granted = await AwesomeNotifications()
             .requestPermissionToSendNotifications();
-        log('$_logTag demo: requestPermission granted=$granted');
+        appLog('$_logTag demo: requestPermission granted=$granted');
         if (!granted) {
           debugPrint(
             '$_logTag demo skipped — permission denied. '
@@ -255,7 +255,7 @@ class PushNotificationService {
         // so we can attach a `NotificationInterval` schedule. The tap still
         // flows through `_onActionReceivedMethod` → `_navigateToNotificationsList`,
         // which is the exact path real FCM taps take.
-        log(
+        appLog(
           '$_logTag demo: scheduling in ${delay.inSeconds}s '
           'id=$notificationId',
         );
@@ -276,7 +276,7 @@ class PushNotificationService {
             repeats: false,
           ),
         );
-        log('$_logTag demo: createNotification scheduled=$scheduled');
+        appLog('$_logTag demo: createNotification scheduled=$scheduled');
         return scheduled;
       }
 
@@ -294,15 +294,15 @@ class PushNotificationService {
         },
         'payload': {'source': 'demo'},
       });
-      log('$_logTag demo: api json = $apiJsonResponse');
+      appLog('$_logTag demo: api json = $apiJsonResponse');
 
       final Map<String, dynamic> decoded =
           jsonDecode(apiJsonResponse) as Map<String, dynamic>;
-      log('$_logTag demo: decoded keys = ${decoded.keys.toList()}');
+      appLog('$_logTag demo: decoded keys = ${decoded.keys.toList()}');
 
       final scheduled = await AwesomeNotifications()
           .createNotificationFromJsonData(decoded);
-      log('$_logTag demo: createNotificationFromJsonData scheduled=$scheduled');
+      appLog('$_logTag demo: createNotificationFromJsonData scheduled=$scheduled');
       return scheduled;
     } catch (e, stack) {
       debugPrint('$_logTag demo notification failed: $e');
@@ -375,7 +375,7 @@ class PushNotificationService {
   String? _pendingDeepLink;
 
   void _routeFromMessage(RemoteMessage message) {
-    log(
+    appLog(
       '$_logTag tap (FCM): messageId=${message.messageId} '
       'data=${message.data}',
     );
@@ -386,7 +386,7 @@ class PushNotificationService {
   static Future<void> _onActionReceivedMethod(
     ReceivedAction receivedAction,
   ) async {
-    log(
+    appLog(
       '$_logTag tap (AwesomeNotifications): id=${receivedAction.id} '
       'channelKey=${receivedAction.channelKey} '
       'buttonKeyPressed=${receivedAction.buttonKeyPressed} '
@@ -404,7 +404,7 @@ class PushNotificationService {
 
     final isAuthed = StorageService.getString(AppConstants.tokenKey) != null;
     final target = isAuthed ? Routes.notifications : Routes.loginOrRegister;
-    log(
+    appLog(
       '$_logTag navigate: isAuthed=$isAuthed pending=$_pendingDeepLink '
       'target=$target',
     );
@@ -420,13 +420,13 @@ class PushNotificationService {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
         AppRouter.router.go(target);
-        log('$_logTag navigate: router.go($target) dispatched (post-frame)');
+        appLog('$_logTag navigate: router.go($target) dispatched (post-frame)');
         // Only clear when we reached the actual final destination. The
         // `loginOrRegister` redirect path leaves the pending intent in
         // place so `replayPendingDeepLink` can flush it after auth completes.
         if (isAuthed && _pendingDeepLink == Routes.notifications) {
           _pendingDeepLink = null;
-          log('$_logTag navigate: cleared pending deep link');
+          appLog('$_logTag navigate: cleared pending deep link');
         }
       } catch (e) {
         debugPrint('$_logTag tap routing failed: $e');
@@ -441,15 +441,15 @@ class PushNotificationService {
   void replayPendingDeepLink() {
     final target = _pendingDeepLink;
     if (target == null) {
-      log('$_logTag replayPendingDeepLink: nothing to replay');
+      appLog('$_logTag replayPendingDeepLink: nothing to replay');
       return;
     }
     _pendingDeepLink = null;
-    log('$_logTag replayPendingDeepLink: scheduling go($target) post-frame');
+    appLog('$_logTag replayPendingDeepLink: scheduling go($target) post-frame');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
         AppRouter.router.go(target);
-        log('$_logTag replayPendingDeepLink: router.go($target) dispatched');
+        appLog('$_logTag replayPendingDeepLink: router.go($target) dispatched');
       } catch (e) {
         debugPrint('$_logTag deep-link replay failed: $e');
       }
@@ -466,10 +466,10 @@ class PushNotificationService {
     try {
       final token = await _messaging.getToken();
       if (token == null || token.isEmpty) {
-        log('$_logTag currentDeviceToken: null/empty');
+        appLog('$_logTag currentDeviceToken: null/empty');
         return null;
       }
-      log('$_logTag currentDeviceToken: ${_redactToken(token)}');
+      appLog('$_logTag currentDeviceToken: ${_redactToken(token)}');
       return token;
     } catch (e) {
       debugPrint('$_logTag currentDeviceToken failed: $e');
@@ -488,10 +488,10 @@ class PushNotificationService {
   ///
   /// All exceptions are caught and logged. Never rethrows.
   Future<void> registerCurrentDevice() async {
-    log('$_logTag registerCurrentDevice: start');
+    appLog('$_logTag registerCurrentDevice: start');
     try {
       final settings = await _messaging.requestPermission();
-      log(
+      appLog(
         '$_logTag registerCurrentDevice: permission '
         'authorizationStatus=${settings.authorizationStatus.name}',
       );
@@ -501,7 +501,7 @@ class PushNotificationService {
         debugPrint('$_logTag getToken returned null/empty — skipping');
         return;
       }
-      log('$_logTag registerCurrentDevice: token=${_redactToken(token)}');
+      appLog('$_logTag registerCurrentDevice: token=${_redactToken(token)}');
 
       final uuid = await _readDeviceUuid();
       if (uuid == null || uuid.isEmpty) {
@@ -510,7 +510,7 @@ class PushNotificationService {
       }
 
       final model = await _readDeviceModel();
-      log(
+      appLog(
         '$_logTag registerCurrentDevice: device model=$model '
         'uuid=${_redactToken(uuid)}',
       );
@@ -557,12 +557,12 @@ class PushNotificationService {
   /// the new token. Idempotent — calling twice replaces the previous
   /// subscription.
   void startTokenRefreshListener({required bool Function() isAuthenticated}) {
-    log('$_logTag startTokenRefreshListener: attached');
+    appLog('$_logTag startTokenRefreshListener: attached');
     _isAuthenticatedCheck = isAuthenticated;
     _refreshSubscription?.cancel();
     _refreshSubscription = _messaging.onTokenRefresh.listen(
       (token) {
-        log(
+        appLog(
           '$_logTag onTokenRefresh: fired token=${_redactToken(token)} '
           'authed=${_isAuthenticatedCheck?.call() == true}',
         );

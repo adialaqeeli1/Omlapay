@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:developer' as developer;
+import 'package:omlapay_mobile_app/core/utils/app_logger.dart';
 
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -143,7 +143,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
 
   Future<void> _checkPermission() async {
     if (_useProvider) return;
-    developer.log(
+    appLog(
       'Camera: Checking permission (internal)',
       name: 'QrScannerWidget',
     );
@@ -156,7 +156,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
         _isCheckingPermission = false;
       });
     } catch (e, stackTrace) {
-      developer.log(
+      appLog(
         'Camera: Error checking permission: $e',
         name: 'QrScannerWidget',
         error: e,
@@ -177,14 +177,14 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
         : status.isRestricted
         ? 'restricted'
         : 'unknown';
-    developer.log('$message: $statusStr', name: 'QrScannerWidget');
+    appLog('$message: $statusStr', name: 'QrScannerWidget');
   }
 
   Future<void> _requestPermission() async {
     if (_useProvider) {
       await widget.permissionProvider!.requestPermission();
     } else {
-      developer.log(
+      appLog(
         'Camera: Requesting permission from user (internal)',
         name: 'QrScannerWidget',
       );
@@ -194,7 +194,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
         _logPermissionStatus('Camera: Permission request result', status);
         setState(() => _permissionStatus = status);
       } catch (e, stackTrace) {
-        developer.log(
+        appLog(
           'Camera: Error requesting permission: $e',
           name: 'QrScannerWidget',
           error: e,
@@ -248,7 +248,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
     if (_useProvider) {
       await widget.permissionProvider!.openSettings();
     } else {
-      developer.log(
+      appLog(
         'Camera: Opening app settings (internal)',
         name: 'QrScannerWidget',
       );
@@ -280,7 +280,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
     // Without a validator there is no error UI to show, so we just skip.
     if (rawValue == null || rawValue.isEmpty) {
       if (validator == null) return;
-      developer.log(
+      appLog(
         'QR detect: rawValue is null/empty, showing invalid QR error',
         name: 'QrScannerWidget',
       );
@@ -308,7 +308,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
     if (!mounted) return;
 
     if (validator != null) {
-      developer.log(
+      appLog(
         'QR validate: running validator on "$rawValue"',
         name: 'QrScannerWidget',
       );
@@ -321,7 +321,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
         }
       }
       if (!mounted) return;
-      developer.log(
+      appLog(
         'QR validate: result=${error ?? 'valid'} for "$rawValue"',
         name: 'QrScannerWidget',
       );
@@ -332,7 +332,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
       _hasScanned = true;
     }
 
-    developer.log(
+    appLog(
       'QR scanned: "$rawValue" (length: ${rawValue.length})',
       name: 'QrScannerWidget',
     );
@@ -406,7 +406,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
 
   Widget _buildScannerView(ColorScheme colorScheme) {
     if (_controller == null) {
-      developer.log(
+      appLog(
         'Camera: Permission granted, starting scanner',
         name: 'QrScannerWidget',
       );
@@ -424,7 +424,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget>
           controller: _controller!,
           onDetect: _onDetect,
           errorBuilder: (context, error) {
-            developer.log(
+            appLog(
               'Camera: Scanner error - code: ${error.errorCode}, details: ${error.errorDetails}',
               name: 'QrScannerWidget',
               error: error,
