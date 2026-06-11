@@ -205,7 +205,8 @@ class AppRouter {
           // triggers verify and redirects to home.
           final providerKey =
               mode == LoginProvider.modeConfirmPasscode ||
-                  mode == LoginProvider.modeChangePasscodeConfirm
+                  mode == LoginProvider.modeChangePasscodeConfirm ||
+                  mode == LoginProvider.modeRegisterConfirm
               ? ValueKey(
                   'confirm_${mode}_${currentPasscode ?? ""}_${pendingPasscode ?? ""}_${resetToken ?? ""}',
                 )
