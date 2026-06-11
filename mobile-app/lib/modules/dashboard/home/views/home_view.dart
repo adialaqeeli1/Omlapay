@@ -507,7 +507,7 @@ class _HomeViewState extends State<HomeView> {
                 Text(
                   transaction.isFailed
                       ? context.l10n!.failed
-                      : '${double.tryParse(transaction.amount)?.toFormattedAmount() ?? transaction.amount} ${transaction.assetSymbol}',
+                      : '${transaction.isSent ? '-' : ''}${double.tryParse(transaction.amount)?.abs().toFormattedAmount() ?? transaction.amount} ${transaction.assetSymbol}',
                   textDirection: transaction.isFailed
                       ? null
                       : TextDirection.ltr,
