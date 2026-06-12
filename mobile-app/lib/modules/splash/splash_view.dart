@@ -11,6 +11,7 @@ import '../../core/services/storage_helper.dart';
 import '../../core/constants/constants.dart';
 import '../../modules/auth/providers/login_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/code_push_provider.dart';
 import '../../routes/app_router.dart';
 
 class SplashView extends StatefulWidget {
@@ -53,6 +54,18 @@ class _SplashViewState extends State<SplashView>
     if (!mounted) return;
     final router = GoRouter.of(context);
     final authProvider = context.read<AuthProvider>();
+    final codePush = context.read<CodePushProvider>();
+
+    // If a Shorebird patch is downloading or ready, the blocking update dialog
+    // takes over and closes the app, so hold on the splash instead of routing
+    // away. Wait for the initial check to settle first: on no update / a failed
+    // download this resolves and we navigate normally. No-op when Shorebird is
+    // unavailable (debug builds), keeping startup unchanged in development.
+    if (codePush.isShorebirdAvailable) {
+      await codePush.initialCheckSettled;
+      if (!mounted) return;
+      if (codePush.isDownloading || codePush.isUpdateReadyToInstall) return;
+    }
 
     final bool isOnboardingCompleted =
         StorageService.getBool(AppConstants.onboardingCompletedKey) ?? false;
