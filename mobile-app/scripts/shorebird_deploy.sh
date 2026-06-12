@@ -16,7 +16,8 @@
 #   ./scripts/shorebird_deploy.sh patch
 #   ./scripts/shorebird_deploy.sh patch --patch-version=1.0.0+36 --platforms=android
 #
-# NOTE: On Windows, run this from Git Bash or WSL (it is a bash script).
+# NOTE: On Windows, run this from Git Bash or WSL (it is a bash script),
+#       or use the wrapper: scripts\shorebird_deploy.bat <release|patch> [options]
 # ------------------------------------------------------------
 
 # Navigate to project root (parent of scripts/)
@@ -164,19 +165,38 @@ FLUTTER_INSTALL_DIR="$HOME/development/flutter"
 SHELL_RC="$HOME/.zshrc"
 [ -n "$ZSH_VERSION" ] || [ "$(basename "${SHELL:-}")" = "zsh" ] || SHELL_RC="$HOME/.bashrc"
 
-step "🦋 Checking Flutter installation"
+# Resolve the Flutter version the project pins (single source of truth:
+# .flutter-version). Fall back to the 'stable' branch if the file is absent.
+FLUTTER_VERSION_FILE="$PROJECT_ROOT/.flutter-version"
+if [ -f "$FLUTTER_VERSION_FILE" ]; then
+    FLUTTER_VERSION="$(head -n 1 "$FLUTTER_VERSION_FILE" | tr -d '[:space:]')"
+fi
+[ -n "${FLUTTER_VERSION:-}" ] || FLUTTER_VERSION="stable"
+
+step "🦋 Checking Flutter installation (pinned: $FLUTTER_VERSION)"
 if command -v flutter >/dev/null 2>&1; then
-    ok "Flutter found: $(flutter --version 2>/dev/null | head -n 1)"
+    INSTALLED_FLUTTER="$(flutter --version 2>/dev/null | head -n 1)"
+    ok "Flutter found: $INSTALLED_FLUTTER"
+    # Soft check: warn (don't block) if the installed version differs from the pin.
+    if [ "$FLUTTER_VERSION" != "stable" ] && ! echo "$INSTALLED_FLUTTER" | grep -q "$FLUTTER_VERSION"; then
+        warn "Installed Flutter does not match pinned version $FLUTTER_VERSION (.flutter-version)."
+        info "   Codegen runs on your system Flutter; the release build uses Shorebird's own Flutter."
+        info "   To match exactly: flutter version $FLUTTER_VERSION   (or use fvm)."
+    fi
 else
-    warn "Flutter not found — attempting to install it."
+    warn "Flutter not found — attempting to install version $FLUTTER_VERSION."
     if ! command -v git >/dev/null 2>&1; then
         die "git is required to install Flutter but was not found. Install git and re-run."
     fi
-    info "📥 Cloning Flutter (stable) into $FLUTTER_INSTALL_DIR ..."
+    info "📥 Cloning Flutter ($FLUTTER_VERSION) into $FLUTTER_INSTALL_DIR ..."
     mkdir -p "$HOME/development" || die "Could not create $HOME/development"
     if [ ! -d "$FLUTTER_INSTALL_DIR" ]; then
-        git clone https://github.com/flutter/flutter.git -b stable "$FLUTTER_INSTALL_DIR" \
-            || die "Flutter clone failed."
+        # -b accepts both a version tag (e.g. 3.44.1) and a channel (e.g. stable).
+        if ! git clone https://github.com/flutter/flutter.git -b "$FLUTTER_VERSION" --depth 1 "$FLUTTER_INSTALL_DIR"; then
+            warn "Could not clone tag '$FLUTTER_VERSION' — falling back to the stable channel."
+            git clone https://github.com/flutter/flutter.git -b stable --depth 1 "$FLUTTER_INSTALL_DIR" \
+                || die "Flutter clone failed."
+        fi
     else
         warn "$FLUTTER_INSTALL_DIR already exists — reusing it."
     fi
@@ -194,7 +214,7 @@ else
     info "🩺 Running flutter doctor (first run may download the Dart SDK)..."
     flutter doctor || warn "flutter doctor reported issues — review them above."
 
-    banner "🔁 Flutter was just installed. Please restart your terminal (or run: source $SHELL_RC) and re-run this script."
+    banner "🔁 Flutter $FLUTTER_VERSION was just installed. Please restart your terminal (or run: source $SHELL_RC) and re-run this script."
     exit 0
 fi
 
