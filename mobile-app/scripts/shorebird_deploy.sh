@@ -407,22 +407,41 @@ if [ "$ACTION" = "release" ]; then
     fi
     DEPLOY_VERSION="$NEW_VERSION"
 else
-    # PATCH: never bump. Resolve which release to patch.
-    # If no version is provided, leave RELEASE_VERSION_TARGET empty so Shorebird
-    # prompts interactively with its own list of available releases.
+    # PATCH: never bump. Defaults to the CURRENT pubspec version (the latest release),
+    # since a patch almost always targets the version that is currently live — so there
+    # is no need to pick it interactively. Pass --patch-version to target a different
+    # existing release instead.
     banner "🔢 Resolving patch target release"
     if [ -n "$PATCH_VERSION_ARG" ]; then
         RELEASE_VERSION_TARGET="$PATCH_VERSION_ARG"
+        ok "🎯 Patching requested release version: $RELEASE_VERSION_TARGET"
     elif [ -n "$VERSION_ARG" ]; then
         RELEASE_VERSION_TARGET="$VERSION_ARG"
-    fi
-
-    if [ -n "$RELEASE_VERSION_TARGET" ]; then
-        DEPLOY_VERSION="$RELEASE_VERSION_TARGET"
-        ok "🎯 Patching release version: $RELEASE_VERSION_TARGET"
+        ok "🎯 Patching requested release version: $RELEASE_VERSION_TARGET"
     else
-        DEPLOY_VERSION="(interactive)"
-        info "🤝 No --patch-version given — Shorebird will prompt you to pick the release version."
+        RELEASE_VERSION_TARGET="$CURRENT_VERSION"
+        ok "🎯 Patching current release version: $RELEASE_VERSION_TARGET (use --patch-version to override)"
+    fi
+    DEPLOY_VERSION="$RELEASE_VERSION_TARGET"
+fi
+
+# ============================================================
+# 🦋 Resolve Shorebird's release Flutter version
+# ------------------------------------------------------------
+# `shorebird release` accepts --flutter-version to lock the build to a specific
+# (Shorebird-published) Flutter. `shorebird patch` does NOT support this — patches
+# always inherit the Flutter version of the release they target. So we only compute
+# this flag for releases, and only if Shorebird actually publishes our pinned version.
+# ============================================================
+SHOREBIRD_FLUTTER_ARG=""
+if [ "$ACTION" = "release" ] && [ "$FLUTTER_VERSION" != "stable" ]; then
+    step "🦋 Checking Shorebird supports Flutter $FLUTTER_VERSION for the release build"
+    if shorebird flutter versions list 2>/dev/null | grep -qw "$FLUTTER_VERSION"; then
+        SHOREBIRD_FLUTTER_ARG="--flutter-version=$FLUTTER_VERSION"
+        ok "Release will be built with Flutter $FLUTTER_VERSION (patches inherit this)."
+    else
+        warn "Shorebird does not publish Flutter $FLUTTER_VERSION — using Shorebird's default."
+        info "   See available versions: shorebird flutter versions list"
     fi
 fi
 
@@ -451,7 +470,10 @@ for platform in "${ORDERED_PLATFORMS[@]}"; do
 
     banner "$EMOJI Shorebird $ACTION — $platform"
     if [ "$ACTION" = "release" ]; then
-        if shorebird release "$platform"; then
+        # Pin the release Flutter version when supported (patches will inherit it).
+        RELEASE_CMD=(shorebird release "$platform")
+        [ -n "$SHOREBIRD_FLUTTER_ARG" ] && RELEASE_CMD+=("$SHOREBIRD_FLUTTER_ARG")
+        if "${RELEASE_CMD[@]}"; then
             ok "$EMOJI $platform release completed."
             SUCCEEDED+=("$platform")
         else
@@ -461,6 +483,8 @@ for platform in "${ORDERED_PLATFORMS[@]}"; do
     else
         # Build the patch command; only pin --release-version when one was provided,
         # otherwise let Shorebird prompt interactively with its release list.
+        # NOTE: --flutter-version is intentionally NOT passed — Shorebird patch does
+        # not support it; the patch inherits the Flutter version of its release.
         PATCH_CMD=(shorebird patch --platforms="$platform")
         if [ -n "$RELEASE_VERSION_TARGET" ]; then
             PATCH_CMD+=(--release-version="$RELEASE_VERSION_TARGET")
