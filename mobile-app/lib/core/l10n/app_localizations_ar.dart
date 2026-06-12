@@ -9,7 +9,7 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get appTitle => 'أوملاباي';
+  String get appTitle => 'عملة باي';
 
   @override
   String get login => 'تسجيل الدخول';
@@ -30,7 +30,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get profile => 'الملف الشخصي';
 
   @override
-  String get welcomeToOmlaPay => 'مرحبًا بك في أوملا باي!';
+  String get welcomeToOmlaPay => 'مرحبًا بك في عملة باي';
 
   @override
   String get email => 'البريد الإلكتروني';
@@ -76,7 +76,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get generalSettings => 'الإعدادات العامة';
 
   @override
-  String get aboutOmlapay => 'نبذة عن أوملاباي';
+  String get aboutOmlapay => 'نبذة عن عملة باي';
 
   @override
   String get helpCenter => 'مركز المساعدة';
@@ -357,7 +357,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get saveMoneyNote => 'وفر المال وادفع بعملتك المفضلة';
 
   @override
-  String get register => 'يسجل';
+  String get register => 'سجل الان';
 
   @override
   String get hello => 'مرحبًا!';
@@ -366,7 +366,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get helloComma => 'مرحبًا،';
 
   @override
-  String get welcomeBackToOmlapay => 'مرحبًا بعودتك إلى أوملاباي!';
+  String get welcomeBackToOmlapay => 'مرحبًا بعودتك إلى عملة باي!';
 
   @override
   String get pleaseEnterYourNumberAndPasscodeToLogin =>
@@ -392,7 +392,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dontHaveAccountSignUp => 'ليس لديك حساب؟ سجل';
 
   @override
-  String get welcomeToOmlapayLetsGetStarted => 'مرحبًا بك في أوملاباي، لنبدأ!';
+  String get welcomeToOmlapayLetsGetStarted => 'مرحبًا بك في عملة باي، لنبدأ!';
 
   @override
   String get pleaseEnterYourDataToReceiveVerificationCodes =>
@@ -433,7 +433,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get incorrectPasscodeTryAgain => 'رمز المرور غير صحيح. حاول مرة أخرى.';
 
   @override
-  String get whoIsOmlapay => 'من هو \"أوملاباي\"؟';
+  String get whoIsOmlapay => 'من هو \"عملة باي\"؟';
 
   @override
   String get aboutOmlapayDescription =>
@@ -717,7 +717,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get couldNotOpenLink => 'تعذر فتح الرابط';
 
   @override
-  String get supportEmailSubject => 'دعم OmlaPay';
+  String get supportEmailSubject => 'دعم عملة باي';
 
   @override
   String get fromAddress => 'من العنوان';
@@ -1196,7 +1196,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get swapExchangeRate => 'سعر الصرف';
 
   @override
-  String get swapFeeOmlapay => 'رسوم أوملاباي';
+  String get swapFeeOmlapay => 'رسوم عملة باي';
 
   @override
   String get swapFeeBinance => 'رسوم بينانس';
@@ -1335,7 +1335,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sendInvitationDialogMessage =>
-      'هذا الرقم لا يملك حسابًا على أوملاباي. لتجربة أفضل، أرسل له دعوة.';
+      'هذا الرقم لا يملك حسابًا على عملة باي. لتجربة أفضل، أرسل له دعوة.';
 
   @override
   String get sendInvitationDialogNote =>
