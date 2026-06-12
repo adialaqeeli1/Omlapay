@@ -1181,6 +1181,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get kyc_retry_button => 'إعادة التحقق';
 
   @override
+  String get kycVerificationRequiredTitle => 'التحقق مطلوب';
+
+  @override
+  String get kycVerificationPendingTitle => 'التحقق قيد المراجعة';
+
+  @override
+  String get kycVerificationGoBackButton => 'العودة';
+
+  @override
   String get swapFeesTitle => 'رسوم المبادلة';
 
   @override

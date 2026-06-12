@@ -14,13 +14,12 @@ import '../../../../core/utils/coin_brand_color.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../core/utils/utility.dart';
 import '../../../../routes/app_router.dart';
-import '../../../../providers/kyc_status_provider.dart';
 import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../../../scan/view/qr_scanner_view.dart';
 import '../../../../widgets/permission_dialog.dart';
 import '../../../../widgets/common_back_button.dart';
 import '../../../../widgets/common_coin_icon.dart';
-import '../../../../widgets/kyc_verification_required_banner.dart';
+import '../../../../widgets/kyc_verification_gate.dart';
 import '../../../../widgets/coin_selection_sheet.dart';
 import '../../../../providers/wallets_provider.dart';
 import '../provider/send_provider.dart';
@@ -68,7 +67,6 @@ class SendCoinView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SendProvider>();
-    final kycProvider = context.watch<KycStatusProvider>();
     final l10n = context.l10n!;
     final theme = context.theme;
 
@@ -159,16 +157,10 @@ class SendCoinView extends StatelessWidget {
                     ],
                   ),
 
-                  // Verification Warning
-                  if (kycProvider.showBanner) ...[
-                    const SizedBox(height: 30),
-                    KycVerificationRequiredBanner(
-                      kycStatus: kycProvider.kycStatus,
-                      entrySource: KycVerificationEntrySource.send,
-                      rejectionReason: kycProvider.rejectionReason,
-                      rejectionReasonAr: kycProvider.rejectionReasonAr,
-                    ),
-                  ],
+                  // KYC gate — blocks the screen until verification is complete.
+                  const KycVerificationGate(
+                    entrySource: KycVerificationEntrySource.send,
+                  ),
                 ],
               ),
             ),

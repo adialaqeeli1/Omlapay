@@ -6,11 +6,10 @@ import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/extentions/number_extensions.dart';
 import '../../../../core/utils/coin_brand_color.dart';
 import '../../../../providers/coins_prices_provider.dart';
-import '../../../../providers/kyc_status_provider.dart';
 import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../../../../widgets/common_back_button.dart';
 import '../../../../widgets/common_coin_icon.dart';
-import '../../../../widgets/kyc_verification_required_banner.dart';
+import '../../../../widgets/kyc_verification_gate.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/utils/date_time_format.dart';
@@ -86,7 +85,6 @@ class _ReceiveCoinsHistoryViewState extends State<ReceiveCoinsHistoryView>
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final provider = context.watch<ReceiveCoinsHistoryProvider>();
-    final kycProvider = context.watch<KycStatusProvider>();
     _syncTabsIfNeeded(provider.uniqueCoinSymbols);
 
     final theme = context.theme;
@@ -135,16 +133,10 @@ class _ReceiveCoinsHistoryViewState extends State<ReceiveCoinsHistoryView>
       ),
       body: Column(
         children: [
-          if (kycProvider.showBanner)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: KycVerificationRequiredBanner(
-                kycStatus: kycProvider.kycStatus,
-                entrySource: KycVerificationEntrySource.receiveHistory,
-                rejectionReason: kycProvider.rejectionReason,
-                rejectionReasonAr: kycProvider.rejectionReasonAr,
-              ),
-            ),
+          // KYC gate — blocks the screen until verification is complete.
+          const KycVerificationGate(
+            entrySource: KycVerificationEntrySource.receiveHistory,
+          ),
           Expanded(
             child: TabBarView(
               controller: _tabController,

@@ -2246,6 +2246,24 @@ abstract class AppLocalizations {
   /// **'Retry Verification'**
   String get kyc_retry_button;
 
+  /// No description provided for @kycVerificationRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Required'**
+  String get kycVerificationRequiredTitle;
+
+  /// No description provided for @kycVerificationPendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Under Review'**
+  String get kycVerificationPendingTitle;
+
+  /// No description provided for @kycVerificationGoBackButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Go Back'**
+  String get kycVerificationGoBackButton;
+
   /// No description provided for @swapFeesTitle.
   ///
   /// In en, this message translates to:

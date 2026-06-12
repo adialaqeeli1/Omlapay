@@ -7,14 +7,13 @@ import '../../../../core/extentions/number_extensions.dart';
 import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/common_back_button.dart';
-import '../../../../widgets/kyc_verification_required_banner.dart';
+import '../../../../widgets/kyc_verification_gate.dart';
 import '../provider/swap_provider.dart';
 import '../widgets/currency_input_card.dart';
 import '../../../../widgets/theme_aware_icon.dart';
 import '../../../../widgets/coin_selection_sheet.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../routes/app_router.dart';
-import '../../../../providers/kyc_status_provider.dart';
 import '../../../../providers/wallets_provider.dart';
 import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
 
@@ -35,7 +34,6 @@ class SwapCoinView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SwapProvider>();
-    final kycProvider = context.watch<KycStatusProvider>();
     final l10n = context.l10n!;
     final theme = context.theme;
     final colorScheme = theme.colorScheme;
@@ -265,13 +263,9 @@ class SwapCoinView extends StatelessWidget {
 
                   const Spacer(),
 
-                  if (kycProvider.showBanner)
-                    KycVerificationRequiredBanner(
-                      kycStatus: kycProvider.kycStatus,
-                      entrySource: KycVerificationEntrySource.swap,
-                      rejectionReason: kycProvider.rejectionReason,
-                      rejectionReasonAr: kycProvider.rejectionReasonAr,
-                    ),
+                  const KycVerificationGate(
+                    entrySource: KycVerificationEntrySource.swap,
+                  ),
 
                   const SizedBox(height: 32.0),
 
