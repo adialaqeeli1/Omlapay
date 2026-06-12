@@ -461,6 +461,19 @@ done
 SUCCEEDED=()
 FAILED=()
 
+# Build-artifact paths captured after a successful release (release only — a patch
+# produces no .aab/.xcarchive). Printed in the final summary.
+IOS_ARTIFACT=""
+ANDROID_ARTIFACT=""
+
+# Echo the newest path matching a glob, or nothing. Works for the .xcarchive
+# directory bundle too (ls -d lists the entry itself, not its contents).
+find_latest_artifact() {
+    local match
+    match="$(ls -td $1 2>/dev/null | head -n 1)"
+    [ -n "$match" ] && [ -e "$match" ] && echo "$match"
+}
+
 for platform in "${ORDERED_PLATFORMS[@]}"; do
     case "$platform" in
         ios)     EMOJI="🍎" ;;
@@ -476,6 +489,16 @@ for platform in "${ORDERED_PLATFORMS[@]}"; do
         if "${RELEASE_CMD[@]}"; then
             ok "$EMOJI $platform release completed."
             SUCCEEDED+=("$platform")
+            # Locate the produced build artifact to report at the end.
+            case "$platform" in
+                ios)
+                    IOS_ARTIFACT="$(find_latest_artifact 'build/ios/archive/*.xcarchive')"
+                    [ -z "$IOS_ARTIFACT" ] && IOS_ARTIFACT="$(find_latest_artifact 'build/ios/*.xcarchive')"
+                    ;;
+                android)
+                    ANDROID_ARTIFACT="$(find_latest_artifact 'build/app/outputs/bundle/release/*.aab')"
+                    ;;
+            esac
         else
             fail "$EMOJI $platform release failed."
             FAILED+=("$platform")
@@ -506,6 +529,23 @@ banner "📊 Summary — Shorebird $ACTION (v$DEPLOY_VERSION)"
 if [ ${#SUCCEEDED[@]} -gt 0 ]; then
     ok "Succeeded: ${SUCCEEDED[*]}"
 fi
+
+# Report the produced build artifacts (release only).
+if [ "$ACTION" = "release" ]; then
+    echo ""
+    info "📦 Build artifacts:"
+    if [ -n "$IOS_ARTIFACT" ]; then
+        ok "🍎 iOS xcarchive: $PROJECT_ROOT/$IOS_ARTIFACT"
+    elif printf '%s\n' "${SUCCEEDED[@]}" | grep -qx "ios"; then
+        warn "🍎 iOS xcarchive not found under build/ios/ — check the Shorebird output above."
+    fi
+    if [ -n "$ANDROID_ARTIFACT" ]; then
+        ok "🤖 Android AAB:    $PROJECT_ROOT/$ANDROID_ARTIFACT"
+    elif printf '%s\n' "${SUCCEEDED[@]}" | grep -qx "android"; then
+        warn "🤖 Android AAB not found at build/app/outputs/bundle/release/*.aab — check the Shorebird output above."
+    fi
+fi
+
 if [ ${#FAILED[@]} -gt 0 ]; then
     fail "Failed: ${FAILED[*]}"
     echo ""
