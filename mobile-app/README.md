@@ -157,7 +157,11 @@ omlapay_mobile_app/
 │   ├── gen_l10n.sh          # Bash: Generate localization files
 │   ├── gen_models.sh        # Bash: Run build_runner for models
 │   ├── rename_app.sh        # Bash: Rename app package ID
-│   └── run.sh               # Bash: Run app with config
+│   ├── run.sh               # Bash: Run app with config
+│   ├── shorebird_deploy.sh  # Bash: Shorebird release/patch pipeline (macOS/Linux)
+│   └── shorebird_deploy.bat # Windows wrapper for shorebird_deploy.sh
+├── .flutter-version         # 📌 Pinned Flutter version (single source of truth)
+├── shorebird.yaml           # 🐦 Shorebird code-push (OTA) configuration
 ├── pubspec.yaml             # 📦 Dependencies & Project Metadata
 └── README.md                # 📖 Project Documentation (This file)
 ```
@@ -211,6 +215,115 @@ Full clean build pipeline that runs all generation steps before building the APK
 # Debug build
 ./scripts/build_release_apk.sh --debug
 ```
+
+### 7. Shorebird Deploy & Patch (Code Push)
+End-to-end [Shorebird](https://shorebird.dev) pipeline for over-the-air (OTA) releases and patches. It runs a full environment preflight (installs Flutter/Shorebird if missing, logs in, checks the platform SDKs), the standard codegen prep, automatic version tracking, then `shorebird release`/`patch` — **iOS first, then Android**. See the [Building & Releasing](#-building--releasing-the-app) guide below for the full flow.
+
+```bash
+# macOS / Linux
+./scripts/shorebird_deploy.sh release        # new OTA release (auto-bumps build number)
+./scripts/shorebird_deploy.sh patch          # OTA patch for the current release
+
+# Windows (auto-installs Git Bash if needed) — accepts the SAME params as the .sh
+scripts\shorebird_deploy.bat release
+scripts\shorebird_deploy.bat release --version=1.0.1
+scripts\shorebird_deploy.bat patch --patch-version=1.0.0+36 --platforms=android
+```
+
+---
+
+## 📦 Building & Releasing the App
+
+This project ships in two ways:
+
+1. **Store builds (default Flutter)** — the `.aab`/`.ipa` you upload to the Play Store / App Store. Required for any change to native code, dependencies, or assets.
+2. **OTA updates (Shorebird code push)** — push Dart/UI fixes to already-installed apps **without** a store review, via `shorebird release` + `shorebird patch`.
+
+> **Flutter version is pinned** in [`.flutter-version`](.flutter-version) (currently **3.44.1**) as the single source of truth. The deploy script reads it for both codegen and the Shorebird release build.
+
+### A. Run locally (development)
+
+```bash
+flutter pub get
+flutter run                 # debug build on a connected device/emulator
+flutter run --release       # release-mode run (performance profiling)
+```
+
+Or use the helper which runs all codegen first: `./scripts/run.sh`.
+
+### B. Build a store release (default Flutter)
+
+```bash
+# Android — App Bundle (.aab) for the Play Store
+flutter build appbundle --release
+
+# Android — APK (sideload / direct install)
+flutter build apk --release
+
+# iOS — archive for App Store / TestFlight (macOS + Xcode required)
+flutter build ipa --release
+```
+
+For Android, prefer the **full pipeline script** which cleans, regenerates icons/l10n/models, renames, bumps the build number, then builds:
+
+```bash
+./scripts/build_release_apk.sh --release          # auto-increments build number
+./scripts/build_release_apk.sh --version=1.0.1    # set a specific version name
+```
+
+### C. Ship an OTA release & patches (Shorebird)
+
+Shorebird lets you push code changes to live apps without a store update. The flow:
+
+1. **Create a release** — a Shorebird-tracked build of the app. Patches attach to it.
+   ```bash
+   ./scripts/shorebird_deploy.sh release
+   ```
+   - Detects the OS (iOS only builds on macOS), runs preflight + codegen prep.
+   - **Version tracking:** queries `shorebird releases list`, takes `max(pubspec, shorebird)`, and bumps the build number by `+1` only if the current one is already released. Pass `--version=1.0.1` to set the version name explicitly.
+   - Builds with the pinned Flutter (`--flutter-version`) when Shorebird publishes that version.
+
+2. **Patch a release** — push a fix to users on an existing release.
+   ```bash
+   ./scripts/shorebird_deploy.sh patch                        # patches the current pubspec version
+   ./scripts/shorebird_deploy.sh patch --patch-version=1.0.0+36   # patch a specific release
+   ```
+   - Patches **inherit** the Flutter version of the release they target (Shorebird `patch` does not accept `--flutter-version`).
+
+#### Parameter reference (`shorebird_deploy.sh`)
+
+```
+./scripts/shorebird_deploy.sh <release|patch> [--version=…] [--patch-version=…] [--platforms=…]
+```
+
+| Parameter | Applies to | Default | Description |
+| --- | --- | --- | --- |
+| `release` \| `patch` | *required* | — | The Shorebird action to run. |
+| `--version=x.y.z` \| `x.y.z+build` | release | current pubspec name + auto-bumped build | Sets the release version. |
+| `--patch-version=x.y.z+build` | patch | current pubspec version | Targets which existing release to patch. |
+| `--platforms=ios,android` | both | OS-derived (`ios`+`android` on macOS, `android` elsewhere) | Narrows the platforms to deploy. |
+| `-h` \| `--help` | — | — | Prints usage and exits. |
+
+**Why each parameter exists:**
+
+- **`release` \| `patch` (required, positional).** This is the one argument the script *forces* you to provide. A Shorebird `release` creates a brand-new, store-shippable build that patches attach to; a `patch` pushes a Dart/UI fix over-the-air to users already on a release. They are fundamentally different (new build vs. hot-fix) and irreversible to confuse, so the script refuses to guess — you must state intent explicitly.
+
+- **`--version` (release only).** Lets you set the release's version *name* (e.g. `1.0.1`) when you're shipping a real version bump, instead of relying on the auto-incremented build number. Accepts two forms:
+  - `--version=1.0.1` → name only; the script still auto-bumps the **build** number from Shorebird (`1.0.1+39`).
+  - `--version=1.0.1+45` → full version; used **verbatim**, no auto-bump.
+  - *Why:* the build number can be tracked automatically (see version logic below), but the *marketing version name* is a human decision — this flag is how you make it.
+
+- **`--patch-version` (patch only).** Selects which already-published release a patch should attach to. Defaults to the current `pubspec.yaml` version because you almost always patch the release that's currently live — so the common case needs no flag. *Why keep it then?* To hot-fix an **older** release that some users haven't updated from yet (e.g. patch `1.0.0+34` while `1.0.0+36` is the latest). Note: Shorebird `patch` cannot set a Flutter version — a patch always inherits the Flutter of the release it targets.
+
+- **`--platforms` (both).** Restricts the deploy to a subset of platforms. The script already derives the platform list from the OS (iOS only builds on macOS), so this flag can only **narrow** that set, never widen it. *Why:* useful for re-running just one side after a platform-specific failure (e.g. iOS uploaded fine but Android failed → `--platforms=android`), or for a deliberate Android-only patch. Requesting a platform the OS can't build is ignored with a warning.
+
+- **`-h` / `--help`.** Prints the usage block without doing anything — a safe way to recall the syntax.
+
+**Version-tracking logic (release):** the build number is the source of truth for "is this already shipped?". The script queries `shorebird releases list`, takes `max(pubspec build, highest Shorebird build)`, and bumps `+1` **only if** that build is already released — so a release never collides with an existing one, and a manually-bumped pubspec is respected. This is why you rarely need to touch the build number by hand; `--version` is reserved for the *name*.
+
+> ⚠️ **SDK requirements:** iOS needs **Xcode**, Android needs the **Android SDK**. These cannot be auto-installed — if one is missing, the script skips that platform with setup instructions (and hard-fails only if nothing is buildable). Flutter and the Shorebird CLI *are* auto-installed if absent.
+
+> 🪟 **Windows:** use `scripts\shorebird_deploy.bat` (runs from cmd/PowerShell). It locates Git Bash or WSL — and installs Git for Windows via `winget` if neither exists — then forwards **all arguments unchanged** to the `.sh`, so every parameter in the table above works identically on Windows. iOS is macOS-only, so Windows/Linux build Android only.
 
 ---
 
@@ -284,8 +397,10 @@ You are likely using `ColorFilter.matrix` blindly.
 ## 🏁 Getting Started
 
 ### Prerequisites
--   Flutter SDK (3.10.3+)
--   Dart SDK
+-   Flutter SDK — pinned to **3.44.1** via [`.flutter-version`](.flutter-version)
+-   Dart SDK (`>=3.12.1`, bundled with Flutter)
+-   Xcode (for iOS builds) / Android SDK (for Android builds)
+-   [Shorebird CLI](https://docs.shorebird.dev) — only for OTA releases/patches (auto-installed by `shorebird_deploy.sh` if missing)
 
 ### Installation
 
@@ -304,6 +419,8 @@ You are likely using `ColorFilter.matrix` blindly.
     ```bash
     flutter run
     ```
+
+> 📦 For building store releases and shipping OTA updates, see the [Building & Releasing](#-building--releasing-the-app) guide.
 
 ---
 
