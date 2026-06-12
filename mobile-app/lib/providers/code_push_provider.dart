@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
 
@@ -37,12 +39,31 @@ class CodePushProvider extends ChangeNotifier {
   /// restart to take effect.
   bool get isUpdateReadyToInstall => _isUpdateReadyToInstall;
 
-  bool _restartPromptShown = false;
+  /// Completes when the pending patch has finished downloading and is ready to
+  /// install. The update dialog awaits this so its "OK" action only closes the
+  /// app once Shorebird has finished its job. Completes with an error if the
+  /// download fails, letting the dialog dismiss itself and restore navigation.
+  Completer<void> _readyCompleter = Completer<void>();
+  Future<void> get whenReadyToInstall => _readyCompleter.future;
 
-  /// The UI should show the "update ready" prompt exactly once per pending
-  /// patch. Call [markRestartPromptShown] after presenting it.
-  bool get shouldShowRestartPrompt =>
-      _isUpdateReadyToInstall && !_restartPromptShown;
+  /// Completes once the first update check (including any download it triggers)
+  /// has settled — i.e. we know whether an update will take over. The splash
+  /// awaits this before navigating so it does not route away while a patch is
+  /// downloading or ready to install.
+  final Completer<void> _initialCheckCompleter = Completer<void>();
+  Future<void> get initialCheckSettled => _initialCheckCompleter.future;
+
+  void _markInitialCheckSettled() {
+    if (!_initialCheckCompleter.isCompleted) _initialCheckCompleter.complete();
+  }
+
+  bool _updateDialogShown = false;
+
+  /// The blocking update dialog should be shown exactly once per pending patch,
+  /// as soon as a download starts (so navigation is blocked while it runs) or a
+  /// patch is already downloaded. Call [markUpdateDialogShown] after presenting.
+  bool get shouldShowUpdateDialog =>
+      (_isDownloading || _isUpdateReadyToInstall) && !_updateDialogShown;
 
   bool _isChecking = false;
 
@@ -66,7 +87,11 @@ class CodePushProvider extends ChangeNotifier {
   ///
   /// Failures (no network, etc.) are swallowed; the next check retries.
   Future<void> checkForUpdate() async {
-    if (!_updater.isAvailable || _isChecking || _isUpdateReadyToInstall) return;
+    if (_isChecking || _isUpdateReadyToInstall) return;
+    if (!_updater.isAvailable) {
+      _markInitialCheckSettled();
+      return;
+    }
     _isChecking = true;
     try {
       final status = await _updater.checkForUpdate();
@@ -83,10 +108,15 @@ class CodePushProvider extends ChangeNotifier {
       debugPrint('CodePushProvider.checkForUpdate failed: $error');
     } finally {
       _isChecking = false;
+      // Settle only after any download has resolved, so the splash sees the
+      // final state (ready / failed / none) before deciding to navigate.
+      _markInitialCheckSettled();
     }
   }
 
   Future<void> _downloadUpdate() async {
+    // Flip downloading first so the blocking dialog is shown (and navigation
+    // blocked) for the whole download, not only once it finishes.
     _isDownloading = true;
     notifyListeners();
     try {
@@ -94,6 +124,7 @@ class CodePushProvider extends ChangeNotifier {
       _markReadyToInstall();
     } on UpdateException catch (error) {
       debugPrint('CodePushProvider update failed: ${error.message}');
+      _handleDownloadFailure();
     } finally {
       _isDownloading = false;
       notifyListeners();
@@ -103,12 +134,26 @@ class CodePushProvider extends ChangeNotifier {
   void _markReadyToInstall() {
     if (_isUpdateReadyToInstall) return;
     _isUpdateReadyToInstall = true;
+    if (!_readyCompleter.isCompleted) _readyCompleter.complete();
     notifyListeners();
   }
 
-  /// Marks the restart prompt as shown so it is not presented again for the
-  /// same pending patch.
-  void markRestartPromptShown() {
-    _restartPromptShown = true;
+  /// Releases a shown dialog when the download fails so the user is not left on
+  /// a blocking, non-dismissible screen. Resets so a later check can retry and
+  /// re-present the dialog with a fresh "ready" future.
+  void _handleDownloadFailure() {
+    if (!_readyCompleter.isCompleted) {
+      _readyCompleter.completeError(
+        StateError('Shorebird update download failed'),
+      );
+    }
+    _readyCompleter = Completer<void>();
+    _updateDialogShown = false;
+  }
+
+  /// Marks the update dialog as shown so it is not presented again for the same
+  /// pending patch.
+  void markUpdateDialogShown() {
+    _updateDialogShown = true;
   }
 }
