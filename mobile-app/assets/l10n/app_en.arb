@@ -511,6 +511,9 @@
         }
     },
     "kyc_retry_button": "Retry Verification",
+    "kycVerificationRequiredTitle": "Verification Required",
+    "kycVerificationPendingTitle": "Verification Under Review",
+    "kycVerificationGoBackButton": "Go Back",
     "swapFeesTitle": "Swap Fees",
     "swapExchangeRate": "Exchange Rate",
     "swapFeeOmlapay": "Omlapay fee",

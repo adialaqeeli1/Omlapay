@@ -1192,6 +1192,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get kyc_retry_button => 'Retry Verification';
 
   @override
+  String get kycVerificationRequiredTitle => 'Verification Required';
+
+  @override
+  String get kycVerificationPendingTitle => 'Verification Under Review';
+
+  @override
+  String get kycVerificationGoBackButton => 'Go Back';
+
+  @override
   String get swapFeesTitle => 'Swap Fees';
 
   @override

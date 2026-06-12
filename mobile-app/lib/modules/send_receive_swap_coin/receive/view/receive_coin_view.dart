@@ -15,7 +15,7 @@ import '../../../../widgets/common_loading_indicator.dart';
 import '../../../../widgets/copied_toast.dart';
 import '../../../kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../../../../widgets/common_back_button.dart';
-import '../../../../widgets/kyc_verification_required_banner.dart';
+import '../../../../widgets/kyc_verification_gate.dart';
 import '../../../../core/models/wallet_model/wallet_model.dart';
 import '../provider/receive_coin_provider.dart';
 
@@ -81,16 +81,11 @@ class ReceiveCoinView extends StatelessWidget {
                         showVerificationBanner,
                       ),
               ),
-              if (showVerificationBanner)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                  child: KycVerificationRequiredBanner(
-                    kycStatus: kycProvider.kycStatus,
-                    entrySource: KycVerificationEntrySource.receive,
-                    rejectionReason: kycProvider.rejectionReason,
-                    rejectionReasonAr: kycProvider.rejectionReasonAr,
-                  ),
-                ),
+              // KYC gate — blocks the screen until verification is complete.
+              KycVerificationGate(
+                entrySource: KycVerificationEntrySource.receive,
+                forceShow: provider.kycRequired,
+              ),
             ],
           ),
 
