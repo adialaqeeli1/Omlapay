@@ -1232,6 +1232,36 @@ abstract class AppLocalizations {
   /// **'Your funds are safe. To get back in, we\'ll send a code to your registered mobile number.'**
   String get logoutDialogMessage;
 
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account?'**
+  String get deleteAccountConfirmTitle;
+
+  /// No description provided for @deleteAccountConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account will be scheduled for deletion. You have 7 days to cancel by logging in again.'**
+  String get deleteAccountConfirmMessage;
+
+  /// No description provided for @deleteAccountScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deletion scheduled. You have 7 days to cancel by logging in again.'**
+  String get deleteAccountScheduled;
+
+  /// No description provided for @deleteAccountHasBalanceError.
+  ///
+  /// In en, this message translates to:
+  /// **'You still have funds in your wallets. Please withdraw or transfer your entire balance before deleting your account.'**
+  String get deleteAccountHasBalanceError;
+
   /// No description provided for @save.
   ///
   /// In en, this message translates to:

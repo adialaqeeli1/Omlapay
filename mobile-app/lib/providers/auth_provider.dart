@@ -318,6 +318,48 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// Schedules deletion of the signed-in user's account. The backend grants a
+  /// 7-day grace period during which the user can cancel by logging in again.
+  /// Returns the localized success message from the API. The caller is
+  /// responsible for signing the user out and navigating away.
+  Future<String> requestAccountDeletion() async {
+    try {
+      final currentUser = _state.user;
+      if (currentUser == null || !_state.isAuthenticated) {
+        throw Exception(appLocalizationsFromStoredLocale().somethingWentWrong);
+      }
+
+      _state = _state.copyWith(isLoading: true, errorMessage: null);
+      notifyListeners();
+
+      final response = await AuthService.requestAccountDeletion();
+      final l10n = appLocalizationsFromStoredLocale();
+
+      if (!_isApiSuccess(response)) {
+        final errorMsg = _localizedMessageFromRawResponse(
+          response,
+          fallback: l10n.somethingWentWrong,
+        );
+        _state = _state.copyWith(isLoading: false, errorMessage: errorMsg);
+        notifyListeners();
+        throw Exception(errorMsg);
+      }
+
+      final successMessage = _localizedMessageFromRawResponse(
+        response,
+        fallback: l10n.deleteAccountScheduled,
+      );
+
+      _state = _state.copyWith(isLoading: false, errorMessage: null);
+      notifyListeners();
+      return successMessage;
+    } catch (e) {
+      _state = _state.copyWith(isLoading: false, errorMessage: e.toString());
+      notifyListeners();
+      rethrow;
+    }
+  }
+
   Future<void> logout() async {
     // Tell the server to revoke this session and unregister the FCM token.
     // Best-effort: we still clear local state below even if the call fails

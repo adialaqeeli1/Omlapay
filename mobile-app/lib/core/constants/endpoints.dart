@@ -184,6 +184,11 @@ class Endpoints {
   static String get userSettingsNotifications =>
       '$apiVersion/user/settings/notifications';
 
+  /// Schedules account deletion (7-day grace period; cancel by logging in
+  /// again). POST with empty body.
+  static String get requestAccountDeletion =>
+      '$apiVersion/user/settings/request-deletion';
+
   /// File upload; supports query param `prefix` (e.g. support-requests).
   static String get upload => '$apiVersion/user/upload';
 

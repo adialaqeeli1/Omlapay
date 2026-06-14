@@ -235,4 +235,8 @@ class AuthService {
   static Future<Map<String, dynamic>> disableTwoFactor() async {
     return ApiHelper.post(Endpoints.twoFactorDisable, {});
   }
+
+  static Future<Map<String, dynamic>> requestAccountDeletion() async {
+    return ApiHelper.post(Endpoints.requestAccountDeletion, {});
+  }
 }
