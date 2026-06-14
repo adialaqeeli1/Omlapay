@@ -623,6 +623,24 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your funds are safe. To get back in, we\'ll send a code to your registered mobile number.';
 
   @override
+  String get deleteAccount => 'Delete Account';
+
+  @override
+  String get deleteAccountConfirmTitle => 'Delete account?';
+
+  @override
+  String get deleteAccountConfirmMessage =>
+      'Your account will be scheduled for deletion. You have 7 days to cancel by logging in again.';
+
+  @override
+  String get deleteAccountScheduled =>
+      'Account deletion scheduled. You have 7 days to cancel by logging in again.';
+
+  @override
+  String get deleteAccountHasBalanceError =>
+      'You still have funds in your wallets. Please withdraw or transfer your entire balance before deleting your account.';
+
+  @override
   String get save => 'Save';
 
   @override

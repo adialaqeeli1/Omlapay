@@ -16,7 +16,9 @@ import '../../../providers/locale_provider.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../providers/biometric_provider.dart';
 import '../../../providers/notification_provider.dart';
+import '../../../providers/wallets_provider.dart';
 import '../../../widgets/common_back_button.dart';
+import '../../../widgets/delete_account_alert_dialog.dart';
 import '../../../widgets/labeled_toggle_switch.dart';
 import '../widgets/appearance_selection_widget.dart';
 // Language bottom sheet replaced by an inline toggle; restore with the
@@ -68,269 +70,390 @@ class _SettingsViewState extends State<SettingsView> {
           final UserModel? user = authProvider.state.user;
           final bool isKycVerified = user?.isVerified == true;
 
-          return SingleChildScrollView(
+          return CustomScrollView(
             physics: AlwaysScrollableScrollPhysics(
               parent: ClampingScrollPhysics(),
             ),
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                if (isLoggedIn) ...[
-                  SizedBox(height: 16),
-                  _buildMenuGroup(
-                    context,
-                    title: l10n.account,
-                    childrens: [
-                      _buildSimpleSettingOption(
-                        context: context,
-                        label: l10n.accountDetails,
-                        screenWidth: screenWidth,
-                        onTap: () {
-                          GoRouter.of(context).push(Routes.accountDetails);
-                        },
-                      ),
-                      if (isKycVerified) ...[
-                        _buildSimpleSettingOption(
-                          context: context,
-                          label: l10n.changePhoneNumber,
-                          screenWidth: screenWidth,
-                          onTap: () {
-                            GoRouter.of(context).push(Routes.changePhoneIntro);
-                          },
-                        ),
+            slivers: [
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                sliver: SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Column(
+                    children: [
+                      if (isLoggedIn) ...[
+                        SizedBox(height: 16),
+                        _buildMenuGroup(
+                          context,
+                          title: l10n.account,
+                          childrens: [
+                            _buildSimpleSettingOption(
+                              context: context,
+                              label: l10n.accountDetails,
+                              screenWidth: screenWidth,
+                              onTap: () {
+                                GoRouter.of(
+                                  context,
+                                ).push(Routes.accountDetails);
+                              },
+                            ),
+                            if (isKycVerified) ...[
+                              _buildSimpleSettingOption(
+                                context: context,
+                                label: l10n.changePhoneNumber,
+                                screenWidth: screenWidth,
+                                onTap: () {
+                                  GoRouter.of(
+                                    context,
+                                  ).push(Routes.changePhoneIntro);
+                                },
+                              ),
 
-                        _buildSimpleSettingOption(
-                          context: context,
-                          label: l10n.changeEmail,
-                          screenWidth: screenWidth,
-                          onTap: () {
-                            GoRouter.of(context).push(Routes.changeEmailIntro);
-                          },
+                              _buildSimpleSettingOption(
+                                context: context,
+                                label: l10n.changeEmail,
+                                screenWidth: screenWidth,
+                                onTap: () {
+                                  GoRouter.of(
+                                    context,
+                                  ).push(Routes.changeEmailIntro);
+                                },
+                              ),
+                            ],
+                            _buildSimpleSettingOption(
+                              context: context,
+                              label: l10n.changePasscode,
+                              screenWidth: screenWidth,
+                              onTap: () {
+                                final user = authProvider.state.user;
+                                if (user == null) return;
+                                GoRouter.of(context).push(
+                                  Routes.enterOrSetPasscode,
+                                  extra: {
+                                    LoginProvider.extraModeKey:
+                                        LoginProvider.modeChangePasscodeCurrent,
+                                    LoginProvider.extraCountryCodeKey:
+                                        user.countryCode,
+                                    LoginProvider.extraPhoneNumberKey:
+                                        user.mobileNumber,
+                                  },
+                                );
+                              },
+                            ),
+                            if (isKycVerified)
+                              _buildNotificationToggle(
+                                context: context,
+                                label: l10n.twoFactorAuthentication,
+                                screenWidth: screenWidth,
+                                value: user?.twoFactorEnabled ?? false,
+                                onChanged: (value) async {
+                                  // When enabling 2FA, check if user has an email first
+                                  if (value) {
+                                    final hasEmail =
+                                        (user?.email?.trim() ?? '').isNotEmpty;
+                                    if (!hasEmail) {
+                                      final emailVerified = await GoRouter.of(
+                                        context,
+                                      ).push<bool>(Routes.emailEntry);
+                                      if (!context.mounted ||
+                                          emailVerified != true) {
+                                        return;
+                                      }
+                                    }
+                                  }
+
+                                  if (!context.mounted) return;
+
+                                  final navigator = Navigator.of(
+                                    context,
+                                    rootNavigator: true,
+                                  );
+                                  final barrierColor = theme.colorScheme.scrim
+                                      .withValues(alpha: 0.45);
+
+                                  showDialog<void>(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    barrierColor: barrierColor,
+                                    useRootNavigator: true,
+                                    builder: (_) => PopScope(
+                                      canPop: false,
+                                      child: Center(
+                                        child: Material(
+                                          color: Colors.transparent,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                          ),
+                                          child: const SizedBox.square(
+                                            dimension: 60,
+                                            child: CommonLoadingIndicator(),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+
+                                  try {
+                                    final message = await authProvider
+                                        .toggleTwoFactor(value);
+                                    if (navigator.mounted) navigator.pop();
+                                    if (context.mounted) {
+                                      SnackbarHelper.showSuccess(
+                                        context,
+                                        message,
+                                      );
+                                    }
+                                  } catch (e) {
+                                    if (navigator.mounted) navigator.pop();
+                                    if (context.mounted) {
+                                      SnackbarHelper.showError(
+                                        context,
+                                        e.toString().replaceAll(
+                                          'Exception: ',
+                                          '',
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                              ),
+                          ],
                         ),
                       ],
-                      _buildSimpleSettingOption(
-                        context: context,
-                        label: l10n.changePasscode,
-                        screenWidth: screenWidth,
-                        onTap: () {
-                          final user = authProvider.state.user;
-                          if (user == null) return;
-                          GoRouter.of(context).push(
-                            Routes.enterOrSetPasscode,
-                            extra: {
-                              LoginProvider.extraModeKey:
-                                  LoginProvider.modeChangePasscodeCurrent,
-                              LoginProvider.extraCountryCodeKey:
-                                  user.countryCode,
-                              LoginProvider.extraPhoneNumberKey:
-                                  user.mobileNumber,
+                      SizedBox(height: 16),
+                      _buildMenuGroup(
+                        context,
+                        title: l10n.preferences,
+                        childrens: [
+                          Consumer<ThemeProvider>(
+                            builder: (context, themeProvider, child) {
+                              String appearanceValue;
+                              switch (themeProvider.themeMode) {
+                                case ThemeMode.light:
+                                  appearanceValue = l10n.light;
+                                  break;
+                                case ThemeMode.dark:
+                                  appearanceValue = l10n.dark;
+                                  break;
+                                case ThemeMode.system:
+                                  appearanceValue = l10n.system;
+                                  break;
+                              }
+                              return _buildSettingOption(
+                                context: context,
+                                label: l10n.appearance,
+                                value: appearanceValue,
+                                screenWidth: screenWidth,
+                                onTap: () =>
+                                    AppearanceSelectionWidget.show(context),
+                              );
                             },
-                          );
-                        },
-                      ),
-                      if (isKycVerified)
-                        _buildNotificationToggle(
-                          context: context,
-                          label: l10n.twoFactorAuthentication,
-                          screenWidth: screenWidth,
-                          value: user?.twoFactorEnabled ?? false,
-                          onChanged: (value) async {
-                            // When enabling 2FA, check if user has an email first
-                            if (value) {
-                              final hasEmail =
-                                  (user?.email?.trim() ?? '').isNotEmpty;
-                              if (!hasEmail) {
-                                final emailVerified = await GoRouter.of(
-                                  context,
-                                ).push<bool>(Routes.emailEntry);
-                                if (!context.mounted || emailVerified != true) {
-                                  return;
-                                }
-                              }
-                            }
-
-                            if (!context.mounted) return;
-
-                            final navigator = Navigator.of(
-                              context,
-                              rootNavigator: true,
-                            );
-                            final barrierColor = theme.colorScheme.scrim
-                                .withValues(alpha: 0.45);
-
-                            showDialog<void>(
-                              context: context,
-                              barrierDismissible: false,
-                              barrierColor: barrierColor,
-                              useRootNavigator: true,
-                              builder: (_) => PopScope(
-                                canPop: false,
-                                child: Center(
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: const SizedBox.square(
-                                      dimension: 60,
-                                      child: CommonLoadingIndicator(),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-
-                            try {
-                              final message = await authProvider
-                                  .toggleTwoFactor(value);
-                              if (navigator.mounted) navigator.pop();
-                              if (context.mounted) {
-                                SnackbarHelper.showSuccess(context, message);
-                              }
-                            } catch (e) {
-                              if (navigator.mounted) navigator.pop();
-                              if (context.mounted) {
-                                SnackbarHelper.showError(
-                                  context,
-                                  e.toString().replaceAll('Exception: ', ''),
+                          ),
+                          // Language selection via bottom sheet — replaced by the
+                          // toggle below. Kept commented for easy restore if we ever
+                          // support more than two languages.
+                          // Consumer<LocaleProvider>(
+                          //   builder: (context, localeProvider, child) {
+                          //     String languageValue;
+                          //     if (localeProvider.locale.languageCode == 'ar') {
+                          //       languageValue = l10n.arabic;
+                          //     } else {
+                          //       languageValue = l10n.english;
+                          //     }
+                          //     return _buildSettingOption(
+                          //       context: context,
+                          //       label: l10n.language,
+                          //       value: languageValue,
+                          //       screenWidth: screenWidth,
+                          //       onTap: () => LanguageSelectionWidget.show(context),
+                          //     );
+                          //   },
+                          // ),
+                          // Language toggle (ON = Arabic, OFF = English). Track stays
+                          // primary in both states and shows the active code (EN/AR).
+                          Consumer<LocaleProvider>(
+                            builder: (context, localeProvider, child) {
+                              final isArabic =
+                                  localeProvider.locale.languageCode == 'ar';
+                              return _buildLanguageToggle(
+                                context: context,
+                                label: l10n.language,
+                                code: localeProvider.locale.languageCode
+                                    .toUpperCase(),
+                                value: isArabic,
+                                onChanged: (value) {
+                                  localeProvider.setLocale(
+                                    Locale(value ? 'ar' : 'en'),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                          if (isLoggedIn)
+                            Consumer<NotificationProvider>(
+                              builder: (context, notificationProvider, child) {
+                                return _buildNotificationToggle(
+                                  context: context,
+                                  label: l10n.notification,
+                                  screenWidth: screenWidth,
+                                  value:
+                                      notificationProvider.notificationsEnabled,
+                                  onChanged: (value) async {
+                                    try {
+                                      await notificationProvider
+                                          .toggleNotifications(value);
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        SnackbarHelper.showError(
+                                          context,
+                                          e.toString().replaceAll(
+                                            'Exception: ',
+                                            '',
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
                                 );
-                              }
-                            }
-                          },
-                        ),
+                              },
+                            ),
+                          if (isLoggedIn)
+                            Consumer<BiometricProvider>(
+                              builder: (context, biometricProvider, child) {
+                                if (!biometricProvider.isAvailable) {
+                                  return const SizedBox.shrink();
+                                }
+                                return _buildNotificationToggle(
+                                  context: context,
+                                  label: l10n.biometric,
+                                  screenWidth: screenWidth,
+                                  value: biometricProvider.isEnabled,
+                                  onChanged: (value) async {
+                                    final ok = await biometricProvider.toggle(
+                                      value,
+                                      reason: l10n.biometricEnableReason,
+                                    );
+                                    if (!ok && value && context.mounted) {
+                                      SnackbarHelper.showError(
+                                        context,
+                                        l10n.biometricEnableFailed,
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+                        ],
+                      ),
+
+                      if (isLoggedIn) ...[
+                        Spacer(),
+                        _buildDeleteAccountButton(context),
+                        SizedBox(height: 16),
+                      ],
                     ],
                   ),
-                ],
-                SizedBox(height: 16),
-                _buildMenuGroup(
-                  context,
-                  title: l10n.preferences,
-                  childrens: [
-                    Consumer<ThemeProvider>(
-                      builder: (context, themeProvider, child) {
-                        String appearanceValue;
-                        switch (themeProvider.themeMode) {
-                          case ThemeMode.light:
-                            appearanceValue = l10n.light;
-                            break;
-                          case ThemeMode.dark:
-                            appearanceValue = l10n.dark;
-                            break;
-                          case ThemeMode.system:
-                            appearanceValue = l10n.system;
-                            break;
-                        }
-                        return _buildSettingOption(
-                          context: context,
-                          label: l10n.appearance,
-                          value: appearanceValue,
-                          screenWidth: screenWidth,
-                          onTap: () => AppearanceSelectionWidget.show(context),
-                        );
-                      },
-                    ),
-                    // Language selection via bottom sheet — replaced by the
-                    // toggle below. Kept commented for easy restore if we ever
-                    // support more than two languages.
-                    // Consumer<LocaleProvider>(
-                    //   builder: (context, localeProvider, child) {
-                    //     String languageValue;
-                    //     if (localeProvider.locale.languageCode == 'ar') {
-                    //       languageValue = l10n.arabic;
-                    //     } else {
-                    //       languageValue = l10n.english;
-                    //     }
-                    //     return _buildSettingOption(
-                    //       context: context,
-                    //       label: l10n.language,
-                    //       value: languageValue,
-                    //       screenWidth: screenWidth,
-                    //       onTap: () => LanguageSelectionWidget.show(context),
-                    //     );
-                    //   },
-                    // ),
-                    // Language toggle (ON = Arabic, OFF = English). Track stays
-                    // primary in both states and shows the active code (EN/AR).
-                    Consumer<LocaleProvider>(
-                      builder: (context, localeProvider, child) {
-                        final isArabic =
-                            localeProvider.locale.languageCode == 'ar';
-                        return _buildLanguageToggle(
-                          context: context,
-                          label: l10n.language,
-                          code: localeProvider.locale.languageCode
-                              .toUpperCase(),
-                          value: isArabic,
-                          onChanged: (value) {
-                            localeProvider.setLocale(
-                              Locale(value ? 'ar' : 'en'),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                    if (isLoggedIn)
-                      Consumer<NotificationProvider>(
-                        builder: (context, notificationProvider, child) {
-                          return _buildNotificationToggle(
-                            context: context,
-                            label: l10n.notification,
-                            screenWidth: screenWidth,
-                            value: notificationProvider.notificationsEnabled,
-                            onChanged: (value) async {
-                              try {
-                                await notificationProvider.toggleNotifications(
-                                  value,
-                                );
-                              } catch (e) {
-                                if (context.mounted) {
-                                  SnackbarHelper.showError(
-                                    context,
-                                    e.toString().replaceAll('Exception: ', ''),
-                                  );
-                                }
-                              }
-                            },
-                          );
-                        },
-                      ),
-                    if (isLoggedIn)
-                      Consumer<BiometricProvider>(
-                        builder: (context, biometricProvider, child) {
-                          if (!biometricProvider.isAvailable) {
-                            return const SizedBox.shrink();
-                          }
-                          return _buildNotificationToggle(
-                            context: context,
-                            label: l10n.biometric,
-                            screenWidth: screenWidth,
-                            value: biometricProvider.isEnabled,
-                            onChanged: (value) async {
-                              final ok = await biometricProvider.toggle(
-                                value,
-                                reason: l10n.biometricEnableReason,
-                              );
-                              if (!ok && value && context.mounted) {
-                                SnackbarHelper.showError(
-                                  context,
-                                  l10n.biometricEnableFailed,
-                                );
-                              }
-                            },
-                          );
-                        },
-                      ),
-                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         },
       ),
     );
+  }
+
+  Widget _buildDeleteAccountButton(BuildContext context) {
+    final AppLocalizations l10n = context.l10n!;
+
+    return Center(
+      child: SizedBox(
+        height: 56,
+        child: TextButton(
+          onPressed: () => _confirmDeleteAccount(context),
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.redColor,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          child: Text(
+            l10n.deleteAccount,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _confirmDeleteAccount(BuildContext context) {
+    final l10n = context.l10n!;
+    final walletsProvider = context.read<WalletsProvider>();
+
+    // Balances already live in global state (loaded on auth, refreshed on
+    // currency changes), so read them directly — no extra wallets fetch.
+    if (walletsProvider.hasNonZeroBalance) {
+      SnackbarHelper.showError(context, l10n.deleteAccountHasBalanceError);
+      return;
+    }
+
+    DeleteAccountAlertDialog.show(
+      context,
+      onConfirm: () => _requestAccountDeletion(context),
+    );
+  }
+
+  Future<void> _requestAccountDeletion(BuildContext context) async {
+    final authProvider = context.read<AuthProvider>();
+    final router = GoRouter.of(context);
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final barrierColor = Theme.of(
+      context,
+    ).colorScheme.scrim.withValues(alpha: 0.45);
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: barrierColor,
+      useRootNavigator: true,
+      builder: (_) => PopScope(
+        canPop: false,
+        child: Center(
+          child: Material(
+            color: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const SizedBox.square(
+              dimension: 60,
+              child: CommonLoadingIndicator(),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final message = await authProvider.requestAccountDeletion();
+      if (navigator.mounted) navigator.pop();
+      if (context.mounted) {
+        SnackbarHelper.showSuccess(context, message);
+      }
+      // Account is scheduled for deletion — end the session and send the user
+      // to the auth screen (they can cancel within 7 days by logging in again).
+      await authProvider.logout();
+      router.go(Routes.loginOrRegister);
+    } catch (e) {
+      if (navigator.mounted) navigator.pop();
+      if (context.mounted) {
+        SnackbarHelper.showError(
+          context,
+          e.toString().replaceAll('Exception: ', ''),
+        );
+      }
+    }
   }
 
   Widget _buildSettingOption({

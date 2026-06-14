@@ -35,6 +35,19 @@ class WalletsProvider extends ChangeNotifier {
   bool get kycRequired => _kycRequired;
   String? get errorMessage => _errorMessage;
 
+  /// Whether the user holds any funds at all — `true` if any coin on any
+  /// network has a non-zero crypto balance. Checks the raw coin amount (not
+  /// the fiat conversion) so even dust that rounds to a zero fiat value still
+  /// counts as a balance. Used to block account deletion while funds remain.
+  bool get hasNonZeroBalance {
+    for (final network in _wallets) {
+      for (final coin in network.coins) {
+        if (coin.balance > 0) return true;
+      }
+    }
+    return false;
+  }
+
   void onAuthChanged(bool isAuthenticated) {
     _isAuthenticated = isAuthenticated;
     if (isAuthenticated) {

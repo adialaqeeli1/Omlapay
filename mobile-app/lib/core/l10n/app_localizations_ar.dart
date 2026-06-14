@@ -613,6 +613,24 @@ class AppLocalizationsAr extends AppLocalizations {
       'أموالك في أمان. للعودة، سنرسل رمزاً إلى رقم هاتفك المسجل.';
 
   @override
+  String get deleteAccount => 'حذف الحساب';
+
+  @override
+  String get deleteAccountConfirmTitle => 'حذف الحساب؟';
+
+  @override
+  String get deleteAccountConfirmMessage =>
+      'ستتم جدولة حذف حسابك. لديك 7 أيام للإلغاء عن طريق تسجيل الدخول مرة أخرى.';
+
+  @override
+  String get deleteAccountScheduled =>
+      'تمت جدولة حذف الحساب. لديك 7 أيام للإلغاء عن طريق تسجيل الدخول مرة أخرى.';
+
+  @override
+  String get deleteAccountHasBalanceError =>
+      'لا يزال لديك رصيد في محافظك. يرجى سحب أو تحويل كامل رصيدك قبل حذف حسابك.';
+
+  @override
   String get save => 'حفظ';
 
   @override
