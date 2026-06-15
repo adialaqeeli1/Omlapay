@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
@@ -127,7 +128,7 @@ class ProfileView extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: footerStyle,
               ),
-              if (patchNumber != null)
+              if (patchNumber != null && kDebugMode)
                 Padding(
                   padding: const EdgeInsetsDirectional.only(top: 2),
                   child: Text(
