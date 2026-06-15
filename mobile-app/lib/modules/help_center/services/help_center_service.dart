@@ -19,10 +19,7 @@ class HelpCenterService {
     int limit = 10,
     String? macAddress,
   }) async {
-    final queryParams = <String, dynamic>{
-      'page': page,
-      'limit': limit,
-    };
+    final queryParams = <String, dynamic>{'page': page, 'limit': limit};
     if (status != null) {
       queryParams['status'] = status;
     }
@@ -70,10 +67,7 @@ class HelpCenterService {
       }
     }
 
-    throw AppException(
-      'Failed to upload file',
-      messageKey: 'requestFailed',
-    );
+    throw AppException('Failed to upload file', messageKey: 'requestFailed');
   }
 
   /// Creates a support request.
@@ -88,10 +82,7 @@ class HelpCenterService {
     String? attachmentUrl,
     String? macAddress,
   }) async {
-    final body = <String, dynamic>{
-      'title': title,
-      'description': description,
-    };
+    final body = <String, dynamic>{'title': title, 'description': description};
     if (attachmentUrl != null) {
       body['attachmentUrl'] = attachmentUrl;
     }
@@ -139,9 +130,6 @@ class HelpCenterService {
   }
 
   Future<void> reopenRequest(String requestId) async {
-    await ApiHelper.post(
-      Endpoints.supportRequestReopen(requestId),
-      {},
-    );
+    await ApiHelper.post(Endpoints.supportRequestReopen(requestId), {});
   }
 }
