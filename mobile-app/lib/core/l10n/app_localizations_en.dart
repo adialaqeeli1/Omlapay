@@ -694,6 +694,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sender => 'Sender';
 
   @override
+  String get receiver => 'Receiver';
+
+  @override
   String get address => 'Address';
 
   @override

@@ -684,6 +684,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sender => 'المرسل';
 
   @override
+  String get receiver => 'المستلم';
+
+  @override
   String get address => 'العنوان';
 
   @override

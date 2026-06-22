@@ -1340,6 +1340,12 @@ abstract class AppLocalizations {
   /// **'Sender'**
   String get sender;
 
+  /// No description provided for @receiver.
+  ///
+  /// In en, this message translates to:
+  /// **'Receiver'**
+  String get receiver;
+
   /// No description provided for @address.
   ///
   /// In en, this message translates to:
