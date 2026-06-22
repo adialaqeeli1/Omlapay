@@ -61,6 +61,7 @@ class CurrencyInputCard extends StatelessWidget {
     final l10n = context.l10n!;
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
     final displaySymbol = coinSymbol;
 
     final fieldFill = isDark
@@ -192,7 +193,9 @@ class CurrencyInputCard extends StatelessWidget {
                         hintText: hintText ?? l10n.amountInputHint,
                         hintStyle: TextStyle(
                           color: colorScheme.onSurfaceVariant,
-                          fontSize: hintText != null ? 16 : 24,
+                          fontSize: hintText != null
+                              ? (isArabic ? 13 : 16)
+                              : 24,
                           fontWeight: FontWeight.bold,
                         ),
                         contentPadding: EdgeInsets.zero,

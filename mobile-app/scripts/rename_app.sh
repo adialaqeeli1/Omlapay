@@ -10,7 +10,7 @@ echo "🏷️  Renaming App"
 echo "=========================================="
 
 # Defaults
-APP_NAME="OmlaPay"
+APP_NAME="Omlapay"
 
 # Check if an argument is provided
 if [ ! -z "$1" ]; then
