@@ -81,7 +81,7 @@ fi
 
 # 6. Set App name
 echo "❄️  Running rename_app..."
-dart run rename_app:main all="OmlaPay"
+dart run rename_app:main all="Omlapay"
 if [ $? -ne 0 ]; then
     echo "❌ Error: rename_app failed"
     exit 1
