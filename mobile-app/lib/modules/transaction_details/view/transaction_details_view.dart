@@ -124,10 +124,21 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     final primaryPartyValue = counterparty != null && counterparty.isNotEmpty
         ? counterparty
         : (isSent ? transaction.receiverAddress : transaction.senderAddress);
-    // Second "Address" row shows the destination wallet address for outgoing
-    // transfers (where the coins were sent). Only meaningful for SENT — for
-    // incoming the receiving wallet is the user's own, which they already know.
-    final addressValue = isSent ? transaction.receiverAddress : null;
+    // Second "Address" row shows the counterparty's destination wallet address
+    // for outgoing transfers (where the coins were sent). It complements the
+    // "Send To" row above: that row prefers the phone, this row shows the raw
+    // address. Suppressed when it would duplicate "Send To" — i.e. when there's
+    // no counterparty phone and the row above is already showing this same
+    // address. Only meaningful for SENT — for incoming the receiving wallet is
+    // the user's own, which they already know.
+    final receiverAddress = transaction.receiverAddress;
+    final addressValue =
+        isSent &&
+            receiverAddress != null &&
+            receiverAddress.isNotEmpty &&
+            receiverAddress != primaryPartyValue
+        ? receiverAddress
+        : null;
     // Block-explorer link for the tx hash. Prefer the backend-provided
     // `blockchain_link`; fall back to a derived explorer URL when it's absent.
     // Null when neither is available — the row then renders as plain text.
@@ -702,8 +713,16 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     final primaryPartyValue = counterparty != null && counterparty.isNotEmpty
         ? counterparty
         : (isSent ? tx.receiverAddress : tx.senderAddress);
-    // Matches the on-screen "Address" row — destination address, outgoing only.
-    final addressRowValue = isSent ? tx.receiverAddress : null;
+    // Matches the on-screen "Address" row — counterparty's destination address,
+    // outgoing only, and suppressed when it would duplicate the row above.
+    final receiverAddress = tx.receiverAddress;
+    final addressRowValue =
+        isSent &&
+            receiverAddress != null &&
+            receiverAddress.isNotEmpty &&
+            receiverAddress != primaryPartyValue
+        ? receiverAddress
+        : null;
     final localizedError = isArabic
         ? (tx.errorMessageAr?.trim().isNotEmpty == true
               ? tx.errorMessageAr
