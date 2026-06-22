@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../../core/extentions/number_extensions.dart';
+import '../../../../core/extentions/string_extensions.dart';
 import '../../../../core/l10n/app_localizations_from_storage.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
 import '../../../../core/models/contact_model/contact_model.dart';
@@ -37,7 +38,7 @@ class SendProvider extends ChangeNotifier {
       _userPickedSymbol = trimmedSymbol.toUpperCase();
     }
     if (initialRecipient != null && initialRecipient.isNotEmpty) {
-      recipientController.text = initialRecipient;
+      recipientController.text = initialRecipient.trim().removeAllWhitespace;
     }
     if (initialAmount != null && initialAmount.isNotEmpty) {
       amountController.text = initialAmount;
@@ -272,7 +273,7 @@ class SendProvider extends ChangeNotifier {
 
   void setSelectedContact(ContactModel contact) {
     _selectedContact = contact;
-    recipientController.text = contact.phoneNumber;
+    recipientController.text = contact.phoneNumber.trim().removeAllWhitespace;
     _scheduleAddressValidation();
     notifyListeners();
   }
@@ -305,6 +306,12 @@ class SendProvider extends ChangeNotifier {
     return parsed.toInputAmount();
   }
 
+  /// The recipient string to send to the backend with all whitespace stripped.
+  /// Contact numbers are stored formatted (e.g. "+966 54 076 8260"); the spaces
+  /// survive `.trim()` and break address validation, so remove them here while
+  /// keeping the field display formatted.
+  String get _recipientForApi => recipientController.text.removeAllWhitespace;
+
   /// Runs the send pre-flight: validate-address then fetch-quote.
   ///
   /// Returns `true` when the review screen is safe to open. On failure the
@@ -315,7 +322,7 @@ class SendProvider extends ChangeNotifier {
     final coin = _selectedCoin;
     if (coin == null) return false;
 
-    final recipient = recipientController.text.trim();
+    final recipient = _recipientForApi;
     final amount = amountController.text.trim();
     if (recipient.isEmpty || amount.isEmpty) return false;
 
@@ -373,7 +380,7 @@ class SendProvider extends ChangeNotifier {
     final coin = _selectedCoin;
     if (coin == null) return null;
 
-    final recipient = recipientController.text.trim();
+    final recipient = _recipientForApi;
     if (recipient.isEmpty || amountController.text.trim().isEmpty) return null;
     // Send the amount truncated to the display precision (see [_amountForApi]).
     final amount = double.tryParse(_amountForApi);
@@ -517,7 +524,7 @@ class SendProvider extends ChangeNotifier {
   /// only hit when the user actually changes the form.
   void _scheduleQuoteFetch() {
     final coin = _selectedCoin;
-    final recipient = recipientController.text.trim();
+    final recipient = _recipientForApi;
     // Quote against the exact value we'll send (truncated to display precision).
     final amountText = _amountForApi;
     final amount = double.tryParse(amountText);
@@ -606,7 +613,7 @@ class SendProvider extends ChangeNotifier {
   /// [_lastValidatedAddressKey].
   void _scheduleAddressValidation() {
     final coin = _selectedCoin;
-    final recipient = recipientController.text.trim();
+    final recipient = _recipientForApi;
 
     if (coin == null || recipient.isEmpty) {
       _addressDebounceTimer?.cancel();
@@ -755,8 +762,7 @@ class SendProvider extends ChangeNotifier {
           _userPickedCoin = true;
           _userPickedSymbol = match.symbol;
           _updateNetwork();
-          _lastValidatedAddressKey =
-              '${match.symbol}|${recipientController.text.trim()}';
+          _lastValidatedAddressKey = '${match.symbol}|$_recipientForApi';
           changed = true;
         }
       }
