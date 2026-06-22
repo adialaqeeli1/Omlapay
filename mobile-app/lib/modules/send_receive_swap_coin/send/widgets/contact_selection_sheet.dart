@@ -258,11 +258,14 @@ class _ContactSelectionSheetState extends State<ContactSelectionSheet> {
   Widget build(BuildContext context) {
     final l10n = context.l10n!;
     final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+    return Material(
+      // Use a Material (not a plain Container/DecoratedBox) so the ListTiles
+      // below paint their background and ink splashes onto this colored surface
+      // directly. An opaque DecoratedBox between a ListTile and its nearest
+      // Material ancestor hides those effects and trips a framework assertion.
+      color: colorScheme.surface,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
           // Header
