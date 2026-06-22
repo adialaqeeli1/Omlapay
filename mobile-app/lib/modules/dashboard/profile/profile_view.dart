@@ -124,7 +124,12 @@ class ProfileView extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                l10n.appVersion('${info.version}(${info.buildNumber})'),
+                l10n.appVersion(
+                  l10n.localeName == 'ar'
+                      ? '(${info.buildNumber}) ${info.version}'
+                      : '${info.version} (${info.buildNumber})',
+                ),
+
                 textAlign: TextAlign.center,
                 style: footerStyle,
               ),
