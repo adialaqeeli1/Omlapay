@@ -7,6 +7,7 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../core/extentions/string_extensions.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../modules/auth/providers/login_provider.dart';
@@ -115,7 +116,7 @@ class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
                       _OtpSection(
                         sectionTitle: l10n.verifyYourPhoneNumber,
                         subtitle: l10n.forgotPasscodePhoneOtpSent(
-                          provider.formattedPhoneForDisplay,
+                          provider.formattedPhoneForDisplay.ltrPhoneNumber,
                         ),
                         subtitleColor: subtitleColor,
                         pinController: _phonePinController,

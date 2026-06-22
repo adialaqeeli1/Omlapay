@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../core/extentions/string_extensions.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../providers/auth_provider.dart';
 import '../providers/login_provider.dart';
@@ -32,7 +33,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
       appBarTitle: '',
       title: l10n.verifyYourAccount,
       subtitle: l10n.verificationCodeSentViaSmsTo(
-        provider.formattedPhoneForDisplay,
+        provider.formattedPhoneForDisplay.ltrPhoneNumber,
       ),
       otpLength: VerificationProvider.otpLength,
       countdownSeconds: provider.countdownSeconds,

@@ -27,6 +27,8 @@ class CommonTextField extends StatelessWidget {
     this.border,
     this.enabledBorder,
     this.focusedBorder,
+    this.textDirection,
+    this.textAlign = TextAlign.start,
   });
 
   final TextEditingController? controller;
@@ -51,6 +53,12 @@ class CommonTextField extends StatelessWidget {
   final InputBorder? enabledBorder;
   final InputBorder? focusedBorder;
 
+  /// Forces a writing direction for the input content (e.g.
+  /// [TextDirection.ltr] for phone numbers so digits/`+` aren't reordered
+  /// under an RTL locale). Null follows the ambient direction.
+  final TextDirection? textDirection;
+  final TextAlign textAlign;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -66,6 +74,8 @@ class CommonTextField extends StatelessWidget {
           onChanged: onChanged,
           keyboardType: keyboardType,
           textInputAction: textInputAction,
+          textDirection: textDirection,
+          textAlign: textAlign,
           inputFormatters: inputFormatters,
           obscureText: obscureText,
           maxLines: maxLines,

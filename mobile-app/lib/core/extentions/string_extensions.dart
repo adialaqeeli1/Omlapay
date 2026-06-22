@@ -92,6 +92,28 @@ extension StringExt on String {
       Utility.numericOnly(this, firstWordOnly: firstWordOnly);
 
   Color? get hexToColor => Utility.hexStringToColor(this);
+
+  /// Formats a phone number / masked phone number so it always renders as a
+  /// single left-to-right unit, even when interpolated into an RTL (Arabic)
+  /// sentence:
+  ///   - wraps it in Unicode directional-isolate marks (LRI…PDI) so the
+  ///     sentence keeps its own direction while the number stays LTR — digits
+  ///     and the `+` country code are never reordered;
+  ///   - converts spaces to non-breaking spaces so the number never wraps
+  ///     across two lines mid-value (e.g. `+91` and `••••••6666` splitting).
+  ///
+  /// Display-only — do not use for values that get copied or shared.
+  String get ltrPhoneNumber {
+    if (isEmpty) return this;
+    // U+2066 LEFT-TO-RIGHT ISOLATE … U+2069 POP DIRECTIONAL ISOLATE, and
+    // U+00A0 NO-BREAK SPACE. Built from code points so no invisible bidi
+    // characters live in the source file.
+    final lri = String.fromCharCode(0x2066);
+    final pdi = String.fromCharCode(0x2069);
+    final nbsp = String.fromCharCode(0x00A0);
+    final unbreakable = replaceAll(' ', nbsp);
+    return '$lri$unbreakable$pdi';
+  }
 }
 
 /// Masked email for display, e.g. `g***@gmail.com`.

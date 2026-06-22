@@ -316,4 +316,3 @@ class LoginOrRegisterScreen extends StatelessWidget {
     );
   }
 }
-

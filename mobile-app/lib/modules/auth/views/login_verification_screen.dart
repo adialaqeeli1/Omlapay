@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../core/extentions/string_extensions.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_auth_agreement_text.dart';
@@ -30,7 +31,7 @@ class LoginVerificationScreen extends StatelessWidget {
       appBarTitle: '',
       title: l10n.verifyYourAccount,
       subtitle: l10n.verificationCodeSentViaSmsTo(
-        provider.formattedPhoneForDisplay,
+        provider.formattedPhoneForDisplay.ltrPhoneNumber,
       ),
       otpLength: LoginVerificationProvider.otpLength,
       countdownSeconds: provider.countdownSeconds,
