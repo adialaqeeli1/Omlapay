@@ -138,7 +138,7 @@ class _ForgotPasscodeScreenState extends State<ForgotPasscodeScreen> {
                         _OtpSection(
                           sectionTitle: l10n.verifyYourEmail,
                           subtitle: l10n.forgotPasscodeEmailOtpSent(
-                            provider.maskedEmail ?? '',
+                            (provider.maskedEmail ?? '').ltrIsolated,
                           ),
                           subtitleColor: subtitleColor,
                           pinController: _emailPinController,

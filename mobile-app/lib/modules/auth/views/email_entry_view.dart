@@ -71,6 +71,8 @@ class EmailEntryView extends StatelessWidget {
                 fillColor: Colors.transparent,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.done,
+                // Keep email text left-to-right even under an RTL/Arabic locale.
+                textDirection: TextDirection.ltr,
                 onChanged: provider.setEmail,
                 hintText: l10n.kycEmailHint,
                 enabledBorder: OutlineInputBorder(

@@ -39,6 +39,9 @@ class ChangePhoneEnterNewView extends StatelessWidget {
       onBackPressed: () => popToChangePhoneIntro(context),
       inputField: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
+        // Keep the country-code chip on the left (before the number field)
+        // even under an RTL/Arabic layout.
+        textDirection: TextDirection.ltr,
         children: [
           GestureDetector(
             onTap: () {
@@ -66,6 +69,7 @@ class ChangePhoneEnterNewView extends StatelessWidget {
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
+                textDirection: TextDirection.ltr,
                 children: [
                   Text(
                     provider.currentFlagEmoji,
@@ -96,6 +100,8 @@ class ChangePhoneEnterNewView extends StatelessWidget {
                 FilteringTextInputFormatter.digitsOnly,
                 LengthLimitingTextInputFormatter(15),
               ],
+              textDirection: TextDirection.ltr,
+              textAlign: TextAlign.left,
               maxLength: 15,
               hintText: l10n.phoneNumber,
               onChanged: provider.onPhoneChanged,

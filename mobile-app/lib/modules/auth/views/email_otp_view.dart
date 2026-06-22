@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../core/extentions/string_extensions.dart';
 import '../../../core/utils/app_exception.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../providers/auth_provider.dart';
@@ -20,7 +21,7 @@ class EmailOtpView extends StatelessWidget {
     return OtpVerificationView(
       appBarTitle: l10n.kycVerifyEmail,
       title: l10n.kycVerifyEmailTitle,
-      subtitle: l10n.kycVerifyEmailSubtitle(provider.email.trim()),
+      subtitle: l10n.kycVerifyEmailSubtitle(provider.email.trim().ltrIsolated),
       otpLength: EmailVerificationProvider.otpLength,
       countdownSeconds: provider.countdownSeconds,
       canResend: provider.canResend,
