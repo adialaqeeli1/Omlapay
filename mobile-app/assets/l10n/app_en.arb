@@ -249,6 +249,7 @@
     "total": "Total",
     "date": "Date",
     "sender": "Sender",
+    "receiver": "Receiver",
     "address": "Address",
     "network": "Network",
     "saveAs": "Save As",

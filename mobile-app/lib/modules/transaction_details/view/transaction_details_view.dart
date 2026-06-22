@@ -114,31 +114,23 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
         : (transaction.errorMessage?.trim().isNotEmpty == true
               ? transaction.errorMessage
               : transaction.errorMessageAr);
-    final counterparty = transaction.counterpartyPhone?.trim();
-    // First party row ("Send To" for outgoing, "Sender" for incoming):
-    //   - When a counterparty phone is available, surface it (most user-
-    //     friendly identity).
-    //   - Otherwise fall back to the *other party's* wallet address:
-    //       SENT     → receiverAddress (where the coin went)
-    //       RECEIVED → senderAddress  (where the coin came from)
-    final primaryPartyValue = counterparty != null && counterparty.isNotEmpty
-        ? counterparty
-        : (isSent ? transaction.receiverAddress : transaction.senderAddress);
-    // Second "Address" row shows the counterparty's destination wallet address
-    // for outgoing transfers (where the coins were sent). It complements the
-    // "Send To" row above: that row prefers the phone, this row shows the raw
-    // address. Suppressed when it would duplicate "Send To" — i.e. when there's
-    // no counterparty phone and the row above is already showing this same
-    // address. Only meaningful for SENT — for incoming the receiving wallet is
-    // the user's own, which they already know.
-    final receiverAddress = transaction.receiverAddress;
-    final addressValue =
-        isSent &&
-            receiverAddress != null &&
-            receiverAddress.isNotEmpty &&
-            receiverAddress != primaryPartyValue
-        ? receiverAddress
-        : null;
+    // Transaction parties, surfaced as two explicit rows so the direction of
+    // the transfer is always unambiguous:
+    //   Sender   → wallet the coins were sent FROM
+    //   Receiver → wallet the coins were sent TO
+    // The counterparty (the *other* party) may be identified by a phone number;
+    // when present, prefer it over the raw wallet address for that side. The
+    // counterparty is the receiver on outgoing transfers and the sender on
+    // incoming ones. Each row renders only when it has a value.
+    final counterpartyPhone = transaction.counterpartyPhone?.trim();
+    final hasCounterpartyPhone =
+        counterpartyPhone != null && counterpartyPhone.isNotEmpty;
+    final senderValue = !isSent && hasCounterpartyPhone
+        ? counterpartyPhone
+        : transaction.senderAddress?.trim();
+    final receiverValue = isSent && hasCounterpartyPhone
+        ? counterpartyPhone
+        : transaction.receiverAddress?.trim();
     // Block-explorer link for the tx hash. Prefer the backend-provided
     // `blockchain_link`; fall back to a derived explorer URL when it's absent.
     // Null when neither is available — the row then renders as plain text.
@@ -320,24 +312,21 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
                             transaction.network ?? 'N/A',
                             isNetwork: true,
                           ),
-                          if (primaryPartyValue != null &&
-                              primaryPartyValue.isNotEmpty)
+                          if (senderValue != null && senderValue.isNotEmpty)
                             _buildDetailRow(
                               context,
-                              isSent ? l10n.sendTo : l10n.sender,
-                              primaryPartyValue,
+                              l10n.sender,
+                              senderValue,
                               isAddress: true,
-                              onCopy: _isWalletAddressDisplayed(transaction)
-                                  ? () => _copyToClipboard(primaryPartyValue)
-                                  : null,
+                              onCopy: () => _copyToClipboard(senderValue),
                             ),
-                          if (addressValue != null && addressValue.isNotEmpty)
+                          if (receiverValue != null && receiverValue.isNotEmpty)
                             _buildDetailRow(
                               context,
-                              l10n.address,
-                              addressValue,
+                              l10n.receiver,
+                              receiverValue,
                               isAddress: true,
-                              onCopy: () => _copyToClipboard(addressValue),
+                              onCopy: () => _copyToClipboard(receiverValue),
                             ),
                         ],
                         if (transaction.txHash != null &&
@@ -573,14 +562,6 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     );
   }
 
-  /// True when the sender/sendTo row is currently displaying the wallet
-  /// address (not the counterparty phone number). Used to gate the copy
-  /// icon so we only offer copy on actual wallet addresses.
-  bool _isWalletAddressDisplayed(TransactionModel tx) {
-    final phone = tx.counterpartyPhone?.trim();
-    return phone == null || phone.isEmpty;
-  }
-
   void _copyToClipboard(String value) {
     CopiedToast.copy(context, value);
   }
@@ -708,21 +689,17 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
         : l10n.pending;
     final dateText = tx.createdAt.toAppDateTime();
 
-    final counterparty = tx.counterpartyPhone?.trim();
-    // Matches the on-screen "Send To" / "Sender" row.
-    final primaryPartyValue = counterparty != null && counterparty.isNotEmpty
-        ? counterparty
-        : (isSent ? tx.receiverAddress : tx.senderAddress);
-    // Matches the on-screen "Address" row — counterparty's destination address,
-    // outgoing only, and suppressed when it would duplicate the row above.
-    final receiverAddress = tx.receiverAddress;
-    final addressRowValue =
-        isSent &&
-            receiverAddress != null &&
-            receiverAddress.isNotEmpty &&
-            receiverAddress != primaryPartyValue
-        ? receiverAddress
-        : null;
+    // Matches the on-screen "Sender" / "Receiver" rows — prefer the
+    // counterparty phone over the raw address on the counterparty's side.
+    final counterpartyPhone = tx.counterpartyPhone?.trim();
+    final hasCounterpartyPhone =
+        counterpartyPhone != null && counterpartyPhone.isNotEmpty;
+    final senderValue = !isSent && hasCounterpartyPhone
+        ? counterpartyPhone
+        : tx.senderAddress?.trim();
+    final receiverValue = isSent && hasCounterpartyPhone
+        ? counterpartyPhone
+        : tx.receiverAddress?.trim();
     final localizedError = isArabic
         ? (tx.errorMessageAr?.trim().isNotEmpty == true
               ? tx.errorMessageAr
@@ -765,11 +742,11 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
       if ((tx.fee ?? '').trim().isNotEmpty) {
         lines.add('${l10n.fee}: ${tx.fee} ${tx.assetSymbol}');
       }
-      if (primaryPartyValue != null && primaryPartyValue.trim().isNotEmpty) {
-        lines.add('${isSent ? l10n.sendTo : l10n.sender}: $primaryPartyValue');
+      if (senderValue != null && senderValue.isNotEmpty) {
+        lines.add('${l10n.sender}: $senderValue');
       }
-      if (addressRowValue != null && addressRowValue.trim().isNotEmpty) {
-        lines.add('${l10n.address}: $addressRowValue');
+      if (receiverValue != null && receiverValue.isNotEmpty) {
+        lines.add('${l10n.receiver}: $receiverValue');
       }
     }
     if ((tx.txHash ?? '').trim().isNotEmpty) {

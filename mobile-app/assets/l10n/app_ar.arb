@@ -271,6 +271,7 @@
     "network": "الشبكة",
     "sendTo": "إرسال إلى",
     "sender": "المرسل",
+    "receiver": "المستلم",
     "address": "العنوان",
     "transactionFees": "رسوم المعاملات",
     "saveAs": "حفظ كـ",
