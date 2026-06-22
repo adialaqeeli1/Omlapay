@@ -557,7 +557,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rejected => 'مرفوض';
 
   @override
-  String get seamlessCryptoPayments => 'مدفوعات تشفير سلسة';
+  String get seamlessCryptoPayments => 'دفع سلس بالعملات المشفرة';
 
   @override
   String get instantSecureAnytime => 'فوري، آمن، في أي وقت';
