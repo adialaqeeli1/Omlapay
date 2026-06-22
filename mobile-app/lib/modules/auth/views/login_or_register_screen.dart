@@ -136,6 +136,9 @@ class LoginOrRegisterScreen extends StatelessWidget {
                     const SizedBox(height: 22),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      // Keep the country-code chip on the left (before the
+                      // number field) even under an RTL/Arabic layout.
+                      textDirection: TextDirection.ltr,
                       children: [
                         GestureDetector(
                           onTap: () {
@@ -202,13 +205,7 @@ class LoginOrRegisterScreen extends StatelessWidget {
                             alignment: Alignment.center,
                             child: TextField(
                               textDirection: TextDirection.ltr,
-                              textAlign:
-                                  Localizations.localeOf(
-                                        context,
-                                      ).languageCode ==
-                                      'ar'
-                                  ? TextAlign.right
-                                  : TextAlign.left,
+                              textAlign: TextAlign.left,
                               onTapOutside: (event) =>
                                   FocusScope.of(context).unfocus(),
                               keyboardType: TextInputType.phone,

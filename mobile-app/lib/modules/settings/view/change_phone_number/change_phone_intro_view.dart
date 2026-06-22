@@ -124,17 +124,18 @@ class _ChangePhoneIntroViewState extends State<ChangePhoneIntroView> {
                                         text: '${step.stepLabel} ',
                                         style: theme.textTheme.titleMedium
                                             ?.copyWith(
-                                          color: AppColors.primaryColor,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                              color: AppColors.primaryColor,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                       ),
                                       TextSpan(
                                         text: step.stepText,
                                         style: theme.textTheme.titleMedium
                                             ?.copyWith(
-                                          color: theme.colorScheme.onSurface,
-                                          fontWeight: FontWeight.w400,
-                                        ),
+                                              color:
+                                                  theme.colorScheme.onSurface,
+                                              fontWeight: FontWeight.w400,
+                                            ),
                                       ),
                                     ],
                                   ),

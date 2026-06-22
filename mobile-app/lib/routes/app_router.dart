@@ -426,7 +426,7 @@ class AppRouter {
                 return ChangeEmailVerifyOtpView(
                   appBarTitle: l10n.changeEmail,
                   title: l10n.verifyNewEmailAddress,
-                  subtitle: l10n.changeEmailEmailOtpSent(pendingEmail),
+                  subtitle: l10n.changeEmailEmailOtpSent(pendingEmail.ltrIsolated),
                   onBackPressed: () => popToChangeEmailIntro(ctx),
                   otpLength: ChangeEmailNewEmailOtpProvider.otpLength,
                   countdownSeconds: provider.countdownSeconds,
@@ -497,7 +497,7 @@ class AppRouter {
                   appBarTitle: l10n.changePhoneNumber,
                   title: l10n.verifyYourEmail,
                   subtitle: maskedEmailForView.isNotEmpty
-                      ? l10n.twoFactorEmailOtpSent(maskedEmailForView)
+                      ? l10n.twoFactorEmailOtpSent(maskedEmailForView.ltrIsolated)
                       : l10n.twoFactorEmailOtpSent('...'),
                   onBackPressed: () => popToChangePhoneIntro(ctx),
                   onVerified: (innerCtx) async {
