@@ -455,7 +455,9 @@ class _TransactionDetailsViewState extends State<TransactionDetailsView> {
     );
     final valueText = Text(
       value,
-      textDirection: isDateTime ? TextDirection.ltr : null,
+      // Addresses and phone numbers must stay left-to-right so digits and the
+      // `+` country code aren't reordered under an RTL (Arabic) locale.
+      textDirection: (isDateTime || isAddress) ? TextDirection.ltr : null,
       style: valueTextStyle,
       textAlign: TextAlign.end,
     );

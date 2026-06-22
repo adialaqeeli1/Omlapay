@@ -347,7 +347,9 @@ class AppRouter {
               builder: (ctx) {
                 final provider = ctx.watch<ChangeEmailPhoneOtpProvider>();
                 final phoneSubtitle = provider.maskedPhone.isNotEmpty
-                    ? l10n.changeEmailPhoneOtpSent(provider.maskedPhone)
+                    ? l10n.changeEmailPhoneOtpSent(
+                        provider.maskedPhone.ltrPhoneNumber,
+                      )
                     : l10n.changeEmailPhoneOtpSent('...');
 
                 return ChangeEmailVerifyOtpView(
@@ -573,7 +575,7 @@ class AppRouter {
             child: ChangePhoneVerifyOtpView(
               appBarTitle: l10n.changePhoneNumber,
               title: l10n.verifyNewPhoneNumber,
-              subtitle: l10n.changePhoneNewOtpSent(displayPhone),
+              subtitle: l10n.changePhoneNewOtpSent(displayPhone.ltrPhoneNumber),
               onBackPressed: () => popToChangePhoneIntro(context),
               onVerified: (ctx) async {
                 final l10n = AppLocalizations.of(ctx)!;
