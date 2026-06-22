@@ -73,7 +73,9 @@ class Utility {
   }
 
   static String removeAllWhitespace(String value) {
-    return value.replaceAll(' ', '');
+    // `\s` also covers non-breaking/narrow spaces that formatted phone numbers
+    // (e.g. "+966 54 076 8260") can contain, not just the ASCII space.
+    return value.replaceAll(RegExp(r'\s'), '');
   }
 
   static String? camelCase(String value) {
