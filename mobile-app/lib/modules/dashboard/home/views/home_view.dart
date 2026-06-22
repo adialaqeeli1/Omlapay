@@ -726,42 +726,41 @@ class _HomeViewState extends State<HomeView> {
           ],
         ),
       ),
-      // if (isAuthenticated)
-      Positioned.directional(
-        textDirection: TextDirection.ltr,
-
-        end: 16,
-        bottom: -10,
-        child: IconButton(
-          onPressed: () {
-            if (isAuthenticated) {
-              final homeProvider = context.read<HomeProvider>();
-              if (homeProvider.isLoading) return;
-              final globalProvider = context.read<GlobalProvider>();
-              globalProvider.toggleBalanceVisibility();
-              if (globalProvider.isBalanceVisible &&
-                  !homeProvider.hasFetchedHome) {
-                homeProvider.fetchHomeData();
+      if (isAuthenticated)
+        Positioned.directional(
+          textDirection: TextDirection.ltr,
+          end: 16,
+          bottom: -10,
+          child: IconButton(
+            onPressed: () {
+              if (isAuthenticated) {
+                final homeProvider = context.read<HomeProvider>();
+                if (homeProvider.isLoading) return;
+                final globalProvider = context.read<GlobalProvider>();
+                globalProvider.toggleBalanceVisibility();
+                if (globalProvider.isBalanceVisible &&
+                    !homeProvider.hasFetchedHome) {
+                  homeProvider.fetchHomeData();
+                }
+                return;
+              } else {
+                context.push(Routes.loginOrRegister);
+                return;
               }
-              return;
-            } else {
-              context.push(Routes.loginOrRegister);
-              return;
-            }
-          },
-          icon: SvgPicture.asset(
-            context.watch<GlobalProvider>().isBalanceVisible
-                ? 'assets/icons/eye.svg'
-                : 'assets/icons/eye-close.svg',
-            width: 24,
-            height: 24,
-            colorFilter: ColorFilter.mode(
-              AppColors.primaryColor,
-              BlendMode.srcIn,
+            },
+            icon: SvgPicture.asset(
+              context.watch<GlobalProvider>().isBalanceVisible
+                  ? 'assets/icons/eye.svg'
+                  : 'assets/icons/eye-close.svg',
+              width: 24,
+              height: 24,
+              colorFilter: ColorFilter.mode(
+                AppColors.primaryColor,
+                BlendMode.srcIn,
+              ),
             ),
           ),
         ),
-      ),
     ],
   );
 
