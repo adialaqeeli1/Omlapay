@@ -34,7 +34,7 @@ import '../modules/about/faqs_view.dart';
 import '../modules/about/privacy_policy_view.dart';
 import '../modules/about/terms_conditions_view.dart';
 import '../modules/help_center/providers/help_center_provider.dart';
-import '../modules/help_center/providers/send_request_provider.dart';
+import '../modules/help_center/providers/support_request_form_provider.dart';
 import '../modules/help_center/views/help_center_view.dart';
 import '../modules/kyc_verification/views/kyc_verification_view.dart';
 import '../modules/kyc_verification/providers/kyc_verification_provider.dart';
@@ -42,7 +42,7 @@ import '../modules/auth/providers/email_verification_provider.dart';
 import '../modules/auth/views/email_entry_view.dart';
 import '../modules/auth/views/email_otp_view.dart';
 import '../modules/help_center/views/past_requests_view.dart';
-import '../modules/help_center/views/send_request_view.dart';
+import '../modules/help_center/views/support_request_form_view.dart';
 import '../modules/help_center/providers/request_detail_provider.dart';
 import '../modules/help_center/views/request_detail_view.dart';
 import '../modules/dashboard/profile/profile_view.dart';
@@ -716,9 +716,24 @@ class AppRouter {
         name: 'sendRequest',
         builder: (context, state) => ChangeNotifierProvider(
           create: (context) =>
-              SendRequestProvider(context.read<AuthProvider>()),
-          child: const SendRequestView(),
+              SupportRequestFormProvider(context.read<AuthProvider>()),
+          child: const SupportRequestFormView(),
         ),
+      ),
+      GoRoute(
+        path: Routes.reopenRequest,
+        name: 'reopenRequest',
+        builder: (context, state) {
+          final requestId = state.extra as String;
+          return ChangeNotifierProvider(
+            create: (context) => SupportRequestFormProvider(
+              context.read<AuthProvider>(),
+              mode: SupportRequestFormMode.reopen,
+              requestId: requestId,
+            ),
+            child: const SupportRequestFormView(),
+          );
+        },
       ),
       GoRoute(
         path: Routes.pastRequests,

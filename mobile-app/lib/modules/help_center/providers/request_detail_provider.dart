@@ -33,7 +33,6 @@ class RequestDetailProvider extends ChangeNotifier {
 
   SupportRequestDetailModel? _detail;
   bool _isLoading = false;
-  bool _isReopening = false;
   String? _errorKey;
   final Map<String, int?> _fileSizes = {};
   final Set<String> _collapsedItemIds = {};
@@ -42,7 +41,6 @@ class RequestDetailProvider extends ChangeNotifier {
 
   SupportRequestDetailModel? get detail => _detail;
   bool get isLoading => _isLoading;
-  bool get isReopening => _isReopening;
   String? get errorKey => _errorKey;
 
   int? getFileSizeForUrl(String url) => _fileSizes[url];
@@ -79,25 +77,6 @@ class RequestDetailProvider extends ChangeNotifier {
       _errorKey = 'failedToLoadRequestDetail';
     } finally {
       _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> reopenTicket() async {
-    if (_isReopening || isGuest) return;
-
-    _isReopening = true;
-    notifyListeners();
-
-    try {
-      await _service.reopenRequest(requestId);
-      await fetchDetail();
-    } on AppException catch (e) {
-      _errorKey = e.messageKey ?? 'failedToReopenRequest';
-    } catch (_) {
-      _errorKey = 'failedToReopenRequest';
-    } finally {
-      _isReopening = false;
       notifyListeners();
     }
   }

@@ -31,6 +31,7 @@ class Routes {
   static const String privacyPolicy = _Paths.privacyPolicy;
   static const String helpCenter = _Paths.helpCenter;
   static const String sendRequest = _Paths.sendRequest;
+  static const String reopenRequest = _Paths.reopenRequest;
   static const String pastRequests = _Paths.pastRequests;
   static const String requestDetail = _Paths.requestDetail;
   static const String coinDetails = _Paths.coinDetails;
@@ -85,6 +86,7 @@ abstract class _Paths {
   static const String privacyPolicy = '/privacy-policy';
   static const String helpCenter = '/help-center';
   static const String sendRequest = '/send-request';
+  static const String reopenRequest = '/reopen-request';
   static const String pastRequests = '/past-requests';
   static const String requestDetail = '/request-detail';
   static const String coinDetails = '/coin-details';

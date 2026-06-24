@@ -7,7 +7,6 @@ import '../../../core/extentions/context_extensions.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/utils/app_exception.dart';
 import '../../../core/utils/date_time_format.dart';
-import '../../../core/utils/snackbar_helper.dart';
 import '../../../widgets/common_back_button.dart';
 import '../../../widgets/common_loading_indicator.dart';
 import '../models/support_request_detail_model.dart';
@@ -114,29 +113,22 @@ class RequestDetailView extends StatelessWidget {
               ),
             ],
           ),
-          bottomSheet: provider.isGuest
+          // Re-opening is only supported for solved tickets — hide the whole
+          // section for guests and for open/rejected/other statuses.
+          bottomSheet:
+              provider.isGuest ||
+                  detail.status != SupportRequestStatus.solved
               ? null
               : _BottomBar(
-                  status: detail.status,
-                  isReopening: provider.isReopening,
                   onReopen: () async {
-                    await provider.reopenTicket();
-                    if (context.mounted) {
-                      if (provider.errorKey != null) {
-                        SnackbarHelper.showError(
-                          context,
-                          AppException.resolveErrorKey(
-                                l10n,
-                                provider.errorKey!,
-                              ) ??
-                              l10n.somethingWentWrong,
-                        );
-                      } else {
-                        SnackbarHelper.showSuccess(
-                          context,
-                          l10n.requestReopened,
-                        );
-                      }
+                    // Collect the reopen reason/attachment on a dedicated form
+                    // screen, then refresh the detail if it was reopened.
+                    final reopened = await GoRouter.of(context).pushNamed<bool>(
+                      'reopenRequest',
+                      extra: provider.requestId,
+                    );
+                    if (reopened == true && context.mounted) {
+                      await provider.fetchDetail();
                     }
                   },
                 ),
@@ -535,15 +527,9 @@ class _AttachmentRow extends StatelessWidget {
 }
 
 class _BottomBar extends StatelessWidget {
-  final SupportRequestStatus status;
-  final bool isReopening;
   final VoidCallback onReopen;
 
-  const _BottomBar({
-    required this.status,
-    required this.isReopening,
-    required this.onReopen,
-  });
+  const _BottomBar({required this.onReopen});
 
   @override
   Widget build(BuildContext context) {
@@ -579,10 +565,6 @@ class _BottomBar extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _ReopenButton(
-              enabled:
-                  status == SupportRequestStatus.solved ||
-                  status == SupportRequestStatus.rejected,
-              isReopening: isReopening,
               onReopen: onReopen,
               label: l10n.reopenTicket,
             ),
@@ -594,46 +576,16 @@ class _BottomBar extends StatelessWidget {
 }
 
 class _ReopenButton extends StatelessWidget {
-  final bool enabled;
-  final bool isReopening;
   final VoidCallback onReopen;
   final String label;
 
   const _ReopenButton({
-    required this.enabled,
-    required this.isReopening,
     required this.onReopen,
     required this.label,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isActive = enabled && !isReopening;
-
-    if (!isActive) {
-      return GestureDetector(
-        child: Container(
-          width: double.infinity,
-          height: 48,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: const Color(0xFF144440),
-          ),
-          alignment: Alignment.center,
-          child: isReopening
-              ? const CommonLoadingIndicator()
-              : Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-        ),
-      );
-    }
-
     return GestureDetector(
       onTap: onReopen,
       child: Container(
