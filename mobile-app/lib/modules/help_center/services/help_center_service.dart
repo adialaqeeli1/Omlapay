@@ -129,7 +129,19 @@ class HelpCenterService {
     return SupportRequestDetailModel.fromJson(request);
   }
 
-  Future<void> reopenRequest(String requestId) async {
-    await ApiHelper.post(Endpoints.supportRequestReopen(requestId), {});
+  /// Re-opens a resolved/rejected support request.
+  ///
+  /// Mirrors the create payload: the user's [description] is required and an
+  /// optional [attachmentUrl] (from [uploadFile]) can be included.
+  Future<void> reopenRequest(
+    String requestId, {
+    required String description,
+    String? attachmentUrl,
+  }) async {
+    final body = <String, dynamic>{'description': description};
+    if (attachmentUrl != null) {
+      body['attachmentUrl'] = attachmentUrl;
+    }
+    await ApiHelper.post(Endpoints.supportRequestReopen(requestId), body);
   }
 }

@@ -4,17 +4,21 @@ import 'package:provider/provider.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
 import '../../../core/extentions/context_extensions.dart';
-import '../../../core/utils/app_exception.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../widgets/common_attachment_field.dart';
 import '../../../widgets/common_back_button.dart';
 import '../../../widgets/common_button.dart';
 import '../../../widgets/common_form_label.dart';
 import '../../../widgets/common_loading_indicator.dart';
-import '../providers/send_request_provider.dart';
+import '../providers/support_request_form_provider.dart';
 
-class SendRequestView extends StatelessWidget {
-  const SendRequestView({super.key});
+/// Shared form used by both the "Send Request" and "Re-open Ticket" flows.
+///
+/// The layout is identical; [SupportRequestFormProvider.mode] decides whether
+/// the title field is shown, the screen labels, and which endpoint the submit
+/// action hits.
+class SupportRequestFormView extends StatelessWidget {
+  const SupportRequestFormView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,13 +27,14 @@ class SendRequestView extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
     final horizontalPadding = screenWidth * 0.05;
-    final provider = context.watch<SendRequestProvider>();
+    final provider = context.watch<SupportRequestFormProvider>();
+    final isReopen = provider.isReopen;
 
     return Scaffold(
       appBar: AppBar(
         leading: CommonBackButton(onPressed: () => GoRouter.of(context).pop()),
         title: Text(
-          l10n.sendRequest,
+          isReopen ? l10n.reopenTicket : l10n.sendRequest,
           style: theme.textTheme.titleMedium?.copyWith(
             color: isDark ? Colors.white : Colors.black,
             fontWeight: FontWeight.bold,
@@ -48,42 +53,49 @@ class SendRequestView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-              CommonFormLabel(label: l10n.title),
-              const SizedBox(height: 8),
-              ReactiveTextField<String>(
-                formControlName: 'title',
-                maxLength: 50,
-                onTapOutside: (_) => FocusScope.of(context).unfocus(),
-                onEditingComplete: (control) =>
-                    provider.form.control('description').focus(),
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  hintText: l10n.titlePlaceholder,
-                  counterText: '',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(
-                      color: theme.colorScheme.outline.withValues(alpha: 0.35),
+              // Title is only collected when creating a new request.
+              if (!isReopen) ...[
+                CommonFormLabel(label: l10n.title),
+                const SizedBox(height: 8),
+                ReactiveTextField<String>(
+                  formControlName: 'title',
+                  maxLength: 50,
+                  onTapOutside: (_) => FocusScope.of(context).unfocus(),
+                  onEditingComplete: (control) =>
+                      provider.form.control('description').focus(),
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    hintText: l10n.titlePlaceholder,
+                    counterText: '',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.outline.withValues(
+                          alpha: 0.35,
+                        ),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.outline.withValues(
+                          alpha: 0.35,
+                        ),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: theme.colorScheme.primary),
                     ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(
-                      color: theme.colorScheme.outline.withValues(alpha: 0.35),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: theme.colorScheme.primary),
-                  ),
+                  validationMessages: {
+                    ValidationMessage.required: (_) => l10n.pleaseEnterATitle,
+                    ValidationMessage.maxLength: (_) =>
+                        l10n.titleMustNotExceedCharacters(50),
+                  },
                 ),
-                validationMessages: {
-                  ValidationMessage.required: (_) => l10n.pleaseEnterATitle,
-                  ValidationMessage.maxLength: (_) =>
-                      l10n.titleMustNotExceedCharacters(50),
-                },
-              ),
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
+              ],
               CommonFormLabel(label: l10n.description),
               const SizedBox(height: 8),
               ReactiveTextField<String>(
@@ -141,9 +153,9 @@ class SendRequestView extends StatelessWidget {
                     }
                   },
                   selectedFile: provider.selectedFile,
-                  allowedExtensions: SendRequestProvider.allowedExtensions,
+                  allowedExtensions: SupportRequestFormProvider.allowedExtensions,
                   placeholder: l10n.attachFileDescription(
-                    SendRequestProvider.allowedExtensions
+                    SupportRequestFormProvider.allowedExtensions
                         .map((e) => e.toUpperCase())
                         .join(
                           Localizations.localeOf(context).languageCode == 'ar'
@@ -156,7 +168,7 @@ class SendRequestView extends StatelessWidget {
               SizedBox(height: MediaQuery.of(context).size.height * 0.05),
               CommonButton(
                 onPressed: () {
-                  if (provider.isSending) return;
+                  if (provider.isSubmitting) return;
                   FocusScope.of(context).unfocus();
 
                   final navigator = Navigator.of(context, rootNavigator: true);
@@ -185,28 +197,30 @@ class SendRequestView extends StatelessWidget {
                     ),
                   );
 
-                  provider.send().then((success) {
+                  provider.submit().then((success) {
                     if (navigator.mounted) navigator.pop();
                     if (!context.mounted) return;
                     if (success) {
                       SnackbarHelper.showSuccess(
                         context,
-                        l10n.helpRequestSentSuccess,
+                        isReopen
+                            ? l10n.requestReopened
+                            : l10n.helpRequestSentSuccess,
                       );
-                      GoRouter.of(context).pop();
-                    } else if (provider.errorKey != null) {
+                      // Signal success to the detail screen so it can refresh.
+                      GoRouter.of(context).pop(isReopen ? true : null);
+                    } else if (provider.error != null) {
+                      // Prefer the server's locale-aware message (e.g.
+                      // "Rejected tickets cannot be reopened"); fall back to a
+                      // generic localized string when none is provided.
                       SnackbarHelper.showError(
                         context,
-                        AppException.resolveErrorKey(
-                              l10n,
-                              provider.errorKey!,
-                            ) ??
-                            l10n.unknownError,
+                        provider.error!.localizedMessage(l10n),
                       );
                     }
                   });
                 },
-                title: l10n.send,
+                title: isReopen ? l10n.reopenTicket : l10n.send,
               ),
               SizedBox(height: MediaQuery.of(context).size.height * 0.03),
             ],
