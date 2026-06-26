@@ -12,10 +12,8 @@ class HelpCenterProvider extends ChangeNotifier {
   final AuthProvider _authProvider;
   String? _cachedMacAddress;
 
-  HelpCenterProvider(
-    this._authProvider, {
-    HelpCenterService? service,
-  }) : _service = service ?? HelpCenterService() {
+  HelpCenterProvider(this._authProvider, {HelpCenterService? service})
+    : _service = service ?? HelpCenterService() {
     fetchRequests();
   }
 
@@ -57,8 +55,8 @@ class HelpCenterProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> fetchRequests() async {
-    _isLoading = true;
+  Future<void> fetchRequests({isRefreshing = false}) async {
+    if (!isRefreshing) _isLoading = true;
     _errorKey = null;
     _currentPage = 1;
     notifyListeners();

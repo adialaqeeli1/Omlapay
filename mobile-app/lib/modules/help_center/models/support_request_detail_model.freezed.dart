@@ -583,7 +583,7 @@ as String,
 /// @nodoc
 mixin _$SupportRequestResponse {
 
- String get id; String get message; DateTime get createdAt; bool get isAdminResponse;
+ String get id; String get message; DateTime get createdAt; bool get isAdminResponse; List<SupportRequestAttachment> get attachments;
 /// Create a copy of SupportRequestResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -596,16 +596,16 @@ $SupportRequestResponseCopyWith<SupportRequestResponse> get copyWith => _$Suppor
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SupportRequestResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.message, message) || other.message == message)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.isAdminResponse, isAdminResponse) || other.isAdminResponse == isAdminResponse));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SupportRequestResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.message, message) || other.message == message)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.isAdminResponse, isAdminResponse) || other.isAdminResponse == isAdminResponse)&&const DeepCollectionEquality().equals(other.attachments, attachments));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,message,createdAt,isAdminResponse);
+int get hashCode => Object.hash(runtimeType,id,message,createdAt,isAdminResponse,const DeepCollectionEquality().hash(attachments));
 
 @override
 String toString() {
-  return 'SupportRequestResponse(id: $id, message: $message, createdAt: $createdAt, isAdminResponse: $isAdminResponse)';
+  return 'SupportRequestResponse(id: $id, message: $message, createdAt: $createdAt, isAdminResponse: $isAdminResponse, attachments: $attachments)';
 }
 
 
@@ -616,7 +616,7 @@ abstract mixin class $SupportRequestResponseCopyWith<$Res>  {
   factory $SupportRequestResponseCopyWith(SupportRequestResponse value, $Res Function(SupportRequestResponse) _then) = _$SupportRequestResponseCopyWithImpl;
 @useResult
 $Res call({
- String id, String message, DateTime createdAt, bool isAdminResponse
+ String id, String message, DateTime createdAt, bool isAdminResponse, List<SupportRequestAttachment> attachments
 });
 
 
@@ -633,13 +633,14 @@ class _$SupportRequestResponseCopyWithImpl<$Res>
 
 /// Create a copy of SupportRequestResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? message = null,Object? createdAt = null,Object? isAdminResponse = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? message = null,Object? createdAt = null,Object? isAdminResponse = null,Object? attachments = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,isAdminResponse: null == isAdminResponse ? _self.isAdminResponse : isAdminResponse // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,attachments: null == attachments ? _self.attachments : attachments // ignore: cast_nullable_to_non_nullable
+as List<SupportRequestAttachment>,
   ));
 }
 
@@ -724,10 +725,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String message,  DateTime createdAt,  bool isAdminResponse)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String message,  DateTime createdAt,  bool isAdminResponse,  List<SupportRequestAttachment> attachments)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SupportRequestResponse() when $default != null:
-return $default(_that.id,_that.message,_that.createdAt,_that.isAdminResponse);case _:
+return $default(_that.id,_that.message,_that.createdAt,_that.isAdminResponse,_that.attachments);case _:
   return orElse();
 
 }
@@ -745,10 +746,10 @@ return $default(_that.id,_that.message,_that.createdAt,_that.isAdminResponse);ca
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String message,  DateTime createdAt,  bool isAdminResponse)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String message,  DateTime createdAt,  bool isAdminResponse,  List<SupportRequestAttachment> attachments)  $default,) {final _that = this;
 switch (_that) {
 case _SupportRequestResponse():
-return $default(_that.id,_that.message,_that.createdAt,_that.isAdminResponse);case _:
+return $default(_that.id,_that.message,_that.createdAt,_that.isAdminResponse,_that.attachments);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -765,10 +766,10 @@ return $default(_that.id,_that.message,_that.createdAt,_that.isAdminResponse);ca
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String message,  DateTime createdAt,  bool isAdminResponse)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String message,  DateTime createdAt,  bool isAdminResponse,  List<SupportRequestAttachment> attachments)?  $default,) {final _that = this;
 switch (_that) {
 case _SupportRequestResponse() when $default != null:
-return $default(_that.id,_that.message,_that.createdAt,_that.isAdminResponse);case _:
+return $default(_that.id,_that.message,_that.createdAt,_that.isAdminResponse,_that.attachments);case _:
   return null;
 
 }
@@ -780,13 +781,20 @@ return $default(_that.id,_that.message,_that.createdAt,_that.isAdminResponse);ca
 @JsonSerializable()
 
 class _SupportRequestResponse implements SupportRequestResponse {
-  const _SupportRequestResponse({required this.id, this.message = '', required this.createdAt, this.isAdminResponse = false});
+  const _SupportRequestResponse({required this.id, this.message = '', required this.createdAt, this.isAdminResponse = false, final  List<SupportRequestAttachment> attachments = const []}): _attachments = attachments;
   factory _SupportRequestResponse.fromJson(Map<String, dynamic> json) => _$SupportRequestResponseFromJson(json);
 
 @override final  String id;
 @override@JsonKey() final  String message;
 @override final  DateTime createdAt;
 @override@JsonKey() final  bool isAdminResponse;
+ final  List<SupportRequestAttachment> _attachments;
+@override@JsonKey() List<SupportRequestAttachment> get attachments {
+  if (_attachments is EqualUnmodifiableListView) return _attachments;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_attachments);
+}
+
 
 /// Create a copy of SupportRequestResponse
 /// with the given fields replaced by the non-null parameter values.
@@ -801,16 +809,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SupportRequestResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.message, message) || other.message == message)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.isAdminResponse, isAdminResponse) || other.isAdminResponse == isAdminResponse));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SupportRequestResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.message, message) || other.message == message)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.isAdminResponse, isAdminResponse) || other.isAdminResponse == isAdminResponse)&&const DeepCollectionEquality().equals(other._attachments, _attachments));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,message,createdAt,isAdminResponse);
+int get hashCode => Object.hash(runtimeType,id,message,createdAt,isAdminResponse,const DeepCollectionEquality().hash(_attachments));
 
 @override
 String toString() {
-  return 'SupportRequestResponse(id: $id, message: $message, createdAt: $createdAt, isAdminResponse: $isAdminResponse)';
+  return 'SupportRequestResponse(id: $id, message: $message, createdAt: $createdAt, isAdminResponse: $isAdminResponse, attachments: $attachments)';
 }
 
 
@@ -821,7 +829,7 @@ abstract mixin class _$SupportRequestResponseCopyWith<$Res> implements $SupportR
   factory _$SupportRequestResponseCopyWith(_SupportRequestResponse value, $Res Function(_SupportRequestResponse) _then) = __$SupportRequestResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String message, DateTime createdAt, bool isAdminResponse
+ String id, String message, DateTime createdAt, bool isAdminResponse, List<SupportRequestAttachment> attachments
 });
 
 
@@ -838,13 +846,14 @@ class __$SupportRequestResponseCopyWithImpl<$Res>
 
 /// Create a copy of SupportRequestResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? message = null,Object? createdAt = null,Object? isAdminResponse = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? message = null,Object? createdAt = null,Object? isAdminResponse = null,Object? attachments = null,}) {
   return _then(_SupportRequestResponse(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,isAdminResponse: null == isAdminResponse ? _self.isAdminResponse : isAdminResponse // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,attachments: null == attachments ? _self._attachments : attachments // ignore: cast_nullable_to_non_nullable
+as List<SupportRequestAttachment>,
   ));
 }
 

@@ -2786,6 +2786,12 @@ abstract class AppLocalizations {
   /// **'Support team reply'**
   String get supportTeamReply;
 
+  /// No description provided for @yourReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reply'**
+  String get yourReply;
+
   /// No description provided for @inReview.
   ///
   /// In en, this message translates to:

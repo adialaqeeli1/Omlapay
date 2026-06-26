@@ -622,6 +622,7 @@
     "failedToReopenRequest": "فشل في إعادة فتح التذكرة",
     "failedToLoadRequestDetail": "فشل في تحميل تفاصيل الطلب",
     "supportTeamReply": "رد فريق الدعم",
+    "yourReply": "ردك",
     "inReview": "قيد المراجعة",
     "resolvesBy": "يُحل بحلول {date}",
     "@resolvesBy": {

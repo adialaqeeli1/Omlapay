@@ -75,6 +75,13 @@ _SupportRequestResponse _$SupportRequestResponseFromJson(
   message: json['message'] as String? ?? '',
   createdAt: DateTime.parse(json['createdAt'] as String),
   isAdminResponse: json['isAdminResponse'] as bool? ?? false,
+  attachments:
+      (json['attachments'] as List<dynamic>?)
+          ?.map(
+            (e) => SupportRequestAttachment.fromJson(e as Map<String, dynamic>),
+          )
+          .toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$SupportRequestResponseToJson(
@@ -84,4 +91,5 @@ Map<String, dynamic> _$SupportRequestResponseToJson(
   'message': instance.message,
   'createdAt': instance.createdAt.toIso8601String(),
   'isAdminResponse': instance.isAdminResponse,
+  'attachments': instance.attachments,
 };

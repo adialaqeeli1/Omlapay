@@ -1485,6 +1485,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get supportTeamReply => 'Support team reply';
 
   @override
+  String get yourReply => 'Your reply';
+
+  @override
   String get inReview => 'In review';
 
   @override

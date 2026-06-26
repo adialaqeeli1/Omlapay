@@ -1472,6 +1472,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get supportTeamReply => 'رد فريق الدعم';
 
   @override
+  String get yourReply => 'ردك';
+
+  @override
   String get inReview => 'قيد المراجعة';
 
   @override
