@@ -104,12 +104,20 @@ class RequestDetailView extends StatelessWidget {
                 child: RefreshIndicator(
                   color: AppColors.primaryColor,
                   onRefresh: () => provider.fetchDetail(isRefresh: true),
-                  child: SingleChildScrollView(
+
+                  child: CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(
                       parent: ClampingScrollPhysics(),
                     ),
-                    padding: const EdgeInsets.all(16),
-                    child: _RequestContent(detail: detail),
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.all(16.0),
+                        sliver: SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: _RequestContent(detail: detail),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -286,7 +294,8 @@ class _RequestContent extends StatelessWidget {
           isAdmin: response.isAdminResponse,
         ),
       ),
-    ];
+      // Show the newest entry first so the latest reply sits at the top.
+    ].reversed.toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
