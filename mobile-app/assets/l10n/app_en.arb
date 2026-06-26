@@ -636,6 +636,7 @@
     "failedToReopenRequest": "Failed to reopen ticket",
     "failedToLoadRequestDetail": "Failed to load request details",
     "supportTeamReply": "Support team reply",
+    "yourReply": "Your reply",
     "inReview": "In review",
     "resolvesBy": "Resolves by {date}",
     "@resolvesBy": {

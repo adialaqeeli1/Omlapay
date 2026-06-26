@@ -56,8 +56,8 @@ class RequestDetailProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchDetail() async {
-    _isLoading = true;
+  Future<void> fetchDetail({isRefresh = false}) async {
+    if (!isRefresh) _isLoading = true;
     _errorKey = null;
     notifyListeners();
 

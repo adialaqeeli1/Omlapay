@@ -42,6 +42,7 @@ abstract class SupportRequestResponse with _$SupportRequestResponse {
     @Default('') String message,
     required DateTime createdAt,
     @Default(false) bool isAdminResponse,
+    @Default([]) List<SupportRequestAttachment> attachments,
   }) = _SupportRequestResponse;
 
   factory SupportRequestResponse.fromJson(Map<String, dynamic> json) =>

@@ -63,7 +63,7 @@ class PastRequestsView extends StatelessWidget {
 
           return RefreshIndicator(
             color: AppColors.primaryColor,
-            onRefresh: () => provider.fetchRequests(),
+            onRefresh: () => provider.fetchRequests(isRefreshing: true),
             child: _buildBody(context, l10n, provider),
           );
         },

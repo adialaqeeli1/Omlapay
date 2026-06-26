@@ -103,9 +103,11 @@ class RequestDetailView extends StatelessWidget {
               Expanded(
                 child: RefreshIndicator(
                   color: AppColors.primaryColor,
-                  onRefresh: () => provider.fetchDetail(),
+                  onRefresh: () => provider.fetchDetail(isRefresh: true),
                   child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: ClampingScrollPhysics(),
+                    ),
                     padding: const EdgeInsets.all(16),
                     child: _RequestContent(detail: detail),
                   ),
@@ -116,8 +118,7 @@ class RequestDetailView extends StatelessWidget {
           // Re-opening is only supported for solved tickets — hide the whole
           // section for guests and for open/rejected/other statuses.
           bottomSheet:
-              provider.isGuest ||
-                  detail.status != SupportRequestStatus.solved
+              provider.isGuest || detail.status != SupportRequestStatus.solved
               ? null
               : _BottomBar(
                   onReopen: () async {
@@ -276,11 +277,13 @@ class _RequestContent extends StatelessWidget {
       ...detail.responses.map(
         (response) => _TimelineItemData(
           id: response.id,
-          title: context.l10n!.supportTeamReply,
+          title: response.isAdminResponse
+              ? context.l10n!.supportTeamReply
+              : context.l10n!.yourReply,
           body: response.message,
           createdAt: response.createdAt,
-          attachments: const [],
-          isAdmin: true,
+          attachments: response.attachments,
+          isAdmin: response.isAdminResponse,
         ),
       ),
     ];
@@ -564,10 +567,7 @@ class _BottomBar extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            _ReopenButton(
-              onReopen: onReopen,
-              label: l10n.reopenTicket,
-            ),
+            _ReopenButton(onReopen: onReopen, label: l10n.reopenTicket),
           ],
         ),
       ),
@@ -579,10 +579,7 @@ class _ReopenButton extends StatelessWidget {
   final VoidCallback onReopen;
   final String label;
 
-  const _ReopenButton({
-    required this.onReopen,
-    required this.label,
-  });
+  const _ReopenButton({required this.onReopen, required this.label});
 
   @override
   Widget build(BuildContext context) {
