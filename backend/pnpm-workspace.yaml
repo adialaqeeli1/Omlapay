@@ -1,0 +1,6 @@
+# Dependency install scripts stay off (safer). The app is tested to work without them.
+allowBuilds:
+  '@nestjs/core': false
+  '@scarf/scarf': false
+  core-js: false
+  unrs-resolver: false
