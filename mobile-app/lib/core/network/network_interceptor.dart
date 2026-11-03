@@ -21,7 +21,7 @@ class _LoggingInterceptor extends Interceptor {
   ) async {
     final defaultHeaders = {
       ...options.headers,
-      if (globalHeaders != null) ...globalHeaders!,
+      ...?globalHeaders,
       'Content-type': 'application/json',
       'Accept': 'application/json',
     };
@@ -101,6 +101,8 @@ class _LoggingInterceptor extends Interceptor {
       case DioExceptionType.connectionError:
         break;
       case DioExceptionType.sendTimeout:
+        break;
+      case DioExceptionType.transformTimeout:
         break;
     }
     return handler.next(err);

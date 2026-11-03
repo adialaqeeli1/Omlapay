@@ -313,7 +313,7 @@ class SettingsView extends StatelessWidget {
       trailing: Switch(
         value: value,
         onChanged: onChanged,
-        activeColor: AppColors.primaryColor,
+        activeThumbColor: AppColors.primaryColor,
       ),
     );
   }

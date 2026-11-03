@@ -195,7 +195,7 @@ class SelectiveColorMapper extends ColorMapper {
     String attributeName,
     Color color,
   ) {
-    if (color.value == targetColor.value) {
+    if (color.toARGB32() == targetColor.toARGB32()) {
       // Invert the color (255 - component)
       return Color.fromARGB(
         color.alpha,

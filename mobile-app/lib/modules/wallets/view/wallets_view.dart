@@ -24,8 +24,7 @@ class WalletsView extends StatelessWidget {
     final authProvider = context.watch<AuthProvider>();
     final l10n = AppLocalizations.of(context)!;
     final title = fromReceive ? l10n.receive : 'Wallets';
-    final showVerificationBanner =
-        authProvider.state.user?.isVerified != true;
+    final showVerificationBanner = authProvider.state.user?.isVerified != true;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -37,7 +36,11 @@ class WalletsView extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.history_rounded, color: Colors.white, size: 24),
+            icon: const Icon(
+              Icons.history_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
             onPressed: () => context.push(Routes.receiveCoin),
             tooltip: l10n.history,
           ),
@@ -74,13 +77,19 @@ class WalletsView extends StatelessWidget {
                               child: Opacity(
                                 opacity: 0.55,
                                 child: ListView.separated(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
                                   itemCount: provider.wallets.length,
                                   separatorBuilder: (context, index) =>
                                       const SizedBox(height: 12),
                                   itemBuilder: (context, index) {
                                     final wallet = provider.wallets[index];
-                                    return _buildWalletItem(context, wallet, provider);
+                                    return _buildWalletItem(
+                                      context,
+                                      wallet,
+                                      provider,
+                                    );
                                   },
                                 ),
                               ),
@@ -94,8 +103,8 @@ class WalletsView extends StatelessWidget {
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                   colors: [
-                                    Colors.black.withOpacity(0.15),
-                                    Colors.black.withOpacity(0.4),
+                                    Colors.black.withValues(alpha: 0.15),
+                                    Colors.black.withValues(alpha: 0.4),
                                   ],
                                 ),
                               ),
@@ -125,10 +134,10 @@ class WalletsView extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.8),
+                    color: Colors.black.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: AppColors.tealColor.withOpacity(0.5),
+                      color: AppColors.tealColor.withValues(alpha: 0.5),
                     ),
                   ),
                   child: Row(
@@ -313,7 +322,7 @@ class WalletsView extends StatelessWidget {
       height: 32,
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: backgroundColor.withOpacity(0.15),
+        color: backgroundColor.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
       ),
       child: SvgPicture.asset(

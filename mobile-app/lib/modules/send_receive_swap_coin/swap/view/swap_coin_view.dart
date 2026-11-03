@@ -158,8 +158,9 @@ class SwapCoinView extends StatelessWidget {
                           : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.tealColor,
-                        disabledBackgroundColor: AppColors.tealColor
-                            .withOpacity(0.3),
+                        disabledBackgroundColor: AppColors.tealColor.withValues(
+                          alpha: 0.3,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),

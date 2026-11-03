@@ -85,7 +85,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
               if (states.contains(WidgetState.selected)) {
                 return AppColors.primaryColor;
               }
-              return textColor.withOpacity(0.3);
+              return textColor.withValues(alpha: 0.3);
             }),
           ),
         );

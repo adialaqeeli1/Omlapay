@@ -4,7 +4,7 @@ import '../../../../core/models/coin_model/coin_model.dart';
 
 class SwapProvider extends ChangeNotifier {
   List<CoinModel> _coins = [];
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   CoinModel? _fromCoin;
   CoinModel? _toCoin;
