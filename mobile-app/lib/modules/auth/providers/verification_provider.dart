@@ -2,20 +2,72 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../core/extentions/string_extensions.dart';
+import 'login_provider.dart';
+import '../services/auth_service.dart';
 import '../services/forgot_passcode_service.dart';
 
 class VerificationProvider extends ChangeNotifier {
   VerificationProvider({
     required String phoneNumber,
     required String countryCode,
+    bool isRegistration = false,
+    String? maskedMobile,
+    int initialCountdown = countdownStartSeconds,
+    String? verificationPurpose,
+    String? changePasscodeCurrent,
+    String? changePasscodeNew,
   })  : _phoneNumber = phoneNumber.replaceAll(RegExp(r'[^0-9]'), ''),
-        _countryCode = countryCode.trim();
+        _countryCode = countryCode.trim(),
+        _isRegistration = isRegistration,
+        _maskedMobile = maskedMobile,
+        _initialCountdown = initialCountdown,
+        _verificationPurpose = verificationPurpose,
+        _changePasscodeCurrent = changePasscodeCurrent,
+        _changePasscodeNew = changePasscodeNew {
+          if (_isRegistration && _initialCountdown > 0) {
+            _countdownSeconds = _initialCountdown;
+            _startCountdown();
+          }
+        }
 
   static const int otpLength = 6;
   static const int countdownStartSeconds = 5;
 
+  static bool _isApiSuccess(Map<String, dynamic> response) {
+    final statusCode = response['statusCode'];
+    if (statusCode is int && statusCode >= 200 && statusCode < 300) {
+      return true;
+    }
+    return response['status']?.toString() == 'success';
+  }
+
   final String _phoneNumber;
   final String _countryCode;
+  final bool _isRegistration;
+  final String? _maskedMobile;
+  final int _initialCountdown;
+  final String? _verificationPurpose;
+  final String? _changePasscodeCurrent;
+  final String? _changePasscodeNew;
+
+  String? get verificationPurpose => _verificationPurpose;
+
+  String? get changePasscodeCurrent => _changePasscodeCurrent;
+
+  String? get changePasscodeNew => _changePasscodeNew;
+
+  bool get hasChangePasscodePayload {
+    final c = _changePasscodeCurrent;
+    final n = _changePasscodeNew;
+    return c != null &&
+        c.length == otpLength &&
+        n != null &&
+        n.length == otpLength;
+  }
+
+  bool get _isChangePasscodeVerification =>
+      _verificationPurpose == LoginProvider.purposeChangePasscode;
 
   String _otp = '';
   int _countdownSeconds = 0;
@@ -23,10 +75,12 @@ class VerificationProvider extends ChangeNotifier {
   bool _isVerifying = false;
   bool _hasError = false;
   bool _isRequestingOtp = false;
+  String? _registrationToken;
 
   String get phoneNumber => _phoneNumber;
   String get countryCode => _countryCode;
   String get otp => _otp;
+  String? get registrationToken => _registrationToken;
   int get countdownSeconds => _countdownSeconds;
   bool get isResendCooldown => _countdownSeconds > 0;
   bool get isVerifying => _isVerifying;
@@ -37,14 +91,9 @@ class VerificationProvider extends ChangeNotifier {
   bool get canEnterDigits => !_isVerifying;
   bool get canResend => _countdownSeconds <= 0 && !_isRequestingOtp;
 
-  /// Returns formatted phone for display (e.g. "+966 xxx xxx 1234").
-  String get formattedPhoneForDisplay {
-    if (_phoneNumber.length < 4) {
-      return '$_countryCode xxx xxx xxxx';
-    }
-    final lastFour = _phoneNumber.substring(_phoneNumber.length - 4);
-    return '$_countryCode xxx xxx $lastFour';
-  }
+  /// Returns formatted phone for display (e.g. "+966 XXX XXX 1234").
+  String get formattedPhoneForDisplay =>
+      _maskedMobile ?? maskedPhoneForDisplay(_countryCode, _phoneNumber);
 
   void addDigit(String digit) {
     if (!canEnterDigits || _otp.length >= otpLength) return;
@@ -80,26 +129,51 @@ class VerificationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> requestOtp() async {
-    if (_isRequestingOtp) return;
+  Future<String?> requestOtp() async {
+    if (_isRequestingOtp) return null;
+    
+    if (_isRegistration && _countdownSeconds > 0) {
+      return null;
+    }
+
     _isRequestingOtp = true;
     notifyListeners();
 
     try {
-      await ForgotPasscodeService.requestOtp(_phoneNumber, _countryCode);
-      _countdownSeconds = countdownStartSeconds;
-      _countdownTimer?.cancel();
-      _countdownTimer =
-          Timer.periodic(const Duration(seconds: 1), _onCountdownTick);
+      String? message;
+      if (_isRegistration) {
+        final response = await AuthService.resendRegistrationOtp(
+          countryCode: _countryCode,
+          mobileNumber: _phoneNumber,
+        );
+        message = response['message'] as String?;
+        final data = response['data'];
+        if (data is Map<String, dynamic> && data['otp_expiry_seconds'] != null) {
+          _countdownSeconds = data['otp_expiry_seconds'] as int;
+        } else {
+          _countdownSeconds = _initialCountdown > 0 ? _initialCountdown : countdownStartSeconds;
+        }
+      } else {
+        await ForgotPasscodeService.requestOtp(_phoneNumber, _countryCode);
+        _countdownSeconds = _initialCountdown > 0 ? _initialCountdown : countdownStartSeconds;
+      }
+      _startCountdown();
+      return message;
     } finally {
       _isRequestingOtp = false;
       notifyListeners();
     }
   }
 
-  Future<void> resendOtp() async {
-    if (!canResend) return;
-    await requestOtp();
+  void _startCountdown() {
+    _countdownTimer?.cancel();
+    _countdownTimer =
+        Timer.periodic(const Duration(seconds: 1), _onCountdownTick);
+  }
+
+  Future<String?> resendOtp() async {
+    if (!canResend) return null;
+    return await requestOtp();
   }
 
   void _onCountdownTick(Timer timer) {
@@ -121,16 +195,43 @@ class VerificationProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final isValid = await ForgotPasscodeService.verifyOtp(
-        _phoneNumber,
-        _countryCode,
-        _otp,
-      );
-      _hasError = !isValid;
-      return isValid;
-    } catch (_) {
+      if (_isRegistration) {
+        final response = await AuthService.verifyRegistrationOtp(
+          countryCode: _countryCode,
+          mobileNumber: _phoneNumber,
+          otp: _otp,
+        );
+        final data = response['data'];
+        if (_isApiSuccess(response) &&
+            data is Map<String, dynamic> &&
+            data['registration_token'] != null) {
+          _registrationToken = data['registration_token'] as String;
+          _hasError = false;
+          return true;
+        } else {
+          _hasError = true;
+          _otp = '';
+          return false;
+        }
+      } else {
+        final isValid = await ForgotPasscodeService.verifyOtp(
+          _phoneNumber,
+          _countryCode,
+          _otp,
+          requireResetToken: !_isChangePasscodeVerification,
+        );
+        if (!isValid) {
+          _hasError = true;
+          _otp = '';
+        } else {
+          _hasError = false;
+        }
+        return isValid;
+      }
+    } catch (e) {
       _hasError = true;
-      return false;
+      _otp = '';
+      rethrow;
     } finally {
       _isVerifying = false;
       notifyListeners();

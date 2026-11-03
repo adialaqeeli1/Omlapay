@@ -92,4 +92,53 @@ extension StringExt on String {
       Utility.numericOnly(this, firstWordOnly: firstWordOnly);
 
   Color? get hexToColor => Utility.hexStringToColor(this);
+
+  /// Wraps the string in Unicode directional-isolate marks (LRI…PDI) so it
+  /// always renders left-to-right, even when interpolated into an RTL (Arabic)
+  /// sentence. The surrounding sentence keeps its own direction while this run
+  /// stays LTR — useful for emails, phone numbers, addresses and other Latin
+  /// runs whose `@`, `+`, `.` and digits would otherwise be reordered.
+  ///
+  /// Display-only — do not use for values that get copied or shared.
+  String get ltrIsolated {
+    if (isEmpty) return this;
+    // U+2066 LEFT-TO-RIGHT ISOLATE … U+2069 POP DIRECTIONAL ISOLATE. Built
+    // from code points so no invisible bidi characters live in the source file.
+    final lri = String.fromCharCode(0x2066);
+    final pdi = String.fromCharCode(0x2069);
+    return '$lri$this$pdi';
+  }
+
+  /// Like [ltrIsolated], but also converts spaces to non-breaking spaces so a
+  /// phone number never wraps across two lines mid-value (e.g. `+91` and
+  /// `••••••6666` splitting). Use for phone / masked phone numbers.
+  ///
+  /// Display-only — do not use for values that get copied or shared.
+  String get ltrPhoneNumber {
+    if (isEmpty) return this;
+    final nbsp = String.fromCharCode(0x00A0);
+    return replaceAll(' ', nbsp).ltrIsolated;
+  }
+}
+
+/// Masked email for display, e.g. `g***@gmail.com`.
+String maskedEmailForDisplay(String email) {
+  if (email.isEmpty) return '';
+  final atIndex = email.indexOf('@');
+  if (atIndex <= 0) return email;
+  final localPart = email.substring(0, atIndex);
+  final domain = email.substring(atIndex);
+  if (localPart.length <= 1) return '$localPart***$domain';
+  return '${localPart[0]}***$domain';
+}
+
+/// Masked national number for OTP screens, e.g. `+966 XXX XXX 1234`.
+String maskedPhoneForDisplay(String countryCode, String digitsOnlyPhone) {
+  final cc = countryCode.trim();
+  final digits = digitsOnlyPhone.replaceAll(RegExp(r'[^0-9]'), '');
+  if (digits.length < 4) {
+    return '$cc XXX XXX XXXX';
+  }
+  final lastFour = digits.substring(digits.length - 4);
+  return '$cc XXX XXX $lastFour';
 }

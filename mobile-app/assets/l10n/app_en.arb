@@ -1,13 +1,13 @@
 {
     "@@locale": "en",
-    "appTitle": "OmlaPay",
+    "appTitle": "Omlapay",
     "login": "Login",
     "loginRequired": "Login Required",
     "pleaseLoginToContinue": "Please login first to continue",
     "home": "Home",
     "history": "History",
     "profile": "Profile",
-    "welcomeToOmlaPay": "Welcome to OmlaPay",
+    "welcomeToOmlaPay": "Welcome to Omlapay",
     "email": "Email",
     "password": "Password",
     "pleaseEnterYourEmail": "Please enter your email",
@@ -28,18 +28,95 @@
     "account": "ACCOUNT",
     "accountDetails": "Account Details",
     "changePhoneNumber": "Change Phone Number",
+    "stepsForChangingPhoneNumber": "Steps for changing your Phone Number",
+    "changePhoneStepsDescription": "To change your registered phone number, follow these steps:",
+    "changePhoneStep1": "Verify your account with a verification code sent to your registered email address.",
+    "changePhoneStep2": "Confirm your account passcode to authorize the change.",
+    "changePhoneStep3": "Enter your new phone number (the one you want to use for your account).",
+    "changePhoneStep4": "Verify your new phone number with a verification code.",
+    "changePhoneAfterStepsNote": "After you verify the code, your account will use the new phone number.",
+    "changePhoneEnterNewSubtitle": "After you continue, we will send a verification code to this number.",
+    "enterNewPhoneNumber": "Enter new phone number",
+    "verifyNewPhoneNumber": "Verify new phone number",
+    "changePhoneCurrentOtpSent": "An 6 digit verification code has been sent via WhatsApp to {phone}.",
+    "@changePhoneCurrentOtpSent": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "changePhoneNewOtpSent": "A 6-digit verification code was sent to {phone}.",
+    "@changePhoneNewOtpSent": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "verifyYourEmail": "Verify your email",
+    "twoFactorEmailOtpSent": "A 6-digit verification code has been sent to {email}.",
+    "@twoFactorEmailOtpSent": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "enterValidPhoneNumber": "Please enter a valid phone number",
+    "phoneNumberChangedSuccessfully": "Your phone number has been changed successfully",
     "changeEmail": "Change Email",
+    "stepsForChangingEmail": "Steps for changing your Email",
+    "changeEmailStepsDescription": "To change your registered email address we will follow these steps :",
+    "step1Label": "Step 1",
+    "step2Label": "Step 2",
+    "step3Label": "Step 3",
+    "step4Label": "Step 4",
+    "changeEmailStep1": "Verify your account with a verification code sent to your registered phone number.",
+    "changeEmailStep2": "Confirm your account passcode to authorize the change.",
+    "changeEmailStep3": "Enter the new email address you want to use for your account.",
+    "changeEmailStep4": "Verify the new email address with a verification code.",
+    "changeEmailAfterStepsNote": "After following these steps, your current email address will be changed to the new one.",
+    "verifyCurrentPhoneNumber": "Verify current phone number",
+    "enterNewEmailAddress": "Enter new email address",
+    "verifyNewEmailAddress": "Verify new email address",
+    "changeEmailPhoneOtpSent": "An 6 digit verification code has been sent via WhatsApp to {phone}.",
+    "@changeEmailPhoneOtpSent": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "changeEmailEmailOtpSent": "An 6 digit verification code has been sent to {email}.",
+    "@changeEmailEmailOtpSent": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "enterYourNewEmailAddressToReceiveOtp": "Please enter your new email address to receive OTP",
+    "enterEmailAddressHint": "Enter new email address",
+    "enterValidEmailAddress": "Please enter a valid email address",
+    "continueButton": "Continue",
+    "invalidOtpTryAgain": "Invalid OTP. Try again.",
+    "emailChangedSuccessfully": "Your email address has been changed successfully",
     "changePasscode": "Change Passcode",
+    "passcodeChangedSuccessfully": "Your passcode has been changed successfully",
+    "backHome": "Back Home",
     "walletsAddress": "Wallets Address",
     "evm": "EVM",
-    "bitcoin": "Bitcoin",
     "tron": "Tron",
-    "solana": "Solana",
     "copy": "Copy",
     "preferences": "PREFERENCES",
     "appearance": "Appearance",
     "language": "Language",
     "notification": "Notification",
+    "biometric": "Biometric",
+    "biometricUnlockReason": "Authenticate to unlock the app",
+    "biometricEnableReason": "Authenticate to enable biometric login",
+    "biometricEnableFailed": "Couldn't enable biometric authentication",
     "dark": "Dark",
     "light": "Light",
     "system": "System",
@@ -55,6 +132,10 @@
     "continueAction": "Continue",
     "networkError": "Network error, please check your connection",
     "requestFailed": "Request failed",
+    "invalidServerResponse": "Invalid response from server",
+    "softLoginFailed": "Soft login failed",
+    "registrationFailed": "Registration failed",
+    "unableToChangePasscode": "Unable to change passcode",
     "unknownError": "An unknown error occurred",
     "skip": "Skip",
     "welcomeToOmlaPayNote": "Instant Cryptocurrency Payments",
@@ -64,18 +145,20 @@
     "saveMoneyNote": "Save Money and Pay with Your Preferred Currency",
     "register": "Register",
     "hello": "Hello!",
+    "helloComma": "Hello,",
     "welcomeBackToOmlapay": "Welcome Back to Omlapay!",
     "pleaseEnterYourNumberAndPasscodeToLogin": "Please enter your number and Passcode to login",
     "phoneNumber": "Phone number",
     "phoneNumberPlaceholder": "000 000 0000",
     "phoneNumberMustBe9Digits": "Phone number must be 9 digits",
     "forgotPasscode": "Forgot passcode",
+    "forgotPasscodePhoneMissing": "We couldn't load your phone number. Log out and sign in again, or contact support.",
     "dontHaveAccountSignUp": "Don't have account? Sign Up",
     "welcomeToOmlapayLetsGetStarted": "Welcome to Omlapay, Let's get started!",
     "pleaseEnterYourDataToReceiveVerificationCodes": "Please enter your data to receive verification codes",
     "alreadyHaveAccountLogin": "Already have an account? Login",
     "continueAsGuest": "Continue as a guest",
-    "byCreatingAnAccountIAgreeToMushafars": "By creating an account I agree to Mushafar's",
+    "byCreatingAnAccountIAgreeToMushafars": "By creating an account I agree to",
     "termsOfService": "Terms of Service",
     "andWord": "and",
     "privacyPolicy": "Privacy Policy",
@@ -85,7 +168,9 @@
     "incorrectPasscode": "Incorrect passcode",
     "incorrectPasscodeTryAgain": "Incorrect passcode. Try again.",
     "whoIsOmlapay": "Who is \"Omlapay\"?",
-    "aboutOmlapayDescription": "is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+    "aboutOmlapayDescription": "A secure and user-friendly digital wallet that enables seamless sending, receiving, and storing of cryptocurrencies. We manage your private keys on your behalf, simplifying transactions while maintaining the highest security standards. No need to worry about losing recovery phrases—access your funds effortlessly using your mobile number and password. Enjoy instant transfers, built-in exchange features, and 24/7 customer support, making crypto management as smooth as traditional banking. Our wallet ensures fast, secure, and hassle-free transactions while keeping your assets protected.",
+    "readMore": "Read more",
+    "readLess": "Read less",
     "faqs": "FAQs",
     "termsAndConditions": "Terms & Conditions",
     "faqsContent": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.",
@@ -101,7 +186,14 @@
     "description": "Description",
     "descriptionPlaceholder": "Describe Your inquiry",
     "attachment": "Attachment",
-    "attachFileDescription": "Attach any related PNG, JPG, PDF",
+    "attachFileDescription": "Attach any related {extensions}",
+    "@attachFileDescription": {
+        "placeholders": {
+            "extensions": {
+                "type": "String"
+            }
+        }
+    },
     "send": "Send",
     "noRequestsFound": "No Requests Found",
     "allRequestsWillBeListedHere": "All requests will be listed here",
@@ -117,6 +209,7 @@
     "reset": "Reset",
     "apply": "Apply",
     "all": "All",
+    "open": "Open",
     "solved": "Solved",
     "pending": "Pending",
     "rejected": "Rejected",
@@ -127,6 +220,7 @@
     "usd": "USD",
     "sar": "SAR",
     "transactions": "Transactions",
+    "viewAll": "View all",
     "noTransactionsFound": "No Transactions found.",
     "allIncomingTransactionsListed": "All incoming Transactions will be listed here.",
     "tetherUsdt": "Tether USDT",
@@ -134,20 +228,28 @@
     "bitcoin": "Bitcoin",
     "currency": "Currency",
     "cancel": "Cancel",
+    "close": "Close",
     "readyToLogOut": "Ready to log out?",
     "logoutDialogMessage": "Your funds are safe. To get back in, we'll send a code to your registered mobile number.",
+    "deleteAccount": "Delete Account",
+    "deleteAccountConfirmTitle": "Delete account?",
+    "deleteAccountConfirmMessage": "Your account will be scheduled for deletion. You have 7 days to cancel by logging in again.",
+    "deleteAccountScheduled": "Account deletion scheduled. You have 7 days to cancel by logging in again.",
+    "deleteAccountHasBalanceError": "You still have funds in your wallets. Please withdraw or transfer your entire balance before deleting your account.",
     "save": "Save",
     "currencyName": "{choice, select, usd {USD} sar {SAR} other {{choice}}}",
     "receive": "Receive",
     "swap": "Swap",
-    "currencySymbol": "{choice, select, usd {\u0024} sar {﷼} other {{choice}}}",
+    "currencySymbol": "{choice, select, usd {\u0024} sar {⃁} other {{choice}}}",
     "coinHistory": "Coin History",
     "sent": "Sent",
     "currentPrice": "Current price",
+    "coinDetailsPriceUnavailable": "—",
     "today": "today",
     "total": "Total",
     "date": "Date",
     "sender": "Sender",
+    "receiver": "Receiver",
     "address": "Address",
     "network": "Network",
     "saveAs": "Save As",
@@ -161,7 +263,11 @@
     "transactionInformation": "Transaction Information",
     "type": "Type",
     "fee": "Fee",
+    "exchangeRate": "Exchange Rate",
+    "pair": "Pair",
     "transactionHash": "Transaction Hash",
+    "couldNotOpenLink": "Couldn't open the link",
+    "supportEmailSubject": "OmlaPay Support",
     "fromAddress": "From Address",
     "toAddress": "To Address",
     "note": "Note",
@@ -177,6 +283,14 @@
     "jpg": "JPG",
     "pdf": "PDF",
     "imageSavedSuccessfully": "Image saved successfully",
+    "transactionReceiptTitle": "Transaction Receipt",
+    "transactionIdLabel": "Transaction ID",
+    "recipient": "Recipient",
+    "amountLabel": "Amount",
+    "statusLabel": "Status",
+    "typeLabel": "Type",
+    "transactionSaveFailedMessage": "Failed to save transaction",
+    "photoLibraryPermissionRequired": "Photo library access is required to save the transaction",
     "transactionSavedSuccessfully": "Transaction has been saved as {format} successfully",
     "@transactionSavedSuccessfully": {
         "placeholders": {
@@ -197,6 +311,22 @@
     },
     "markAsRead": "Mark as read",
     "forgotPasscodeTitle": "Forgot passcode",
+    "forgotPasscodePhoneOtpSent": "An 6 digit verification code has been sent via WhatsApp to {phone}.",
+    "@forgotPasscodePhoneOtpSent": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "forgotPasscodeEmailOtpSent": "A 6-digit verification code has been sent to {email}.",
+    "@forgotPasscodeEmailOtpSent": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
     "verifyYourPhoneNumber": "Verify your phone number",
     "verifyYourAccount": "Verify your account",
     "verificationCodeSentViaSmsTo": "An 6 digit verification code has been sent via SMS to {phone}.",
@@ -207,8 +337,9 @@
             }
         }
     },
-    "verificationCodesInSeconds": "You should receive the verification codes in {seconds} Seconds",
-    "@verificationCodesInSeconds": {
+    "verificationCodesIn": "You should receive the verification codes in",
+    "secondsCount": "{seconds} Seconds",
+    "@secondsCount": {
         "placeholders": {
             "seconds": {
                 "type": "int"
@@ -220,6 +351,9 @@
     "needHelpContactSupport": "Need Help? Contact Support",
     "setYourNewPasscode": "Set your new passcode",
     "createAPasscode": "Create a passcode",
+    "enterYourCurrentPasscode": "Enter your current passcode",
+    "enterYourNewPasscode": "Enter your new passcode",
+    "confirmYourNewPasscode": "Confirm your new passcode",
     "confirmYourPasscode": "Confirm your passcode",
     "passcodesMismatchTryAgain": "Passcodes don't match. Try again.",
     "qrCodeScanner": "QR Code Scanner",
@@ -243,6 +377,322 @@
     "cameraPermissionDialogMessage": "We need your permission to access the camera to be able to scan the codes",
     "doNotAllow": "Do not allow",
     "invalidQrCode": "Invalid QR code",
+    "qrInvalidWalletAddress": "Invalid wallet address",
+    "qrAddressVerificationFailed": "Couldn't verify the address. Check your connection and try again.",
+    "qrAddressNotValidated": "This address could not be validated",
     "tryAgain": "Try Again",
-    "twoFactorAuthentication": "Two Factor Authentication"
+    "twoFactorAuthentication": "Two Factor Authentication",
+    "sendFlowReviewTitle": "Confirmation",
+    "sendFlowSendingTitle": "Sending",
+    "feeFree": "Free",
+    "accountNoUserDataAvailable": "No user data available",
+    "copyLabelValue": "{label}: {value}",
+    "@copyLabelValue": {
+        "placeholders": {
+            "label": {
+                "type": "String"
+            },
+            "value": {
+                "type": "String"
+            }
+        }
+    },
+    "shareComingSoon": "Share functionality coming soon",
+    "errorPickingFile": "Error picking file: {error}",
+    "@errorPickingFile": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "helpRequestSentSuccess": "Request sent successfully",
+    "verificationCodeResentSuccess": "Verification code resent successfully.",
+    "pasteHintLongPress": "Press and hold to paste",
+    "minAmountHint": "Min {amount}",
+    "@minAmountHint": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "sendAmountMaxShortLabel": "Max",
+    "swapAmountMaxShortLabel": "Max",
+    "searchHint": "Search",
+    "searchContactsHint": "Search name or number",
+    "sendFlowVerifyAccountTitle": "Verify Account",
+    "sendOtpInstructionsMasked": "Enter the code sent to {phoneMask}",
+    "@sendOtpInstructionsMasked": {
+        "placeholders": {
+            "phoneMask": {
+                "type": "String"
+            }
+        }
+    },
+    "verifyAction": "Verify",
+    "swapSuccessMessage": "Successfully swapped",
+    "sendSuccessMessage": "Successfully sent",
+    "successScreenTitle": "Success",
+    "confirmSecurely": "Confirm Securely",
+    "youAreSending": "You are sending",
+    "youWillSend": "You will send",
+    "walletAddress": "Wallet Address",
+    "confirm": "Confirm",
+    "confirmationWarning": "Make sure that the address and network are correct, the transaction cannot be canceled after you confirm it.",
+    "sendInProgress": "Send in progress",
+    "estimatedTimeOfExecution": "Estimated time of execution",
+    "sendCompletionNotification": "Upon completion, you will receive a confirmation Notification",
+    "verifyAccount": "Verify Account",
+    "reviewOrderTitle": "Review Order",
+    "swapDirectionFrom": "From",
+    "swapDirectionTo": "To",
+    "swapMaxAction": "Max",
+    "selectCoinTitle": "Select Coin",
+    "selectCoinPlaceholder": "Select",
+    "swapFeesColon": "Swap fees:",
+    "confirmSwapButton": "Confirm swap",
+    "verifyNowButton": "Verify Now",
+    "swapNowButton": "Swap Now",
+    "sendFormCoinLabel": "Coin",
+    "sendFormPhoneOrAddressLabel": "Phone Number Or Wallet Address",
+    "sendFormAmountLabel": "Amount to be sent",
+    "sendValidationInvalidAmount": "Invalid amount",
+    "sendValidationCannotSendToSelf": "You can't send to your own account",
+    "sendValidationInsufficientBalance": "Insufficient balance",
+    "sendValidationBelowMinimum": "Amount must be at least {amount}",
+    "@sendValidationBelowMinimum": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "sendDefaultNetworkCode": "TRC20",
+    "availableBalanceFormatted": "Available {amount} {symbol}",
+    "@availableBalanceFormatted": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            },
+            "symbol": {
+                "type": "String"
+            }
+        }
+    },
+    "sendTransactionFeesColon": "Transaction fees:",
+    "sendSentAmountLabel": "Sent amount",
+    "walletsTitle": "Wallets",
+    "yourWalletsTitle": "Your wallets",
+    "networkFeeLabel": "Network Fee",
+    "valueNotAvailable": "N/A",
+    "amountInputHint": "0.00",
+    "qrCodeLabel": "QR Code",
+    "saveImage": "Save image",
+    "shareAction": "Share",
+    "hideZeroBalance": "Hide zero balance",
+    "noCoinsToShow": "No coins to show.",
+    "uncheckToSeeAllCoins": "Uncheck 'Hide zero balance' to view all coins.",
+    "contactsSheetTitle": "Contacts",
+    "sendSuccessRecipientLine": "To: {recipient}",
+    "@sendSuccessRecipientLine": {
+        "placeholders": {
+            "recipient": {
+                "type": "String"
+            }
+        }
+    },
+    "sendKycVerificationRequiredBody": "Identity verification is required to send coins. Please complete your KYC profile to enable transfers. ",
+    "swapKycVerificationRequiredBody": "Identity verification is required to swap coins. Please complete your KYC profile to enable transfers. ",
+    "receiveKycVerificationRequiredBody": "Identity verification is required to receive coins. Please complete your KYC profile to enable transfers. ",
+    "kyc_submitted_under_review": "Your KYC has been submitted and is under review.",
+    "kyc_pending_subtitle": "We are reviewing your documents. This usually takes a few minutes. You will be notified once the review is complete.",
+    "kyc_rejected": "Your KYC verification has been rejected.",
+    "kyc_rejected_with_reason": "Your KYC verification has been rejected: {reason}",
+    "@kyc_rejected_with_reason": {
+        "placeholders": {
+            "reason": {
+                "type": "String"
+            }
+        }
+    },
+    "kyc_retry_button": "Retry Verification",
+    "kycVerificationRequiredTitle": "Verification Required",
+    "kycVerificationPendingTitle": "Verification Under Review",
+    "kycVerificationGoBackButton": "Go Back",
+    "swapFeesTitle": "Swap Fees",
+    "swapExchangeRate": "Exchange Rate",
+    "swapFeeOmlapay": "Omlapay fee",
+    "swapFeeBinance": "Binance fee",
+    "transferToLabel": "To",
+    "addressCopiedToast": "Copied",
+    "availableShortLabel": "Available",
+    "noNotifications": "No notifications yet",
+    "notificationsLoadError": "Failed to load notifications",
+    "retry": "Retry",
+    "welcomeBack": "Welcome Back",
+    "kycFirstNameLabel": "First Name",
+    "kycLastNameLabel": "Last Name",
+    "kycDateOfBirthLabel": "Date of Birth",
+    "kycResidentialCountryLabel": "Residential Country",
+    "kycDocumentCountryLabel": "Document Country",
+    "kycCityLabel": "City",
+    "kycAddressLabel": "Address",
+    "kycCountryCodeHint": "e.g., GBR, USA, IND",
+    "kycSelectDateHint": "MM/DD/YYYY",
+    "kycRequiredFieldError": "This field is required",
+    "kycSubmitButton": "Submit",
+    "kycInvalidDateError": "Please select a valid date",
+    "kycStartedSuccess": "KYC process started successfully.",
+    "kycDocumentsReviewTitle": "Documents — tap to view or replace",
+    "kycDocumentActionView": "View",
+    "kycDocumentActionPickGallery": "Pick from gallery",
+    "kycDocumentActionTakePhoto": "Take photo",
+    "kycDocumentChangedBadge": "Changed",
+    "kycDocumentAddPhoto": "Add photo",
+    "kycDocumentPickFailed": "Could not load the selected image. Please try again.",
+    "kycPermissionDeniedTitle": "Permission needed",
+    "kycPermissionDeniedBody": "Enable camera and photo access in Settings to continue.",
+    "kycOpenSettings": "Open Settings",
+    "kycDocumentFrontLabel": "Front of Document",
+    "kycDocumentBackLabel": "Back of Document",
+    "kycDocumentSelfieLabel": "Selfie",
+    "kycDocumentLoadFailed": "Unable to load document",
+    "youAreOffline": "You are offline",
+    "contactsPermissionDenied": "Contacts permission is required to select a contact. Please enable it in your device settings.",
+    "contactsLoading": "Loading contacts...",
+    "noContactsFound": "No contacts found",
+    "contactsPermissionDialogTitle": "{appName} wants to access your contacts",
+    "@contactsPermissionDialogTitle": {
+        "placeholders": {
+            "appName": {
+                "type": "String"
+            }
+        }
+    },
+    "contactsPermissionDialogMessage": "We need your permission to access your contacts to send payments to people in your address book",
+    "allowContacts": "Allow Contacts",
+    "sendInvitationDialogTitle": "Send invitation",
+    "sendInvitationDialogMessage": "This number does not have an account on Omlapay. For a better experience, send him an invitation.",
+    "sendInvitationDialogNote": "Note: you can complete the transaction though",
+    "sendInvitationInviteButton": "Invite",
+    "checkingUserStatus": "Checking user...",
+    "kycEnterEmail": "Enter Email",
+    "kycWhatsYourEmail": "What's your email?",
+    "kycEmailSubtitle": "We'll send a verification code to confirm your email",
+    "kycEmailHint": "Enter your email address",
+    "kycEmailRequiredError": "Email address is required",
+    "kycEmailInvalidError": "Please enter a valid email address",
+    "kycVerifyEmail": "Verify Email",
+    "kycVerifyEmailTitle": "Enter verification code",
+    "kycVerifyEmailSubtitle": "We sent a 6-digit code to {email}",
+    "@kycVerifyEmailSubtitle": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "kycEmailVerified": "Email verified successfully",
+    "pleaseEnterATitle": "Please enter a title",
+    "titleMustNotExceedCharacters": "Title must not exceed {maxLength} characters",
+    "@titleMustNotExceedCharacters": {
+        "placeholders": {
+            "maxLength": {
+                "type": "int"
+            }
+        }
+    },
+    "pleaseEnterADescription": "Please enter a description",
+    "descriptionMustNotExceedCharacters": "Description must not exceed {maxLength} characters",
+    "@descriptionMustNotExceedCharacters": {
+        "placeholders": {
+            "maxLength": {
+                "type": "int"
+            }
+        }
+    },
+    "somethingWentWrong": "Something went wrong",
+    "failedToLoadNotifications": "Failed to load notifications",
+    "failedToLoadMoreNotifications": "Failed to load more notifications",
+    "failedToMarkNotificationAsRead": "Failed to mark notification as read",
+    "failedToMarkAllNotificationsAsRead": "Failed to mark all notifications as read",
+    "failedToLoadSupportRequests": "Failed to load support requests",
+    "failedToLoadMoreRequests": "Failed to load more requests",
+    "walletAddressMasked": "XXXX XXXX XXXX XXXX",
+    "walletAddressNotAvailable": "Address not available yet",
+    "noAddressFound": "No Address Found",
+    "issueNotResolved": "Issue not resolved?",
+    "reopenTicket": "Re-open Ticket",
+    "createdOn": "Created on {date}",
+    "@createdOn": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "requestReopened": "Ticket reopened successfully",
+    "failedToReopenRequest": "Failed to reopen ticket",
+    "failedToLoadRequestDetail": "Failed to load request details",
+    "supportTeamReply": "Support team reply",
+    "yourReply": "Your reply",
+    "inReview": "In review",
+    "resolvesBy": "Resolves by {date}",
+    "@resolvesBy": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "resolvedStatus": "Resolved",
+    "rejectedStatus": "Rejected",
+    "solutionSentOn": "Solution sent on {date}",
+    "@solutionSentOn": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "rejectionSentOn": "Rejection sent on {date}",
+    "@rejectionSentOn": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "failureReason": "Reason",
+    "approximateAmount": "≈{amount} {currency}",
+    "@approximateAmount": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            },
+            "currency": {
+                "type": "String"
+            }
+        }
+    },
+    "appVersion": "Version: {version}",
+    "@appVersion": {
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
+    },
+    "appPatchVersion": "Patch: {number}",
+    "@appPatchVersion": {
+        "placeholders": {
+            "number": {
+                "type": "String"
+            }
+        }
+    },
+    "updateReadyTitle": "Update ready",
+    "updateReadyMessage": "A new update is ready. The app will close so the update can be applied. Please reopen it to continue.",
+    "updateReadyAction": "OK"
 }

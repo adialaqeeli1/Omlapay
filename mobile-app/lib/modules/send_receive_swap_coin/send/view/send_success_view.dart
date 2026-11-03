@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/extentions/number_extensions.dart';
+import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_back_button.dart';
@@ -13,15 +16,26 @@ class SendSuccessView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<SendProvider>();
+    final l10n = context.l10n!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final confirm = provider.confirmResponse;
+
+    final ticker = confirm?.coin.isNotEmpty ?? false
+        ? confirm!.coin
+        : provider.quote?.coin ??
+              provider.selectedCoin?.localizedCoinTicker(context) ??
+              '';
+    final rawAmount = confirm?.amount.isNotEmpty ?? false
+        ? confirm!.amount
+        : provider.quote?.amount ?? provider.amountController.text;
+    final parsedAmount = double.tryParse(rawAmount);
+    final amount = parsedAmount != null
+        ? parsedAmount.toFormattedAmount()
+        : rawAmount;
 
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text(
-          'Success',
-          style: TextStyle(color: Colors.transparent),
-        ), // Hiding title for cleaner look
-        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: CommonBackButton(onPressed: () => context.go(Routes.home)),
       ),
@@ -30,7 +44,6 @@ class SendSuccessView extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 60),
-            // Success Card
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
@@ -38,79 +51,76 @@ class SendSuccessView extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topRight,
                   end: Alignment.bottomLeft,
-                  colors: [
-                    AppColors.successGradientStart,
-                    AppColors.successGradientEnd,
-                  ],
-                  stops: [0.3, 1.0],
+                  colors: isDark
+                      ? [
+                          AppColors.successGradientStart,
+                          AppColors.successGradientEnd,
+                        ]
+                      : [
+                          AppColors.lightCardColor,
+                          AppColors.primaryColor.withValues(alpha: 0.18),
+                        ],
+                  stops: const [0.3, 1.0],
                 ),
                 borderRadius: BorderRadius.circular(24),
+                border: isDark
+                    ? null
+                    : Border.all(color: colorScheme.outlineVariant),
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Icon
                   SvgPicture.asset(
                     'assets/icons/swap-confirmed.svg',
                     width: 80,
                     height: 80,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Successfully sent',
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
+                  Text(
+                    l10n.sendSuccessMessage,
+                    style: TextStyle(
+                      color: isDark
+                          ? AppColors.textLightGrey
+                          : colorScheme.onSurfaceVariant,
+                      fontSize: 14,
+                    ),
                   ),
                   const SizedBox(height: 12),
-                  Text(
-                    '${provider.amountController.text} ${provider.selectedCoin?.symbol}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E2E2C),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
                     child: Text(
-                      'To: ${provider.selectedContact?.name ?? provider.recipientController.text}',
-                      style: const TextStyle(
-                        color: AppColors.tealColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                      '$amount${ticker.isNotEmpty ? ' $ticker' : ''}',
+                      style: TextStyle(
+                        color: isDark
+                            ? AppColors.textWhite
+                            : colorScheme.onSurface,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-
             const Spacer(),
-
-            // Back Home Button
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
-                  context.go(Routes.home);
-                },
+                onPressed: () => context.go(Routes.home),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2A2D35),
+                  backgroundColor: colorScheme.surfaceContainerHigh,
+                  foregroundColor: colorScheme.onSurface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: const Text(
-                  'Back Home',
+                child: Text(
+                  l10n.backHome,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: colorScheme.onSurface,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),

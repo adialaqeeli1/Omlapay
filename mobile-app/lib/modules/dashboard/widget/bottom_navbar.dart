@@ -113,12 +113,12 @@ class _NavItem extends StatelessWidget {
         return;
       }
     }
-    GoRouter.of(context).go(route);
+    context.push(route);
   }
 
   void _showLoginDialog(BuildContext context) {
     final l10n = context.l10n!;
-    final theme = Theme.of(context);
+    final theme = context.theme;
     final isDark = theme.brightness == Brightness.dark;
 
     showDialog(
@@ -157,7 +157,7 @@ class _NavItem extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                GoRouter.of(context).go(Routes.loginOrRegister);
+                context.push(Routes.loginOrRegister);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryColor,

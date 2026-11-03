@@ -1,96 +1,90 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/theme/theme.dart';
-import '../../../../widgets/common_back_button.dart';
-import '../../../../widgets/common_button.dart';
+import 'package:provider/provider.dart';
 
-class SendVerificationView extends StatefulWidget {
+import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/utils/app_exception.dart';
+import '../../../../core/utils/snackbar_helper.dart';
+import '../../../../routes/app_router.dart';
+import '../../../../widgets/otp_verification_view.dart';
+import '../provider/send_provider.dart';
+
+class SendVerificationView extends StatelessWidget {
   const SendVerificationView({super.key});
 
-  @override
-  State<SendVerificationView> createState() => _SendVerificationViewState();
-}
-
-class _SendVerificationViewState extends State<SendVerificationView> {
-  // Mock OTP controller
-  final List<TextEditingController> _controllers = List.generate(
-    6,
-    (index) => TextEditingController(),
-  );
+  static const int _otpLength = 6;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text(
-          'Verify Account',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: const CommonBackButton(),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 30),
-            const Text(
-              'Enter the code sent to +966 50 *** **67',
-              style: TextStyle(color: Colors.grey, fontSize: 16),
-            ),
-            const SizedBox(height: 30),
+    final provider = context.watch<SendProvider>();
+    final l10n = context.l10n!;
+    final theme = context.theme;
 
-            // Mock OTP Fields
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(
-                6,
-                (index) => Container(
-                  width: 45,
-                  height: 55,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E2E2C),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.tealColor.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  alignment: Alignment.center,
-                  child: TextField(
-                    controller: _controllers[index],
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white, fontSize: 24),
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(border: InputBorder.none),
-                    onChanged: (value) {
-                      if (value.isNotEmpty && index < 5) {
-                        FocusScope.of(context).nextFocus();
-                      }
-                      if (value.isEmpty && index > 0) {
-                        FocusScope.of(context).previousFocus();
-                      }
-                    },
-                  ),
-                ),
-              ),
-            ),
-
-            const Spacer(),
-
-            CommonButton(
-              title: 'Verify',
-              onPressed: () {
-                // Mock verification success
-                context.pop(true);
-              },
-            ),
-            const SizedBox(height: 30),
-          ],
+    return OtpVerificationView(
+      appBarTitle: '',
+      title: l10n.verifyAccount,
+      subtitle: l10n.verifyYourPhoneNumber,
+      otpLength: _otpLength,
+      countdownSeconds: provider.otpCountdown,
+      canResend: provider.canResendOtp && !provider.isOtpSubmitting,
+      hasError: provider.hasOtpError,
+      onInitialRequest: () async {},
+      onOtpChanged: provider.setOtpInput,
+      onOtpCompleted: () => _verify(context, provider),
+      onResend: () => _resend(context, provider),
+      bottomSection: TextButton(
+        onPressed: () => context.push(Routes.helpCenter),
+        child: Text(
+          l10n.needHelpContactSupport,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: theme.colorScheme.onSurface,
+            decoration: TextDecoration.underline,
+          ),
+          textAlign: TextAlign.center,
         ),
       ),
     );
+  }
+
+  Future<void> _verify(BuildContext context, SendProvider provider) async {
+    final otp = provider.otpInput;
+    if (otp.length != _otpLength) return;
+    final l10n = context.l10n!;
+    try {
+      final success = await provider.confirmSendWithOtp(otp);
+      if (!context.mounted) return;
+      if (!success) return;
+      final message = provider.confirmMessage;
+      if (message != null && message.isNotEmpty) {
+        SnackbarHelper.showSuccess(context, message);
+      }
+      context.go(Routes.sendSuccess, extra: provider);
+    } on AppException catch (e) {
+      if (!context.mounted) return;
+      SnackbarHelper.showError(context, e.localizedMessage(context.l10n));
+    } catch (_) {
+      if (!context.mounted) return;
+      SnackbarHelper.showError(context, l10n.unknownError);
+    }
+  }
+
+  Future<void> _resend(BuildContext context, SendProvider provider) async {
+    final l10n = context.l10n!;
+    try {
+      final message = await provider.resendSendOtp();
+      if (!context.mounted) return;
+      if (message == null) return; // pre-flight blocked (no token / cooldown)
+      if (message.isNotEmpty) {
+        SnackbarHelper.showSuccess(context, message);
+      }
+    } on AppException catch (e) {
+      if (!context.mounted) return;
+      SnackbarHelper.showError(context, e.localizedMessage(context.l10n));
+    } catch (_) {
+      if (!context.mounted) return;
+      SnackbarHelper.showError(context, l10n.unknownError);
+    }
   }
 }

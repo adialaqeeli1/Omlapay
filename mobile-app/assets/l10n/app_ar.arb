@@ -1,13 +1,13 @@
 {
     "@@locale": "ar",
-    "appTitle": "أوملاباي",
+    "appTitle": "عملة باي",
     "login": "تسجيل الدخول",
     "loginRequired": "تسجيل الدخول مطلوب",
     "pleaseLoginToContinue": "يرجى تسجيل الدخول أولاً للمتابعة",
     "home": "الرئيسية",
     "history": "السجل",
     "profile": "الملف الشخصي",
-    "welcomeToOmlaPay": "مرحبًا بك في أوملا باي!",
+    "welcomeToOmlaPay": "مرحبًا بك في عملة باي",
     "email": "البريد الإلكتروني",
     "password": "كلمة المرور",
     "pleaseEnterYourEmail": "يرجى إدخال بريدك الإلكتروني",
@@ -22,24 +22,101 @@
     "logout": "تسجيل الخروج",
     "kycVerification": "التحقق من الهوية",
     "generalSettings": "الإعدادات العامة",
-    "aboutOmlapay": "حول أوملا باي",
+    "aboutOmlapay": "نبذة عن عملة باي",
     "helpCenter": "مركز المساعدة",
     "settings": "الإعدادات",
     "account": "الحساب",
     "accountDetails": "تفاصيل الحساب",
     "changePhoneNumber": "تغيير رقم الهاتف",
+    "stepsForChangingPhoneNumber": "خطوات تغيير رقم هاتفك",
+    "changePhoneStepsDescription": "لتغيير رقم هاتفك المسجل، اتبع الخطوات التالية:",
+    "changePhoneStep1": "تحقق من حسابك باستخدام رمز التحقق المُرسل إلى بريدك الإلكتروني المسجل.",
+    "changePhoneStep2": "أكّد رمز مرور حسابك لاعتماد التغيير.",
+    "changePhoneStep3": "أدخل رقم الهاتف الجديد الذي تريد استخدامه في حسابك.",
+    "changePhoneStep4": "تحقق من رقم هاتفك الجديد باستخدام رمز تحقق.",
+    "changePhoneAfterStepsNote": "بعد التحقق من الرمز، سيصبح رقم هاتف حسابك هو الرقم الجديد.",
+    "changePhoneEnterNewSubtitle": "بعد أن تضغط متابعة، سنرسل رمز تحقق إلى هذا الرقم.",
+    "enterNewPhoneNumber": "أدخل رقم الهاتف الجديد",
+    "verifyNewPhoneNumber": "تحقق من رقم الهاتف الجديد",
+    "changePhoneCurrentOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى {phone}.",
+    "@changePhoneCurrentOtpSent": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "changePhoneNewOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام إلى {phone}.",
+    "@changePhoneNewOtpSent": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "verifyYourEmail": "تحقق من بريدك الإلكتروني",
+    "twoFactorEmailOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام إلى {email}.",
+    "@twoFactorEmailOtpSent": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "enterValidPhoneNumber": "يرجى إدخال رقم هاتف صالح",
+    "phoneNumberChangedSuccessfully": "تم تغيير رقم هاتفك بنجاح",
     "changeEmail": "تغيير البريد الإلكتروني",
+    "stepsForChangingEmail": "خطوات تغيير بريدك الإلكتروني",
+    "changeEmailStepsDescription": "لتغيير بريدك الإلكتروني المسجل سنتبع الخطوات التالية:",
+    "step1Label": "الخطوة 1",
+    "step2Label": "الخطوة 2",
+    "step3Label": "الخطوة 3",
+    "step4Label": "الخطوة 4",
+    "changeEmailStep1": "تحقق من حسابك باستخدام رمز التحقق المُرسل إلى رقم هاتفك المسجل.",
+    "changeEmailStep2": "أكّد رمز مرور حسابك لاعتماد التغيير.",
+    "changeEmailStep3": "أدخل البريد الإلكتروني الجديد الذي تريد استخدامه في حسابك.",
+    "changeEmailStep4": "تحقق من البريد الإلكتروني الجديد باستخدام رمز التحقق.",
+    "changeEmailAfterStepsNote": "بعد اتباع هذه الخطوات، سيتم تغيير بريدك الإلكتروني الحالي إلى البريد الجديد.",
+    "verifyCurrentPhoneNumber": "تحقق من رقم الهاتف الحالي",
+    "enterNewEmailAddress": "أدخل البريد الإلكتروني الجديد",
+    "verifyNewEmailAddress": "تحقق من البريد الإلكتروني الجديد",
+    "changeEmailPhoneOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى {phone}.",
+    "@changeEmailPhoneOtpSent": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "changeEmailEmailOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام إلى {email}.",
+    "@changeEmailEmailOtpSent": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "enterYourNewEmailAddressToReceiveOtp": "يرجى إدخال بريدك الإلكتروني الجديد لاستلام رمز التحقق",
+    "enterEmailAddressHint": "أدخل البريد الإلكتروني الجديد",
+    "enterValidEmailAddress": "يرجى إدخال بريد إلكتروني صالح",
+    "continueButton": "متابعة",
+    "invalidOtpTryAgain": "رمز التحقق غير صالح. حاول مرة أخرى.",
+    "emailChangedSuccessfully": "تم تغيير بريدك الإلكتروني بنجاح",
     "changePasscode": "تغيير رمز المرور",
+    "passcodeChangedSuccessfully": "تم تغيير رمز المرور بنجاح",
+    "backHome": "العودة للرئيسية",
     "walletsAddress": "عنوان المحفظة",
     "evm": "EVM",
-    "bitcoin": "بيتكوين",
     "tron": "ترون",
-    "solana": "سولانا",
     "copy": "نسخ",
     "preferences": "التفضيلات",
     "appearance": "المظهر",
     "language": "اللغة",
     "notification": "الإشعارات",
+    "biometric": "القياسات الحيوية",
+    "biometricUnlockReason": "المصادقة لإلغاء قفل التطبيق",
+    "biometricEnableReason": "المصادقة لتفعيل تسجيل الدخول البيومتري",
+    "biometricEnableFailed": "تعذّر تفعيل المصادقة البيومترية",
     "dark": "داكن",
     "light": "فاتح",
     "system": "النظام",
@@ -55,6 +132,10 @@
     "continueAction": "متابعة",
     "networkError": "خطأ في الشبكة، يرجى التحقق من اتصالك",
     "requestFailed": "فشل الطلب",
+    "invalidServerResponse": "استجابة غير صالحة من الخادم",
+    "softLoginFailed": "فشل تسجيل الدخول السريع",
+    "registrationFailed": "فشل التسجيل",
+    "unableToChangePasscode": "تعذر تغيير رمز المرور",
     "unknownError": "حدث خطأ غير معروف",
     "skip": "تخطي",
     "welcomeToOmlaPayNote": "مدفوعات فورية بالعملات المشفرة",
@@ -62,16 +143,18 @@
     "advancedSecurityNote": "بروتوكولات أمان متقدمة تضمن حماية معاملاتك",
     "lowFeesMultipleCurrencies": "رسوم منخفضة وعملات متعددة",
     "saveMoneyNote": "وفر المال وادفع بعملتك المفضلة",
-    "register": "يسجل",
+    "register": "سجل الان",
     "hello": "مرحبًا!",
-    "welcomeBackToOmlapay": "مرحبًا بعودتك إلى أوملاباي!",
+    "helloComma": "مرحبًا،",
+    "welcomeBackToOmlapay": "مرحبًا بعودتك إلى عملة باي!",
     "pleaseEnterYourNumberAndPasscodeToLogin": "يرجى إدخال رقمك وكلمة المرور لتسجيل الدخول",
     "phoneNumber": "رقم الهاتف",
     "phoneNumberPlaceholder": "000 000 0000",
     "phoneNumberMustBe9Digits": "يجب أن يكون رقم الهاتف 9 أرقام",
     "forgotPasscode": "نسيت كلمة المرور",
+    "forgotPasscodePhoneMissing": "تعذر تحميل رقم هاتفك. سجّل الخروج ثم أعد تسجيل الدخول، أو تواصل مع الدعم.",
     "dontHaveAccountSignUp": "ليس لديك حساب؟ سجل",
-    "welcomeToOmlapayLetsGetStarted": "مرحبًا بك في أوملاباي، لنبدأ!",
+    "welcomeToOmlapayLetsGetStarted": "مرحبًا بك في عملة باي، لنبدأ!",
     "pleaseEnterYourDataToReceiveVerificationCodes": "يرجى إدخال بياناتك لاستلام رموز التحقق",
     "alreadyHaveAccountLogin": "لديك حساب بالفعل؟ تسجيل الدخول",
     "continueAsGuest": "المتابعة كضيف",
@@ -84,8 +167,10 @@
     "userNotFound": "المستخدم غير موجود",
     "incorrectPasscode": "رمز المرور غير صحيح",
     "incorrectPasscodeTryAgain": "رمز المرور غير صحيح. حاول مرة أخرى.",
-    "whoIsOmlapay": "من هو \"أوملاباي\"؟",
-    "aboutOmlapayDescription": "هو ببساطة نص وهمي لصناعة الطباعة والتنضيد. كان لوريم إيبسوم المعيار الصناعي للنص الوهمي منذ القرن الخامس عشر الميلادي، عندما أخذت طابعة غير معروفة لوحة من النوع وعكستها لعمل كتاب عينة.",
+    "whoIsOmlapay": "من هو \"عملة باي\"؟",
+    "aboutOmlapayDescription": "هي محفظة عملات رقمية آمنة وسهلة الاستخدام تتيح لك إرسال واستلام وتخزين العملات المشفرة بكل سلاسة. نحن نقوم بإدارة المفاتيح الخاصة نيابةً عنك، مما يبسط المعاملات مع الحفاظ على أعلى معايير الأمان. لا داعي للقلق بشأن فقدان عبارات الاسترداد - يمكنك الوصول إلى أموالك بسهولة عبر رقم جوالك و كلمة المرور. تمتع بتحويلات فورية وميزات تبادل مدمجة ودعم فني على مدار الساعة، مما يجعل إدارة العملات الرقمية سلسة مثل الخدمات المصرفية التقليدية.  تضمن محفظتنا معاملات سريعة وآمنة وخالية من المتاعب مع الحفاظ على أصولك محمية",
+    "readMore": "اقرأ المزيد",
+    "readLess": "اقرأ أقل",
     "faqs": "الأسئلة الشائعة",
     "termsAndConditions": "الشروط والأحكام",
     "faqsContent": "لوريم إيبسوم هو ببساطة نص وهمي لصناعة الطباعة والتنضيد. كان لوريم إيبسوم المعيار الصناعي للنص الوهمي منذ القرن الخامس عشر الميلادي، عندما أخذت طابعة غير معروفة لوحة من النوع وعكستها لعمل كتاب عينة. لقد نجا ليس فقط من خمسة قرون، بل أيضًا من القفزة في التنضيد الإلكتروني، وظل دون تغيير جوهري.",
@@ -103,7 +188,14 @@
     "description": "الوصف",
     "descriptionPlaceholder": "اوصف استفسارك",
     "attachment": "المرفق",
-    "attachFileDescription": "أرفق أي ملفات ذات صلة PNG، JPG، PDF",
+    "attachFileDescription": "أرفق أي ملفات {extensions} ذات صلة",
+    "@attachFileDescription": {
+        "placeholders": {
+            "extensions": {
+                "type": "String"
+            }
+        }
+    },
     "send": "إرسال",
     "filter": "تصفية",
     "transactionType": "نوع المعاملة",
@@ -117,16 +209,18 @@
     "reset": "إعادة تعيين",
     "apply": "تطبيق",
     "all": "الكل",
+    "open": "مفتوح",
     "solved": "محلول",
     "pending": "قيد الانتظار",
     "rejected": "مرفوض",
-    "seamlessCryptoPayments": "مدفوعات تشفير سلسة",
+    "seamlessCryptoPayments": "دفع سلس بالعملات المشفرة",
     "instantSecureAnytime": "فوري، آمن، في أي وقت",
     "yourTotalBalance": "إجمالي رصيدك",
     "assets": "الأصول",
     "usd": "دولار أمريكي",
     "sar": "ريال سعودي",
     "transactions": "المعاملات",
+    "viewAll": "عرض الكل",
     "noTransactionsFound": "لم يتم العثور على معاملات.",
     "allIncomingTransactionsListed": "سيتم إدراج جميع المعاملات الواردة هنا.",
     "tetherUsdt": "تيثر USDT",
@@ -134,16 +228,23 @@
     "bitcoin": "بيتكوين",
     "currency": "العملة",
     "cancel": "إلغاء",
+    "close": "إغلاق",
     "readyToLogOut": "هل أنت مستعد لتسجيل الخروج؟",
     "logoutDialogMessage": "أموالك في أمان. للعودة، سنرسل رمزاً إلى رقم هاتفك المسجل.",
+    "deleteAccount": "حذف الحساب",
+    "deleteAccountConfirmTitle": "حذف الحساب؟",
+    "deleteAccountConfirmMessage": "ستتم جدولة حذف حسابك. لديك 7 أيام للإلغاء عن طريق تسجيل الدخول مرة أخرى.",
+    "deleteAccountScheduled": "تمت جدولة حذف الحساب. لديك 7 أيام للإلغاء عن طريق تسجيل الدخول مرة أخرى.",
+    "deleteAccountHasBalanceError": "لا يزال لديك رصيد في محافظك. يرجى سحب أو تحويل كامل رصيدك قبل حذف حسابك.",
     "save": "حفظ",
     "currencyName": "{choice, select, usd {دولار أمريكي} sar {ريال سعودي} other {{choice}}}",
     "receive": "استلام",
     "swap": "مبادلة",
-    "currencySymbol": "{choice, select, usd {\u0024} sar {﷼} other {{choice}}}",
+    "currencySymbol": "{choice, select, usd {\u0024} sar {⃁} other {{choice}}}",
     "coinHistory": "تاريخ العملة",
     "sent": "أرسلت",
     "currentPrice": "السعر الحالي",
+    "coinDetailsPriceUnavailable": "—",
     "today": "اليوم",
     "received": "تم الاستلام",
     "transactionDetails": "تفاصيل المعاملة",
@@ -151,7 +252,11 @@
     "type": "النوع",
     "date": "التاريخ",
     "fee": "الرسوم",
+    "exchangeRate": "سعر الصرف",
+    "pair": "الزوج",
     "transactionHash": "رمز المعاملة",
+    "couldNotOpenLink": "تعذر فتح الرابط",
+    "supportEmailSubject": "دعم عملة باي",
     "fromAddress": "من العنوان",
     "toAddress": "إلى العنوان",
     "note": "ملاحظة",
@@ -166,6 +271,7 @@
     "network": "الشبكة",
     "sendTo": "إرسال إلى",
     "sender": "المرسل",
+    "receiver": "المستلم",
     "address": "العنوان",
     "transactionFees": "رسوم المعاملات",
     "saveAs": "حفظ كـ",
@@ -177,6 +283,14 @@
     "jpg": "JPG",
     "pdf": "PDF",
     "imageSavedSuccessfully": "تم حفظ الصورة بنجاح",
+    "transactionReceiptTitle": "إيصال المعاملة",
+    "transactionIdLabel": "رقم المعاملة",
+    "recipient": "المستلم",
+    "amountLabel": "المبلغ",
+    "statusLabel": "الحالة",
+    "typeLabel": "النوع",
+    "transactionSaveFailedMessage": "فشل حفظ المعاملة",
+    "photoLibraryPermissionRequired": "يلزم الوصول إلى مكتبة الصور لحفظ المعاملة",
     "transactionSavedSuccessfully": "تم حفظ المعاملة كـ {format} بنجاح",
     "@transactionSavedSuccessfully": {
         "placeholders": {
@@ -197,6 +311,22 @@
     },
     "markAsRead": "تعليم كمقروء",
     "forgotPasscodeTitle": "نسيت رمز المرور",
+    "forgotPasscodePhoneOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى {phone}.",
+    "@forgotPasscodePhoneOtpSent": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "forgotPasscodeEmailOtpSent": "تم إرسال رمز تحقق مكون من 6 أرقام إلى {email}.",
+    "@forgotPasscodeEmailOtpSent": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
     "verifyYourPhoneNumber": "تحقق من رقم هاتفك",
     "verifyYourAccount": "تحقق من حسابك",
     "verificationCodeSentViaSmsTo": "تم إرسال رمز التحقق المكون من 6 أرقام عبر الرسائل القصيرة إلى {phone}.",
@@ -207,8 +337,9 @@
             }
         }
     },
-    "verificationCodesInSeconds": "يجب أن تستلم رموز التحقق خلال {seconds} ثانية",
-    "@verificationCodesInSeconds": {
+    "verificationCodesIn": "يجب أن تستلم رموز التحقق خلال",
+    "secondsCount": "{seconds} ثانية",
+    "@secondsCount": {
         "placeholders": {
             "seconds": {
                 "type": "int"
@@ -220,11 +351,14 @@
     "needHelpContactSupport": "تحتاج مساعدة؟ تواصل مع الدعم",
     "setYourNewPasscode": "قم بتعيين رمز المرور الجديد",
     "createAPasscode": "إنشاء رمز مرور",
+    "enterYourCurrentPasscode": "أدخل رمز المرور الحالي",
+    "enterYourNewPasscode": "أدخل رمز المرور الجديد",
+    "confirmYourNewPasscode": "أكد رمز المرور الجديد",
     "confirmYourPasscode": "تأكيد رمز المرور",
     "passcodesMismatchTryAgain": "رموز المرور غير متطابقة. حاول مرة أخرى.",
     "qrCodeScanner": "ماسح رمز QR",
     "scanQrCode": "مسح رمز QR",
-    "scanAQrCode": "امسح رمز QR",
+    "scanAQrCode": "امسح رمز الاستجابة السريعة",
     "cameraPermissionRequired": "الوصول إلى الكاميرا مطلوب لمسح رموز QR",
     "cameraPermissionDenied": "تم رفض إذن الكاميرا",
     "cameraPermissionDeniedMessage": "يرجى منح الوصول إلى الكاميرا في الإعدادات لمسح رموز QR.",
@@ -243,6 +377,308 @@
     "cameraPermissionDialogMessage": "نحتاج إلى إذنك للوصول إلى الكاميرا لمسح الرموز",
     "doNotAllow": "عدم السماح",
     "invalidQrCode": "رمز QR غير صالح",
+    "qrInvalidWalletAddress": "عنوان المحفظة غير صالح",
+    "qrAddressVerificationFailed": "تعذر التحقق من العنوان. تحقق من اتصالك وحاول مرة أخرى.",
+    "qrAddressNotValidated": "تعذر التحقق من صحة هذا العنوان",
     "tryAgain": "حاول مرة أخرى",
-    "twoFactorAuthentication": "المصادقة الثنائية"
+    "twoFactorAuthentication": "المصادقة الثنائية",
+    "sendFlowReviewTitle": "تأكيد",
+    "sendFlowSendingTitle": "جاري الإرسال",
+    "feeFree": "مجاناً",
+    "accountNoUserDataAvailable": "لا توجد بيانات مستخدم",
+    "copyLabelValue": "{label}: {value}",
+    "@copyLabelValue": {
+        "placeholders": {
+            "label": {
+                "type": "String"
+            },
+            "value": {
+                "type": "String"
+            }
+        }
+    },
+    "shareComingSoon": "ميزة المشاركة قريباً",
+    "errorPickingFile": "خطأ في اختيار الملف: {error}",
+    "@errorPickingFile": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "helpRequestSentSuccess": "تم إرسال الطلب بنجاح",
+    "verificationCodeResentSuccess": "تم إعادة إرسال رمز التحقق بنجاح.",
+    "pasteHintLongPress": "اضغط مع الاستمرار للصق",
+    "minAmountHint": "الحد الأدنى {amount}",
+    "@minAmountHint": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "sendAmountMaxShortLabel": "الحد الأقصى",
+    "swapAmountMaxShortLabel": "الحد الأقصى",
+    "searchHint": "بحث",
+    "searchContactsHint": "ابحث بالاسم أو الرقم",
+    "sendFlowVerifyAccountTitle": "التحقق من الحساب",
+    "sendOtpInstructionsMasked": "أدخل الرمز المرسل إلى {phoneMask}",
+    "@sendOtpInstructionsMasked": {
+        "placeholders": {
+            "phoneMask": {
+                "type": "String"
+            }
+        }
+    },
+    "verifyAction": "تحقق",
+    "swapSuccessMessage": "تمت المبادلة بنجاح",
+    "sendSuccessMessage": "تم الإرسال بنجاح",
+    "successScreenTitle": "نجاح",
+    "confirmSecurely": "تأكيد بأمان",
+    "youAreSending": "أنت ترسل",
+    "youWillSend": "ستقوم بإرسال",
+    "walletAddress": "عنوان المحفظة",
+    "confirm": "تأكيد",
+    "confirmationWarning": "تأكد من صحة العنوان والشبكة، لا يمكن إلغاء المعاملة بعد التأكيد.",
+    "sendInProgress": "جارٍ الإرسال",
+    "estimatedTimeOfExecution": "الوقت التقديري للتنفيذ",
+    "sendCompletionNotification": "عند الاكتمال، ستتلقى إشعار تأكيد",
+    "verifyAccount": "التحقق من الحساب",
+    "reviewOrderTitle": "مراجعة الطلب",
+    "swapDirectionFrom": "من",
+    "swapDirectionTo": "إلى",
+    "swapMaxAction": "الحد الأقصى",
+    "selectCoinTitle": "اختر العملة",
+    "selectCoinPlaceholder": "اختر",
+    "swapFeesColon": "رسوم المبادلة:",
+    "confirmSwapButton": "تأكيد المبادلة",
+    "verifyNowButton": "تحقق الآن",
+    "swapNowButton": "ابدأ المبادلة",
+    "sendFormCoinLabel": "العملة",
+    "sendFormPhoneOrAddressLabel": "رقم الهاتف أو عنوان المحفظة",
+    "sendFormAmountLabel": "المبلغ المراد إرساله",
+    "sendValidationInvalidAmount": "مبلغ غير صالح",
+    "sendValidationCannotSendToSelf": "لا يمكنك الإرسال إلى حسابك الخاص",
+    "sendValidationInsufficientBalance": "الرصيد غير كافٍ",
+    "sendValidationBelowMinimum": "يجب أن يكون المبلغ {amount} على الأقل",
+    "@sendValidationBelowMinimum": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "sendDefaultNetworkCode": "TRC20",
+    "availableBalanceFormatted": "المتاح {amount} {symbol}",
+    "@availableBalanceFormatted": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            },
+            "symbol": {
+                "type": "String"
+            }
+        }
+    },
+    "sendTransactionFeesColon": "رسوم المعاملة:",
+    "sendSentAmountLabel": "المبلغ المرسل",
+    "walletsTitle": "المحافظ",
+    "yourWalletsTitle": "محافظك",
+    "networkFeeLabel": "رسوم الشبكة",
+    "valueNotAvailable": "غير متوفر",
+    "amountInputHint": "0.00",
+    "qrCodeLabel": "رمز QR",
+    "saveImage": "حفظ الصورة",
+    "shareAction": "مشاركة",
+    "hideZeroBalance": "إخفاء الرصيد الصفري",
+    "noCoinsToShow": "لا توجد عملات للعرض.",
+    "uncheckToSeeAllCoins": "قم بإلغاء تحديد 'إخفاء الرصيد الصفري' لعرض جميع العملات.",
+    "contactsSheetTitle": "جهات الاتصال",
+    "sendSuccessRecipientLine": "إلى: {recipient}",
+    "@sendSuccessRecipientLine": {
+        "placeholders": {
+            "recipient": {
+                "type": "String"
+            }
+        }
+    },
+    "sendKycVerificationRequiredBody": "التحقق من الهوية مطلوب لإرسال العملات. يُرجى إكمال ملف التحقق من الهوية (KYC) لتفعيل التحويلات. ",
+    "swapKycVerificationRequiredBody": "التحقق من الهوية مطلوب لمبادلة العملات. يُرجى إكمال ملف التحقق من الهوية (KYC) لتفعيل التحويلات. ",
+    "receiveKycVerificationRequiredBody": "التحقق من الهوية مطلوب لاستلام العملات. يُرجى إكمال ملف التحقق من الهوية (KYC) لتفعيل التحويلات. ",
+    "kyc_submitted_under_review": "تم تقديم التحقق من هويتك وهو قيد المراجعة.",
+    "kyc_pending_subtitle": "نحن نراجع مستنداتك. يستغرق هذا عادةً بضع دقائق. سيتم إعلامك عند اكتمال المراجعة.",
+    "kyc_rejected": "تم رفض التحقق من هويتك.",
+    "kyc_rejected_with_reason": "تم رفض التحقق من هويتك: {reason}",
+    "@kyc_rejected_with_reason": {
+        "placeholders": {
+            "reason": {
+                "type": "String"
+            }
+        }
+    },
+    "kyc_retry_button": "إعادة التحقق",
+    "kycVerificationRequiredTitle": "التحقق مطلوب",
+    "kycVerificationPendingTitle": "التحقق قيد المراجعة",
+    "kycVerificationGoBackButton": "العودة",
+    "swapFeesTitle": "رسوم المبادلة",
+    "swapExchangeRate": "سعر الصرف",
+    "swapFeeOmlapay": "رسوم عملة باي",
+    "swapFeeBinance": "رسوم بينانس",
+    "transferToLabel": "إلى",
+    "addressCopiedToast": "تم النسخ",
+    "availableShortLabel": "المتاح",
+    "noNotifications": "لا توجد إشعارات بعد",
+    "notificationsLoadError": "فشل تحميل الإشعارات",
+    "retry": "إعادة المحاولة",
+    "welcomeBack": "مرحبًا بعودتك",
+    "kycFirstNameLabel": "الاسم الأول",
+    "kycLastNameLabel": "اسم العائلة",
+    "kycDateOfBirthLabel": "تاريخ الميلاد",
+    "kycResidentialCountryLabel": "بلد الإقامة",
+    "kycDocumentCountryLabel": "بلد الوثيقة",
+    "kycCityLabel": "المدينة",
+    "kycAddressLabel": "العنوان",
+    "kycCountryCodeHint": "مثال: GBR، USA، IND",
+    "kycSelectDateHint": "MM/DD/YYYY",
+    "kycRequiredFieldError": "هذا الحقل مطلوب",
+    "kycSubmitButton": "إرسال",
+    "kycInvalidDateError": "يرجى اختيار تاريخ صالح",
+    "kycStartedSuccess": "تم بدء عملية التحقق من الهوية بنجاح.",
+    "kycDocumentsReviewTitle": "المستندات — اضغط للعرض أو الاستبدال",
+    "kycDocumentActionView": "عرض",
+    "kycDocumentActionPickGallery": "اختيار من المعرض",
+    "kycDocumentActionTakePhoto": "التقاط صورة",
+    "kycDocumentChangedBadge": "تم التغيير",
+    "kycDocumentAddPhoto": "إضافة صورة",
+    "kycDocumentPickFailed": "تعذر تحميل الصورة المحددة. يرجى المحاولة مرة أخرى.",
+    "kycPermissionDeniedTitle": "يلزم الإذن",
+    "kycPermissionDeniedBody": "قم بتمكين الوصول إلى الكاميرا والصور في الإعدادات للمتابعة.",
+    "kycOpenSettings": "فتح الإعدادات",
+    "kycDocumentFrontLabel": "مقدمة المستند",
+    "kycDocumentBackLabel": "خلفية المستند",
+    "kycDocumentSelfieLabel": "صورة شخصية",
+    "kycDocumentLoadFailed": "تعذّر تحميل المستند",
+    "youAreOffline": "أنت غير متصل بالإنترنت",
+    "contactsPermissionDenied": "يلزم إذن الوصول إلى جهات الاتصال لاختيار جهة اتصال. يُرجى تفعيله من إعدادات جهازك.",
+    "contactsLoading": "جارٍ تحميل جهات الاتصال...",
+    "noContactsFound": "لم يتم العثور على جهات اتصال",
+    "contactsPermissionDialogTitle": "{appName} يريد الوصول إلى جهات الاتصال",
+    "@contactsPermissionDialogTitle": {
+        "placeholders": {
+            "appName": {
+                "type": "String"
+            }
+        }
+    },
+    "contactsPermissionDialogMessage": "نحتاج إلى إذنك للوصول إلى جهات الاتصال لإرسال المدفوعات إلى الأشخاص في دفتر العناوين الخاص بك",
+    "allowContacts": "السماح بجهات الاتصال",
+    "sendInvitationDialogTitle": "إرسال دعوة",
+    "sendInvitationDialogMessage": "هذا الرقم لا يملك حسابًا على عملة باي. لتجربة أفضل، أرسل له دعوة.",
+    "sendInvitationDialogNote": "ملاحظة: يمكنك إتمام المعاملة على أي حال",
+    "sendInvitationInviteButton": "دعوة",
+    "checkingUserStatus": "جارٍ التحقق من المستخدم...",
+    "kycEnterEmail": "أدخل البريد الإلكتروني",
+    "kycWhatsYourEmail": "ما هو بريدك الإلكتروني؟",
+    "kycEmailSubtitle": "سنرسل رمز تحقق لتأكيد بريدك الإلكتروني",
+    "kycEmailHint": "أدخل عنوان بريدك الإلكتروني",
+    "kycEmailRequiredError": "عنوان البريد الإلكتروني مطلوب",
+    "kycEmailInvalidError": "يرجى إدخال عنوان بريد إلكتروني صالح",
+    "kycVerifyEmail": "تحقق من البريد الإلكتروني",
+    "kycVerifyEmailTitle": "أدخل رمز التحقق",
+    "kycVerifyEmailSubtitle": "لقد أرسلنا رمزًا مكونًا من 6 أرقام إلى {email}",
+    "@kycVerifyEmailSubtitle": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "kycEmailVerified": "تم التحقق من البريد الإلكتروني بنجاح",
+    "pleaseEnterATitle": "يرجى إدخال عنوان",
+    "titleMustNotExceedCharacters": "يجب ألا يتجاوز العنوان {maxLength} حرفًا",
+    "pleaseEnterADescription": "يرجى إدخال وصف",
+    "descriptionMustNotExceedCharacters": "يجب ألا يتجاوز الوصف {maxLength} حرفًا",
+    "somethingWentWrong": "حدث خطأ ما",
+    "failedToLoadNotifications": "فشل في تحميل الإشعارات",
+    "failedToLoadMoreNotifications": "فشل في تحميل المزيد من الإشعارات",
+    "failedToMarkNotificationAsRead": "فشل في تحديد الإشعار كمقروء",
+    "failedToMarkAllNotificationsAsRead": "فشل في تحديد جميع الإشعارات كمقروءة",
+    "failedToLoadSupportRequests": "فشل في تحميل طلبات الدعم",
+    "failedToLoadMoreRequests": "فشل في تحميل المزيد من الطلبات",
+    "walletAddressMasked": "XXXX XXXX XXXX XXXX",
+    "walletAddressNotAvailable": "العنوان غير متوفر بعد",
+    "noAddressFound": "لم يتم العثور على عنوان",
+    "issueNotResolved": "المشكلة لم تحل؟",
+    "reopenTicket": "إعادة فتح التذكرة",
+    "createdOn": "تم الإنشاء في {date}",
+    "@createdOn": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "requestReopened": "تم إعادة فتح التذكرة بنجاح",
+    "failedToReopenRequest": "فشل في إعادة فتح التذكرة",
+    "failedToLoadRequestDetail": "فشل في تحميل تفاصيل الطلب",
+    "supportTeamReply": "رد فريق الدعم",
+    "yourReply": "ردك",
+    "inReview": "قيد المراجعة",
+    "resolvesBy": "يُحل بحلول {date}",
+    "@resolvesBy": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "resolvedStatus": "تم الحل",
+    "rejectedStatus": "مرفوض",
+    "solutionSentOn": "تم إرسال الحل في {date}",
+    "@solutionSentOn": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "rejectionSentOn": "تم إرسال الرفض في {date}",
+    "@rejectionSentOn": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "failureReason": "السبب",
+    "approximateAmount": "≈{amount} {currency}",
+    "@approximateAmount": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            },
+            "currency": {
+                "type": "String"
+            }
+        }
+    },
+    "appVersion": "الإصدار: {version}",
+    "@appVersion": {
+        "placeholders": {
+            "version": {
+                "type": "String"
+            }
+        }
+    },
+    "appPatchVersion": "رقم التصحيح: {number}",
+    "@appPatchVersion": {
+        "placeholders": {
+            "number": {
+                "type": "String"
+            }
+        }
+    },
+    "updateReadyTitle": "التحديث جاهز",
+    "updateReadyMessage": "يتوفر تحديث جديد. سيتم إغلاق التطبيق لتطبيق التحديث. الرجاء إعادة فتحه للمتابعة.",
+    "updateReadyAction": "حسنًا"
 }

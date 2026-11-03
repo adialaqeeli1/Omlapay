@@ -5,7 +5,10 @@ import '../core/theme/theme.dart';
 import 'custom_svg_painter.dart';
 
 class NoTransactionsFound extends StatelessWidget {
-  const NoTransactionsFound({super.key});
+  final String? title;
+  final String? subtitle;
+
+  const NoTransactionsFound({super.key, this.title, this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +26,7 @@ class NoTransactionsFound extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          l10n.noTransactionsFound,
+          title ?? l10n.noTransactionsFound,
           style: context.textTheme.bodyLarge?.copyWith(
             color: context.isDarkMode
                 ? AppColors.textGrey
@@ -33,7 +36,7 @@ class NoTransactionsFound extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          l10n.allIncomingTransactionsListed,
+          subtitle ?? l10n.allIncomingTransactionsListed,
           style: context.textTheme.bodyMedium?.copyWith(
             color: context.isDarkMode
                 ? AppColors.textGrey

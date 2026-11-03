@@ -7,6 +7,20 @@ class Routes {
   static const String enterOrSetPasscode = _Paths.enterOrSetPasscode;
   static const String forgotPasscode = _Paths.forgotPasscode;
   static const String registerVerification = _Paths.registerVerification;
+  static const String loginVerification = _Paths.loginVerification;
+  static const String changePasscodeSuccess = _Paths.changePasscodeSuccess;
+  static const String changeEmailIntro = _Paths.changeEmailIntro;
+  static const String changeEmailVerifyPhone = _Paths.changeEmailVerifyPhone;
+  static const String changeEmailEnterNew = _Paths.changeEmailEnterNew;
+  static const String changeEmailVerifyNewEmail =
+      _Paths.changeEmailVerifyNewEmail;
+  static const String changeEmailSuccess = _Paths.changeEmailSuccess;
+  static const String changePhoneIntro = _Paths.changePhoneIntro;
+  static const String changePhoneVerifyCurrent =
+      _Paths.changePhoneVerifyCurrent;
+  static const String changePhoneEnterNew = _Paths.changePhoneEnterNew;
+  static const String changePhoneVerifyNew = _Paths.changePhoneVerifyNew;
+  static const String changePhoneSuccess = _Paths.changePhoneSuccess;
   static const String home = _Paths.home;
   static const String history = _Paths.history;
   static const String profile = _Paths.profile;
@@ -17,11 +31,13 @@ class Routes {
   static const String privacyPolicy = _Paths.privacyPolicy;
   static const String helpCenter = _Paths.helpCenter;
   static const String sendRequest = _Paths.sendRequest;
+  static const String reopenRequest = _Paths.reopenRequest;
   static const String pastRequests = _Paths.pastRequests;
+  static const String requestDetail = _Paths.requestDetail;
   static const String coinDetails = _Paths.coinDetails;
   static const String transactionDetail = _Paths.transactionDetail;
   static const String sendCoin = _Paths.sendCoin;
-  static const String receiveCoin = _Paths.receiveCoin;
+  static const String receiveCoinsHistory = _Paths.receiveCoinsHistory;
   static const String sendReview = _Paths.sendReview;
   static const String sendVerification = _Paths.sendVerification;
   static const String sendSuccess = _Paths.sendSuccess;
@@ -29,12 +45,14 @@ class Routes {
   static const String swapReview = _Paths.swapReview;
   static const String swapSuccess = _Paths.swapSuccess;
   static const String transactionDetails = _Paths.transactionDetails;
-  static const String wallets = _Paths.wallets;
+  static const String recieveCoins = _Paths.recieveCoins;
   static const String qrCode = _Paths.qrCode;
   static const String qrScanner = _Paths.qrScanner;
   static const String accountDetails = _Paths.accountDetails;
   static const String notifications = _Paths.notifications;
   static const String kycVerification = _Paths.kycVerification;
+  static const String emailEntry = _Paths.emailEntry;
+  static const String emailVerifyOtp = _Paths.emailVerifyOtp;
 }
 
 abstract class _Paths {
@@ -44,6 +62,20 @@ abstract class _Paths {
   static const String enterOrSetPasscode = '/enter-or-set-passcode';
   static const String forgotPasscode = '/forgot-passcode';
   static const String registerVerification = '/register-verification';
+  static const String loginVerification = '/login-verification';
+  static const String changePasscodeSuccess = '/change-passcode-success';
+  static const String changeEmailIntro = '/change-email-intro';
+  static const String changeEmailVerifyPhone = '/change-email-verify-phone';
+  static const String changeEmailEnterNew = '/change-email-enter-new';
+  static const String changeEmailVerifyNewEmail =
+      '/change-email-verify-new-email';
+  static const String changeEmailSuccess = '/change-email-success';
+  static const String changePhoneIntro = '/change-phone-intro';
+  static const String changePhoneVerifyCurrent =
+      '/change-phone-verify-current';
+  static const String changePhoneEnterNew = '/change-phone-enter-new';
+  static const String changePhoneVerifyNew = '/change-phone-verify-new';
+  static const String changePhoneSuccess = '/change-phone-success';
   static const String home = '/home';
   static const String history = '/history';
   static const String profile = '/profile';
@@ -54,11 +86,14 @@ abstract class _Paths {
   static const String privacyPolicy = '/privacy-policy';
   static const String helpCenter = '/help-center';
   static const String sendRequest = '/send-request';
+  static const String reopenRequest = '/reopen-request';
   static const String pastRequests = '/past-requests';
+  static const String requestDetail = '/request-detail';
   static const String coinDetails = '/coin-details';
   static const String transactionDetail = '/transaction-detail';
   static const String sendCoin = '/send-coin';
-  static const String receiveCoin = '/receive-coin';
+  static const String recieveCoins = '/recieveCoins';
+  static const String receiveCoinsHistory = '/receive-coins-history';
   static const String sendReview = '/send-review';
   static const String sendVerification = '/send-verification';
   static const String sendSuccess = '/send-success';
@@ -66,10 +101,12 @@ abstract class _Paths {
   static const String swapReview = '/swap-review';
   static const String swapSuccess = '/swap-success';
   static const String transactionDetails = '/transaction-details';
-  static const String wallets = '/wallets';
+
   static const String qrCode = '/qr-code';
   static const String qrScanner = '/qr-scanner';
   static const String accountDetails = '/account-details';
   static const String notifications = '/notifications';
   static const String kycVerification = '/kyc-verification';
+  static const String emailEntry = '/email-entry';
+  static const String emailVerifyOtp = '/email-verify-otp';
 }

@@ -82,11 +82,17 @@ class PasscodeProvider extends ChangeNotifier {
         countryCode: countryCode,
         passcode: _passcode,
       );
-      _hasError = !isValid;
+      if (!isValid) {
+        _hasError = true;
+        _passcode = '';
+      } else {
+        _hasError = false;
+      }
       return isValid;
-    } catch (_) {
+    } catch (e) {
       _hasError = true;
-      return false;
+      _passcode = '';
+      rethrow;
     } finally {
       _isVerifying = false;
       notifyListeners();

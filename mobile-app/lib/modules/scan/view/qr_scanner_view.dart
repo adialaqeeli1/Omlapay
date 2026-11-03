@@ -8,10 +8,7 @@ import '../provider/qr_scanner_provider.dart';
 
 /// Extra payload for the QR scanner route.
 class QrScannerExtra {
-  const QrScannerExtra({
-    this.validator,
-    this.onScanned,
-  });
+  const QrScannerExtra({this.validator, this.onScanned});
 
   final QrCodeValidator? validator;
   final ValueChanged<String>? onScanned;
@@ -41,9 +38,7 @@ class QrScannerView extends StatelessWidget {
           return QrScannerWidget(
             permissionProvider: context.read<QrScannerProvider>(),
             validator: payload.validator,
-            title: context.l10n?.scanAQrCode ??
-                context.l10n?.qrCodeScanner ??
-                'Scan a QR Code',
+            title: context.l10n!.scanAQrCode,
             onScanned: (value) {
               onScanned?.call(value);
               if (context.mounted) context.pop(value);

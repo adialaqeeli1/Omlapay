@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import '../core/constants/endpoints.dart';
+import '../core/services/api_helper.dart';
 
 class GlobalProvider extends ChangeNotifier {
   String _selectedCurrency = 'USD';
@@ -8,31 +10,71 @@ class GlobalProvider extends ChangeNotifier {
   bool _isBalanceVisible = false;
   bool get isBalanceVisible => _isBalanceVisible;
 
-  bool _isBalanceLoading = false;
-  bool get isBalanceLoading => _isBalanceLoading;
+  bool _hasFetchedCurrency = false;
+  bool _isAuthenticated = false;
 
-  void updateCurrency(String currency) {
-    if (_selectedCurrency != currency) {
-      _selectedCurrency = currency;
-      notifyListeners();
+  void onAuthChanged(bool isAuthenticated) {
+    _isAuthenticated = isAuthenticated;
+    if (isAuthenticated) {
+      if (!_hasFetchedCurrency) {
+        _fetchCurrencySetup();
+      }
+    } else {
+      if (_hasFetchedCurrency || _selectedCurrency != 'USD') {
+        _hasFetchedCurrency = false;
+        _selectedCurrency = 'USD';
+        notifyListeners();
+      }
     }
   }
 
-  Future<void> toggleBalanceVisibility() async {
-    if (!_isBalanceVisible) {
-      // Showing balance: Simulate loading
-      _isBalanceLoading = true;
-      notifyListeners();
+  Future<void> _fetchCurrencySetup() async {
+    _hasFetchedCurrency = true;
 
-      await Future.delayed(const Duration(seconds: 2));
-
-      _isBalanceVisible = true;
-      _isBalanceLoading = false;
-      notifyListeners();
-    } else {
-      // Hiding balance: Instant
-      _isBalanceVisible = false;
-      notifyListeners();
+    try {
+      final response = await ApiHelper.get(Endpoints.userSettingsCurrency);
+      final currency = response['data']?['currency'] as String?;
+      if (currency != null &&
+          _selectedCurrency.toLowerCase() != currency.toLowerCase()) {
+        _selectedCurrency = currency.toUpperCase();
+        notifyListeners();
+      }
+    } catch (e) {
+      // API failed, fallback to current selected currency (default is USD)
     }
+  }
+
+  /// Toggles between the two supported fiat currencies (USD <-> SAR).
+  Future<void> toggleCurrency() {
+    final next = _selectedCurrency.toUpperCase() == 'USD' ? 'SAR' : 'USD';
+    return updateCurrency(next);
+  }
+
+  Future<void> updateCurrency(String currency) async {
+    if (_selectedCurrency.toLowerCase() == currency.toLowerCase()) return;
+
+    _selectedCurrency = currency.toUpperCase();
+    notifyListeners();
+
+    if (!_isAuthenticated) return;
+
+    try {
+      final response = await ApiHelper.put(Endpoints.userSettingsCurrency, {
+        'currency': currency.toLowerCase(),
+      });
+      final newCurrency = response['data']?['currency'] as String?;
+      if (newCurrency != null &&
+          newCurrency.toUpperCase() != _selectedCurrency) {
+        _selectedCurrency = newCurrency.toUpperCase();
+        notifyListeners();
+      }
+    } catch (e) {
+      // API failed; keep the optimistic local update so the UI stays responsive.
+    }
+  }
+
+  void toggleBalanceVisibility() {
+    _isBalanceVisible = !_isBalanceVisible;
+    notifyListeners();
   }
 }

@@ -1,8 +1,34 @@
+import 'dart:convert';
+import 'package:omlapay_mobile_app/core/utils/app_logger.dart';
 import 'dart:math';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path_helper;
+
+import '../constants/endpoints.dart';
+import '../models/scanned_qr_payload/scanned_qr_payload.dart';
+import '../models/wallet_model/wallet_model.dart';
+import '../services/api_helper.dart';
+import '../services/chain_resolver_service.dart';
+
+/// Reason a scanned QR code failed validation.
+///
+/// `null` return from [Utility.isValidWalletAddress] means the value is valid;
+/// any non-null value tells the caller which error message to surface.
+enum QrValidationError {
+  /// Payload is not JSON or does not match the expected wallet-coin shape.
+  invalidFormat,
+
+  /// The embedded address failed the client-side format regex.
+  invalidAddress,
+
+  /// Backend validation request failed due to network/connectivity issues.
+  networkError,
+
+  /// Backend explicitly rejected the address.
+  addressNotValidated,
+}
 
 class Utility {
   static RegExp alphaNumericPasswordRegex = RegExp(
@@ -47,7 +73,9 @@ class Utility {
   }
 
   static String removeAllWhitespace(String value) {
-    return value.replaceAll(' ', '');
+    // `\s` also covers non-breaking/narrow spaces that formatted phone numbers
+    // (e.g. "+966 54 076 8260") can contain, not just the ASCII space.
+    return value.replaceAll(RegExp(r'\s'), '');
   }
 
   static String? camelCase(String value) {
@@ -435,35 +463,231 @@ class Utility {
     return "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/${symbol.toLowerCase()}.png";
   }
 
-  /// Validates common crypto wallet address formats.
-  /// Returns true for EVM (0x...), Bitcoin (1, 3, bc1), Tron (T...), Solana (base58).
-  static bool isValidWalletAddress(String value) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty || trimmed.length < 20) return false;
+  /// Parses a scanned QR string into a normalised [ScannedQrPayload].
+  ///
+  /// Supports three encodings:
+  /// 1. OmlaPay JSON — `{"symbol": "...", "address": "...", "network": ...}`.
+  /// 2. URI form — `<scheme>:<address>?amount=...&...`. A `solana:` scheme
+  ///    resolves `symbol`/`network` to `SOL`; any other scheme leaves them
+  ///    empty. `spl-token`, `reference` and `label` query params are ignored.
+  /// 3. Bare address — the raw string is treated as the address.
+  ///
+  /// Returns `null` when the input is empty or cannot be parsed into any
+  /// known shape (e.g. a JSON array).
+  static ScannedQrPayload? parseScannedWallet(String raw) {
+    final value = raw.trim();
+    if (value.isEmpty) return null;
 
-    // EVM: 0x + 40 hex chars
-    if (trimmed.startsWith('0x') && trimmed.length == 42) {
-      return RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(trimmed);
+    // 1. JSON object.
+    try {
+      final decoded = jsonDecode(value);
+      if (decoded is Map<String, dynamic>) {
+        final wallet = WalletCoinModel.fromJson(decoded);
+        return ScannedQrPayload(
+          address: wallet.address?.trim(),
+          symbol: wallet.symbol.trim(),
+          network: wallet.network.trim(),
+        );
+      }
+      if (decoded is List) {
+        // Valid JSON but a collection, not a wallet payload.
+        return null;
+      }
+      // Scalar JSON (number/bool/string) — fall through to URI / bare-address.
+    } catch (_) {
+      // Not JSON — fall through to URI / bare-address handling.
     }
 
-    // Bitcoin: 1 (P2PKH), 3 (P2SH), or bc1 (Bech32)
-    if (trimmed.startsWith('1') || trimmed.startsWith('3')) {
-      return RegExp(r'^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$').hasMatch(trimmed);
-    }
-    if (trimmed.startsWith('bc1')) {
-      return trimmed.length >= 42 && trimmed.length <= 62;
-    }
-
-    // Tron: T + 33 hex chars
-    if (trimmed.startsWith('T') && trimmed.length == 34) {
-      return RegExp(r'^T[0-9a-fA-F]{33}$').hasMatch(trimmed);
-    }
-
-    // Solana: base58, typically 32-44 chars
-    if (RegExp(r'^[1-9A-HJ-NP-Za-km-z]{32,44}$').hasMatch(trimmed)) {
-      return true;
+    // 2. URI form (`<scheme>:<address>?amount=...`).
+    final uri = Uri.tryParse(value);
+    if (uri != null && uri.scheme.isNotEmpty) {
+      final address = uri.path.trim();
+      if (address.isNotEmpty) {
+        final amount = double.tryParse(uri.queryParameters['amount'] ?? '');
+        final isSolana = uri.scheme.toLowerCase() == 'solana';
+        return ScannedQrPayload(
+          address: address,
+          symbol: isSolana ? 'SOL' : '',
+          network: isSolana ? 'SOL' : '',
+          amount: amount,
+        );
+      }
     }
 
+    // 3. Bare address.
+    return ScannedQrPayload(address: value);
+  }
+
+  /// Like [parseScannedWallet], but for a bare address with no embedded coin
+  /// it resolves the chain from the raw address via [ChainResolverService]
+  /// (blockchain.com) and fills in `symbol`/`network` so callers can
+  /// auto-select the matching coin. Payloads that already carry a coin
+  /// (OmlaPay JSON / `solana:` URI) are returned unchanged.
+  ///
+  /// Resolution is best-effort: if the chain can't be determined the payload
+  /// is returned as-is (empty `symbol`), exactly like [parseScannedWallet].
+  /// The lookup is cached, so when the scan validator already resolved this
+  /// address there is no extra network round-trip here.
+  static Future<ScannedQrPayload?> parseScannedWalletResolved(
+    String raw,
+  ) async {
+    final payload = parseScannedWallet(raw);
+    if (payload == null) return null;
+    if (payload.symbol.trim().isNotEmpty) return payload;
+
+    final address = payload.address?.trim() ?? '';
+    if (address.isEmpty) return payload;
+
+    final chain = await ChainResolverService.resolveChain(address);
+    if (chain == null || chain.isEmpty) return payload;
+
+    return payload.copyWith(symbol: chain, network: chain);
+  }
+
+  /// Formats a scanned numeric amount for display in a text input.
+  ///
+  /// Returns `null` when [amount] is `null` or non-finite (`NaN`,
+  /// `Infinity`). A whole-number amount is rendered without a trailing
+  /// `.0` (e.g. `1` instead of `1.0`); a fractional amount keeps its
+  /// decimals.
+  static String? formatScannedAmount(double? amount) {
+    if (amount == null || !amount.isFinite) return null;
+    if (amount == amount.truncateToDouble()) {
+      return amount.toInt().toString();
+    }
+    return amount.toString();
+  }
+
+  /// Validates a scanned QR payload that may encode a wallet address.
+  ///
+  /// Accepts OmlaPay JSON, Solana Pay URIs, and bare addresses via
+  /// [parseScannedWallet]. Returns `null` when the payload is valid;
+  /// otherwise returns a [QrValidationError] describing what went wrong.
+  ///
+  /// Steps:
+  /// 1. Parse the raw value with [parseScannedWallet].
+  /// 2. Require a non-empty address.
+  /// 3. Run client-side regex on the address (cheap local reject).
+  /// 4. Resolve the coin: use the embedded symbol when present, otherwise
+  ///    resolve the chain from the raw address via [ChainResolverService]
+  ///    (blockchain.com). When a coin is known, call
+  ///    `GET /v1/send/validate-address?address=...&coin=...` and require a
+  ///    non-null `data` payload. When no coin can be resolved, the regex
+  ///    check is final (address accepted).
+  static Future<QrValidationError?> isValidWalletAddress(String value) async {
+    final payload = parseScannedWallet(value);
+    if (payload == null) {
+      return QrValidationError.invalidFormat;
+    }
+
+    final symbol = payload.symbol.trim();
+    final address = payload.address?.trim() ?? '';
+    if (address.isEmpty) {
+      return QrValidationError.invalidFormat;
+    }
+
+    if (!_matchesKnownAddressFormat(
+      address,
+      symbol: symbol,
+      network: payload.network.trim(),
+    )) {
+      return QrValidationError.invalidAddress;
+    }
+
+    // Determine the coin to validate against. QR payloads that embed a coin
+    // symbol (OmlaPay JSON / `solana:` URI) use it directly. A bare address
+    // carries no coin, so resolve the chain from the raw address via
+    // blockchain.com's explorer search and validate against that. Resolution
+    // is best-effort: if it can't determine a chain (lookup fails or returns
+    // nothing), the client-side regex above stays the final word and the
+    // address is accepted, exactly as before.
+    var coin = symbol;
+    if (coin.isEmpty) {
+      final resolvedChain = await ChainResolverService.resolveChain(address);
+      if (resolvedChain == null || resolvedChain.isEmpty) {
+        return null;
+      }
+      coin = resolvedChain;
+    }
+
+    try {
+      final response = await ApiHelper.get(
+        Endpoints.sendValidateAddress,
+        queryParameters: {'address': address, 'coin': coin},
+      );
+      final data = response['data'];
+      if (data is! Map<String, dynamic> || data.isEmpty) {
+        return QrValidationError.addressNotValidated;
+      }
+      return null;
+    } catch (e, stackTrace) {
+      appLog(
+        'validate-address request failed: $e',
+        name: 'Utility.isValidWalletAddress',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return QrValidationError.networkError;
+    }
+  }
+
+  /// Client-side regex check covering EVM (0x...), Bitcoin (1, 3, bc1),
+  /// Tron (T...), and Solana (base58) address formats.
+  ///
+  /// When [symbol] or [network] is provided, only the matching format is
+  /// checked. With no hint, the address is accepted if it matches *any*
+  /// known format — prefixes like `1`, `3`, or `T` are not unique to a
+  /// single network (Solana base58 covers the same alphabet), so we must
+  /// not short-circuit on the leading character.
+  static bool _matchesKnownAddressFormat(
+    String address, {
+    String symbol = '',
+    String network = '',
+  }) {
+    if (address.isEmpty || address.length < 20) return false;
+
+    final hint = (network.isNotEmpty ? network : symbol).trim().toUpperCase();
+    final checks = _addressChecksForHint(hint);
+    for (final check in checks) {
+      if (check(address)) return true;
+    }
     return false;
   }
+
+  static List<bool Function(String)> _addressChecksForHint(String hint) {
+    switch (hint) {
+      case 'BTC':
+        return [_isBtcLegacy, _isBtcBech32];
+      case 'ETH':
+      case 'BSC':
+      case 'BNB':
+        return [_isEvm];
+      case 'TRX':
+        return [_isTron];
+      case 'SOL':
+        return [_isSolana];
+      case 'USDT':
+        // USDT lives on multiple chains (TRX, ETH, etc.) — accept any.
+        return [_isTron, _isEvm, _isSolana];
+      case 'USDC':
+        return [_isSolana, _isEvm];
+      default:
+        return [_isEvm, _isBtcBech32, _isBtcLegacy, _isTron, _isSolana];
+    }
+  }
+
+  static bool _isEvm(String a) =>
+      RegExp(r'^0x[0-9a-fA-F]{40}$').hasMatch(a);
+
+  static bool _isBtcLegacy(String a) =>
+      RegExp(r'^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$').hasMatch(a);
+
+  static bool _isBtcBech32(String a) =>
+      a.startsWith('bc1') && a.length >= 42 && a.length <= 62;
+
+  static bool _isTron(String a) =>
+      RegExp(r'^T[1-9A-HJ-NP-Za-km-z]{33}$').hasMatch(a);
+
+  static bool _isSolana(String a) =>
+      RegExp(r'^[1-9A-HJ-NP-Za-km-z]{32,44}$').hasMatch(a);
 }

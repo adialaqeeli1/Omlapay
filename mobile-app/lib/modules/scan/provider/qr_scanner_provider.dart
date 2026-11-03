@@ -1,4 +1,4 @@
-import 'dart:developer' as developer;
+import 'package:omlapay_mobile_app/core/utils/app_logger.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart' as ph;
@@ -10,7 +10,7 @@ const String _logTag = 'QrScannerProvider';
 /// Handles permission checking, requesting, and opening app settings.
 class QrScannerProvider extends ChangeNotifier {
   QrScannerProvider() {
-    developer.log('Camera: Checking initial permission status', name: _logTag);
+    appLog('Camera: Checking initial permission status', name: _logTag);
     _checkPermission();
   }
 
@@ -34,7 +34,7 @@ class QrScannerProvider extends ChangeNotifier {
       _logPermissionStatus('Camera: Permission check completed', status);
       notifyListeners();
     } catch (e, stackTrace) {
-      developer.log(
+      appLog(
         'Camera: Error checking permission: $e',
         name: _logTag,
         error: e,
@@ -47,7 +47,7 @@ class QrScannerProvider extends ChangeNotifier {
 
   void _logPermissionStatus(String message, ph.PermissionStatus status) {
     final statusStr = _permissionStatusToString(status);
-    developer.log('$message: $statusStr', name: _logTag);
+    appLog('$message: $statusStr', name: _logTag);
   }
 
   String _permissionStatusToString(ph.PermissionStatus status) {
@@ -61,14 +61,14 @@ class QrScannerProvider extends ChangeNotifier {
 
   /// Request camera permission from the user.
   Future<void> requestPermission() async {
-    developer.log('Camera: Requesting permission from user', name: _logTag);
+    appLog('Camera: Requesting permission from user', name: _logTag);
     try {
       final status = await ph.Permission.camera.request();
       _permissionStatus = status;
       _logPermissionStatus('Camera: Permission request result', status);
       notifyListeners();
     } catch (e, stackTrace) {
-      developer.log(
+      appLog(
         'Camera: Error requesting permission: $e',
         name: _logTag,
         error: e,
@@ -80,7 +80,7 @@ class QrScannerProvider extends ChangeNotifier {
 
   /// Open app settings so the user can grant permission manually.
   Future<void> openSettings() async {
-    developer.log('Camera: Opening app settings for manual permission grant', name: _logTag);
+    appLog('Camera: Opening app settings for manual permission grant', name: _logTag);
     await ph.openAppSettings();
     _isCheckingPermission = true;
     notifyListeners();
@@ -89,7 +89,7 @@ class QrScannerProvider extends ChangeNotifier {
 
   /// Re-check permission status (e.g. after returning from settings).
   Future<void> refreshPermission() async {
-    developer.log('Camera: Refreshing permission status', name: _logTag);
+    appLog('Camera: Refreshing permission status', name: _logTag);
     _isCheckingPermission = true;
     notifyListeners();
     await _checkPermission();

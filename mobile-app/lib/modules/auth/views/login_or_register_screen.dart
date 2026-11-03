@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:country_picker/country_picker.dart';
 
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/theme/theme.dart';
 import '../providers/login_provider.dart';
 import '../../../routes/app_router.dart';
+import '../../../widgets/common_auth_agreement_text.dart';
 import '../../../widgets/common_back_button.dart';
 
 class LoginOrRegisterScreen extends StatelessWidget {
@@ -52,7 +53,16 @@ class LoginOrRegisterScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: context.canPop() ? CommonBackButton() : null,
+        // leading: context.canPop() ? CommonBackButton() : null,
+        leading: CommonBackButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(Routes.home);
+            }
+          },
+        ),
         elevation: 0,
         backgroundColor: Colors.transparent,
         scrolledUnderElevation: 0,
@@ -126,32 +136,56 @@ class LoginOrRegisterScreen extends StatelessWidget {
                     const SizedBox(height: 22),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      // Keep the country-code chip on the left (before the
+                      // number field) even under an RTL/Arabic layout.
+                      textDirection: TextDirection.ltr,
                       children: [
-                        Container(
-                          height: 56,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: phoneGroupBackground,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SvgPicture.asset(
-                                'assets/icons/saudi-arabia-logo.svg',
-                                width: 24,
-                                height: 24,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                LoginProvider.countryCode,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: theme.colorScheme.onSurface,
+                        GestureDetector(
+                          onTap: () {
+                            showCountryPicker(
+                              context: context,
+                              showPhoneCode: true,
+                              onSelect: (Country country) {
+                                loginProvider.updateCountry(country);
+                              },
+                              countryListTheme: CountryListThemeData(
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(20),
+                                  topRight: Radius.circular(20),
                                 ),
+                                backgroundColor: theme.scaffoldBackgroundColor,
+                                textStyle: theme.textTheme.titleMedium,
+                                searchTextStyle: theme.textTheme.bodyLarge,
                               ),
-                            ],
+                            );
+                          },
+                          child: Container(
+                            height: 56,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: phoneGroupBackground,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              textDirection: TextDirection.ltr,
+                              children: [
+                                Text(
+                                  loginProvider.currentFlagEmoji,
+                                  style: const TextStyle(fontSize: 24),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  loginProvider.currentPhoneCode,
+                                  textDirection: TextDirection.ltr,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.colorScheme.onSurface,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -170,15 +204,17 @@ class LoginOrRegisterScreen extends StatelessWidget {
                             ),
                             alignment: Alignment.center,
                             child: TextField(
+                              textDirection: TextDirection.ltr,
+                              textAlign: TextAlign.left,
                               onTapOutside: (event) =>
                                   FocusScope.of(context).unfocus(),
                               keyboardType: TextInputType.phone,
                               textInputAction: TextInputAction.done,
-                              maxLength: 9,
+                              maxLength: 15,
                               onChanged: loginProvider.onPhoneChanged,
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(9),
+                                LengthLimitingTextInputFormatter(15),
                               ],
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontSize: 25 / 1.35,
@@ -237,7 +273,7 @@ class LoginOrRegisterScreen extends StatelessWidget {
                     Center(
                       child: GestureDetector(
                         onTap: () {
-                          context.go(
+                          context.push(
                             Routes.loginOrRegister,
                             extra: <String, String>{
                               LoginProvider.extraModeKey: isRegister
@@ -261,44 +297,10 @@ class LoginOrRegisterScreen extends StatelessWidget {
                       ),
                     ),
                     Spacer(),
-                    Center(
+                    const Center(
                       child: Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: RichText(
-                          textAlign: TextAlign.center,
-
-                          text: TextSpan(
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              color: mutedTextColor,
-                              height: 1.4,
-                            ),
-                            children: [
-                              TextSpan(
-                                text:
-                                    '${l10n.byCreatingAnAccountIAgreeToMushafars} ',
-                              ),
-                              TextSpan(
-                                text: l10n.termsOfService,
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.primaryColor,
-                                ),
-                              ),
-                              TextSpan(text: ' ${l10n.andWord} '),
-                              TextSpan(
-                                text: l10n.privacyPolicy,
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.primaryColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        padding: EdgeInsets.only(bottom: 16),
+                        child: CommonAuthAgreementText(),
                       ),
                     ),
                   ],

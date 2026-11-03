@@ -1,14 +1,19 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../core/models/user_model/user_model.dart';
 import '../../../core/theme/theme.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/code_push_provider.dart';
 import '../../../routes/app_router.dart';
+import '../../kyc_verification/utils/kyc_verification_entry_source.dart';
 import '../../../widgets/common_grid_bg_wrapper.dart';
-import '../../../widgets/theme_aware_icon.dart';
+import '../../../widgets/logout_alert_dialog.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -21,16 +26,19 @@ class ProfileView extends StatelessWidget {
         screenWidth * 0.05; // 5% padding for responsiveness
     final authState = context.watch<AuthProvider>().state;
     final bool isAuthenticated = authState.isAuthenticated;
-    final user = authState.user;
+    final UserModel? user = authState.user;
+    final bool isKycVerified = user?.isVerified == true;
 
     return CommonGridBgWrapper(
       horizontalPadding: horizontalPadding,
       headerSubTitle: l10n.fundsSafeSecure,
+      headerSubTitleFontSize: 12,
       headerTitle: l10n.hello,
       bottomWidget: isAuthenticated && user != null
           ? _buildAuthenticatedHeader(
               context: context,
               phoneNumber: user.fullPhoneNumber,
+              isVerified: isKycVerified,
               screenWidth: screenWidth,
               horizontalPadding: horizontalPadding,
             )
@@ -39,20 +47,19 @@ class ProfileView extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Divider(thickness: 1),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-          Flexible(
+          SizedBox(height: context.height * 0.01),
+          Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               spacing: 16,
               children: [
-                if (isAuthenticated) ...[
+                if (isAuthenticated && !isKycVerified)
                   _buildKycMenuItem(
                     context: context,
                     horizontalPadding: horizontalPadding,
                   ),
-                ],
                 if (!isAuthenticated)
                   _buildMenuItem(
                     context: context,
@@ -83,8 +90,62 @@ class ProfileView extends StatelessWidget {
               ],
             ),
           ),
+          _buildVersionFooter(context),
         ],
       ),
+    );
+  }
+
+  Widget _buildVersionFooter(BuildContext context) {
+    final l10n = context.l10n!;
+    final theme = Theme.of(context);
+    final versionColor = theme.brightness == Brightness.dark
+        ? AppColors.textGrey
+        : AppColors.textLightGrey;
+
+    return FutureBuilder<PackageInfo>(
+      future: PackageInfo.fromPlatform(),
+      builder: (context, snapshot) {
+        final info = snapshot.data;
+        if (info == null) return const SizedBox.shrink();
+
+        final footerStyle = theme.textTheme.bodySmall?.copyWith(
+          color: versionColor,
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+        );
+        final patchNumber = context
+            .watch<CodePushProvider>()
+            .currentPatchNumber;
+
+        return Padding(
+          padding: const EdgeInsetsDirectional.only(top: 16, bottom: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l10n.appVersion(
+                  l10n.localeName == 'ar'
+                      ? '(${info.buildNumber}) ${info.version}'
+                      : '${info.version} (${info.buildNumber})',
+                ),
+
+                textAlign: TextAlign.center,
+                style: footerStyle,
+              ),
+              if (patchNumber != null && kDebugMode)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(top: 2),
+                  child: Text(
+                    l10n.appPatchVersion('$patchNumber'),
+                    textAlign: TextAlign.center,
+                    style: footerStyle,
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -162,7 +223,10 @@ class ProfileView extends StatelessWidget {
     final textColor = theme.textTheme.bodyMedium?.color ?? Colors.black;
 
     return ListTile(
-      onTap: () => GoRouter.of(context).push(Routes.kycVerification),
+      onTap: () => context.push(
+        Routes.kycVerification,
+        extra: KycVerificationEntrySource.profile,
+      ),
       mouseCursor: SystemMouseCursors.click,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       splashColor: AppColors.primaryColor.withAlpha(40),
@@ -235,11 +299,16 @@ class ProfileView extends StatelessWidget {
         : const Color(0xFFE8E8E8);
 
     return ListTile(
-      onTap: () async {
-        await context.read<AuthProvider>().logout();
-        if (context.mounted) {
-          GoRouter.of(context).push(Routes.loginOrRegister);
-        }
+      onTap: () {
+        LogoutAlertDialog.show(
+          context,
+          onLogout: () async {
+            await context.read<AuthProvider>().logout();
+            if (context.mounted) {
+              GoRouter.of(context).push(Routes.loginOrRegister);
+            }
+          },
+        );
       },
       mouseCursor: SystemMouseCursors.click,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -276,27 +345,65 @@ class ProfileView extends StatelessWidget {
   Widget _buildAuthenticatedHeader({
     required BuildContext context,
     required String phoneNumber,
+    required bool isVerified,
     required double screenWidth,
     required double horizontalPadding,
   }) {
+    final l10n = context.l10n!;
     final iconSize = screenWidth * 0.08;
     final iconPadding = screenWidth * 0.02;
 
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
-          child: Text(
-            phoneNumber,
-            style: context.textTheme.headlineLarge?.copyWith(
-              color: context.isDarkMode ? AppColors.white : AppColors.textBlack,
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.helloComma,
+                style: context.textTheme.titleMedium?.copyWith(
+                  color: context.isDarkMode
+                      ? AppColors.textGrey
+                      : AppColors.textLightGrey,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: Text(
+                      phoneNumber,
+                      textDirection: TextDirection.ltr,
+                      style: context.textTheme.headlineLarge?.copyWith(
+                        color: context.isDarkMode
+                            ? AppColors.white
+                            : AppColors.textBlack,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                  if (isVerified) ...[
+                    const SizedBox(width: 6),
+                    SvgPicture.asset(
+                      'assets/icons/check.svg',
+                      width: 18,
+                      height: 18,
+                    ),
+                  ],
+                ],
+              ),
+            ],
           ),
         ),
-        const SizedBox(width: 8),
         Material(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(8),
@@ -305,10 +412,18 @@ class ProfileView extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             child: Padding(
               padding: EdgeInsets.all(iconPadding),
-              child: ThemeAwareIcon(
-                assetPath: 'assets/icons/general_settings_icon.svg',
+              // child: ThemeAwareIcon(
+              //   assetPath: 'assets/icons/general_settings_icon.svg',
+              //   width: iconSize,
+              //   height: iconSize,
+              // ),
+              child: SvgPicture.asset(
+                'assets/icons/general_settings_icon.svg',
                 width: iconSize,
                 height: iconSize,
+                colorFilter: context.isDarkMode
+                    ? null
+                    : ColorFilter.mode(AppColors.textBlack, BlendMode.srcIn),
               ),
             ),
           ),

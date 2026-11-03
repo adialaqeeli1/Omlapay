@@ -9,7 +9,7 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get appTitle => 'أوملاباي';
+  String get appTitle => 'عملة باي';
 
   @override
   String get login => 'تسجيل الدخول';
@@ -30,7 +30,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get profile => 'الملف الشخصي';
 
   @override
-  String get welcomeToOmlaPay => 'مرحبًا بك في أوملا باي!';
+  String get welcomeToOmlaPay => 'مرحبًا بك في عملة باي';
 
   @override
   String get email => 'البريد الإلكتروني';
@@ -76,7 +76,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get generalSettings => 'الإعدادات العامة';
 
   @override
-  String get aboutOmlapay => 'حول أوملا باي';
+  String get aboutOmlapay => 'نبذة عن عملة باي';
 
   @override
   String get helpCenter => 'مركز المساعدة';
@@ -94,10 +94,151 @@ class AppLocalizationsAr extends AppLocalizations {
   String get changePhoneNumber => 'تغيير رقم الهاتف';
 
   @override
+  String get stepsForChangingPhoneNumber => 'خطوات تغيير رقم هاتفك';
+
+  @override
+  String get changePhoneStepsDescription =>
+      'لتغيير رقم هاتفك المسجل، اتبع الخطوات التالية:';
+
+  @override
+  String get changePhoneStep1 =>
+      'تحقق من حسابك باستخدام رمز التحقق المُرسل إلى بريدك الإلكتروني المسجل.';
+
+  @override
+  String get changePhoneStep2 => 'أكّد رمز مرور حسابك لاعتماد التغيير.';
+
+  @override
+  String get changePhoneStep3 =>
+      'أدخل رقم الهاتف الجديد الذي تريد استخدامه في حسابك.';
+
+  @override
+  String get changePhoneStep4 => 'تحقق من رقم هاتفك الجديد باستخدام رمز تحقق.';
+
+  @override
+  String get changePhoneAfterStepsNote =>
+      'بعد التحقق من الرمز، سيصبح رقم هاتف حسابك هو الرقم الجديد.';
+
+  @override
+  String get changePhoneEnterNewSubtitle =>
+      'بعد أن تضغط متابعة، سنرسل رمز تحقق إلى هذا الرقم.';
+
+  @override
+  String get enterNewPhoneNumber => 'أدخل رقم الهاتف الجديد';
+
+  @override
+  String get verifyNewPhoneNumber => 'تحقق من رقم الهاتف الجديد';
+
+  @override
+  String changePhoneCurrentOtpSent(String phone) {
+    return 'تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى $phone.';
+  }
+
+  @override
+  String changePhoneNewOtpSent(String phone) {
+    return 'تم إرسال رمز تحقق مكون من 6 أرقام إلى $phone.';
+  }
+
+  @override
+  String get verifyYourEmail => 'تحقق من بريدك الإلكتروني';
+
+  @override
+  String twoFactorEmailOtpSent(String email) {
+    return 'تم إرسال رمز تحقق مكون من 6 أرقام إلى $email.';
+  }
+
+  @override
+  String get enterValidPhoneNumber => 'يرجى إدخال رقم هاتف صالح';
+
+  @override
+  String get phoneNumberChangedSuccessfully => 'تم تغيير رقم هاتفك بنجاح';
+
+  @override
   String get changeEmail => 'تغيير البريد الإلكتروني';
 
   @override
+  String get stepsForChangingEmail => 'خطوات تغيير بريدك الإلكتروني';
+
+  @override
+  String get changeEmailStepsDescription =>
+      'لتغيير بريدك الإلكتروني المسجل سنتبع الخطوات التالية:';
+
+  @override
+  String get step1Label => 'الخطوة 1';
+
+  @override
+  String get step2Label => 'الخطوة 2';
+
+  @override
+  String get step3Label => 'الخطوة 3';
+
+  @override
+  String get step4Label => 'الخطوة 4';
+
+  @override
+  String get changeEmailStep1 =>
+      'تحقق من حسابك باستخدام رمز التحقق المُرسل إلى رقم هاتفك المسجل.';
+
+  @override
+  String get changeEmailStep2 => 'أكّد رمز مرور حسابك لاعتماد التغيير.';
+
+  @override
+  String get changeEmailStep3 =>
+      'أدخل البريد الإلكتروني الجديد الذي تريد استخدامه في حسابك.';
+
+  @override
+  String get changeEmailStep4 =>
+      'تحقق من البريد الإلكتروني الجديد باستخدام رمز التحقق.';
+
+  @override
+  String get changeEmailAfterStepsNote =>
+      'بعد اتباع هذه الخطوات، سيتم تغيير بريدك الإلكتروني الحالي إلى البريد الجديد.';
+
+  @override
+  String get verifyCurrentPhoneNumber => 'تحقق من رقم الهاتف الحالي';
+
+  @override
+  String get enterNewEmailAddress => 'أدخل البريد الإلكتروني الجديد';
+
+  @override
+  String get verifyNewEmailAddress => 'تحقق من البريد الإلكتروني الجديد';
+
+  @override
+  String changeEmailPhoneOtpSent(String phone) {
+    return 'تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى $phone.';
+  }
+
+  @override
+  String changeEmailEmailOtpSent(String email) {
+    return 'تم إرسال رمز تحقق مكون من 6 أرقام إلى $email.';
+  }
+
+  @override
+  String get enterYourNewEmailAddressToReceiveOtp =>
+      'يرجى إدخال بريدك الإلكتروني الجديد لاستلام رمز التحقق';
+
+  @override
+  String get enterEmailAddressHint => 'أدخل البريد الإلكتروني الجديد';
+
+  @override
+  String get enterValidEmailAddress => 'يرجى إدخال بريد إلكتروني صالح';
+
+  @override
+  String get continueButton => 'متابعة';
+
+  @override
+  String get invalidOtpTryAgain => 'رمز التحقق غير صالح. حاول مرة أخرى.';
+
+  @override
+  String get emailChangedSuccessfully => 'تم تغيير بريدك الإلكتروني بنجاح';
+
+  @override
   String get changePasscode => 'تغيير رمز المرور';
+
+  @override
+  String get passcodeChangedSuccessfully => 'تم تغيير رمز المرور بنجاح';
+
+  @override
+  String get backHome => 'العودة للرئيسية';
 
   @override
   String get walletsAddress => 'عنوان المحفظة';
@@ -106,13 +247,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get evm => 'EVM';
 
   @override
-  String get bitcoin => 'بيتكوين';
-
-  @override
   String get tron => 'ترون';
-
-  @override
-  String get solana => 'سولانا';
 
   @override
   String get copy => 'نسخ';
@@ -128,6 +263,18 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get notification => 'الإشعارات';
+
+  @override
+  String get biometric => 'القياسات الحيوية';
+
+  @override
+  String get biometricUnlockReason => 'المصادقة لإلغاء قفل التطبيق';
+
+  @override
+  String get biometricEnableReason => 'المصادقة لتفعيل تسجيل الدخول البيومتري';
+
+  @override
+  String get biometricEnableFailed => 'تعذّر تفعيل المصادقة البيومترية';
 
   @override
   String get dark => 'داكن';
@@ -176,6 +323,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get requestFailed => 'فشل الطلب';
 
   @override
+  String get invalidServerResponse => 'استجابة غير صالحة من الخادم';
+
+  @override
+  String get softLoginFailed => 'فشل تسجيل الدخول السريع';
+
+  @override
+  String get registrationFailed => 'فشل التسجيل';
+
+  @override
+  String get unableToChangePasscode => 'تعذر تغيير رمز المرور';
+
+  @override
   String get unknownError => 'حدث خطأ غير معروف';
 
   @override
@@ -198,13 +357,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get saveMoneyNote => 'وفر المال وادفع بعملتك المفضلة';
 
   @override
-  String get register => 'يسجل';
+  String get register => 'سجل الان';
 
   @override
   String get hello => 'مرحبًا!';
 
   @override
-  String get welcomeBackToOmlapay => 'مرحبًا بعودتك إلى أوملاباي!';
+  String get helloComma => 'مرحبًا،';
+
+  @override
+  String get welcomeBackToOmlapay => 'مرحبًا بعودتك إلى عملة باي!';
 
   @override
   String get pleaseEnterYourNumberAndPasscodeToLogin =>
@@ -223,10 +385,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get forgotPasscode => 'نسيت كلمة المرور';
 
   @override
+  String get forgotPasscodePhoneMissing =>
+      'تعذر تحميل رقم هاتفك. سجّل الخروج ثم أعد تسجيل الدخول، أو تواصل مع الدعم.';
+
+  @override
   String get dontHaveAccountSignUp => 'ليس لديك حساب؟ سجل';
 
   @override
-  String get welcomeToOmlapayLetsGetStarted => 'مرحبًا بك في أوملاباي، لنبدأ!';
+  String get welcomeToOmlapayLetsGetStarted => 'مرحبًا بك في عملة باي، لنبدأ!';
 
   @override
   String get pleaseEnterYourDataToReceiveVerificationCodes =>
@@ -267,11 +433,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get incorrectPasscodeTryAgain => 'رمز المرور غير صحيح. حاول مرة أخرى.';
 
   @override
-  String get whoIsOmlapay => 'من هو \"أوملاباي\"؟';
+  String get whoIsOmlapay => 'من هو \"عملة باي\"؟';
 
   @override
   String get aboutOmlapayDescription =>
-      'هو ببساطة نص وهمي لصناعة الطباعة والتنضيد. كان لوريم إيبسوم المعيار الصناعي للنص الوهمي منذ القرن الخامس عشر الميلادي، عندما أخذت طابعة غير معروفة لوحة من النوع وعكستها لعمل كتاب عينة.';
+      'هي محفظة عملات رقمية آمنة وسهلة الاستخدام تتيح لك إرسال واستلام وتخزين العملات المشفرة بكل سلاسة. نحن نقوم بإدارة المفاتيح الخاصة نيابةً عنك، مما يبسط المعاملات مع الحفاظ على أعلى معايير الأمان. لا داعي للقلق بشأن فقدان عبارات الاسترداد - يمكنك الوصول إلى أموالك بسهولة عبر رقم جوالك و كلمة المرور. تمتع بتحويلات فورية وميزات تبادل مدمجة ودعم فني على مدار الساعة، مما يجعل إدارة العملات الرقمية سلسة مثل الخدمات المصرفية التقليدية.  تضمن محفظتنا معاملات سريعة وآمنة وخالية من المتاعب مع الحفاظ على أصولك محمية';
+
+  @override
+  String get readMore => 'اقرأ المزيد';
+
+  @override
+  String get readLess => 'اقرأ أقل';
 
   @override
   String get faqs => 'الأسئلة الشائعة';
@@ -323,7 +495,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get attachment => 'المرفق';
 
   @override
-  String get attachFileDescription => 'أرفق أي ملفات ذات صلة PNG، JPG، PDF';
+  String attachFileDescription(String extensions) {
+    return 'أرفق أي ملفات $extensions ذات صلة';
+  }
 
   @override
   String get send => 'إرسال';
@@ -371,6 +545,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get all => 'الكل';
 
   @override
+  String get open => 'مفتوح';
+
+  @override
   String get solved => 'محلول';
 
   @override
@@ -380,7 +557,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rejected => 'مرفوض';
 
   @override
-  String get seamlessCryptoPayments => 'مدفوعات تشفير سلسة';
+  String get seamlessCryptoPayments => 'دفع سلس بالعملات المشفرة';
 
   @override
   String get instantSecureAnytime => 'فوري، آمن، في أي وقت';
@@ -401,6 +578,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get transactions => 'المعاملات';
 
   @override
+  String get viewAll => 'عرض الكل';
+
+  @override
   String get noTransactionsFound => 'لم يتم العثور على معاملات.';
 
   @override
@@ -414,10 +594,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get ethereum => 'إيثيريوم';
 
   @override
+  String get bitcoin => 'بيتكوين';
+
+  @override
   String get currency => 'العملة';
 
   @override
   String get cancel => 'إلغاء';
+
+  @override
+  String get close => 'إغلاق';
 
   @override
   String get readyToLogOut => 'هل أنت مستعد لتسجيل الخروج؟';
@@ -425,6 +611,24 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get logoutDialogMessage =>
       'أموالك في أمان. للعودة، سنرسل رمزاً إلى رقم هاتفك المسجل.';
+
+  @override
+  String get deleteAccount => 'حذف الحساب';
+
+  @override
+  String get deleteAccountConfirmTitle => 'حذف الحساب؟';
+
+  @override
+  String get deleteAccountConfirmMessage =>
+      'ستتم جدولة حذف حسابك. لديك 7 أيام للإلغاء عن طريق تسجيل الدخول مرة أخرى.';
+
+  @override
+  String get deleteAccountScheduled =>
+      'تمت جدولة حذف الحساب. لديك 7 أيام للإلغاء عن طريق تسجيل الدخول مرة أخرى.';
+
+  @override
+  String get deleteAccountHasBalanceError =>
+      'لا يزال لديك رصيد في محافظك. يرجى سحب أو تحويل كامل رصيدك قبل حذف حسابك.';
 
   @override
   String get save => 'حفظ';
@@ -449,7 +653,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String currencySymbol(String choice) {
     String _temp0 = intl.Intl.selectLogic(choice, {
       'usd': '\$',
-      'sar': '﷼',
+      'sar': '⃁',
       'other': '$choice',
     });
     return '$_temp0';
@@ -465,6 +669,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get currentPrice => 'السعر الحالي';
 
   @override
+  String get coinDetailsPriceUnavailable => '—';
+
+  @override
   String get today => 'اليوم';
 
   @override
@@ -475,6 +682,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sender => 'المرسل';
+
+  @override
+  String get receiver => 'المستلم';
 
   @override
   String get address => 'العنوان';
@@ -516,7 +726,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fee => 'الرسوم';
 
   @override
+  String get exchangeRate => 'سعر الصرف';
+
+  @override
+  String get pair => 'الزوج';
+
+  @override
   String get transactionHash => 'رمز المعاملة';
+
+  @override
+  String get couldNotOpenLink => 'تعذر فتح الرابط';
+
+  @override
+  String get supportEmailSubject => 'دعم عملة باي';
 
   @override
   String get fromAddress => 'من العنوان';
@@ -543,6 +765,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sol => 'سول';
 
   @override
+  String get solana => 'سولانا';
+
+  @override
   String get sendTo => 'إرسال إلى';
 
   @override
@@ -559,6 +784,31 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get imageSavedSuccessfully => 'تم حفظ الصورة بنجاح';
+
+  @override
+  String get transactionReceiptTitle => 'إيصال المعاملة';
+
+  @override
+  String get transactionIdLabel => 'رقم المعاملة';
+
+  @override
+  String get recipient => 'المستلم';
+
+  @override
+  String get amountLabel => 'المبلغ';
+
+  @override
+  String get statusLabel => 'الحالة';
+
+  @override
+  String get typeLabel => 'النوع';
+
+  @override
+  String get transactionSaveFailedMessage => 'فشل حفظ المعاملة';
+
+  @override
+  String get photoLibraryPermissionRequired =>
+      'يلزم الوصول إلى مكتبة الصور لحفظ المعاملة';
 
   @override
   String transactionSavedSuccessfully(String format) {
@@ -583,6 +833,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get forgotPasscodeTitle => 'نسيت رمز المرور';
 
   @override
+  String forgotPasscodePhoneOtpSent(String phone) {
+    return 'تم إرسال رمز تحقق مكون من 6 أرقام عبر واتساب إلى $phone.';
+  }
+
+  @override
+  String forgotPasscodeEmailOtpSent(String email) {
+    return 'تم إرسال رمز تحقق مكون من 6 أرقام إلى $email.';
+  }
+
+  @override
   String get verifyYourPhoneNumber => 'تحقق من رقم هاتفك';
 
   @override
@@ -594,8 +854,11 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String verificationCodesInSeconds(int seconds) {
-    return 'يجب أن تستلم رموز التحقق خلال $seconds ثانية';
+  String get verificationCodesIn => 'يجب أن تستلم رموز التحقق خلال';
+
+  @override
+  String secondsCount(int seconds) {
+    return '$seconds ثانية';
   }
 
   @override
@@ -615,6 +878,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get createAPasscode => 'إنشاء رمز مرور';
 
   @override
+  String get enterYourCurrentPasscode => 'أدخل رمز المرور الحالي';
+
+  @override
+  String get enterYourNewPasscode => 'أدخل رمز المرور الجديد';
+
+  @override
+  String get confirmYourNewPasscode => 'أكد رمز المرور الجديد';
+
+  @override
   String get confirmYourPasscode => 'تأكيد رمز المرور';
 
   @override
@@ -628,7 +900,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get scanQrCode => 'مسح رمز QR';
 
   @override
-  String get scanAQrCode => 'امسح رمز QR';
+  String get scanAQrCode => 'امسح رمز الاستجابة السريعة';
 
   @override
   String get cameraPermissionRequired =>
@@ -670,8 +942,587 @@ class AppLocalizationsAr extends AppLocalizations {
   String get invalidQrCode => 'رمز QR غير صالح';
 
   @override
+  String get qrInvalidWalletAddress => 'عنوان المحفظة غير صالح';
+
+  @override
+  String get qrAddressVerificationFailed =>
+      'تعذر التحقق من العنوان. تحقق من اتصالك وحاول مرة أخرى.';
+
+  @override
+  String get qrAddressNotValidated => 'تعذر التحقق من صحة هذا العنوان';
+
+  @override
   String get tryAgain => 'حاول مرة أخرى';
 
   @override
   String get twoFactorAuthentication => 'المصادقة الثنائية';
+
+  @override
+  String get sendFlowReviewTitle => 'تأكيد';
+
+  @override
+  String get sendFlowSendingTitle => 'جاري الإرسال';
+
+  @override
+  String get feeFree => 'مجاناً';
+
+  @override
+  String get accountNoUserDataAvailable => 'لا توجد بيانات مستخدم';
+
+  @override
+  String copyLabelValue(String label, String value) {
+    return '$label: $value';
+  }
+
+  @override
+  String get shareComingSoon => 'ميزة المشاركة قريباً';
+
+  @override
+  String errorPickingFile(String error) {
+    return 'خطأ في اختيار الملف: $error';
+  }
+
+  @override
+  String get helpRequestSentSuccess => 'تم إرسال الطلب بنجاح';
+
+  @override
+  String get verificationCodeResentSuccess =>
+      'تم إعادة إرسال رمز التحقق بنجاح.';
+
+  @override
+  String get pasteHintLongPress => 'اضغط مع الاستمرار للصق';
+
+  @override
+  String minAmountHint(String amount) {
+    return 'الحد الأدنى $amount';
+  }
+
+  @override
+  String get sendAmountMaxShortLabel => 'الحد الأقصى';
+
+  @override
+  String get swapAmountMaxShortLabel => 'الحد الأقصى';
+
+  @override
+  String get searchHint => 'بحث';
+
+  @override
+  String get searchContactsHint => 'ابحث بالاسم أو الرقم';
+
+  @override
+  String get sendFlowVerifyAccountTitle => 'التحقق من الحساب';
+
+  @override
+  String sendOtpInstructionsMasked(String phoneMask) {
+    return 'أدخل الرمز المرسل إلى $phoneMask';
+  }
+
+  @override
+  String get verifyAction => 'تحقق';
+
+  @override
+  String get swapSuccessMessage => 'تمت المبادلة بنجاح';
+
+  @override
+  String get sendSuccessMessage => 'تم الإرسال بنجاح';
+
+  @override
+  String get successScreenTitle => 'نجاح';
+
+  @override
+  String get confirmSecurely => 'تأكيد بأمان';
+
+  @override
+  String get youAreSending => 'أنت ترسل';
+
+  @override
+  String get youWillSend => 'ستقوم بإرسال';
+
+  @override
+  String get walletAddress => 'عنوان المحفظة';
+
+  @override
+  String get confirm => 'تأكيد';
+
+  @override
+  String get confirmationWarning =>
+      'تأكد من صحة العنوان والشبكة، لا يمكن إلغاء المعاملة بعد التأكيد.';
+
+  @override
+  String get sendInProgress => 'جارٍ الإرسال';
+
+  @override
+  String get estimatedTimeOfExecution => 'الوقت التقديري للتنفيذ';
+
+  @override
+  String get sendCompletionNotification => 'عند الاكتمال، ستتلقى إشعار تأكيد';
+
+  @override
+  String get verifyAccount => 'التحقق من الحساب';
+
+  @override
+  String get reviewOrderTitle => 'مراجعة الطلب';
+
+  @override
+  String get swapDirectionFrom => 'من';
+
+  @override
+  String get swapDirectionTo => 'إلى';
+
+  @override
+  String get swapMaxAction => 'الحد الأقصى';
+
+  @override
+  String get selectCoinTitle => 'اختر العملة';
+
+  @override
+  String get selectCoinPlaceholder => 'اختر';
+
+  @override
+  String get swapFeesColon => 'رسوم المبادلة:';
+
+  @override
+  String get confirmSwapButton => 'تأكيد المبادلة';
+
+  @override
+  String get verifyNowButton => 'تحقق الآن';
+
+  @override
+  String get swapNowButton => 'ابدأ المبادلة';
+
+  @override
+  String get sendFormCoinLabel => 'العملة';
+
+  @override
+  String get sendFormPhoneOrAddressLabel => 'رقم الهاتف أو عنوان المحفظة';
+
+  @override
+  String get sendFormAmountLabel => 'المبلغ المراد إرساله';
+
+  @override
+  String get sendValidationInvalidAmount => 'مبلغ غير صالح';
+
+  @override
+  String get sendValidationCannotSendToSelf =>
+      'لا يمكنك الإرسال إلى حسابك الخاص';
+
+  @override
+  String get sendValidationInsufficientBalance => 'الرصيد غير كافٍ';
+
+  @override
+  String sendValidationBelowMinimum(String amount) {
+    return 'يجب أن يكون المبلغ $amount على الأقل';
+  }
+
+  @override
+  String get sendDefaultNetworkCode => 'TRC20';
+
+  @override
+  String availableBalanceFormatted(String amount, String symbol) {
+    return 'المتاح $amount $symbol';
+  }
+
+  @override
+  String get sendTransactionFeesColon => 'رسوم المعاملة:';
+
+  @override
+  String get sendSentAmountLabel => 'المبلغ المرسل';
+
+  @override
+  String get walletsTitle => 'المحافظ';
+
+  @override
+  String get yourWalletsTitle => 'محافظك';
+
+  @override
+  String get networkFeeLabel => 'رسوم الشبكة';
+
+  @override
+  String get valueNotAvailable => 'غير متوفر';
+
+  @override
+  String get amountInputHint => '0.00';
+
+  @override
+  String get qrCodeLabel => 'رمز QR';
+
+  @override
+  String get saveImage => 'حفظ الصورة';
+
+  @override
+  String get shareAction => 'مشاركة';
+
+  @override
+  String get hideZeroBalance => 'إخفاء الرصيد الصفري';
+
+  @override
+  String get noCoinsToShow => 'لا توجد عملات للعرض.';
+
+  @override
+  String get uncheckToSeeAllCoins =>
+      'قم بإلغاء تحديد \'إخفاء الرصيد الصفري\' لعرض جميع العملات.';
+
+  @override
+  String get contactsSheetTitle => 'جهات الاتصال';
+
+  @override
+  String sendSuccessRecipientLine(String recipient) {
+    return 'إلى: $recipient';
+  }
+
+  @override
+  String get sendKycVerificationRequiredBody =>
+      'التحقق من الهوية مطلوب لإرسال العملات. يُرجى إكمال ملف التحقق من الهوية (KYC) لتفعيل التحويلات. ';
+
+  @override
+  String get swapKycVerificationRequiredBody =>
+      'التحقق من الهوية مطلوب لمبادلة العملات. يُرجى إكمال ملف التحقق من الهوية (KYC) لتفعيل التحويلات. ';
+
+  @override
+  String get receiveKycVerificationRequiredBody =>
+      'التحقق من الهوية مطلوب لاستلام العملات. يُرجى إكمال ملف التحقق من الهوية (KYC) لتفعيل التحويلات. ';
+
+  @override
+  String get kyc_submitted_under_review =>
+      'تم تقديم التحقق من هويتك وهو قيد المراجعة.';
+
+  @override
+  String get kyc_pending_subtitle =>
+      'نحن نراجع مستنداتك. يستغرق هذا عادةً بضع دقائق. سيتم إعلامك عند اكتمال المراجعة.';
+
+  @override
+  String get kyc_rejected => 'تم رفض التحقق من هويتك.';
+
+  @override
+  String kyc_rejected_with_reason(String reason) {
+    return 'تم رفض التحقق من هويتك: $reason';
+  }
+
+  @override
+  String get kyc_retry_button => 'إعادة التحقق';
+
+  @override
+  String get kycVerificationRequiredTitle => 'التحقق مطلوب';
+
+  @override
+  String get kycVerificationPendingTitle => 'التحقق قيد المراجعة';
+
+  @override
+  String get kycVerificationGoBackButton => 'العودة';
+
+  @override
+  String get swapFeesTitle => 'رسوم المبادلة';
+
+  @override
+  String get swapExchangeRate => 'سعر الصرف';
+
+  @override
+  String get swapFeeOmlapay => 'رسوم عملة باي';
+
+  @override
+  String get swapFeeBinance => 'رسوم بينانس';
+
+  @override
+  String get transferToLabel => 'إلى';
+
+  @override
+  String get addressCopiedToast => 'تم النسخ';
+
+  @override
+  String get availableShortLabel => 'المتاح';
+
+  @override
+  String get noNotifications => 'لا توجد إشعارات بعد';
+
+  @override
+  String get notificationsLoadError => 'فشل تحميل الإشعارات';
+
+  @override
+  String get retry => 'إعادة المحاولة';
+
+  @override
+  String get welcomeBack => 'مرحبًا بعودتك';
+
+  @override
+  String get kycFirstNameLabel => 'الاسم الأول';
+
+  @override
+  String get kycLastNameLabel => 'اسم العائلة';
+
+  @override
+  String get kycDateOfBirthLabel => 'تاريخ الميلاد';
+
+  @override
+  String get kycResidentialCountryLabel => 'بلد الإقامة';
+
+  @override
+  String get kycDocumentCountryLabel => 'بلد الوثيقة';
+
+  @override
+  String get kycCityLabel => 'المدينة';
+
+  @override
+  String get kycAddressLabel => 'العنوان';
+
+  @override
+  String get kycCountryCodeHint => 'مثال: GBR، USA، IND';
+
+  @override
+  String get kycSelectDateHint => 'MM/DD/YYYY';
+
+  @override
+  String get kycRequiredFieldError => 'هذا الحقل مطلوب';
+
+  @override
+  String get kycSubmitButton => 'إرسال';
+
+  @override
+  String get kycInvalidDateError => 'يرجى اختيار تاريخ صالح';
+
+  @override
+  String get kycStartedSuccess => 'تم بدء عملية التحقق من الهوية بنجاح.';
+
+  @override
+  String get kycDocumentsReviewTitle => 'المستندات — اضغط للعرض أو الاستبدال';
+
+  @override
+  String get kycDocumentActionView => 'عرض';
+
+  @override
+  String get kycDocumentActionPickGallery => 'اختيار من المعرض';
+
+  @override
+  String get kycDocumentActionTakePhoto => 'التقاط صورة';
+
+  @override
+  String get kycDocumentChangedBadge => 'تم التغيير';
+
+  @override
+  String get kycDocumentAddPhoto => 'إضافة صورة';
+
+  @override
+  String get kycDocumentPickFailed =>
+      'تعذر تحميل الصورة المحددة. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get kycPermissionDeniedTitle => 'يلزم الإذن';
+
+  @override
+  String get kycPermissionDeniedBody =>
+      'قم بتمكين الوصول إلى الكاميرا والصور في الإعدادات للمتابعة.';
+
+  @override
+  String get kycOpenSettings => 'فتح الإعدادات';
+
+  @override
+  String get kycDocumentFrontLabel => 'مقدمة المستند';
+
+  @override
+  String get kycDocumentBackLabel => 'خلفية المستند';
+
+  @override
+  String get kycDocumentSelfieLabel => 'صورة شخصية';
+
+  @override
+  String get kycDocumentLoadFailed => 'تعذّر تحميل المستند';
+
+  @override
+  String get youAreOffline => 'أنت غير متصل بالإنترنت';
+
+  @override
+  String get contactsPermissionDenied =>
+      'يلزم إذن الوصول إلى جهات الاتصال لاختيار جهة اتصال. يُرجى تفعيله من إعدادات جهازك.';
+
+  @override
+  String get contactsLoading => 'جارٍ تحميل جهات الاتصال...';
+
+  @override
+  String get noContactsFound => 'لم يتم العثور على جهات اتصال';
+
+  @override
+  String contactsPermissionDialogTitle(String appName) {
+    return '$appName يريد الوصول إلى جهات الاتصال';
+  }
+
+  @override
+  String get contactsPermissionDialogMessage =>
+      'نحتاج إلى إذنك للوصول إلى جهات الاتصال لإرسال المدفوعات إلى الأشخاص في دفتر العناوين الخاص بك';
+
+  @override
+  String get allowContacts => 'السماح بجهات الاتصال';
+
+  @override
+  String get sendInvitationDialogTitle => 'إرسال دعوة';
+
+  @override
+  String get sendInvitationDialogMessage =>
+      'هذا الرقم لا يملك حسابًا على عملة باي. لتجربة أفضل، أرسل له دعوة.';
+
+  @override
+  String get sendInvitationDialogNote =>
+      'ملاحظة: يمكنك إتمام المعاملة على أي حال';
+
+  @override
+  String get sendInvitationInviteButton => 'دعوة';
+
+  @override
+  String get checkingUserStatus => 'جارٍ التحقق من المستخدم...';
+
+  @override
+  String get kycEnterEmail => 'أدخل البريد الإلكتروني';
+
+  @override
+  String get kycWhatsYourEmail => 'ما هو بريدك الإلكتروني؟';
+
+  @override
+  String get kycEmailSubtitle => 'سنرسل رمز تحقق لتأكيد بريدك الإلكتروني';
+
+  @override
+  String get kycEmailHint => 'أدخل عنوان بريدك الإلكتروني';
+
+  @override
+  String get kycEmailRequiredError => 'عنوان البريد الإلكتروني مطلوب';
+
+  @override
+  String get kycEmailInvalidError => 'يرجى إدخال عنوان بريد إلكتروني صالح';
+
+  @override
+  String get kycVerifyEmail => 'تحقق من البريد الإلكتروني';
+
+  @override
+  String get kycVerifyEmailTitle => 'أدخل رمز التحقق';
+
+  @override
+  String kycVerifyEmailSubtitle(String email) {
+    return 'لقد أرسلنا رمزًا مكونًا من 6 أرقام إلى $email';
+  }
+
+  @override
+  String get kycEmailVerified => 'تم التحقق من البريد الإلكتروني بنجاح';
+
+  @override
+  String get pleaseEnterATitle => 'يرجى إدخال عنوان';
+
+  @override
+  String titleMustNotExceedCharacters(int maxLength) {
+    return 'يجب ألا يتجاوز العنوان $maxLength حرفًا';
+  }
+
+  @override
+  String get pleaseEnterADescription => 'يرجى إدخال وصف';
+
+  @override
+  String descriptionMustNotExceedCharacters(int maxLength) {
+    return 'يجب ألا يتجاوز الوصف $maxLength حرفًا';
+  }
+
+  @override
+  String get somethingWentWrong => 'حدث خطأ ما';
+
+  @override
+  String get failedToLoadNotifications => 'فشل في تحميل الإشعارات';
+
+  @override
+  String get failedToLoadMoreNotifications =>
+      'فشل في تحميل المزيد من الإشعارات';
+
+  @override
+  String get failedToMarkNotificationAsRead => 'فشل في تحديد الإشعار كمقروء';
+
+  @override
+  String get failedToMarkAllNotificationsAsRead =>
+      'فشل في تحديد جميع الإشعارات كمقروءة';
+
+  @override
+  String get failedToLoadSupportRequests => 'فشل في تحميل طلبات الدعم';
+
+  @override
+  String get failedToLoadMoreRequests => 'فشل في تحميل المزيد من الطلبات';
+
+  @override
+  String get walletAddressMasked => 'XXXX XXXX XXXX XXXX';
+
+  @override
+  String get walletAddressNotAvailable => 'العنوان غير متوفر بعد';
+
+  @override
+  String get noAddressFound => 'لم يتم العثور على عنوان';
+
+  @override
+  String get issueNotResolved => 'المشكلة لم تحل؟';
+
+  @override
+  String get reopenTicket => 'إعادة فتح التذكرة';
+
+  @override
+  String createdOn(String date) {
+    return 'تم الإنشاء في $date';
+  }
+
+  @override
+  String get requestReopened => 'تم إعادة فتح التذكرة بنجاح';
+
+  @override
+  String get failedToReopenRequest => 'فشل في إعادة فتح التذكرة';
+
+  @override
+  String get failedToLoadRequestDetail => 'فشل في تحميل تفاصيل الطلب';
+
+  @override
+  String get supportTeamReply => 'رد فريق الدعم';
+
+  @override
+  String get yourReply => 'ردك';
+
+  @override
+  String get inReview => 'قيد المراجعة';
+
+  @override
+  String resolvesBy(String date) {
+    return 'يُحل بحلول $date';
+  }
+
+  @override
+  String get resolvedStatus => 'تم الحل';
+
+  @override
+  String get rejectedStatus => 'مرفوض';
+
+  @override
+  String solutionSentOn(String date) {
+    return 'تم إرسال الحل في $date';
+  }
+
+  @override
+  String rejectionSentOn(String date) {
+    return 'تم إرسال الرفض في $date';
+  }
+
+  @override
+  String get failureReason => 'السبب';
+
+  @override
+  String approximateAmount(String amount, String currency) {
+    return '≈$amount $currency';
+  }
+
+  @override
+  String appVersion(String version) {
+    return 'الإصدار: $version';
+  }
+
+  @override
+  String appPatchVersion(String number) {
+    return 'رقم التصحيح: $number';
+  }
+
+  @override
+  String get updateReadyTitle => 'التحديث جاهز';
+
+  @override
+  String get updateReadyMessage =>
+      'يتوفر تحديث جديد. سيتم إغلاق التطبيق لتطبيق التحديث. الرجاء إعادة فتحه للمتابعة.';
+
+  @override
+  String get updateReadyAction => 'حسنًا';
 }

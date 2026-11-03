@@ -1,5 +1,5 @@
-package com.example.omlapay_mobile_app
+package com.omlapay.applcation
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+class MainActivity : FlutterFragmentActivity()

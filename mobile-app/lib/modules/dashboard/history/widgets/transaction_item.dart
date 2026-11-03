@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/utils/coin_brand_color.dart';
+import '../../../../core/utils/date_time_format.dart';
+import '../../../../core/extentions/number_extensions.dart';
 import '../../../../core/models/transaction_model/transaction_model.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../providers/coins_prices_provider.dart';
 import '../../../../widgets/common_coin_icon.dart';
-import 'package:intl/intl.dart';
 
 class TransactionItem extends StatelessWidget {
   const TransactionItem({
@@ -17,8 +21,16 @@ class TransactionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n!;
     final isDarkMode = context.isDarkMode;
+    final coins = context.watch<CoinsPricesProvider>().coins;
+    final matchingCoin = coins
+        .where((c) => c.symbol == transaction.assetSymbol)
+        .firstOrNull;
+    final fallbackIcon = matchingCoin?.iconUrl ?? matchingCoin?.networkIconUrl;
+    final coinColor = coinBrandColor(
+      transaction.assetSymbol,
+      isDarkMode: isDarkMode,
+    );
 
     return InkWell(
       onTap: onTap,
@@ -32,16 +44,18 @@ class TransactionItem extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: _getCoinColor(
-                  transaction.coinSymbol,
-                ).withValues(alpha: 0.1),
+                color: coinColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: CommonCoinIcon(
-                  symbol: transaction.coinSymbol,
+                  symbol: transaction.assetSymbol,
                   radius: 20,
-                  iconBackgroundColor: _getCoinColor(transaction.coinSymbol),
+                  iconBackgroundColor: coinColor,
+                  networkIconUrl:
+                      transaction.networkIconUrl ??
+                      transaction.assetIconUrl ??
+                      fallbackIcon,
                 ),
               ),
             ),
@@ -52,7 +66,7 @@ class TransactionItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    transaction.coinSymbol,
+                    transaction.assetSymbol,
                     style: context.textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: isDarkMode ? AppColors.white : AppColors.textBlack,
@@ -61,7 +75,8 @@ class TransactionItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _formatDateTime(transaction.date),
+                    _formatDateTime(transaction.createdAt),
+                    textDirection: TextDirection.ltr,
                     style: context.textTheme.bodySmall?.copyWith(
                       color: AppColors.textGrey,
                       fontSize: 12,
@@ -74,14 +89,15 @@ class TransactionItem extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: Text(
-                transaction.status == TransactionStatus.failed
-                    ? l10n.failed
-                    : '${_getTypePrefix(transaction.type)}${transaction.amount} ${transaction.coinSymbol}',
+                transaction.isFailed
+                    ? context.l10n!.failed
+                    : '${(double.tryParse(transaction.amount) ?? 0).toFormattedAmount()} ${transaction.assetSymbol}',
+                textDirection: transaction.isFailed ? null : TextDirection.ltr,
                 style: context.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: transaction.status == TransactionStatus.failed
+                  color: transaction.isFailed
                       ? Colors.red
-                      : _getAmountColor(transaction.type, isDarkMode),
+                      : _getAmountColor(transaction, isDarkMode),
                   fontSize: 16,
                 ),
               ),
@@ -92,44 +108,16 @@ class TransactionItem extends StatelessWidget {
     );
   }
 
-  Color _getCoinColor(String symbol) {
-    switch (symbol.toUpperCase()) {
-      case 'USDT':
-        return AppColors.usdtColor;
-      case 'BTC':
-        return AppColors.bitcoinColor;
-      case 'ETH':
-        return AppColors.textWhite;
-      case 'SOL':
-        return const Color(0xFF9945FF); // Solana purple
-      default:
-        return AppColors.primaryColor;
-    }
-  }
-
-  String _getTypePrefix(TransactionType type) {
-    switch (type) {
-      case TransactionType.sent:
-        return '-';
-      case TransactionType.received:
-        return '+';
-      case TransactionType.swap:
-        return '';
-    }
-  }
-
-  Color _getAmountColor(TransactionType type, bool isDarkMode) {
-    switch (type) {
-      case TransactionType.sent:
-        return Colors.red;
-      case TransactionType.received:
-        return AppColors.greenColor;
-      case TransactionType.swap:
-        return isDarkMode ? AppColors.white : AppColors.textBlack;
-    }
+  Color _getAmountColor(TransactionModel tx, bool isDarkMode) {
+    // Swap uses the neutral primary text color (not red/green) so it stays
+    // legible in both light and dark themes.
+    if (tx.isSwap) return isDarkMode ? AppColors.white : AppColors.textBlack;
+    if (tx.isSent) return Colors.red;
+    if (tx.isReceived) return AppColors.greenColor;
+    return isDarkMode ? AppColors.white : AppColors.textBlack;
   }
 
   String _formatDateTime(DateTime date) {
-    return DateFormat('yyyy-MM-dd HH:mm:ss').format(date);
+    return date.toAppDateTime();
   }
 }

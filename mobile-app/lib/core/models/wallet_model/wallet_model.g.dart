@@ -6,19 +6,54 @@ part of 'wallet_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_WalletModel _$WalletModelFromJson(Map<String, dynamic> json) => _WalletModel(
-  id: json['id'] as String,
-  name: json['name'] as String,
-  symbol: json['symbol'] as String,
-  address: json['address'] as String,
-  network: json['network'] as String,
-);
+_WalletNetworkModel _$WalletNetworkModelFromJson(Map<String, dynamic> json) =>
+    _WalletNetworkModel(
+      network: json['network'] as String? ?? '',
+      networkDisplayName: json['networkDisplayName'] as String? ?? '',
+      networkIconUrl: json['networkIconUrl'] as String? ?? '',
+      coins:
+          (json['coins'] as List<dynamic>?)
+              ?.map((e) => WalletCoinModel.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const <WalletCoinModel>[],
+    );
 
-Map<String, dynamic> _$WalletModelToJson(_WalletModel instance) =>
+Map<String, dynamic> _$WalletNetworkModelToJson(_WalletNetworkModel instance) =>
     <String, dynamic>{
-      'id': instance.id,
+      'network': instance.network,
+      'networkDisplayName': instance.networkDisplayName,
+      'networkIconUrl': instance.networkIconUrl,
+      'coins': instance.coins,
+    };
+
+_WalletCoinModel _$WalletCoinModelFromJson(Map<String, dynamic> json) =>
+    _WalletCoinModel(
+      name: json['name'] as String? ?? '',
+      symbol: json['symbol'] as String? ?? '',
+      address: json['address'] as String?,
+      addressTag: json['addressTag'] as String?,
+      network: json['network'] as String? ?? '',
+      networkDisplayName: json['networkDisplayName'] as String? ?? '',
+      networkIconUrl: json['networkIconUrl'] as String? ?? '',
+      balance: json['balance'] == null ? 0 : _parseDouble(json['balance']),
+      currentBalance: json['currentBalance'] == null
+          ? 0
+          : _parseDouble(json['currentBalance']),
+      currentBalanceSar: json['currentBalanceSar'] == null
+          ? 0
+          : _parseDouble(json['currentBalanceSar']),
+    );
+
+Map<String, dynamic> _$WalletCoinModelToJson(_WalletCoinModel instance) =>
+    <String, dynamic>{
       'name': instance.name,
       'symbol': instance.symbol,
       'address': instance.address,
+      'addressTag': instance.addressTag,
       'network': instance.network,
+      'networkDisplayName': instance.networkDisplayName,
+      'networkIconUrl': instance.networkIconUrl,
+      'balance': instance.balance,
+      'currentBalance': instance.currentBalance,
+      'currentBalanceSar': instance.currentBalanceSar,
     };

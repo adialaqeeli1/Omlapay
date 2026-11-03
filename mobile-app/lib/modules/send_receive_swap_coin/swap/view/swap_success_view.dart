@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/extentions/context_extensions.dart';
+import '../../../../core/extentions/number_extensions.dart';
+import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../routes/app_router.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/common_back_button.dart';
@@ -13,14 +16,23 @@ class SwapSuccessView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<SwapProvider>();
+    final l10n = context.l10n!;
     final toCoin = provider.toCoin;
+    final quote = provider.swapQuote;
     // We display the To amount as the result
-    final toAmount = provider.toAmountController.text;
+    final rawToAmount = quote?.estimatedToAmount.isNotEmpty == true
+        ? quote!.estimatedToAmount
+        : provider.toAmountController.text;
+    final parsedToAmount = double.tryParse(rawToAmount);
+    final toAmount = parsedToAmount != null
+        ? parsedToAmount.toFormattedAmount()
+        : rawToAmount;
+    final toAmountUsd = quote?.estimatedToAmountUsd ?? '0.00';
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: CommonBackButton(
           onPressed: () {
@@ -42,15 +54,26 @@ class SwapSuccessView extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topRight,
                   end: Alignment.bottomLeft,
-                  colors: [
-                    AppColors.successGradientStart,
-                    AppColors.successGradientEnd,
-                  ],
-                  stops: [0.3, 1.0],
+                  colors: isDark
+                      ? [
+                          AppColors.successGradientStart,
+                          AppColors.successGradientEnd,
+                        ]
+                      : [
+                          AppColors.lightCardColor,
+                          AppColors.primaryColor.withValues(alpha: 0.18),
+                        ],
+                  stops: const [0.3, 1.0],
                 ),
                 borderRadius: BorderRadius.circular(24),
+                border: isDark
+                    ? null
+                    : Border.all(color: colorScheme.outlineVariant),
               ),
               child: Column(
+                crossAxisAlignment: .center,
+                mainAxisAlignment: .center,
+                mainAxisSize: .min,
                 children: [
                   // Icon
                   SvgPicture.asset(
@@ -59,46 +82,54 @@ class SwapSuccessView extends StatelessWidget {
                     height: 80,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Successfully swapped',
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
+                  Text(
+                    l10n.swapSuccessMessage,
+                    style: TextStyle(
+                      color: isDark
+                          ? AppColors.textLightGrey
+                          : colorScheme.onSurfaceVariant,
+                      fontSize: 14,
+                    ),
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        '$toAmount ${toCoin?.symbol ?? ''}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(
-                            0xFF1E2E2C,
-                          ), // Dark green tint for value?
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          '0,282 USD', // Mock value matching screenshot style
-                          style: TextStyle(
-                            color: AppColors.tealColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    '$toAmount ${toCoin?.localizedCoinTicker(context) ?? ''}',
+                    style: TextStyle(
+                      color: isDark
+                          ? AppColors.textWhite
+                          : colorScheme.onSurface,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   crossAxisAlignment: CrossAxisAlignment.center,
+                  //   children: [
+
+                  //     const SizedBox(width: 8),
+                  //     Container(
+                  //       padding: const EdgeInsets.symmetric(
+                  //         horizontal: 8,
+                  //         vertical: 4,
+                  //       ),
+                  //       decoration: BoxDecoration(
+                  //         color: isDark
+                  //             ? const Color(0xFF1E2E2C)
+                  //             : AppColors.tealColor.withValues(alpha: 0.12),
+                  //         borderRadius: BorderRadius.circular(6),
+                  //       ),
+                  //       child: Text(
+                  //         '$toAmountUsd USD',
+                  //         style: const TextStyle(
+                  //           color: AppColors.tealColor,
+                  //           fontSize: 14,
+                  //           fontWeight: FontWeight.w500,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
                 ],
               ),
             ),
@@ -114,17 +145,16 @@ class SwapSuccessView extends StatelessWidget {
                   context.go(Routes.home);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(
-                    0xFF2A2D35,
-                  ), // Grey button in screenshot
+                  backgroundColor: colorScheme.surfaceContainerHigh,
+                  foregroundColor: colorScheme.onSurface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: const Text(
-                  'Back Home',
+                child: Text(
+                  l10n.backHome,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: colorScheme.onSurface,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),

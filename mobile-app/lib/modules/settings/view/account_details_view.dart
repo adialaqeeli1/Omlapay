@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -8,24 +7,17 @@ import '../../../core/extentions/context_extensions.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/theme.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/wallets_provider.dart';
 import '../../../widgets/common_back_button.dart';
-import '../../../widgets/theme_aware_icon.dart';
-import '../services/wallet_address_service.dart';
+import '../../../widgets/copied_toast.dart';
 
-class AccountDetailsView extends StatefulWidget {
+class AccountDetailsView extends StatelessWidget {
   const AccountDetailsView({super.key});
-
-  @override
-  State<AccountDetailsView> createState() => _AccountDetailsViewState();
-}
-
-class _AccountDetailsViewState extends State<AccountDetailsView> {
-  String _selectedWalletType = 'EVM';
 
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = context.l10n!;
-    final ThemeData theme = Theme.of(context);
+    final ThemeData theme = context.theme;
     final double screenWidth = MediaQuery.of(context).size.width;
     final double horizontalPadding = screenWidth * 0.05;
 
@@ -45,55 +37,54 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
       body: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
           final user = authProvider.state.user;
+          final loc = context.l10n!;
           if (user == null) {
-            return const Center(child: Text('No user data available'));
+            return Center(child: Text(loc.accountNoUserDataAvailable));
           }
 
-          final email = WalletAddressService.getUserEmail(user);
-          final walletAddresses = WalletAddressService.getWalletAddresses(user);
-          final currentAddress = walletAddresses[_selectedWalletType] ?? '';
+          final email = user.email ?? '';
 
-          return SingleChildScrollView(
+          final hasWallets = user.walletsAvailable;
+
+          return CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(
               parent: ClampingScrollPhysics(),
             ),
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 24),
-                _buildInfoSection(
-                  context: context,
-                  label: l10n.phoneNumber,
-                  value: user.fullPhoneNumber,
-                  onEdit: () {
-                    // TODO: Navigate to change phone number
-                  },
+            slivers: [
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                sliver: SliverMainAxisGroup(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.only(top: 24, bottom: 32),
+                      sliver: SliverToBoxAdapter(
+                        child: Column(
+                          spacing: 24,
+                          children: [
+                            _buildInfoSection(
+                              context: context,
+                              label: l10n.phoneNumber,
+                              value: user.fullPhoneNumber,
+                            ),
+                            if (email.isNotEmpty)
+                              _buildInfoSection(
+                                context: context,
+                                label: l10n.email,
+                                value: email,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (hasWallets)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: _WalletsSection(l10n: l10n),
+                      ),
+                  ],
                 ),
-                const SizedBox(height: 24),
-                _buildInfoSection(
-                  context: context,
-                  label: l10n.email,
-                  value: email,
-                  onEdit: () {
-                    // TODO: Navigate to change email
-                  },
-                ),
-                const SizedBox(height: 32),
-                _buildWalletsSection(
-                  context: context,
-                  l10n: l10n,
-                  walletAddresses: walletAddresses,
-                  currentAddress: currentAddress,
-                  selectedType: _selectedWalletType,
-                  onTypeChanged: (type) {
-                    setState(() {
-                      _selectedWalletType = type;
-                    });
-                  },
-                ),
-              ],
-            ),
+              ),
+            ],
           );
         },
       ),
@@ -104,9 +95,8 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
     required BuildContext context,
     required String label,
     required String value,
-    required VoidCallback onEdit,
   }) {
-    final theme = Theme.of(context);
+    final theme = context.theme;
     final textColor =
         theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface;
 
@@ -124,10 +114,12 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
         ),
         const SizedBox(height: 8),
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(
+            Flexible(
               child: Text(
                 value,
+                textDirection: TextDirection.ltr,
                 style: TextStyle(
                   color: textColor,
                   fontSize: 16,
@@ -136,155 +128,180 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                 ),
               ),
             ),
-            IconButton(
-              icon: ThemeAwareIcon(assetPath: 'assets/icons/edit.svg'),
-              onPressed: onEdit,
-              padding: EdgeInsets.zero,
-              constraints: BoxConstraints.loose(const Size(24, 24)),
-            ),
           ],
         ),
       ],
     );
   }
+}
 
-  Widget _buildWalletsSection({
-    required BuildContext context,
-    required AppLocalizations l10n,
-    required Map<String, String> walletAddresses,
-    required String currentAddress,
-    required String selectedType,
-    required ValueChanged<String> onTypeChanged,
-  }) {
+class _WalletsSection extends StatefulWidget {
+  const _WalletsSection({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  State<_WalletsSection> createState() => _WalletsSectionState();
+}
+
+class _WalletsSectionState extends State<_WalletsSection>
+    with SingleTickerProviderStateMixin {
+  TabController? _tabController;
+  int _networkCount = 0;
+
+  void _syncTabController(int count) {
+    if (count == _networkCount && _tabController != null) return;
+    _tabController?.dispose();
+    _networkCount = count;
+    if (count > 0) {
+      _tabController = TabController(length: count, vsync: this);
+    } else {
+      _tabController = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final walletsProvider = context.watch<WalletsProvider>();
+    final networks = walletsProvider.wallets;
+
+    if (walletsProvider.isLoading && networks.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (networks.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    _syncTabController(networks.length);
+    final tabController = _tabController!;
+
     final theme = Theme.of(context);
     final textColor =
         theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface;
 
-    final walletTypes = ['EVM', 'Bitcoin', 'Tron', 'Solana'];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l10n.walletsAddress,
-          style: TextStyle(
-            color: AppColors.textLightGrey,
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            fontFamily: GoogleFonts.poppins().fontFamily,
+    return SizedBox(
+      height: context.height - (context.height / 2),
+      child: Column(
+        crossAxisAlignment: .start,
+        mainAxisSize: .min,
+        children: [
+          Text(
+            widget.l10n.walletsAddress,
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: AppColors.textLightGrey,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              fontFamily: GoogleFonts.poppins().fontFamily,
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        _buildWalletTypeTabs(
-          context: context,
-          l10n: l10n,
-          types: walletTypes,
-          selectedType: selectedType,
-          onTypeChanged: onTypeChanged,
-        ),
-        const SizedBox(height: 16),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: SelectableText(
-                currentAddress,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  fontFamily: GoogleFonts.poppins().fontFamily,
-                ),
-              ),
+          const SizedBox(height: 16),
+          TabBar(
+            controller: tabController,
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            labelColor: AppColors.primaryColor,
+            unselectedLabelColor: AppColors.textLightGrey,
+            labelStyle: context.textTheme.bodyMedium?.copyWith(
+              color: AppColors.primaryColor,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              fontFamily: GoogleFonts.poppins().fontFamily,
             ),
-            const SizedBox(width: 12),
-            IconButton(
-              icon: Icon(Icons.copy, size: 20, color: textColor),
-              onPressed: () {
-                Clipboard.setData(ClipboardData(text: currentAddress));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${l10n.copy}: $currentAddress'),
-                    duration: const Duration(seconds: 2),
-                  ),
+            unselectedLabelStyle: context.textTheme.bodyMedium?.copyWith(
+              color: AppColors.textLightGrey,
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              fontFamily: GoogleFonts.poppins().fontFamily,
+            ),
+            indicatorColor: AppColors.primaryColor,
+            indicatorWeight: 2,
+            dividerHeight: 0,
+            indicatorSize: TabBarIndicatorSize.tab,
+            tabs: networks.map((network) {
+              final displayText = network.networkDisplayName.isNotEmpty
+                  ? network.networkDisplayName
+                  : network.network;
+              return Tab(text: displayText);
+            }).toList(),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: TabBarView(
+              controller: tabController,
+              children: networks.map((network) {
+                if (network.coins.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                final coin = network.coins.first;
+                final hasAddress =
+                    coin.address != null && coin.address!.isNotEmpty;
+                final displayAddress = hasAddress
+                    ? coin.address!
+                    : widget.l10n.walletAddressMasked;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: .min,
+                  children: [
+                    Text(
+                      '${coin.name} (${coin.symbol})',
+                      style: TextStyle(
+                        color: AppColors.textLightGrey,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: GoogleFonts.poppins().fontFamily,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      spacing: 12,
+                      crossAxisAlignment: .start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            displayAddress,
+                            style: TextStyle(
+                              color: hasAddress
+                                  ? textColor
+                                  : AppColors.textLightGrey,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              fontFamily: GoogleFonts.poppins().fontFamily,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsetsDirectional.only(end: 16.0),
+                          child: InkWell(
+                            onTap: hasAddress
+                                ? () => CopiedToast.copy(context, coin.address!)
+                                : null,
+                            child: Icon(
+                              Icons.copy,
+                              size: 20,
+                              color: hasAddress
+                                  ? textColor
+                                  : AppColors.textLightGrey.withValues(
+                                      alpha: 0.4,
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 );
-              },
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
+              }).toList(),
             ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildWalletTypeTabs({
-    required BuildContext context,
-    required AppLocalizations l10n,
-    required List<String> types,
-    required String selectedType,
-    required ValueChanged<String> onTypeChanged,
-  }) {
-    final theme = Theme.of(context);
-    final textColor =
-        theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface;
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: types.map((type) {
-          final isSelected = type == selectedType;
-          String displayText;
-          switch (type) {
-            case 'EVM':
-              displayText = l10n.evm;
-              break;
-            case 'Bitcoin':
-              displayText = l10n.bitcoin;
-              break;
-            case 'Tron':
-              displayText = l10n.tron;
-              break;
-            case 'Solana':
-              displayText = l10n.solana;
-              break;
-            default:
-              displayText = type;
-          }
-
-          return GestureDetector(
-            onTap: () => onTypeChanged(type),
-            child: Container(
-              margin: const EdgeInsets.only(right: 24),
-              child: Column(
-                children: [
-                  Text(
-                    displayText,
-                    style: TextStyle(
-                      color: isSelected ? textColor : AppColors.textLightGrey,
-                      fontSize: 16,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                      fontFamily: GoogleFonts.poppins().fontFamily,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    height: 2,
-                    width: displayText.length * 10.0,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.primaryColor
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(1),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
+          ),
+        ],
       ),
     );
   }

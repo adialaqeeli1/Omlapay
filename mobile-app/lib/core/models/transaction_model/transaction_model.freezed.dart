@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TransactionModel {
 
- String get id; String get coinSymbol; String get coinName; String get amount; String get valueInCurrency; TransactionType get type; TransactionStatus get status; DateTime get date; String? get toAddress; String? get fromAddress; String? get transactionHash; double? get fee; String? get note;
+ String get id;@JsonKey(name: 'coin_symbol') String get assetSymbol;@JsonKey(name: 'coinName') String? get assetName;@JsonKey(name: 'coinName_ar') String? get assetNameAr; String? get assetIconUrl; String get amount; String? get amountDisplay; String? get amountUsd;@JsonKey(name: 'amountSAR') String? get amountSar; String? get network; DateTime get createdAt; String? get txHash;@JsonKey(name: 'blockchain_link') String? get blockchainLink; String get status; String? get direction; String? get type;@JsonKey(name: 'networkIconUrl') String? get networkIconUrl; String? get fee; String? get errorMessage; String? get errorMessageAr; String? get senderAddress; String? get receiverAddress; String? get counterpartyPhone;@JsonKey(name: 'txType') String? get transactionType; String? get pairLabel; TransactionSwapAsset? get fromAsset; TransactionSwapAsset? get toAsset; String? get exchangeRate;
 /// Create a copy of TransactionModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $TransactionModelCopyWith<TransactionModel> get copyWith => _$TransactionModelCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TransactionModel&&(identical(other.id, id) || other.id == id)&&(identical(other.coinSymbol, coinSymbol) || other.coinSymbol == coinSymbol)&&(identical(other.coinName, coinName) || other.coinName == coinName)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.valueInCurrency, valueInCurrency) || other.valueInCurrency == valueInCurrency)&&(identical(other.type, type) || other.type == type)&&(identical(other.status, status) || other.status == status)&&(identical(other.date, date) || other.date == date)&&(identical(other.toAddress, toAddress) || other.toAddress == toAddress)&&(identical(other.fromAddress, fromAddress) || other.fromAddress == fromAddress)&&(identical(other.transactionHash, transactionHash) || other.transactionHash == transactionHash)&&(identical(other.fee, fee) || other.fee == fee)&&(identical(other.note, note) || other.note == note));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TransactionModel&&(identical(other.id, id) || other.id == id)&&(identical(other.assetSymbol, assetSymbol) || other.assetSymbol == assetSymbol)&&(identical(other.assetName, assetName) || other.assetName == assetName)&&(identical(other.assetNameAr, assetNameAr) || other.assetNameAr == assetNameAr)&&(identical(other.assetIconUrl, assetIconUrl) || other.assetIconUrl == assetIconUrl)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.amountDisplay, amountDisplay) || other.amountDisplay == amountDisplay)&&(identical(other.amountUsd, amountUsd) || other.amountUsd == amountUsd)&&(identical(other.amountSar, amountSar) || other.amountSar == amountSar)&&(identical(other.network, network) || other.network == network)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.txHash, txHash) || other.txHash == txHash)&&(identical(other.blockchainLink, blockchainLink) || other.blockchainLink == blockchainLink)&&(identical(other.status, status) || other.status == status)&&(identical(other.direction, direction) || other.direction == direction)&&(identical(other.type, type) || other.type == type)&&(identical(other.networkIconUrl, networkIconUrl) || other.networkIconUrl == networkIconUrl)&&(identical(other.fee, fee) || other.fee == fee)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.errorMessageAr, errorMessageAr) || other.errorMessageAr == errorMessageAr)&&(identical(other.senderAddress, senderAddress) || other.senderAddress == senderAddress)&&(identical(other.receiverAddress, receiverAddress) || other.receiverAddress == receiverAddress)&&(identical(other.counterpartyPhone, counterpartyPhone) || other.counterpartyPhone == counterpartyPhone)&&(identical(other.transactionType, transactionType) || other.transactionType == transactionType)&&(identical(other.pairLabel, pairLabel) || other.pairLabel == pairLabel)&&(identical(other.fromAsset, fromAsset) || other.fromAsset == fromAsset)&&(identical(other.toAsset, toAsset) || other.toAsset == toAsset)&&(identical(other.exchangeRate, exchangeRate) || other.exchangeRate == exchangeRate));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,coinSymbol,coinName,amount,valueInCurrency,type,status,date,toAddress,fromAddress,transactionHash,fee,note);
+int get hashCode => Object.hashAll([runtimeType,id,assetSymbol,assetName,assetNameAr,assetIconUrl,amount,amountDisplay,amountUsd,amountSar,network,createdAt,txHash,blockchainLink,status,direction,type,networkIconUrl,fee,errorMessage,errorMessageAr,senderAddress,receiverAddress,counterpartyPhone,transactionType,pairLabel,fromAsset,toAsset,exchangeRate]);
 
 @override
 String toString() {
-  return 'TransactionModel(id: $id, coinSymbol: $coinSymbol, coinName: $coinName, amount: $amount, valueInCurrency: $valueInCurrency, type: $type, status: $status, date: $date, toAddress: $toAddress, fromAddress: $fromAddress, transactionHash: $transactionHash, fee: $fee, note: $note)';
+  return 'TransactionModel(id: $id, assetSymbol: $assetSymbol, assetName: $assetName, assetNameAr: $assetNameAr, assetIconUrl: $assetIconUrl, amount: $amount, amountDisplay: $amountDisplay, amountUsd: $amountUsd, amountSar: $amountSar, network: $network, createdAt: $createdAt, txHash: $txHash, blockchainLink: $blockchainLink, status: $status, direction: $direction, type: $type, networkIconUrl: $networkIconUrl, fee: $fee, errorMessage: $errorMessage, errorMessageAr: $errorMessageAr, senderAddress: $senderAddress, receiverAddress: $receiverAddress, counterpartyPhone: $counterpartyPhone, transactionType: $transactionType, pairLabel: $pairLabel, fromAsset: $fromAsset, toAsset: $toAsset, exchangeRate: $exchangeRate)';
 }
 
 
@@ -48,11 +48,11 @@ abstract mixin class $TransactionModelCopyWith<$Res>  {
   factory $TransactionModelCopyWith(TransactionModel value, $Res Function(TransactionModel) _then) = _$TransactionModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String coinSymbol, String coinName, String amount, String valueInCurrency, TransactionType type, TransactionStatus status, DateTime date, String? toAddress, String? fromAddress, String? transactionHash, double? fee, String? note
+ String id,@JsonKey(name: 'coin_symbol') String assetSymbol,@JsonKey(name: 'coinName') String? assetName,@JsonKey(name: 'coinName_ar') String? assetNameAr, String? assetIconUrl, String amount, String? amountDisplay, String? amountUsd,@JsonKey(name: 'amountSAR') String? amountSar, String? network, DateTime createdAt, String? txHash,@JsonKey(name: 'blockchain_link') String? blockchainLink, String status, String? direction, String? type,@JsonKey(name: 'networkIconUrl') String? networkIconUrl, String? fee, String? errorMessage, String? errorMessageAr, String? senderAddress, String? receiverAddress, String? counterpartyPhone,@JsonKey(name: 'txType') String? transactionType, String? pairLabel, TransactionSwapAsset? fromAsset, TransactionSwapAsset? toAsset, String? exchangeRate
 });
 
 
-
+$TransactionSwapAssetCopyWith<$Res>? get fromAsset;$TransactionSwapAssetCopyWith<$Res>? get toAsset;
 
 }
 /// @nodoc
@@ -65,25 +65,64 @@ class _$TransactionModelCopyWithImpl<$Res>
 
 /// Create a copy of TransactionModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? coinSymbol = null,Object? coinName = null,Object? amount = null,Object? valueInCurrency = null,Object? type = null,Object? status = null,Object? date = null,Object? toAddress = freezed,Object? fromAddress = freezed,Object? transactionHash = freezed,Object? fee = freezed,Object? note = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? assetSymbol = null,Object? assetName = freezed,Object? assetNameAr = freezed,Object? assetIconUrl = freezed,Object? amount = null,Object? amountDisplay = freezed,Object? amountUsd = freezed,Object? amountSar = freezed,Object? network = freezed,Object? createdAt = null,Object? txHash = freezed,Object? blockchainLink = freezed,Object? status = null,Object? direction = freezed,Object? type = freezed,Object? networkIconUrl = freezed,Object? fee = freezed,Object? errorMessage = freezed,Object? errorMessageAr = freezed,Object? senderAddress = freezed,Object? receiverAddress = freezed,Object? counterpartyPhone = freezed,Object? transactionType = freezed,Object? pairLabel = freezed,Object? fromAsset = freezed,Object? toAsset = freezed,Object? exchangeRate = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,coinSymbol: null == coinSymbol ? _self.coinSymbol : coinSymbol // ignore: cast_nullable_to_non_nullable
-as String,coinName: null == coinName ? _self.coinName : coinName // ignore: cast_nullable_to_non_nullable
-as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
-as String,valueInCurrency: null == valueInCurrency ? _self.valueInCurrency : valueInCurrency // ignore: cast_nullable_to_non_nullable
-as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
-as TransactionType,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as TransactionStatus,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
-as DateTime,toAddress: freezed == toAddress ? _self.toAddress : toAddress // ignore: cast_nullable_to_non_nullable
-as String?,fromAddress: freezed == fromAddress ? _self.fromAddress : fromAddress // ignore: cast_nullable_to_non_nullable
-as String?,transactionHash: freezed == transactionHash ? _self.transactionHash : transactionHash // ignore: cast_nullable_to_non_nullable
+as String,assetSymbol: null == assetSymbol ? _self.assetSymbol : assetSymbol // ignore: cast_nullable_to_non_nullable
+as String,assetName: freezed == assetName ? _self.assetName : assetName // ignore: cast_nullable_to_non_nullable
+as String?,assetNameAr: freezed == assetNameAr ? _self.assetNameAr : assetNameAr // ignore: cast_nullable_to_non_nullable
+as String?,assetIconUrl: freezed == assetIconUrl ? _self.assetIconUrl : assetIconUrl // ignore: cast_nullable_to_non_nullable
+as String?,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as String,amountDisplay: freezed == amountDisplay ? _self.amountDisplay : amountDisplay // ignore: cast_nullable_to_non_nullable
+as String?,amountUsd: freezed == amountUsd ? _self.amountUsd : amountUsd // ignore: cast_nullable_to_non_nullable
+as String?,amountSar: freezed == amountSar ? _self.amountSar : amountSar // ignore: cast_nullable_to_non_nullable
+as String?,network: freezed == network ? _self.network : network // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,txHash: freezed == txHash ? _self.txHash : txHash // ignore: cast_nullable_to_non_nullable
+as String?,blockchainLink: freezed == blockchainLink ? _self.blockchainLink : blockchainLink // ignore: cast_nullable_to_non_nullable
+as String?,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,direction: freezed == direction ? _self.direction : direction // ignore: cast_nullable_to_non_nullable
+as String?,type: freezed == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as String?,networkIconUrl: freezed == networkIconUrl ? _self.networkIconUrl : networkIconUrl // ignore: cast_nullable_to_non_nullable
 as String?,fee: freezed == fee ? _self.fee : fee // ignore: cast_nullable_to_non_nullable
-as double?,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
+as String?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
+as String?,errorMessageAr: freezed == errorMessageAr ? _self.errorMessageAr : errorMessageAr // ignore: cast_nullable_to_non_nullable
+as String?,senderAddress: freezed == senderAddress ? _self.senderAddress : senderAddress // ignore: cast_nullable_to_non_nullable
+as String?,receiverAddress: freezed == receiverAddress ? _self.receiverAddress : receiverAddress // ignore: cast_nullable_to_non_nullable
+as String?,counterpartyPhone: freezed == counterpartyPhone ? _self.counterpartyPhone : counterpartyPhone // ignore: cast_nullable_to_non_nullable
+as String?,transactionType: freezed == transactionType ? _self.transactionType : transactionType // ignore: cast_nullable_to_non_nullable
+as String?,pairLabel: freezed == pairLabel ? _self.pairLabel : pairLabel // ignore: cast_nullable_to_non_nullable
+as String?,fromAsset: freezed == fromAsset ? _self.fromAsset : fromAsset // ignore: cast_nullable_to_non_nullable
+as TransactionSwapAsset?,toAsset: freezed == toAsset ? _self.toAsset : toAsset // ignore: cast_nullable_to_non_nullable
+as TransactionSwapAsset?,exchangeRate: freezed == exchangeRate ? _self.exchangeRate : exchangeRate // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
+/// Create a copy of TransactionModel
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$TransactionSwapAssetCopyWith<$Res>? get fromAsset {
+    if (_self.fromAsset == null) {
+    return null;
+  }
 
+  return $TransactionSwapAssetCopyWith<$Res>(_self.fromAsset!, (value) {
+    return _then(_self.copyWith(fromAsset: value));
+  });
+}/// Create a copy of TransactionModel
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$TransactionSwapAssetCopyWith<$Res>? get toAsset {
+    if (_self.toAsset == null) {
+    return null;
+  }
+
+  return $TransactionSwapAssetCopyWith<$Res>(_self.toAsset!, (value) {
+    return _then(_self.copyWith(toAsset: value));
+  });
+}
 }
 
 
@@ -165,10 +204,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String coinSymbol,  String coinName,  String amount,  String valueInCurrency,  TransactionType type,  TransactionStatus status,  DateTime date,  String? toAddress,  String? fromAddress,  String? transactionHash,  double? fee,  String? note)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'coin_symbol')  String assetSymbol, @JsonKey(name: 'coinName')  String? assetName, @JsonKey(name: 'coinName_ar')  String? assetNameAr,  String? assetIconUrl,  String amount,  String? amountDisplay,  String? amountUsd, @JsonKey(name: 'amountSAR')  String? amountSar,  String? network,  DateTime createdAt,  String? txHash, @JsonKey(name: 'blockchain_link')  String? blockchainLink,  String status,  String? direction,  String? type, @JsonKey(name: 'networkIconUrl')  String? networkIconUrl,  String? fee,  String? errorMessage,  String? errorMessageAr,  String? senderAddress,  String? receiverAddress,  String? counterpartyPhone, @JsonKey(name: 'txType')  String? transactionType,  String? pairLabel,  TransactionSwapAsset? fromAsset,  TransactionSwapAsset? toAsset,  String? exchangeRate)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TransactionModel() when $default != null:
-return $default(_that.id,_that.coinSymbol,_that.coinName,_that.amount,_that.valueInCurrency,_that.type,_that.status,_that.date,_that.toAddress,_that.fromAddress,_that.transactionHash,_that.fee,_that.note);case _:
+return $default(_that.id,_that.assetSymbol,_that.assetName,_that.assetNameAr,_that.assetIconUrl,_that.amount,_that.amountDisplay,_that.amountUsd,_that.amountSar,_that.network,_that.createdAt,_that.txHash,_that.blockchainLink,_that.status,_that.direction,_that.type,_that.networkIconUrl,_that.fee,_that.errorMessage,_that.errorMessageAr,_that.senderAddress,_that.receiverAddress,_that.counterpartyPhone,_that.transactionType,_that.pairLabel,_that.fromAsset,_that.toAsset,_that.exchangeRate);case _:
   return orElse();
 
 }
@@ -186,10 +225,10 @@ return $default(_that.id,_that.coinSymbol,_that.coinName,_that.amount,_that.valu
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String coinSymbol,  String coinName,  String amount,  String valueInCurrency,  TransactionType type,  TransactionStatus status,  DateTime date,  String? toAddress,  String? fromAddress,  String? transactionHash,  double? fee,  String? note)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'coin_symbol')  String assetSymbol, @JsonKey(name: 'coinName')  String? assetName, @JsonKey(name: 'coinName_ar')  String? assetNameAr,  String? assetIconUrl,  String amount,  String? amountDisplay,  String? amountUsd, @JsonKey(name: 'amountSAR')  String? amountSar,  String? network,  DateTime createdAt,  String? txHash, @JsonKey(name: 'blockchain_link')  String? blockchainLink,  String status,  String? direction,  String? type, @JsonKey(name: 'networkIconUrl')  String? networkIconUrl,  String? fee,  String? errorMessage,  String? errorMessageAr,  String? senderAddress,  String? receiverAddress,  String? counterpartyPhone, @JsonKey(name: 'txType')  String? transactionType,  String? pairLabel,  TransactionSwapAsset? fromAsset,  TransactionSwapAsset? toAsset,  String? exchangeRate)  $default,) {final _that = this;
 switch (_that) {
 case _TransactionModel():
-return $default(_that.id,_that.coinSymbol,_that.coinName,_that.amount,_that.valueInCurrency,_that.type,_that.status,_that.date,_that.toAddress,_that.fromAddress,_that.transactionHash,_that.fee,_that.note);case _:
+return $default(_that.id,_that.assetSymbol,_that.assetName,_that.assetNameAr,_that.assetIconUrl,_that.amount,_that.amountDisplay,_that.amountUsd,_that.amountSar,_that.network,_that.createdAt,_that.txHash,_that.blockchainLink,_that.status,_that.direction,_that.type,_that.networkIconUrl,_that.fee,_that.errorMessage,_that.errorMessageAr,_that.senderAddress,_that.receiverAddress,_that.counterpartyPhone,_that.transactionType,_that.pairLabel,_that.fromAsset,_that.toAsset,_that.exchangeRate);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -206,10 +245,10 @@ return $default(_that.id,_that.coinSymbol,_that.coinName,_that.amount,_that.valu
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String coinSymbol,  String coinName,  String amount,  String valueInCurrency,  TransactionType type,  TransactionStatus status,  DateTime date,  String? toAddress,  String? fromAddress,  String? transactionHash,  double? fee,  String? note)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'coin_symbol')  String assetSymbol, @JsonKey(name: 'coinName')  String? assetName, @JsonKey(name: 'coinName_ar')  String? assetNameAr,  String? assetIconUrl,  String amount,  String? amountDisplay,  String? amountUsd, @JsonKey(name: 'amountSAR')  String? amountSar,  String? network,  DateTime createdAt,  String? txHash, @JsonKey(name: 'blockchain_link')  String? blockchainLink,  String status,  String? direction,  String? type, @JsonKey(name: 'networkIconUrl')  String? networkIconUrl,  String? fee,  String? errorMessage,  String? errorMessageAr,  String? senderAddress,  String? receiverAddress,  String? counterpartyPhone, @JsonKey(name: 'txType')  String? transactionType,  String? pairLabel,  TransactionSwapAsset? fromAsset,  TransactionSwapAsset? toAsset,  String? exchangeRate)?  $default,) {final _that = this;
 switch (_that) {
 case _TransactionModel() when $default != null:
-return $default(_that.id,_that.coinSymbol,_that.coinName,_that.amount,_that.valueInCurrency,_that.type,_that.status,_that.date,_that.toAddress,_that.fromAddress,_that.transactionHash,_that.fee,_that.note);case _:
+return $default(_that.id,_that.assetSymbol,_that.assetName,_that.assetNameAr,_that.assetIconUrl,_that.amount,_that.amountDisplay,_that.amountUsd,_that.amountSar,_that.network,_that.createdAt,_that.txHash,_that.blockchainLink,_that.status,_that.direction,_that.type,_that.networkIconUrl,_that.fee,_that.errorMessage,_that.errorMessageAr,_that.senderAddress,_that.receiverAddress,_that.counterpartyPhone,_that.transactionType,_that.pairLabel,_that.fromAsset,_that.toAsset,_that.exchangeRate);case _:
   return null;
 
 }
@@ -220,23 +259,38 @@ return $default(_that.id,_that.coinSymbol,_that.coinName,_that.amount,_that.valu
 /// @nodoc
 @JsonSerializable()
 
-class _TransactionModel implements TransactionModel {
-  const _TransactionModel({required this.id, required this.coinSymbol, required this.coinName, required this.amount, required this.valueInCurrency, required this.type, required this.status, required this.date, required this.toAddress, required this.fromAddress, required this.transactionHash, required this.fee, this.note});
+class _TransactionModel extends TransactionModel {
+  const _TransactionModel({required this.id, @JsonKey(name: 'coin_symbol') required this.assetSymbol, @JsonKey(name: 'coinName') this.assetName, @JsonKey(name: 'coinName_ar') this.assetNameAr, this.assetIconUrl, required this.amount, this.amountDisplay, this.amountUsd, @JsonKey(name: 'amountSAR') this.amountSar, this.network, required this.createdAt, this.txHash, @JsonKey(name: 'blockchain_link') this.blockchainLink, required this.status, this.direction, this.type, @JsonKey(name: 'networkIconUrl') this.networkIconUrl, this.fee, this.errorMessage, this.errorMessageAr, this.senderAddress, this.receiverAddress, this.counterpartyPhone, @JsonKey(name: 'txType') this.transactionType, this.pairLabel, this.fromAsset, this.toAsset, this.exchangeRate}): super._();
   factory _TransactionModel.fromJson(Map<String, dynamic> json) => _$TransactionModelFromJson(json);
 
 @override final  String id;
-@override final  String coinSymbol;
-@override final  String coinName;
+@override@JsonKey(name: 'coin_symbol') final  String assetSymbol;
+@override@JsonKey(name: 'coinName') final  String? assetName;
+@override@JsonKey(name: 'coinName_ar') final  String? assetNameAr;
+@override final  String? assetIconUrl;
 @override final  String amount;
-@override final  String valueInCurrency;
-@override final  TransactionType type;
-@override final  TransactionStatus status;
-@override final  DateTime date;
-@override final  String? toAddress;
-@override final  String? fromAddress;
-@override final  String? transactionHash;
-@override final  double? fee;
-@override final  String? note;
+@override final  String? amountDisplay;
+@override final  String? amountUsd;
+@override@JsonKey(name: 'amountSAR') final  String? amountSar;
+@override final  String? network;
+@override final  DateTime createdAt;
+@override final  String? txHash;
+@override@JsonKey(name: 'blockchain_link') final  String? blockchainLink;
+@override final  String status;
+@override final  String? direction;
+@override final  String? type;
+@override@JsonKey(name: 'networkIconUrl') final  String? networkIconUrl;
+@override final  String? fee;
+@override final  String? errorMessage;
+@override final  String? errorMessageAr;
+@override final  String? senderAddress;
+@override final  String? receiverAddress;
+@override final  String? counterpartyPhone;
+@override@JsonKey(name: 'txType') final  String? transactionType;
+@override final  String? pairLabel;
+@override final  TransactionSwapAsset? fromAsset;
+@override final  TransactionSwapAsset? toAsset;
+@override final  String? exchangeRate;
 
 /// Create a copy of TransactionModel
 /// with the given fields replaced by the non-null parameter values.
@@ -251,16 +305,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TransactionModel&&(identical(other.id, id) || other.id == id)&&(identical(other.coinSymbol, coinSymbol) || other.coinSymbol == coinSymbol)&&(identical(other.coinName, coinName) || other.coinName == coinName)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.valueInCurrency, valueInCurrency) || other.valueInCurrency == valueInCurrency)&&(identical(other.type, type) || other.type == type)&&(identical(other.status, status) || other.status == status)&&(identical(other.date, date) || other.date == date)&&(identical(other.toAddress, toAddress) || other.toAddress == toAddress)&&(identical(other.fromAddress, fromAddress) || other.fromAddress == fromAddress)&&(identical(other.transactionHash, transactionHash) || other.transactionHash == transactionHash)&&(identical(other.fee, fee) || other.fee == fee)&&(identical(other.note, note) || other.note == note));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TransactionModel&&(identical(other.id, id) || other.id == id)&&(identical(other.assetSymbol, assetSymbol) || other.assetSymbol == assetSymbol)&&(identical(other.assetName, assetName) || other.assetName == assetName)&&(identical(other.assetNameAr, assetNameAr) || other.assetNameAr == assetNameAr)&&(identical(other.assetIconUrl, assetIconUrl) || other.assetIconUrl == assetIconUrl)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.amountDisplay, amountDisplay) || other.amountDisplay == amountDisplay)&&(identical(other.amountUsd, amountUsd) || other.amountUsd == amountUsd)&&(identical(other.amountSar, amountSar) || other.amountSar == amountSar)&&(identical(other.network, network) || other.network == network)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.txHash, txHash) || other.txHash == txHash)&&(identical(other.blockchainLink, blockchainLink) || other.blockchainLink == blockchainLink)&&(identical(other.status, status) || other.status == status)&&(identical(other.direction, direction) || other.direction == direction)&&(identical(other.type, type) || other.type == type)&&(identical(other.networkIconUrl, networkIconUrl) || other.networkIconUrl == networkIconUrl)&&(identical(other.fee, fee) || other.fee == fee)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.errorMessageAr, errorMessageAr) || other.errorMessageAr == errorMessageAr)&&(identical(other.senderAddress, senderAddress) || other.senderAddress == senderAddress)&&(identical(other.receiverAddress, receiverAddress) || other.receiverAddress == receiverAddress)&&(identical(other.counterpartyPhone, counterpartyPhone) || other.counterpartyPhone == counterpartyPhone)&&(identical(other.transactionType, transactionType) || other.transactionType == transactionType)&&(identical(other.pairLabel, pairLabel) || other.pairLabel == pairLabel)&&(identical(other.fromAsset, fromAsset) || other.fromAsset == fromAsset)&&(identical(other.toAsset, toAsset) || other.toAsset == toAsset)&&(identical(other.exchangeRate, exchangeRate) || other.exchangeRate == exchangeRate));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,coinSymbol,coinName,amount,valueInCurrency,type,status,date,toAddress,fromAddress,transactionHash,fee,note);
+int get hashCode => Object.hashAll([runtimeType,id,assetSymbol,assetName,assetNameAr,assetIconUrl,amount,amountDisplay,amountUsd,amountSar,network,createdAt,txHash,blockchainLink,status,direction,type,networkIconUrl,fee,errorMessage,errorMessageAr,senderAddress,receiverAddress,counterpartyPhone,transactionType,pairLabel,fromAsset,toAsset,exchangeRate]);
 
 @override
 String toString() {
-  return 'TransactionModel(id: $id, coinSymbol: $coinSymbol, coinName: $coinName, amount: $amount, valueInCurrency: $valueInCurrency, type: $type, status: $status, date: $date, toAddress: $toAddress, fromAddress: $fromAddress, transactionHash: $transactionHash, fee: $fee, note: $note)';
+  return 'TransactionModel(id: $id, assetSymbol: $assetSymbol, assetName: $assetName, assetNameAr: $assetNameAr, assetIconUrl: $assetIconUrl, amount: $amount, amountDisplay: $amountDisplay, amountUsd: $amountUsd, amountSar: $amountSar, network: $network, createdAt: $createdAt, txHash: $txHash, blockchainLink: $blockchainLink, status: $status, direction: $direction, type: $type, networkIconUrl: $networkIconUrl, fee: $fee, errorMessage: $errorMessage, errorMessageAr: $errorMessageAr, senderAddress: $senderAddress, receiverAddress: $receiverAddress, counterpartyPhone: $counterpartyPhone, transactionType: $transactionType, pairLabel: $pairLabel, fromAsset: $fromAsset, toAsset: $toAsset, exchangeRate: $exchangeRate)';
 }
 
 
@@ -271,11 +325,11 @@ abstract mixin class _$TransactionModelCopyWith<$Res> implements $TransactionMod
   factory _$TransactionModelCopyWith(_TransactionModel value, $Res Function(_TransactionModel) _then) = __$TransactionModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String coinSymbol, String coinName, String amount, String valueInCurrency, TransactionType type, TransactionStatus status, DateTime date, String? toAddress, String? fromAddress, String? transactionHash, double? fee, String? note
+ String id,@JsonKey(name: 'coin_symbol') String assetSymbol,@JsonKey(name: 'coinName') String? assetName,@JsonKey(name: 'coinName_ar') String? assetNameAr, String? assetIconUrl, String amount, String? amountDisplay, String? amountUsd,@JsonKey(name: 'amountSAR') String? amountSar, String? network, DateTime createdAt, String? txHash,@JsonKey(name: 'blockchain_link') String? blockchainLink, String status, String? direction, String? type,@JsonKey(name: 'networkIconUrl') String? networkIconUrl, String? fee, String? errorMessage, String? errorMessageAr, String? senderAddress, String? receiverAddress, String? counterpartyPhone,@JsonKey(name: 'txType') String? transactionType, String? pairLabel, TransactionSwapAsset? fromAsset, TransactionSwapAsset? toAsset, String? exchangeRate
 });
 
 
-
+@override $TransactionSwapAssetCopyWith<$Res>? get fromAsset;@override $TransactionSwapAssetCopyWith<$Res>? get toAsset;
 
 }
 /// @nodoc
@@ -288,26 +342,65 @@ class __$TransactionModelCopyWithImpl<$Res>
 
 /// Create a copy of TransactionModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? coinSymbol = null,Object? coinName = null,Object? amount = null,Object? valueInCurrency = null,Object? type = null,Object? status = null,Object? date = null,Object? toAddress = freezed,Object? fromAddress = freezed,Object? transactionHash = freezed,Object? fee = freezed,Object? note = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? assetSymbol = null,Object? assetName = freezed,Object? assetNameAr = freezed,Object? assetIconUrl = freezed,Object? amount = null,Object? amountDisplay = freezed,Object? amountUsd = freezed,Object? amountSar = freezed,Object? network = freezed,Object? createdAt = null,Object? txHash = freezed,Object? blockchainLink = freezed,Object? status = null,Object? direction = freezed,Object? type = freezed,Object? networkIconUrl = freezed,Object? fee = freezed,Object? errorMessage = freezed,Object? errorMessageAr = freezed,Object? senderAddress = freezed,Object? receiverAddress = freezed,Object? counterpartyPhone = freezed,Object? transactionType = freezed,Object? pairLabel = freezed,Object? fromAsset = freezed,Object? toAsset = freezed,Object? exchangeRate = freezed,}) {
   return _then(_TransactionModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,coinSymbol: null == coinSymbol ? _self.coinSymbol : coinSymbol // ignore: cast_nullable_to_non_nullable
-as String,coinName: null == coinName ? _self.coinName : coinName // ignore: cast_nullable_to_non_nullable
-as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
-as String,valueInCurrency: null == valueInCurrency ? _self.valueInCurrency : valueInCurrency // ignore: cast_nullable_to_non_nullable
-as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
-as TransactionType,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as TransactionStatus,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
-as DateTime,toAddress: freezed == toAddress ? _self.toAddress : toAddress // ignore: cast_nullable_to_non_nullable
-as String?,fromAddress: freezed == fromAddress ? _self.fromAddress : fromAddress // ignore: cast_nullable_to_non_nullable
-as String?,transactionHash: freezed == transactionHash ? _self.transactionHash : transactionHash // ignore: cast_nullable_to_non_nullable
+as String,assetSymbol: null == assetSymbol ? _self.assetSymbol : assetSymbol // ignore: cast_nullable_to_non_nullable
+as String,assetName: freezed == assetName ? _self.assetName : assetName // ignore: cast_nullable_to_non_nullable
+as String?,assetNameAr: freezed == assetNameAr ? _self.assetNameAr : assetNameAr // ignore: cast_nullable_to_non_nullable
+as String?,assetIconUrl: freezed == assetIconUrl ? _self.assetIconUrl : assetIconUrl // ignore: cast_nullable_to_non_nullable
+as String?,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as String,amountDisplay: freezed == amountDisplay ? _self.amountDisplay : amountDisplay // ignore: cast_nullable_to_non_nullable
+as String?,amountUsd: freezed == amountUsd ? _self.amountUsd : amountUsd // ignore: cast_nullable_to_non_nullable
+as String?,amountSar: freezed == amountSar ? _self.amountSar : amountSar // ignore: cast_nullable_to_non_nullable
+as String?,network: freezed == network ? _self.network : network // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,txHash: freezed == txHash ? _self.txHash : txHash // ignore: cast_nullable_to_non_nullable
+as String?,blockchainLink: freezed == blockchainLink ? _self.blockchainLink : blockchainLink // ignore: cast_nullable_to_non_nullable
+as String?,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,direction: freezed == direction ? _self.direction : direction // ignore: cast_nullable_to_non_nullable
+as String?,type: freezed == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as String?,networkIconUrl: freezed == networkIconUrl ? _self.networkIconUrl : networkIconUrl // ignore: cast_nullable_to_non_nullable
 as String?,fee: freezed == fee ? _self.fee : fee // ignore: cast_nullable_to_non_nullable
-as double?,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
+as String?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
+as String?,errorMessageAr: freezed == errorMessageAr ? _self.errorMessageAr : errorMessageAr // ignore: cast_nullable_to_non_nullable
+as String?,senderAddress: freezed == senderAddress ? _self.senderAddress : senderAddress // ignore: cast_nullable_to_non_nullable
+as String?,receiverAddress: freezed == receiverAddress ? _self.receiverAddress : receiverAddress // ignore: cast_nullable_to_non_nullable
+as String?,counterpartyPhone: freezed == counterpartyPhone ? _self.counterpartyPhone : counterpartyPhone // ignore: cast_nullable_to_non_nullable
+as String?,transactionType: freezed == transactionType ? _self.transactionType : transactionType // ignore: cast_nullable_to_non_nullable
+as String?,pairLabel: freezed == pairLabel ? _self.pairLabel : pairLabel // ignore: cast_nullable_to_non_nullable
+as String?,fromAsset: freezed == fromAsset ? _self.fromAsset : fromAsset // ignore: cast_nullable_to_non_nullable
+as TransactionSwapAsset?,toAsset: freezed == toAsset ? _self.toAsset : toAsset // ignore: cast_nullable_to_non_nullable
+as TransactionSwapAsset?,exchangeRate: freezed == exchangeRate ? _self.exchangeRate : exchangeRate // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
 
+/// Create a copy of TransactionModel
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$TransactionSwapAssetCopyWith<$Res>? get fromAsset {
+    if (_self.fromAsset == null) {
+    return null;
+  }
 
+  return $TransactionSwapAssetCopyWith<$Res>(_self.fromAsset!, (value) {
+    return _then(_self.copyWith(fromAsset: value));
+  });
+}/// Create a copy of TransactionModel
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$TransactionSwapAssetCopyWith<$Res>? get toAsset {
+    if (_self.toAsset == null) {
+    return null;
+  }
+
+  return $TransactionSwapAssetCopyWith<$Res>(_self.toAsset!, (value) {
+    return _then(_self.copyWith(toAsset: value));
+  });
+}
 }
 
 // dart format on

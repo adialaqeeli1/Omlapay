@@ -1,10 +1,60 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import '../../../../core/mock_data/mock_data.dart';
+
+import '../../../../core/constants/constants.dart';
+import '../../../../core/extentions/number_extensions.dart';
+import '../../../../core/l10n/app_localizations_from_storage.dart';
 import '../../../../core/models/coin_model/coin_model.dart';
+import '../../../../core/models/swap_quote_model/swap_quote_model.dart';
+import '../../../../core/models/swap_quote_stream_model/swap_quote_stream_event.dart';
+import '../../../../core/models/swap_quote_stream_model/swap_quote_stream_model.dart';
+import '../../../../core/services/swap_quote_stream_service.dart';
+import '../../../../core/utils/api_message_helper.dart';
+import '../../../../providers/auth_provider.dart';
+import '../../../../providers/coins_prices_provider.dart';
+import '../../../../providers/global_provider.dart';
+import '../../../../providers/wallets_provider.dart';
+import '../services/swap_service.dart';
 
 class SwapProvider extends ChangeNotifier {
+  SwapProvider(
+    this.authProvider,
+    this._coinsPricesProvider,
+    this.walletsProvider,
+    this._globalProvider,
+    this._quoteStreamService, {
+    String? initialFromCoinSymbol,
+  }) {
+    final trimmed = initialFromCoinSymbol?.trim() ?? '';
+    if (trimmed.isNotEmpty) {
+      _initialFromSymbol = trimmed.toUpperCase();
+    }
+    authProvider.addListener(_notifySafely);
+    _coinsPricesProvider.addListener(_onStreamedCoinsUpdated);
+    _globalProvider.addListener(_onInputsChanged);
+    _syncCoinsFromPrices();
+    fromAmountController.addListener(_onInputsChanged);
+  }
+
+  /// Pre-selected `from` coin symbol applied on the first successful sync
+  /// from [CoinsPricesProvider]. Cleared after it has been applied so later
+  /// SSE updates respect the user's manual selection.
+  String? _initialFromSymbol;
+
+  final AuthProvider authProvider;
+  final CoinsPricesProvider _coinsPricesProvider;
+  final WalletsProvider walletsProvider;
+  final GlobalProvider _globalProvider;
+  final SwapQuoteStreamService _quoteStreamService;
+
+  static const Duration _debounceDuration = Duration(milliseconds: 400);
+
+  bool _isDisposed = false;
+
   List<CoinModel> _coins = [];
-  final bool _isLoading = false;
+  bool _isLoading = false;
+  bool _isSubmitting = false;
 
   CoinModel? _fromCoin;
   CoinModel? _toCoin;
@@ -12,144 +62,422 @@ class SwapProvider extends ChangeNotifier {
   final TextEditingController fromAmountController = TextEditingController();
   final TextEditingController toAmountController = TextEditingController();
 
-  String? _error;
+  String? _localError;
+  SwapQuoteModel? _swapQuote;
+
+  Timer? _debounceTimer;
+  StreamSubscription<SwapQuoteStreamEvent>? _quoteSubscription;
+
+  SwapQuoteStreamModel? _liveQuote;
+  SwapQuoteStreamFailure? _streamFailure;
+  String? _transportError;
+  bool _isStreamLoading = false;
 
   List<CoinModel> get coins => _coins;
   bool get isLoading => _isLoading;
+  bool get isSubmitting => _isSubmitting;
   CoinModel? get fromCoin => _fromCoin;
   CoinModel? get toCoin => _toCoin;
-  String? get error => _error;
+  SwapQuoteModel? get swapQuote => _swapQuote;
 
-  SwapProvider() {
-    _loadData();
-    fromAmountController.addListener(() {
-      _validate();
-      _calculateToAmount();
-    });
+  SwapQuoteStreamModel? get liveQuote => _liveQuote;
+  bool get isStreamLoading => _isStreamLoading;
+
+  /// Unified error surface for the UI: server stream error > local validation
+  /// > transport error.
+  String? get error {
+    final failure = _streamFailure;
+    if (failure != null) return _resolveFailureMessage(failure);
+    if (_localError != null) return _localError;
+    return _transportError;
   }
 
-  // Mock exchange rate and fee
-  double get _exchangeRate => 0.00032; // Mock: 1 USDT = 0.00032 BTC
-  double get _swapFeePercentage => 0.0065; // Mock: 0.65% fee
+  bool get isVerified => authProvider.state.user?.isVerified ?? false;
+  bool get showVerificationWarning => !isVerified;
 
-  String _swapFee = '0';
-  String get swapFee => _swapFee;
+  /// Minimum amount the user is allowed to swap from [fromCoin], parsed as a
+  /// double. Returns 0 when the backend hasn't shipped a `swapMinAmount` for
+  /// the selected coin so the UI can hide the bound-driven hint/row.
+  double get fromCoinSwapMinAmount =>
+      double.tryParse(_fromCoin?.swapMinAmount ?? '') ?? 0;
 
-  void _loadData() {
-    // Load data from global MockData (simulating user profile)
-    _coins = MockData.coins;
+  /// Maximum amount the user is allowed to swap from [fromCoin], parsed as
+  /// a double. Returns 0 when the backend hasn't shipped a `swapMaxAmount`.
+  double get fromCoinSwapMaxAmount =>
+      double.tryParse(_fromCoin?.swapMaxAmount ?? '') ?? 0;
 
-    if (_coins.isNotEmpty) {
-      _fromCoin = _coins.firstWhere(
-        (c) => c.symbol == 'USDT',
-        orElse: () => _coins[0],
-      );
-      _toCoin = _coins.firstWhere(
-        (c) => c.symbol == 'BTC',
-        orElse: () => _coins.length > 1 ? _coins[1] : _coins[0],
-      );
+  /// Live fees — empty string when no quote yet. Trimmed for display (drops
+  /// floating-point artifacts and trailing zeros, e.g.
+  /// `0.00000300000000000005` → `0.000003`).
+  String get totalFeeFromCoinAmount =>
+      _formatFee(_liveQuote?.fees?.total?.fromCoinAmount);
+  String get binanceFeeFromCoinAmount =>
+      _formatFee(_liveQuote?.fees?.binance?.fromCoinAmount);
+
+  /// Formats a raw fee string from the quote for display. Returns an empty
+  /// string when there is no fee yet, or the raw value when it isn't a
+  /// parseable number.
+  String _formatFee(String? raw) {
+    if (raw == null || raw.isEmpty) return '';
+    final parsed = double.tryParse(raw);
+    if (parsed == null) return raw;
+    return parsed.toTrimmedAmount();
+  }
+
+  /// Display value for the "1 fromCoin ≈ X toCoin" row. Prefers `inverseRate`
+  /// (matches the label direction). Falls back to `1/exchangeRate`. Empty
+  /// string when no quote yet or the value is non-parseable.
+  String get displayExchangeRate {
+    final quote = _liveQuote;
+    if (quote == null) return '';
+    final inverse = quote.inverseRate;
+    if (inverse.isNotEmpty && double.tryParse(inverse) != null) return inverse;
+    final direct = double.tryParse(quote.exchangeRate);
+    if (direct == null || direct == 0) return '';
+    return (1 / direct).toStringAsFixed(8);
+  }
+
+  /// The `from` amount string sent to the API: the user's input truncated
+  /// (floored toward zero) to [AppConstants.coinAmountDecimals] with no
+  /// thousands grouping, so what we send always matches the value shown in the
+  /// UI. Falls back to the raw text when it isn't a parseable number.
+  String get _amountForApi {
+    final text = fromAmountController.text.trim();
+    final parsed = double.tryParse(text);
+    if (parsed == null) return text;
+    return parsed.toInputAmount();
+  }
+
+  bool get canSwap =>
+      _streamFailure == null &&
+      _localError == null &&
+      _liveQuote != null &&
+      fromAmountController.text.isNotEmpty &&
+      isVerified;
+
+  Future<void> completeVerification() async {
+    await authProvider.verifyUser();
+    _notifySafely();
+  }
+
+  void _onStreamedCoinsUpdated() {
+    _syncCoinsFromPrices();
+  }
+
+  void _syncCoinsFromPrices() {
+    final incoming = _coinsPricesProvider.coins;
+    _isLoading = _coinsPricesProvider.isLoading && incoming.isEmpty;
+    // Sort by fiat balance (highest first) so the list — and therefore the
+    // default `from`/`to` selection — matches the home assets list and the
+    // coin picker sheet.
+    _coins = walletsProvider.sortByFiatBalanceDesc(incoming);
+
+    if (_coins.isEmpty) {
+      _fromCoin = null;
+      _toCoin = null;
+      // _validateLocal();
+      _notifySafely();
+      return;
     }
-    notifyListeners();
+
+    final previousFromSymbol = _fromCoin?.symbol;
+    final previousToSymbol = _toCoin?.symbol;
+
+    final pendingInitial = _initialFromSymbol;
+    CoinModel? initialFromMatch;
+    if (pendingInitial != null) {
+      initialFromMatch = _coins
+          .where((c) => c.symbol.toUpperCase() == pendingInitial)
+          .firstOrNull;
+    }
+
+    if (initialFromMatch != null) {
+      _fromCoin = initialFromMatch;
+      // Pick the first coin that isn't the pre-selected one as the `to` coin.
+      _toCoin = _coins.firstWhere(
+        (c) => c.symbol.toUpperCase() != pendingInitial,
+        orElse: () => _coins.first,
+      );
+      _initialFromSymbol = null;
+    } else {
+      if (_fromCoin != null) {
+        _fromCoin =
+            _coins.where((c) => c.symbol == _fromCoin!.symbol).firstOrNull ??
+            _coins.first;
+      } else {
+        _fromCoin = _coins.first;
+      }
+
+      if (_toCoin != null) {
+        _toCoin =
+            _coins.where((c) => c.symbol == _toCoin!.symbol).firstOrNull ??
+            (_coins.length > 1 ? _coins[1] : _coins.first);
+      } else {
+        _toCoin = _coins.length > 1 ? _coins[1] : _coins.first;
+      }
+    }
+
+    // _validateLocal();
+    final selectionChanged =
+        previousFromSymbol != _fromCoin?.symbol ||
+        previousToSymbol != _toCoin?.symbol;
+    if (selectionChanged) {
+      _onInputsChanged();
+    }
+    _notifySafely();
   }
 
   void setFromCoin(CoinModel coin) {
-    if (_toCoin == coin) {
+    if (_toCoin != null && _toCoin!.symbol == coin.symbol) {
       _toCoin = _fromCoin;
     }
     _fromCoin = coin;
-    _validate();
-    _calculateToAmount();
-    notifyListeners();
+    // _validateLocal();
+    _onInputsChanged();
+    _notifySafely();
   }
 
   void setToCoin(CoinModel coin) {
-    if (_fromCoin == coin) {
+    if (_fromCoin != null && _fromCoin!.symbol == coin.symbol) {
       _fromCoin = _toCoin;
     }
     _toCoin = coin;
-    _calculateToAmount();
-    notifyListeners();
+    _onInputsChanged();
+    _notifySafely();
   }
 
   void swapCoins() {
     final temp = _fromCoin;
     _fromCoin = _toCoin;
     _toCoin = temp;
-    _validate(); // Validate after swap as balance might change
-    _calculateToAmount();
-    notifyListeners();
+    // _validateLocal();
+    _onInputsChanged();
+    _notifySafely();
   }
 
+  /// Fills the `from` amount with the user's full available balance for the
+  /// selected coin. Uses the same [WalletsProvider.balanceForCoin] source as
+  /// the displayed "Available" and the balance validation, comma-stripped so
+  /// it parses cleanly. The [fromAmountController] listener re-runs validation
+  /// and the stream gating.
   void setMaxAmount() {
-    if (_fromCoin != null) {
-      // Assuming amount in CoinModel is the balance
-      // Clean amount string (remove non-numeric if necessary, though model usually has clean string or double)
-      // The CoinModel definition showed String amount.
-      fromAmountController.text = _fromCoin!.amount;
-      _validate();
-    }
+    final coin = _fromCoin;
+    if (coin == null) return;
+    fromAmountController.text = walletsProvider
+        .balanceForCoin(coin.symbol)
+        .replaceAll(',', '');
   }
 
-  void _validate() {
-    _error = null;
-    final text = fromAmountController.text;
-    if (text.isEmpty) {
-      notifyListeners();
-      return;
-    }
+  /// Validates the `from` amount against the selected coin's swap minimum and
+  /// the user's balance, mirroring the send flow's [_validate]. Sets
+  /// [_localError] (surfaced via [error]). Empty input leaves it null for a
+  /// clean state; `0` falls through to the minimum check and surfaces the
+  /// below-minimum error, just like the send screen.
+  void _validateLocal() {
+    final l10n = appLocalizationsFromStoredLocale();
+    _localError = null;
+
+    final text = fromAmountController.text.trim();
+    if (text.isEmpty) return;
 
     final amount = double.tryParse(text);
     if (amount == null) {
-      _error = 'Invalid amount';
-    } else if (_fromCoin != null) {
-      final balance =
-          double.tryParse(_fromCoin!.amount.replaceAll(',', '')) ?? 0.0;
-      if (amount > balance) {
-        _error = 'Insufficient balance';
+      _localError = l10n.sendValidationInvalidAmount;
+      return;
+    }
+
+    final coin = _fromCoin;
+    if (coin == null) return;
+
+    // Validate against the value actually sent (truncated to the display
+    // precision), so what we check matches what the user sees and we send.
+    final sendAmount = double.tryParse(_amountForApi) ?? amount;
+
+    final min = fromCoinSwapMinAmount;
+    if (min > 0 && sendAmount < min) {
+      _localError = l10n.sendValidationBelowMinimum(min.toFormattedMinAmount());
+      return;
+    }
+
+    final balanceStr = walletsProvider
+        .balanceForCoin(coin.symbol)
+        .replaceAll(',', '');
+    final balance = double.tryParse(balanceStr) ?? 0.0;
+    if (sendAmount > balance) {
+      _localError = l10n.sendValidationInsufficientBalance;
+    }
+  }
+
+  /// Single entry point for any input change (amount, coin, currency).
+  /// Validates locally, cancels any in-flight stream, and schedules a
+  /// debounced reconnect when inputs are complete.
+  void _onInputsChanged() {
+    _validateLocal();
+
+    final amountText = fromAmountController.text.trim();
+    final parsed = double.tryParse(amountText);
+    final inputsValid =
+        _localError == null &&
+        _fromCoin != null &&
+        _toCoin != null &&
+        _fromCoin!.symbol != _toCoin!.symbol &&
+        amountText.isNotEmpty &&
+        parsed != null &&
+        parsed > 0;
+
+    _debounceTimer?.cancel();
+
+    if (!inputsValid) {
+      _quoteSubscription?.cancel();
+      _quoteSubscription = null;
+      _liveQuote = null;
+      _streamFailure = null;
+      _transportError = null;
+      _isStreamLoading = false;
+      if (toAmountController.text.isNotEmpty) {
+        toAmountController.text = '';
       }
-    }
-    notifyListeners();
-  }
-
-  void _calculateToAmount() {
-    final text = fromAmountController.text;
-    if (text.isEmpty) {
-      toAmountController.text = '';
-      _swapFee = '0';
-      notifyListeners();
+      _notifySafely();
       return;
     }
 
-    final fromAmount = double.tryParse(text);
-    if (fromAmount == null) {
+    _debounceTimer = Timer(_debounceDuration, _connectStream);
+    _notifySafely();
+  }
+
+  Future<void> _connectStream() async {
+    await _quoteSubscription?.cancel();
+    _quoteSubscription = null;
+    if (_isDisposed) return;
+
+    final fromCoin = _fromCoin;
+    final toCoin = _toCoin;
+    final amountText = fromAmountController.text.trim();
+    if (fromCoin == null || toCoin == null || amountText.isEmpty) return;
+
+    _streamFailure = null;
+    _transportError = null;
+    _liveQuote = null;
+    if (toAmountController.text.isNotEmpty) {
       toAmountController.text = '';
-      _swapFee = '0';
-      return;
     }
+    _isStreamLoading = true;
+    _notifySafely();
 
-    // Simulate Fee Calculation
-    final fee = fromAmount * _swapFeePercentage;
-    _swapFee = fee.toStringAsFixed(4);
+    _quoteSubscription = _quoteStreamService
+        .streamSwapQuote(
+          fromCoin: fromCoin.symbol,
+          toCoin: toCoin.symbol,
+          amount: _amountForApi,
+          currency: _globalProvider.selectedCurrency,
+        )
+        .listen(_onStreamEvent, onError: _onStreamError, cancelOnError: false);
+  }
 
-    // Simulate Exchange Value
-    // In real app, we would get rate from pair (fromCoin, toCoin)
-    // Requirement: "update the to field with the values of from field based on the swap fees value"
-
-    // Let's do simple: To = From * Rate. Fee displayed separate.
-    final toAmount = fromAmount * _exchangeRate;
-
-    // Update To Controller
-    // Only update if value is different to avoid cursor jumps if user was typing (but it's read only so fine)
-    final formattedTo = toAmount.toStringAsFixed(6);
-    if (toAmountController.text != formattedTo) {
-      toAmountController.text = formattedTo;
+  void _onStreamEvent(SwapQuoteStreamEvent event) {
+    if (_isDisposed) return;
+    _isStreamLoading = false;
+    switch (event) {
+      case SwapQuoteStreamSuccess(:final quote):
+        _liveQuote = quote;
+        _streamFailure = null;
+        _transportError = null;
+        final receive = double.tryParse(quote.youReceive);
+        // Truncate (not round) to the coin display precision so the receive
+        // amount never overstates what the user actually gets — mirroring
+        // toFormattedAmount used elsewhere in the swap flow. No thousands
+        // grouping so the value stays parseable inside the controller.
+        final formatted = receive == null
+            ? ''
+            : receive.toInputAmount(decimals: AppConstants.coinAmountDecimals);
+        if (toAmountController.text != formatted) {
+          toAmountController.text = formatted;
+        }
+      case SwapQuoteStreamFailure():
+        _streamFailure = event;
+      // Preserve the last good `_liveQuote` and `toAmountController` so the
+      // UI doesn't layout-shift when the server alternates ok/error at the
+      // balance boundary. The error text is shown on top via `error`.
     }
+    _notifySafely();
+  }
+
+  void _onStreamError(Object error, [StackTrace? stackTrace]) {
+    if (_isDisposed) return;
+    final l10n = appLocalizationsFromStoredLocale();
+    _isStreamLoading = false;
+    _transportError = l10n.requestFailed;
+    // Preserve last good quote to avoid layout shift; see _onStreamEvent.
+    _notifySafely();
+  }
+
+  String _resolveFailureMessage(SwapQuoteStreamFailure failure) {
+    final l10n = appLocalizationsFromStoredLocale();
+    return ApiMessageHelper.localizedText(
+      message: failure.messageEn,
+      messageAr: failure.messageAr,
+      fallback: l10n.requestFailed,
+    );
+  }
+
+  /// Calls the swap quote API. Rethrows exceptions so the UI layer
+  /// can display appropriate error snackbars.
+  Future<void> getSwapQuote() async {
+    if (_isSubmitting) return;
+    if (_fromCoin == null || _toCoin == null) return;
+
+    _isSubmitting = true;
+    _notifySafely();
+
+    try {
+      _swapQuote = await SwapService.fetchSwapQuote(
+        fromCoin: _fromCoin!.symbol,
+        toCoin: _toCoin!.symbol,
+        amount: _amountForApi,
+      );
+    } finally {
+      _isSubmitting = false;
+      _notifySafely();
+    }
+  }
+
+  /// Executes the swap via the backend. Returns `true` on success.
+  /// Rethrows exceptions so the UI can surface localized error messages.
+  Future<bool> executeSwap() async {
+    if (_isSubmitting) return false;
+    if (_fromCoin == null || _toCoin == null) return false;
+    if (fromAmountController.text.trim().isEmpty) return false;
+
+    _isSubmitting = true;
+    _notifySafely();
+
+    try {
+      await SwapService.executeSwap(
+        fromCoin: _fromCoin!.symbol,
+        toCoin: _toCoin!.symbol,
+        amount: _amountForApi,
+      );
+      unawaited(walletsProvider.refreshWallets());
+      return true;
+    } finally {
+      _isSubmitting = false;
+      _notifySafely();
+    }
+  }
+
+  void _notifySafely() {
+    if (_isDisposed) return;
     notifyListeners();
   }
 
-  // Clean up
   @override
   void dispose() {
+    _isDisposed = true;
+    _debounceTimer?.cancel();
+    _quoteSubscription?.cancel();
+    _coinsPricesProvider.removeListener(_onStreamedCoinsUpdated);
+    _globalProvider.removeListener(_onInputsChanged);
+    authProvider.removeListener(_notifySafely);
     fromAmountController.dispose();
     toAmountController.dispose();
     super.dispose();

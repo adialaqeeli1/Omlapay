@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:omlapay_mobile_app/core/extentions/context_extensions.dart';
+import 'package:omlapay_mobile_app/core/extentions/number_extensions.dart';
 import 'package:omlapay_mobile_app/widgets/common_back_button.dart';
 import 'package:provider/provider.dart';
-import 'package:crypto_font_icons/crypto_font_icons.dart';
+import 'package:omlapay_mobile_app/core/constants/crypto_font_icons.dart';
+import '../../../../core/models/coin_model/coin_model.dart';
+import '../../../../core/models/coin_model/coin_model_quote_display.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/utils/app_exception.dart';
+import '../../../../core/utils/coin_brand_color.dart';
+import '../../../../core/utils/snackbar_helper.dart';
+import '../../../../routes/app_router.dart';
 import '../../../../widgets/common_coin_icon.dart';
 import '../../../../widgets/theme_aware_icon.dart';
 import '../provider/swap_provider.dart';
-import '../../../../routes/app_router.dart';
-import 'package:go_router/go_router.dart';
 
 class ReviewOrderView extends StatelessWidget {
   const ReviewOrderView({super.key});
@@ -17,16 +24,19 @@ class ReviewOrderView extends StatelessWidget {
     final provider = context.watch<SwapProvider>();
     final fromCoin = provider.fromCoin;
     final toCoin = provider.toCoin;
+    final quote = provider.liveQuote;
+    final l10n = context.l10n!;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: CommonBackButton(),
-        title: const Text(
-          'Review Order',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        title: Text(
+          l10n.reviewOrderTitle,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
       ),
@@ -38,8 +48,9 @@ class ReviewOrderView extends StatelessWidget {
             // Main Card
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF16171D), // Dark card background
+                color: colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
               child: Stack(
                 alignment: Alignment.center,
@@ -52,10 +63,10 @@ class ReviewOrderView extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'From',
+                            Text(
+                              l10n.swapDirectionFrom,
                               style: TextStyle(
-                                color: Colors.grey,
+                                color: colorScheme.onSurfaceVariant,
                                 fontSize: 13,
                               ),
                             ),
@@ -66,12 +77,13 @@ class ReviewOrderView extends StatelessWidget {
                                 // Coin Info
                                 Row(
                                   children: [
-                                    _buildCoinIcon(fromCoin?.symbol ?? ''),
+                                    _buildCoinIcon(context, fromCoin),
                                     const SizedBox(width: 12),
                                     Text(
-                                      fromCoin?.symbol ?? '',
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      fromCoin?.localizedCoinTicker(context) ??
+                                          '',
+                                      style: TextStyle(
+                                        color: colorScheme.onSurface,
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -80,9 +92,12 @@ class ReviewOrderView extends StatelessWidget {
                                 ),
                                 // Amount
                                 Text(
-                                  provider.fromAmountController.text,
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  double.parse(
+                                    quote?.youPay ??
+                                        provider.fromAmountController.text,
+                                  ).toFormattedAmount(),
+                                  style: TextStyle(
+                                    color: colorScheme.onSurface,
                                     fontSize: 24,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -94,9 +109,9 @@ class ReviewOrderView extends StatelessWidget {
                             Align(
                               alignment: Alignment.centerRight,
                               child: Text(
-                                '≈100,15 USD', // TODO: Calculate real USD value
+                                '≈${quote?.pay?.amountUsd ?? '0.00'} USD',
                                 style: TextStyle(
-                                  color: Colors.grey[600],
+                                  color: colorScheme.onSurfaceVariant,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -107,7 +122,7 @@ class ReviewOrderView extends StatelessWidget {
                       ),
 
                       // Divider line partial
-                      const Divider(color: Color(0xFF2A2D35), height: 1),
+                      Divider(color: colorScheme.outlineVariant, height: 1),
 
                       // To Section
                       Padding(
@@ -115,10 +130,10 @@ class ReviewOrderView extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'To',
+                            Text(
+                              l10n.swapDirectionTo,
                               style: TextStyle(
-                                color: Colors.grey,
+                                color: colorScheme.onSurfaceVariant,
                                 fontSize: 13,
                               ),
                             ),
@@ -129,12 +144,13 @@ class ReviewOrderView extends StatelessWidget {
                                 // Coin Info
                                 Row(
                                   children: [
-                                    _buildCoinIcon(toCoin?.symbol ?? ''),
+                                    _buildCoinIcon(context, toCoin),
                                     const SizedBox(width: 12),
                                     Text(
-                                      toCoin?.symbol ?? '',
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      toCoin?.localizedCoinTicker(context) ??
+                                          '',
+                                      style: TextStyle(
+                                        color: colorScheme.onSurface,
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -143,9 +159,12 @@ class ReviewOrderView extends StatelessWidget {
                                 ),
                                 // Amount
                                 Text(
-                                  provider.toAmountController.text,
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  double.parse(
+                                    quote?.youReceive ??
+                                        provider.toAmountController.text,
+                                  ).toFormattedAmount(),
+                                  style: TextStyle(
+                                    color: colorScheme.onSurface,
                                     fontSize: 24,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -157,9 +176,9 @@ class ReviewOrderView extends StatelessWidget {
                             Align(
                               alignment: Alignment.centerRight,
                               child: Text(
-                                '≈2,15 USD', // TODO: Calculate real USD value
+                                '≈${quote?.receive?.netAmountUsd ?? '0.00'} USD',
                                 style: TextStyle(
-                                  color: Colors.grey[600],
+                                  color: colorScheme.onSurfaceVariant,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -176,14 +195,10 @@ class ReviewOrderView extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: const Color(
-                        0xFF1E2025,
-                      ), // Inner card color or slightly lighter?
-                      // The design usually has a darker circle background matching parent or app bg
-                      // Let's use a subtle dark color or transparency if needed
+                      color: colorScheme.surface,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xFF2A2D35),
+                        color: colorScheme.outlineVariant,
                         width: 1,
                       ),
                     ),
@@ -200,33 +215,23 @@ class ReviewOrderView extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
-            // Network Information
+            // Exchange Rate
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Network',
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                Text(
+                  l10n.swapExchangeRate,
+                  style: TextStyle(
+                    color: colorScheme.onSurfaceVariant,
+                    fontSize: 14,
+                  ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2A2D35),
-                    borderRadius: BorderRadius.circular(6),
-
-                    // If active/selected, typically teal. Screenshot showed TRC20 teal?
-                    // Let's assume generic teal chip for "TRC20" as per prompt description
-                  ),
-                  child: const Text(
-                    'TRC20',
-                    style: TextStyle(
-                      color: AppColors.tealColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
+                Text(
+                  '1 ${fromCoin?.localizedCoinTicker(context) ?? ''} ≈ ${provider.displayExchangeRate.isEmpty ? '—' : provider.displayExchangeRate} ${toCoin?.localizedCoinTicker(context) ?? ''}',
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -238,14 +243,17 @@ class ReviewOrderView extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Swap Fees',
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                Text(
+                  l10n.swapFeesTitle,
+                  style: TextStyle(
+                    color: colorScheme.onSurfaceVariant,
+                    fontSize: 14,
+                  ),
                 ),
                 Text(
-                  '${provider.swapFee} ${fromCoin?.symbol ?? ''}',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  '${quote?.fees?.total?.usd ?? '0'} USD',
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -260,23 +268,37 @@ class ReviewOrderView extends StatelessWidget {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
-                  context.push(Routes.swapSuccess, extra: provider);
-                },
+                onPressed: provider.isSubmitting
+                    ? null
+                    : () => _onSwapNowPressed(context, provider),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.tealColor,
+                  foregroundColor: colorScheme.onPrimary,
+                  disabledBackgroundColor: AppColors.tealColor.withValues(
+                    alpha: 0.5,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: const Text(
-                  'Swap Now',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: provider.isSubmitting
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        ),
+                      )
+                    : Text(
+                        l10n.swapNowButton,
+                        style: context.textTheme.titleMedium?.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 30),
@@ -286,38 +308,62 @@ class ReviewOrderView extends StatelessWidget {
     );
   }
 
-  Widget _buildCoinIcon(String symbol) {
-    Color? backgroundColor;
-    Widget? fallbackIcon;
+  Future<void> _onSwapNowPressed(
+    BuildContext context,
+    SwapProvider provider,
+  ) async {
+    final l10n = context.l10n!;
+    try {
+      final success = await provider.executeSwap();
+      if (!context.mounted) return;
+      if (success) {
+        context.push(Routes.swapSuccess, extra: provider);
+      }
+    } on AppException catch (e) {
+      if (!context.mounted) return;
+      SnackbarHelper.showError(context, e.localizedMessage(context.l10n));
+    } catch (_) {
+      if (!context.mounted) return;
+      SnackbarHelper.showError(context, l10n.unknownError);
+    }
+  }
 
-    if (symbol == 'USDT') {
-      backgroundColor = AppColors.usdtColor;
-      fallbackIcon = const Icon(
-        CryptoFontIcons.USDT,
-        color: Colors.white,
-        size: 24,
-      );
-    } else if (symbol == 'ETH') {
-      backgroundColor = AppColors.textWhite;
-      fallbackIcon = const Icon(
-        CryptoFontIcons.ETH,
-        color: Colors.black,
-        size: 24,
-      );
-    } else if (symbol == 'BTC') {
-      backgroundColor = AppColors.bitcoinColor;
-      fallbackIcon = const Icon(
-        CryptoFontIcons.BTC,
-        color: Colors.white,
-        size: 24,
-      );
+  Widget _buildCoinIcon(BuildContext context, CoinModel? coin) {
+    final symbol = coin?.symbol ?? '';
+    final iconBackgroundColor = coinBrandColor(
+      symbol,
+      isDarkMode: context.isDarkMode,
+      fallback: Colors.grey,
+    );
+
+    Widget? fallbackIcon;
+    switch (symbol) {
+      case 'USDT':
+        fallbackIcon = const Icon(
+          CryptoFontIcons.USDT,
+          color: Colors.white,
+          size: 24,
+        );
+      case 'ETH':
+        fallbackIcon = const Icon(
+          CryptoFontIcons.ETH,
+          color: Colors.black,
+          size: 24,
+        );
+      case 'BTC':
+        fallbackIcon = const Icon(
+          CryptoFontIcons.BTC,
+          color: Colors.white,
+          size: 24,
+        );
     }
 
     return CommonCoinIcon(
       symbol: symbol,
-      iconBackgroundColor: backgroundColor,
+      iconBackgroundColor: iconBackgroundColor,
       fallbackIcon: fallbackIcon,
-      radius: 20, // Slightly larger for review screen? or same 20 rad = 40 dia
+      radius: 20,
+      networkIconUrl: coin?.networkIconUrl,
     );
   }
 }

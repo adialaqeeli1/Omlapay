@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'OmlaPay';
+  String get appTitle => 'Omlapay';
 
   @override
   String get login => 'Login';
@@ -30,7 +30,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profile => 'Profile';
 
   @override
-  String get welcomeToOmlaPay => 'Welcome to OmlaPay';
+  String get welcomeToOmlaPay => 'Welcome to Omlapay';
 
   @override
   String get email => 'Email';
@@ -94,10 +94,158 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changePhoneNumber => 'Change Phone Number';
 
   @override
+  String get stepsForChangingPhoneNumber =>
+      'Steps for changing your Phone Number';
+
+  @override
+  String get changePhoneStepsDescription =>
+      'To change your registered phone number, follow these steps:';
+
+  @override
+  String get changePhoneStep1 =>
+      'Verify your account with a verification code sent to your registered email address.';
+
+  @override
+  String get changePhoneStep2 =>
+      'Confirm your account passcode to authorize the change.';
+
+  @override
+  String get changePhoneStep3 =>
+      'Enter your new phone number (the one you want to use for your account).';
+
+  @override
+  String get changePhoneStep4 =>
+      'Verify your new phone number with a verification code.';
+
+  @override
+  String get changePhoneAfterStepsNote =>
+      'After you verify the code, your account will use the new phone number.';
+
+  @override
+  String get changePhoneEnterNewSubtitle =>
+      'After you continue, we will send a verification code to this number.';
+
+  @override
+  String get enterNewPhoneNumber => 'Enter new phone number';
+
+  @override
+  String get verifyNewPhoneNumber => 'Verify new phone number';
+
+  @override
+  String changePhoneCurrentOtpSent(String phone) {
+    return 'An 6 digit verification code has been sent via WhatsApp to $phone.';
+  }
+
+  @override
+  String changePhoneNewOtpSent(String phone) {
+    return 'A 6-digit verification code was sent to $phone.';
+  }
+
+  @override
+  String get verifyYourEmail => 'Verify your email';
+
+  @override
+  String twoFactorEmailOtpSent(String email) {
+    return 'A 6-digit verification code has been sent to $email.';
+  }
+
+  @override
+  String get enterValidPhoneNumber => 'Please enter a valid phone number';
+
+  @override
+  String get phoneNumberChangedSuccessfully =>
+      'Your phone number has been changed successfully';
+
+  @override
   String get changeEmail => 'Change Email';
 
   @override
+  String get stepsForChangingEmail => 'Steps for changing your Email';
+
+  @override
+  String get changeEmailStepsDescription =>
+      'To change your registered email address we will follow these steps :';
+
+  @override
+  String get step1Label => 'Step 1';
+
+  @override
+  String get step2Label => 'Step 2';
+
+  @override
+  String get step3Label => 'Step 3';
+
+  @override
+  String get step4Label => 'Step 4';
+
+  @override
+  String get changeEmailStep1 =>
+      'Verify your account with a verification code sent to your registered phone number.';
+
+  @override
+  String get changeEmailStep2 =>
+      'Confirm your account passcode to authorize the change.';
+
+  @override
+  String get changeEmailStep3 =>
+      'Enter the new email address you want to use for your account.';
+
+  @override
+  String get changeEmailStep4 =>
+      'Verify the new email address with a verification code.';
+
+  @override
+  String get changeEmailAfterStepsNote =>
+      'After following these steps, your current email address will be changed to the new one.';
+
+  @override
+  String get verifyCurrentPhoneNumber => 'Verify current phone number';
+
+  @override
+  String get enterNewEmailAddress => 'Enter new email address';
+
+  @override
+  String get verifyNewEmailAddress => 'Verify new email address';
+
+  @override
+  String changeEmailPhoneOtpSent(String phone) {
+    return 'An 6 digit verification code has been sent via WhatsApp to $phone.';
+  }
+
+  @override
+  String changeEmailEmailOtpSent(String email) {
+    return 'An 6 digit verification code has been sent to $email.';
+  }
+
+  @override
+  String get enterYourNewEmailAddressToReceiveOtp =>
+      'Please enter your new email address to receive OTP';
+
+  @override
+  String get enterEmailAddressHint => 'Enter new email address';
+
+  @override
+  String get enterValidEmailAddress => 'Please enter a valid email address';
+
+  @override
+  String get continueButton => 'Continue';
+
+  @override
+  String get invalidOtpTryAgain => 'Invalid OTP. Try again.';
+
+  @override
+  String get emailChangedSuccessfully =>
+      'Your email address has been changed successfully';
+
+  @override
   String get changePasscode => 'Change Passcode';
+
+  @override
+  String get passcodeChangedSuccessfully =>
+      'Your passcode has been changed successfully';
+
+  @override
+  String get backHome => 'Back Home';
 
   @override
   String get walletsAddress => 'Wallets Address';
@@ -106,13 +254,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get evm => 'EVM';
 
   @override
-  String get bitcoin => 'Bitcoin';
-
-  @override
   String get tron => 'Tron';
-
-  @override
-  String get solana => 'Solana';
 
   @override
   String get copy => 'Copy';
@@ -128,6 +270,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notification => 'Notification';
+
+  @override
+  String get biometric => 'Biometric';
+
+  @override
+  String get biometricUnlockReason => 'Authenticate to unlock the app';
+
+  @override
+  String get biometricEnableReason => 'Authenticate to enable biometric login';
+
+  @override
+  String get biometricEnableFailed =>
+      'Couldn\'t enable biometric authentication';
 
   @override
   String get dark => 'Dark';
@@ -176,6 +331,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get requestFailed => 'Request failed';
 
   @override
+  String get invalidServerResponse => 'Invalid response from server';
+
+  @override
+  String get softLoginFailed => 'Soft login failed';
+
+  @override
+  String get registrationFailed => 'Registration failed';
+
+  @override
+  String get unableToChangePasscode => 'Unable to change passcode';
+
+  @override
   String get unknownError => 'An unknown error occurred';
 
   @override
@@ -204,6 +371,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hello => 'Hello!';
 
   @override
+  String get helloComma => 'Hello,';
+
+  @override
   String get welcomeBackToOmlapay => 'Welcome Back to Omlapay!';
 
   @override
@@ -221,6 +391,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get forgotPasscode => 'Forgot passcode';
+
+  @override
+  String get forgotPasscodePhoneMissing =>
+      'We couldn\'t load your phone number. Log out and sign in again, or contact support.';
 
   @override
   String get dontHaveAccountSignUp => 'Don\'t have account? Sign Up';
@@ -241,7 +415,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get byCreatingAnAccountIAgreeToMushafars =>
-      'By creating an account I agree to Mushafar\'s';
+      'By creating an account I agree to';
 
   @override
   String get termsOfService => 'Terms of Service';
@@ -273,7 +447,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutOmlapayDescription =>
-      'is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.';
+      'A secure and user-friendly digital wallet that enables seamless sending, receiving, and storing of cryptocurrencies. We manage your private keys on your behalf, simplifying transactions while maintaining the highest security standards. No need to worry about losing recovery phrases—access your funds effortlessly using your mobile number and password. Enjoy instant transfers, built-in exchange features, and 24/7 customer support, making crypto management as smooth as traditional banking. Our wallet ensures fast, secure, and hassle-free transactions while keeping your assets protected.';
+
+  @override
+  String get readMore => 'Read more';
+
+  @override
+  String get readLess => 'Read less';
 
   @override
   String get faqs => 'FAQs';
@@ -325,7 +505,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get attachment => 'Attachment';
 
   @override
-  String get attachFileDescription => 'Attach any related PNG, JPG, PDF';
+  String attachFileDescription(String extensions) {
+    return 'Attach any related $extensions';
+  }
 
   @override
   String get send => 'Send';
@@ -373,6 +555,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get all => 'All';
 
   @override
+  String get open => 'Open';
+
+  @override
   String get solved => 'Solved';
 
   @override
@@ -403,6 +588,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactions => 'Transactions';
 
   @override
+  String get viewAll => 'View all';
+
+  @override
   String get noTransactionsFound => 'No Transactions found.';
 
   @override
@@ -416,10 +604,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ethereum => 'Ethereum';
 
   @override
+  String get bitcoin => 'Bitcoin';
+
+  @override
   String get currency => 'Currency';
 
   @override
   String get cancel => 'Cancel';
+
+  @override
+  String get close => 'Close';
 
   @override
   String get readyToLogOut => 'Ready to log out?';
@@ -427,6 +621,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get logoutDialogMessage =>
       'Your funds are safe. To get back in, we\'ll send a code to your registered mobile number.';
+
+  @override
+  String get deleteAccount => 'Delete Account';
+
+  @override
+  String get deleteAccountConfirmTitle => 'Delete account?';
+
+  @override
+  String get deleteAccountConfirmMessage =>
+      'Your account will be scheduled for deletion. You have 7 days to cancel by logging in again.';
+
+  @override
+  String get deleteAccountScheduled =>
+      'Account deletion scheduled. You have 7 days to cancel by logging in again.';
+
+  @override
+  String get deleteAccountHasBalanceError =>
+      'You still have funds in your wallets. Please withdraw or transfer your entire balance before deleting your account.';
 
   @override
   String get save => 'Save';
@@ -451,7 +663,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String currencySymbol(String choice) {
     String _temp0 = intl.Intl.selectLogic(choice, {
       'usd': '\$',
-      'sar': '﷼',
+      'sar': '⃁',
       'other': '$choice',
     });
     return '$_temp0';
@@ -467,6 +679,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currentPrice => 'Current price';
 
   @override
+  String get coinDetailsPriceUnavailable => '—';
+
+  @override
   String get today => 'today';
 
   @override
@@ -477,6 +692,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sender => 'Sender';
+
+  @override
+  String get receiver => 'Receiver';
 
   @override
   String get address => 'Address';
@@ -518,7 +736,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fee => 'Fee';
 
   @override
+  String get exchangeRate => 'Exchange Rate';
+
+  @override
+  String get pair => 'Pair';
+
+  @override
   String get transactionHash => 'Transaction Hash';
+
+  @override
+  String get couldNotOpenLink => 'Couldn\'t open the link';
+
+  @override
+  String get supportEmailSubject => 'OmlaPay Support';
 
   @override
   String get fromAddress => 'From Address';
@@ -545,6 +775,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sol => 'Sol';
 
   @override
+  String get solana => 'Solana';
+
+  @override
   String get sendTo => 'Send To';
 
   @override
@@ -561,6 +794,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imageSavedSuccessfully => 'Image saved successfully';
+
+  @override
+  String get transactionReceiptTitle => 'Transaction Receipt';
+
+  @override
+  String get transactionIdLabel => 'Transaction ID';
+
+  @override
+  String get recipient => 'Recipient';
+
+  @override
+  String get amountLabel => 'Amount';
+
+  @override
+  String get statusLabel => 'Status';
+
+  @override
+  String get typeLabel => 'Type';
+
+  @override
+  String get transactionSaveFailedMessage => 'Failed to save transaction';
+
+  @override
+  String get photoLibraryPermissionRequired =>
+      'Photo library access is required to save the transaction';
 
   @override
   String transactionSavedSuccessfully(String format) {
@@ -585,6 +843,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get forgotPasscodeTitle => 'Forgot passcode';
 
   @override
+  String forgotPasscodePhoneOtpSent(String phone) {
+    return 'An 6 digit verification code has been sent via WhatsApp to $phone.';
+  }
+
+  @override
+  String forgotPasscodeEmailOtpSent(String email) {
+    return 'A 6-digit verification code has been sent to $email.';
+  }
+
+  @override
   String get verifyYourPhoneNumber => 'Verify your phone number';
 
   @override
@@ -596,8 +864,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String verificationCodesInSeconds(int seconds) {
-    return 'You should receive the verification codes in $seconds Seconds';
+  String get verificationCodesIn =>
+      'You should receive the verification codes in';
+
+  @override
+  String secondsCount(int seconds) {
+    return '$seconds Seconds';
   }
 
   @override
@@ -615,6 +887,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createAPasscode => 'Create a passcode';
+
+  @override
+  String get enterYourCurrentPasscode => 'Enter your current passcode';
+
+  @override
+  String get enterYourNewPasscode => 'Enter your new passcode';
+
+  @override
+  String get confirmYourNewPasscode => 'Confirm your new passcode';
 
   @override
   String get confirmYourPasscode => 'Confirm your passcode';
@@ -671,8 +952,590 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invalidQrCode => 'Invalid QR code';
 
   @override
+  String get qrInvalidWalletAddress => 'Invalid wallet address';
+
+  @override
+  String get qrAddressVerificationFailed =>
+      'Couldn\'t verify the address. Check your connection and try again.';
+
+  @override
+  String get qrAddressNotValidated => 'This address could not be validated';
+
+  @override
   String get tryAgain => 'Try Again';
 
   @override
   String get twoFactorAuthentication => 'Two Factor Authentication';
+
+  @override
+  String get sendFlowReviewTitle => 'Confirmation';
+
+  @override
+  String get sendFlowSendingTitle => 'Sending';
+
+  @override
+  String get feeFree => 'Free';
+
+  @override
+  String get accountNoUserDataAvailable => 'No user data available';
+
+  @override
+  String copyLabelValue(String label, String value) {
+    return '$label: $value';
+  }
+
+  @override
+  String get shareComingSoon => 'Share functionality coming soon';
+
+  @override
+  String errorPickingFile(String error) {
+    return 'Error picking file: $error';
+  }
+
+  @override
+  String get helpRequestSentSuccess => 'Request sent successfully';
+
+  @override
+  String get verificationCodeResentSuccess =>
+      'Verification code resent successfully.';
+
+  @override
+  String get pasteHintLongPress => 'Press and hold to paste';
+
+  @override
+  String minAmountHint(String amount) {
+    return 'Min $amount';
+  }
+
+  @override
+  String get sendAmountMaxShortLabel => 'Max';
+
+  @override
+  String get swapAmountMaxShortLabel => 'Max';
+
+  @override
+  String get searchHint => 'Search';
+
+  @override
+  String get searchContactsHint => 'Search name or number';
+
+  @override
+  String get sendFlowVerifyAccountTitle => 'Verify Account';
+
+  @override
+  String sendOtpInstructionsMasked(String phoneMask) {
+    return 'Enter the code sent to $phoneMask';
+  }
+
+  @override
+  String get verifyAction => 'Verify';
+
+  @override
+  String get swapSuccessMessage => 'Successfully swapped';
+
+  @override
+  String get sendSuccessMessage => 'Successfully sent';
+
+  @override
+  String get successScreenTitle => 'Success';
+
+  @override
+  String get confirmSecurely => 'Confirm Securely';
+
+  @override
+  String get youAreSending => 'You are sending';
+
+  @override
+  String get youWillSend => 'You will send';
+
+  @override
+  String get walletAddress => 'Wallet Address';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get confirmationWarning =>
+      'Make sure that the address and network are correct, the transaction cannot be canceled after you confirm it.';
+
+  @override
+  String get sendInProgress => 'Send in progress';
+
+  @override
+  String get estimatedTimeOfExecution => 'Estimated time of execution';
+
+  @override
+  String get sendCompletionNotification =>
+      'Upon completion, you will receive a confirmation Notification';
+
+  @override
+  String get verifyAccount => 'Verify Account';
+
+  @override
+  String get reviewOrderTitle => 'Review Order';
+
+  @override
+  String get swapDirectionFrom => 'From';
+
+  @override
+  String get swapDirectionTo => 'To';
+
+  @override
+  String get swapMaxAction => 'Max';
+
+  @override
+  String get selectCoinTitle => 'Select Coin';
+
+  @override
+  String get selectCoinPlaceholder => 'Select';
+
+  @override
+  String get swapFeesColon => 'Swap fees:';
+
+  @override
+  String get confirmSwapButton => 'Confirm swap';
+
+  @override
+  String get verifyNowButton => 'Verify Now';
+
+  @override
+  String get swapNowButton => 'Swap Now';
+
+  @override
+  String get sendFormCoinLabel => 'Coin';
+
+  @override
+  String get sendFormPhoneOrAddressLabel => 'Phone Number Or Wallet Address';
+
+  @override
+  String get sendFormAmountLabel => 'Amount to be sent';
+
+  @override
+  String get sendValidationInvalidAmount => 'Invalid amount';
+
+  @override
+  String get sendValidationCannotSendToSelf =>
+      'You can\'t send to your own account';
+
+  @override
+  String get sendValidationInsufficientBalance => 'Insufficient balance';
+
+  @override
+  String sendValidationBelowMinimum(String amount) {
+    return 'Amount must be at least $amount';
+  }
+
+  @override
+  String get sendDefaultNetworkCode => 'TRC20';
+
+  @override
+  String availableBalanceFormatted(String amount, String symbol) {
+    return 'Available $amount $symbol';
+  }
+
+  @override
+  String get sendTransactionFeesColon => 'Transaction fees:';
+
+  @override
+  String get sendSentAmountLabel => 'Sent amount';
+
+  @override
+  String get walletsTitle => 'Wallets';
+
+  @override
+  String get yourWalletsTitle => 'Your wallets';
+
+  @override
+  String get networkFeeLabel => 'Network Fee';
+
+  @override
+  String get valueNotAvailable => 'N/A';
+
+  @override
+  String get amountInputHint => '0.00';
+
+  @override
+  String get qrCodeLabel => 'QR Code';
+
+  @override
+  String get saveImage => 'Save image';
+
+  @override
+  String get shareAction => 'Share';
+
+  @override
+  String get hideZeroBalance => 'Hide zero balance';
+
+  @override
+  String get noCoinsToShow => 'No coins to show.';
+
+  @override
+  String get uncheckToSeeAllCoins =>
+      'Uncheck \'Hide zero balance\' to view all coins.';
+
+  @override
+  String get contactsSheetTitle => 'Contacts';
+
+  @override
+  String sendSuccessRecipientLine(String recipient) {
+    return 'To: $recipient';
+  }
+
+  @override
+  String get sendKycVerificationRequiredBody =>
+      'Identity verification is required to send coins. Please complete your KYC profile to enable transfers. ';
+
+  @override
+  String get swapKycVerificationRequiredBody =>
+      'Identity verification is required to swap coins. Please complete your KYC profile to enable transfers. ';
+
+  @override
+  String get receiveKycVerificationRequiredBody =>
+      'Identity verification is required to receive coins. Please complete your KYC profile to enable transfers. ';
+
+  @override
+  String get kyc_submitted_under_review =>
+      'Your KYC has been submitted and is under review.';
+
+  @override
+  String get kyc_pending_subtitle =>
+      'We are reviewing your documents. This usually takes a few minutes. You will be notified once the review is complete.';
+
+  @override
+  String get kyc_rejected => 'Your KYC verification has been rejected.';
+
+  @override
+  String kyc_rejected_with_reason(String reason) {
+    return 'Your KYC verification has been rejected: $reason';
+  }
+
+  @override
+  String get kyc_retry_button => 'Retry Verification';
+
+  @override
+  String get kycVerificationRequiredTitle => 'Verification Required';
+
+  @override
+  String get kycVerificationPendingTitle => 'Verification Under Review';
+
+  @override
+  String get kycVerificationGoBackButton => 'Go Back';
+
+  @override
+  String get swapFeesTitle => 'Swap Fees';
+
+  @override
+  String get swapExchangeRate => 'Exchange Rate';
+
+  @override
+  String get swapFeeOmlapay => 'Omlapay fee';
+
+  @override
+  String get swapFeeBinance => 'Binance fee';
+
+  @override
+  String get transferToLabel => 'To';
+
+  @override
+  String get addressCopiedToast => 'Copied';
+
+  @override
+  String get availableShortLabel => 'Available';
+
+  @override
+  String get noNotifications => 'No notifications yet';
+
+  @override
+  String get notificationsLoadError => 'Failed to load notifications';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get welcomeBack => 'Welcome Back';
+
+  @override
+  String get kycFirstNameLabel => 'First Name';
+
+  @override
+  String get kycLastNameLabel => 'Last Name';
+
+  @override
+  String get kycDateOfBirthLabel => 'Date of Birth';
+
+  @override
+  String get kycResidentialCountryLabel => 'Residential Country';
+
+  @override
+  String get kycDocumentCountryLabel => 'Document Country';
+
+  @override
+  String get kycCityLabel => 'City';
+
+  @override
+  String get kycAddressLabel => 'Address';
+
+  @override
+  String get kycCountryCodeHint => 'e.g., GBR, USA, IND';
+
+  @override
+  String get kycSelectDateHint => 'MM/DD/YYYY';
+
+  @override
+  String get kycRequiredFieldError => 'This field is required';
+
+  @override
+  String get kycSubmitButton => 'Submit';
+
+  @override
+  String get kycInvalidDateError => 'Please select a valid date';
+
+  @override
+  String get kycStartedSuccess => 'KYC process started successfully.';
+
+  @override
+  String get kycDocumentsReviewTitle => 'Documents — tap to view or replace';
+
+  @override
+  String get kycDocumentActionView => 'View';
+
+  @override
+  String get kycDocumentActionPickGallery => 'Pick from gallery';
+
+  @override
+  String get kycDocumentActionTakePhoto => 'Take photo';
+
+  @override
+  String get kycDocumentChangedBadge => 'Changed';
+
+  @override
+  String get kycDocumentAddPhoto => 'Add photo';
+
+  @override
+  String get kycDocumentPickFailed =>
+      'Could not load the selected image. Please try again.';
+
+  @override
+  String get kycPermissionDeniedTitle => 'Permission needed';
+
+  @override
+  String get kycPermissionDeniedBody =>
+      'Enable camera and photo access in Settings to continue.';
+
+  @override
+  String get kycOpenSettings => 'Open Settings';
+
+  @override
+  String get kycDocumentFrontLabel => 'Front of Document';
+
+  @override
+  String get kycDocumentBackLabel => 'Back of Document';
+
+  @override
+  String get kycDocumentSelfieLabel => 'Selfie';
+
+  @override
+  String get kycDocumentLoadFailed => 'Unable to load document';
+
+  @override
+  String get youAreOffline => 'You are offline';
+
+  @override
+  String get contactsPermissionDenied =>
+      'Contacts permission is required to select a contact. Please enable it in your device settings.';
+
+  @override
+  String get contactsLoading => 'Loading contacts...';
+
+  @override
+  String get noContactsFound => 'No contacts found';
+
+  @override
+  String contactsPermissionDialogTitle(String appName) {
+    return '$appName wants to access your contacts';
+  }
+
+  @override
+  String get contactsPermissionDialogMessage =>
+      'We need your permission to access your contacts to send payments to people in your address book';
+
+  @override
+  String get allowContacts => 'Allow Contacts';
+
+  @override
+  String get sendInvitationDialogTitle => 'Send invitation';
+
+  @override
+  String get sendInvitationDialogMessage =>
+      'This number does not have an account on Omlapay. For a better experience, send him an invitation.';
+
+  @override
+  String get sendInvitationDialogNote =>
+      'Note: you can complete the transaction though';
+
+  @override
+  String get sendInvitationInviteButton => 'Invite';
+
+  @override
+  String get checkingUserStatus => 'Checking user...';
+
+  @override
+  String get kycEnterEmail => 'Enter Email';
+
+  @override
+  String get kycWhatsYourEmail => 'What\'s your email?';
+
+  @override
+  String get kycEmailSubtitle =>
+      'We\'ll send a verification code to confirm your email';
+
+  @override
+  String get kycEmailHint => 'Enter your email address';
+
+  @override
+  String get kycEmailRequiredError => 'Email address is required';
+
+  @override
+  String get kycEmailInvalidError => 'Please enter a valid email address';
+
+  @override
+  String get kycVerifyEmail => 'Verify Email';
+
+  @override
+  String get kycVerifyEmailTitle => 'Enter verification code';
+
+  @override
+  String kycVerifyEmailSubtitle(String email) {
+    return 'We sent a 6-digit code to $email';
+  }
+
+  @override
+  String get kycEmailVerified => 'Email verified successfully';
+
+  @override
+  String get pleaseEnterATitle => 'Please enter a title';
+
+  @override
+  String titleMustNotExceedCharacters(int maxLength) {
+    return 'Title must not exceed $maxLength characters';
+  }
+
+  @override
+  String get pleaseEnterADescription => 'Please enter a description';
+
+  @override
+  String descriptionMustNotExceedCharacters(int maxLength) {
+    return 'Description must not exceed $maxLength characters';
+  }
+
+  @override
+  String get somethingWentWrong => 'Something went wrong';
+
+  @override
+  String get failedToLoadNotifications => 'Failed to load notifications';
+
+  @override
+  String get failedToLoadMoreNotifications =>
+      'Failed to load more notifications';
+
+  @override
+  String get failedToMarkNotificationAsRead =>
+      'Failed to mark notification as read';
+
+  @override
+  String get failedToMarkAllNotificationsAsRead =>
+      'Failed to mark all notifications as read';
+
+  @override
+  String get failedToLoadSupportRequests => 'Failed to load support requests';
+
+  @override
+  String get failedToLoadMoreRequests => 'Failed to load more requests';
+
+  @override
+  String get walletAddressMasked => 'XXXX XXXX XXXX XXXX';
+
+  @override
+  String get walletAddressNotAvailable => 'Address not available yet';
+
+  @override
+  String get noAddressFound => 'No Address Found';
+
+  @override
+  String get issueNotResolved => 'Issue not resolved?';
+
+  @override
+  String get reopenTicket => 'Re-open Ticket';
+
+  @override
+  String createdOn(String date) {
+    return 'Created on $date';
+  }
+
+  @override
+  String get requestReopened => 'Ticket reopened successfully';
+
+  @override
+  String get failedToReopenRequest => 'Failed to reopen ticket';
+
+  @override
+  String get failedToLoadRequestDetail => 'Failed to load request details';
+
+  @override
+  String get supportTeamReply => 'Support team reply';
+
+  @override
+  String get yourReply => 'Your reply';
+
+  @override
+  String get inReview => 'In review';
+
+  @override
+  String resolvesBy(String date) {
+    return 'Resolves by $date';
+  }
+
+  @override
+  String get resolvedStatus => 'Resolved';
+
+  @override
+  String get rejectedStatus => 'Rejected';
+
+  @override
+  String solutionSentOn(String date) {
+    return 'Solution sent on $date';
+  }
+
+  @override
+  String rejectionSentOn(String date) {
+    return 'Rejection sent on $date';
+  }
+
+  @override
+  String get failureReason => 'Reason';
+
+  @override
+  String approximateAmount(String amount, String currency) {
+    return '≈$amount $currency';
+  }
+
+  @override
+  String appVersion(String version) {
+    return 'Version: $version';
+  }
+
+  @override
+  String appPatchVersion(String number) {
+    return 'Patch: $number';
+  }
+
+  @override
+  String get updateReadyTitle => 'Update ready';
+
+  @override
+  String get updateReadyMessage =>
+      'A new update is ready. The app will close so the update can be applied. Please reopen it to continue.';
+
+  @override
+  String get updateReadyAction => 'OK';
 }

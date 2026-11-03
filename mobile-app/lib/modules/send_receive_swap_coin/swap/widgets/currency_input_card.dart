@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/common_coin_icon.dart';
-import 'package:crypto_font_icons/crypto_font_icons.dart';
+import 'package:omlapay_mobile_app/core/constants/crypto_font_icons.dart';
 
 class CurrencyInputCard extends StatelessWidget {
   final String title;
+
+  /// Latin ticker (e.g. BTC) for icons and [CommonCoinIcon]; must stay English.
   final String coinSymbol;
+
+  /// Optional display label (e.g. Arabic `symbol_ar`); defaults to [coinSymbol].
+  final String? coinSymbolLabel;
   final String amount;
   final ValueChanged<String>? onAmountChanged;
   final VoidCallback? onMaxPressed;
@@ -15,11 +21,22 @@ class CurrencyInputCard extends StatelessWidget {
   final String? errorText;
   final TextEditingController? controller;
   final bool hasBorder;
+  final String? networkIconUrl;
+
+  /// Optional override for the amount field's hint text. When null, the card
+  /// falls back to the generic `amountInputHint` localization. Used by the
+  /// swap From card to surface the per-coin minimum swap amount.
+  final String? hintText;
+
+  /// Optional widget rendered below the amount field but above [errorText].
+  /// Used to mirror the send view's "Max" row beneath the From card.
+  final Widget? bottomHelper;
 
   const CurrencyInputCard({
     super.key,
     required this.title,
     required this.coinSymbol,
+    this.coinSymbolLabel,
     this.amount = '',
     this.onAmountChanged,
     this.onMaxPressed,
@@ -30,12 +47,34 @@ class CurrencyInputCard extends StatelessWidget {
     this.controller,
     this.hasBorder = false,
     this.readOnly = false,
+    required this.networkIconUrl,
+    this.hintText,
+    this.bottomHelper,
   });
 
   final bool readOnly;
 
+  static const double _cardRadius = 12;
+
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+    final displaySymbol = coinSymbol;
+
+    final fieldFill = isDark
+        ? colorScheme.surfaceContainerHighest
+        : AppColors.swapFieldFillLight;
+
+    final Border? fieldBorder = errorText != null
+        ? Border.all(color: colorScheme.error, width: 1)
+        : hasBorder
+        ? Border.all(color: AppColors.tealColor, width: 1)
+        : isDark
+        ? Border.all(color: colorScheme.outlineVariant, width: 1)
+        : null;
     Color? iconBackgroundColor;
     Widget? fallbackIcon;
 
@@ -70,12 +109,18 @@ class CurrencyInputCard extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(color: Colors.grey, fontSize: 13),
+              style: TextStyle(
+                color: colorScheme.onSurfaceVariant,
+                fontSize: 13,
+              ),
             ),
             if (isFrom)
               Text(
-                'Available $amount $coinSymbol',
-                style: const TextStyle(color: Colors.grey, fontSize: 13),
+                l10n.availableBalanceFormatted(amount, displaySymbol),
+                style: TextStyle(
+                  color: colorScheme.onSurfaceVariant,
+                  fontSize: 13,
+                ),
               ),
           ],
         ),
@@ -83,13 +128,9 @@ class CurrencyInputCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E2025),
-            borderRadius: BorderRadius.circular(16),
-            border: hasBorder
-                ? Border.all(color: AppColors.tealColor, width: 1)
-                : errorText != null
-                ? Border.all(color: Colors.red, width: 1)
-                : null,
+            color: fieldFill,
+            borderRadius: BorderRadius.circular(_cardRadius),
+            border: fieldBorder,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,20 +148,21 @@ class CurrencyInputCard extends StatelessWidget {
                             iconBackgroundColor: iconBackgroundColor,
                             fallbackIcon: fallbackIcon,
                             radius: 16,
+                            networkIconUrl: networkIconUrl,
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            coinSymbol,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            displaySymbol,
+                            style: TextStyle(
+                              color: colorScheme.onSurface,
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
                           ),
                           const SizedBox(width: 4),
-                          const Icon(
+                          Icon(
                             Icons.keyboard_arrow_down,
-                            color: Colors.grey,
+                            color: colorScheme.onSurfaceVariant,
                             size: 16,
                           ),
                         ],
@@ -130,24 +172,30 @@ class CurrencyInputCard extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextField(
+                      onTapOutside: (event) => FocusScope.of(context).unfocus(),
                       controller: controller,
                       onChanged: onAmountChanged,
                       readOnly: readOnly,
+                      cursorColor: AppColors.tealColor,
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       textAlign: TextAlign.right,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: readOnly && !isDark
+                            ? AppColors.textGrey
+                            : colorScheme.onSurface,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                       decoration: InputDecoration(
                         border: InputBorder.none,
-                        hintText: '0.00',
+                        hintText: hintText ?? l10n.amountInputHint,
                         hintStyle: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 24,
+                          color: colorScheme.onSurfaceVariant,
+                          fontSize: hintText != null
+                              ? (isArabic ? 13 : 16)
+                              : 24,
                           fontWeight: FontWeight.bold,
                         ),
                         contentPadding: EdgeInsets.zero,
@@ -160,32 +208,43 @@ class CurrencyInputCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // if (isFrom && onMaxPressed != null)
-                  //   Padding(
-                  //     padding: const EdgeInsets.only(left: 8.0),
-                  //     child: GestureDetector(
-                  //       onTap: onMaxPressed,
-                  //       child: const Text(
-                  //         'Max',
-                  //         style: TextStyle(
-                  //           color: AppColors.tealColor,
-                  //           fontWeight: FontWeight.bold,
-                  //           fontSize: 16,
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ),
+                  if (isFrom && onMaxPressed != null) ...[
+                    Container(
+                      margin: const EdgeInsetsDirectional.only(start: 8),
+                      width: 1,
+                      height: 28,
+                      color: colorScheme.outlineVariant,
+                    ),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(start: 8),
+                      child: GestureDetector(
+                        onTap: onMaxPressed,
+                        child: Text(
+                          l10n.swapMaxAction,
+                          style: const TextStyle(
+                            color: AppColors.tealColor,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
+              if (bottomHelper != null) ...[
+                const SizedBox(height: 8),
+                bottomHelper!,
+              ],
             ],
           ),
         ),
         if (errorText != null)
           Padding(
-            padding: const EdgeInsets.only(top: .0),
+            padding: const EdgeInsets.only(top: 4),
             child: Text(
               errorText!,
-              style: const TextStyle(color: Colors.red, fontSize: 12),
+              style: TextStyle(color: colorScheme.error, fontSize: 12),
             ),
           ),
       ],

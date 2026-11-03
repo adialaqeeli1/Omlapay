@@ -1,36 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import '../../../../core/extentions/context_extensions.dart';
-import '../../../../core/models/transaction_model/transaction_model.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../widgets/custom_date_picker_dialog.dart';
+import '../providers/history_provider.dart';
 
 class HistoryFilterBottomSheet extends StatefulWidget {
   const HistoryFilterBottomSheet({
     super.key,
-    required this.selectedTransactionType,
+    required this.selectedType,
     required this.dateStart,
     required this.dateEnd,
     required this.onApply,
   });
 
-  final TransactionType? selectedTransactionType;
+  final String? selectedType;
   final DateTime? dateStart;
   final DateTime? dateEnd;
-  final void Function({
-    TransactionType? transactionType,
-    DateTime? dateStart,
-    DateTime? dateEnd,
-  })
+  final void Function({String? type, DateTime? dateStart, DateTime? dateEnd})
   onApply;
 
   static void show(
     BuildContext context, {
-    required TransactionType? selectedTransactionType,
+    required String? selectedType,
     required DateTime? dateStart,
     required DateTime? dateEnd,
     required void Function({
-      TransactionType? transactionType,
+      String? type,
       DateTime? dateStart,
       DateTime? dateEnd,
     })
@@ -47,7 +43,7 @@ class HistoryFilterBottomSheet extends StatefulWidget {
       ),
       elevation: 5,
       builder: (context) => HistoryFilterBottomSheet(
-        selectedTransactionType: selectedTransactionType,
+        selectedType: selectedType,
         dateStart: dateStart,
         dateEnd: dateEnd,
         onApply: onApply,
@@ -61,29 +57,26 @@ class HistoryFilterBottomSheet extends StatefulWidget {
 }
 
 class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
-  late TransactionType? _selectedTransactionType;
+  late String? _selectedType;
   late DateTime? _dateStart;
   late DateTime? _dateEnd;
 
   @override
   void initState() {
     super.initState();
-    _selectedTransactionType = widget.selectedTransactionType;
+    _selectedType = widget.selectedType;
     _dateStart = widget.dateStart;
     _dateEnd = widget.dateEnd;
   }
 
   void _handleReset() {
-    setState(() {
-      _selectedTransactionType = null;
-      _dateStart = null;
-      _dateEnd = null;
-    });
+    widget.onApply(type: null, dateStart: null, dateEnd: null);
+    Navigator.of(context).pop();
   }
 
   void _handleApply() {
     widget.onApply(
-      transactionType: _selectedTransactionType,
+      type: _selectedType,
       dateStart: _dateStart,
       dateEnd: _dateEnd,
     );
@@ -91,12 +84,12 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
   }
 
   Future<void> _pickDateStart() async {
+    final today = DateTime.now();
     final picked = await CustomDatePickerDialog.show(
       context,
       title: context.l10n!.dateFrom,
-      initialDate: _dateStart ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
+      initialDate: _dateStart ?? today,
+      lastDate: today,
     );
     if (picked != null && mounted) {
       setState(() => _dateStart = picked);
@@ -104,13 +97,14 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
   }
 
   Future<void> _pickDateEnd() async {
-    final initial = _dateEnd ?? _dateStart ?? DateTime.now();
+    final today = DateTime.now();
+    final initial = _dateEnd ?? _dateStart ?? today;
     final picked = await CustomDatePickerDialog.show(
       context,
       title: context.l10n!.dateTo,
       initialDate: initial,
-      firstDate: _dateStart ?? DateTime(2020),
-      lastDate: DateTime.now(),
+      firstDate: _dateStart,
+      lastDate: today,
     );
     if (picked != null && mounted) {
       setState(() => _dateEnd = picked);
@@ -126,21 +120,25 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
         theme.textTheme.bodyMedium?.color ?? AppColors.textLightGrey;
     final labelColor = AppColors.textLightGrey;
 
-    final transactionTypeOptions = [
+    final typeOptions = <String?>[
       null,
-      TransactionType.sent,
-      TransactionType.received,
+      HistoryTxType.sent,
+      HistoryTxType.receive,
+      HistoryTxType.swap,
     ];
 
-    String getTransactionTypeLabel(TransactionType? type) {
+    String getTypeLabel(String? type) {
       if (type == null) return l10n.all;
-      switch (type) {
-        case TransactionType.sent:
+      switch (type.toUpperCase()) {
+        case HistoryTxType.sent:
           return l10n.sent;
-        case TransactionType.received:
+        case HistoryTxType.receive:
+        case 'RECEIVED':
           return l10n.receive;
-        case TransactionType.swap:
+        case HistoryTxType.swap:
           return l10n.swap;
+        default:
+          return type;
       }
     }
 
@@ -185,7 +183,7 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
               ),
               const SizedBox(height: 24),
 
-              // Transaction type section
+              // Status section
               Text(
                 l10n.transactionType,
                 style: theme.textTheme.bodyMedium?.copyWith(
@@ -197,21 +195,14 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  for (int i = 0; i < transactionTypeOptions.length; i++) ...[
+                  for (int i = 0; i < typeOptions.length; i++) ...[
                     if (i > 0) const SizedBox(width: 8),
                     Expanded(
                       child: _FilterChip(
-                        label: getTransactionTypeLabel(
-                          transactionTypeOptions[i],
-                        ),
-                        isSelected:
-                            _selectedTransactionType ==
-                            transactionTypeOptions[i],
+                        label: getTypeLabel(typeOptions[i]),
+                        isSelected: _selectedType == typeOptions[i],
                         onTap: () {
-                          setState(
-                            () => _selectedTransactionType =
-                                transactionTypeOptions[i],
-                          );
+                          setState(() => _selectedType = typeOptions[i]);
                         },
                       ),
                     ),

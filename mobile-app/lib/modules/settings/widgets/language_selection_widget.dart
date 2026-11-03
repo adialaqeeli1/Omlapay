@@ -24,11 +24,16 @@ class LanguageSelectionWidget extends StatelessWidget {
 
     final options = {'en': l10n.english, 'ar': l10n.arabic};
 
+    Future<void> applyAndClose(String code) async {
+      await localeProvider.setLocale(Locale(code));
+      if (context.mounted) Navigator.of(context).pop();
+    }
+
     return RadioGroup<String>(
       groupValue: localeProvider.locale.languageCode,
       onChanged: (value) {
         if (value != null) {
-          localeProvider.setLocale(Locale(value));
+          applyAndClose(value);
         }
       },
       child: CommonBottomSheet(
@@ -36,7 +41,7 @@ class LanguageSelectionWidget extends StatelessWidget {
         childrens: options.entries
             .mapIndexed(
               (index, element) => ListTile(
-                onTap: () => localeProvider.setLocale(Locale(element.key)),
+                onTap: () => applyAndClose(element.key),
                 title: Text(element.value),
                 trailing: Radio<String>(value: element.key),
               ),

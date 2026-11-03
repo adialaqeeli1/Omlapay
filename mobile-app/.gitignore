@@ -1,6 +1,6 @@
 # Miscellaneous
 *.class
-*.lock
+# *.lock
 *.log
 *.pyc
 *.swp
@@ -55,8 +55,7 @@ unlinked_spec.ds
 **/android/gradlew.bat
 **/android/local.properties
 **/android/**/GeneratedPluginRegistrant.java
-**/android/key.properties
-*.jks
+
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
@@ -124,4 +123,9 @@ assets/.DS_Store
 .DS_Store
 ios/.DerivedData/
 macos/.DerivedData/
+
+.agents/
+.claude/
 .cursor/
+.vscode/
+docs/superpowers

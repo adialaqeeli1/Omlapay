@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:omlapay_mobile_app/widgets/common_transparent_card.dart';
 
@@ -18,7 +18,10 @@ class CommonGridBgWrapper extends StatelessWidget {
     this.headerChild,
     this.bottomWidget,
     this.appBarButtons,
+    this.appBarLeading,
+    this.appBarLeadingWidth,
     this.applyHorizontalPaddingToHeaderButtonsOnly = false,
+    this.headerSubTitleFontSize = 14,
   });
 
   final Widget child;
@@ -28,7 +31,10 @@ class CommonGridBgWrapper extends StatelessWidget {
   final Widget? headerChild;
   final Widget? bottomWidget;
   final List<Widget>? appBarButtons;
+  final Widget? appBarLeading;
+  final double? appBarLeadingWidth;
   final bool applyHorizontalPaddingToHeaderButtonsOnly;
+  final double headerSubTitleFontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -43,10 +49,17 @@ class CommonGridBgWrapper extends StatelessWidget {
             SliverOffstage(
               offstage: (appBarButtons ?? []).isNotEmpty == false,
               sliver: SliverAppBar(
-                leading: null,
+                leading: appBarLeading,
+                leadingWidth: appBarLeadingWidth,
                 automaticallyImplyLeading: false,
                 actions: appBarButtons,
                 iconTheme: context.theme.iconTheme,
+                systemOverlayStyle: SystemUiOverlayStyle(
+                  statusBarColor: Colors.transparent,
+                  statusBarIconBrightness: context.isDarkMode
+                      ? Brightness.light
+                      : Brightness.dark,
+                ),
               ),
             ),
             SliverSafeArea(
@@ -60,6 +73,7 @@ class CommonGridBgWrapper extends StatelessWidget {
                       headerChild: headerChild,
                       bottomWidget: bottomWidget,
                       horizontalPadding: horizontalPadding,
+                      headerSubTitleFontSize: headerSubTitleFontSize,
                     ),
                   ),
                   SliverPadding(
@@ -88,6 +102,7 @@ class _CommonGridBgWrapperDelegate extends SliverPersistentHeaderDelegate {
     this.headerChild,
     this.bottomWidget,
     required this.horizontalPadding,
+    required this.headerSubTitleFontSize,
   });
 
   final String headerTitle;
@@ -95,6 +110,7 @@ class _CommonGridBgWrapperDelegate extends SliverPersistentHeaderDelegate {
   final Widget? headerChild;
   final Widget? bottomWidget;
   final double horizontalPadding;
+  final double headerSubTitleFontSize;
 
   @override
   double get maxExtent => bottomWidget != null ? 200 : 250;
@@ -120,18 +136,18 @@ class _CommonGridBgWrapperDelegate extends SliverPersistentHeaderDelegate {
         fit: StackFit.expand,
         clipBehavior: Clip.antiAliasWithSaveLayer,
         children: [
-          Positioned.directional(
-            top: 0,
-            start: 0,
-            end: 0,
-            height: maxExtent / (bottomWidget != null ? 1.2 : 1.5),
-            textDirection: context.textDirection,
-            child: SvgPicture.asset(
-              'assets/icons/grid_bg.svg',
-              fit: BoxFit.fill,
-              alignment: Alignment.topCenter,
-            ),
-          ),
+          // Positioned.directional(
+          //   top: 0,
+          //   start: 0,
+          //   end: 0,
+          //   height: maxExtent / (bottomWidget != null ? 1.2 : 1.5),
+          //   textDirection: context.textDirection,
+          //   child: SvgPicture.asset(
+          //     'assets/icons/grid_bg.svg',
+          //     fit: BoxFit.fill,
+          //     alignment: Alignment.topCenter,
+          //   ),
+          // ),
           if (headerChild != null)
             Positioned(
               top: -5,
@@ -185,7 +201,7 @@ class _CommonGridBgWrapperDelegate extends SliverPersistentHeaderDelegate {
                                       ? AppColors.textGrey
                                       : AppColors.textLightGrey,
                                   fontWeight: FontWeight.w400,
-                                  fontSize: 14,
+                                  fontSize: headerSubTitleFontSize,
                                 ),
                               ),
                             ],
@@ -204,7 +220,8 @@ class _CommonGridBgWrapperDelegate extends SliverPersistentHeaderDelegate {
                               onTap: () => context.push(
                                 Routes.loginOrRegister,
                                 extra: <String, String>{
-                                  LoginProvider.extraModeKey: LoginProvider.modeHardLogin,
+                                  LoginProvider.extraModeKey:
+                                      LoginProvider.modeHardLogin,
                                 },
                               ),
                             ),
@@ -217,7 +234,8 @@ class _CommonGridBgWrapperDelegate extends SliverPersistentHeaderDelegate {
                               onTap: () => context.push(
                                 Routes.loginOrRegister,
                                 extra: <String, String>{
-                                  LoginProvider.extraModeKey: LoginProvider.modeRegister,
+                                  LoginProvider.extraModeKey:
+                                      LoginProvider.modeRegister,
                                 },
                               ),
                             ),

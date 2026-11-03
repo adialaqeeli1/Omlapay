@@ -1,34 +1,159 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/extentions/context_extensions.dart';
+import '../../../core/services/biometric_service.dart';
 import '../../../core/theme/theme.dart';
+import '../../../core/utils/snackbar_helper.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/biometric_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_back_button.dart';
+import '../../../widgets/common_loading_indicator.dart';
+import '../../../widgets/custom_svg_painter.dart';
 import '../../../widgets/logout_alert_dialog.dart';
 import '../providers/login_provider.dart';
 import '../providers/passcode_provider.dart';
 import '../services/forgot_passcode_service.dart';
+import '../../settings/services/change_email_service.dart';
+import '../../settings/services/change_phone_service.dart';
+import '../../settings/view/widgets/change_detail_back_to_intro.dart';
 
-class EnterOrSetPasscodeScreen extends StatelessWidget {
+class EnterOrSetPasscodeScreen extends StatefulWidget {
+  /// Prevents overlapping forgot-passcode OTP requests before the loading overlay
+  /// blocks further taps.
+  static bool _forgotPasscodeOtpInFlight = false;
+
+  /// Settings → change passcode: avoids double-submit while change-passcode API runs.
+  static bool _changePasscodeSubmitInFlight = false;
+
   const EnterOrSetPasscodeScreen({
     super.key,
     this.isSoftLogin = false,
     this.mode,
+    this.currentPasscode,
     this.pendingPasscode,
+    this.resetToken,
+    this.pendingEmail,
+    this.changeEmailToken,
+    this.changePhoneToken,
+    this.registrationToken,
+    this.otpVerificationToken,
   });
 
   final bool isSoftLogin;
   final String? mode;
+  final String? currentPasscode;
   final String? pendingPasscode;
+  final String? resetToken;
+  final String? pendingEmail;
+  final String? changeEmailToken;
+  final String? changePhoneToken;
+  final String? registrationToken;
+  final String? otpVerificationToken;
+
+  @override
+  State<EnterOrSetPasscodeScreen> createState() =>
+      _EnterOrSetPasscodeScreenState();
+}
+
+class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
+  final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  PasscodeProvider? _passcodeProvider;
+  bool _biometricInFlight = false;
+  bool _biometricAutoPromptDone = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _focusNode.requestFocus();
+      // ignore: discarded_futures
+      _maybeAutoPromptBiometric();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final provider = context.read<PasscodeProvider>();
+    if (!identical(_passcodeProvider, provider)) {
+      _passcodeProvider?.removeListener(_syncControllerFromProvider);
+      _passcodeProvider = provider;
+      _passcodeProvider!.addListener(_syncControllerFromProvider);
+    }
+  }
+
+  @override
+  void dispose() {
+    _passcodeProvider?.removeListener(_syncControllerFromProvider);
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  /// Mirrors external clears / rejected digits onto the hidden capture field
+  /// so the controller never drifts away from the provider state.
+  void _syncControllerFromProvider() {
+    final providerPasscode = _passcodeProvider?.passcode ?? '';
+    if (_controller.text != providerPasscode) {
+      _controller.value = TextEditingValue(
+        text: providerPasscode,
+        selection: TextSelection.collapsed(offset: providerPasscode.length),
+      );
+    }
+  }
+
+  void _ensureKeyboardOpen() {
+    if (!_focusNode.hasFocus) {
+      _focusNode.requestFocus();
+      return;
+    }
+    // Focus can be retained while the soft keyboard is hidden (system back
+    // button, swipe-down, or a screen-lock cycle). In that state
+    // requestFocus() is a no-op, so ask the platform to re-show it.
+    SystemChannels.textInput.invokeMethod<void>('TextInput.show');
+  }
+
+  Future<void> _onHiddenInputChanged(
+    String value,
+    PasscodeProvider provider,
+  ) async {
+    final prev = provider.passcode;
+    if (value.length > prev.length) {
+      final added = value.substring(prev.length);
+      for (final ch in added.split('')) {
+        if (!provider.canEnterDigits) break;
+        await _onDigitPressed(context, provider, ch);
+      }
+    } else if (value.length < prev.length) {
+      final removeCount = prev.length - value.length;
+      for (var i = 0; i < removeCount; i++) {
+        provider.removeLastDigit();
+      }
+    }
+    // Force the controller back in sync so any digits the provider rejected
+    // (length cap, verifying gate) don't leave the field ahead of state.
+    final synced = provider.passcode;
+    if (_controller.text != synced) {
+      _controller.value = TextEditingValue(
+        text: synced,
+        selection: TextSelection.collapsed(offset: synced.length),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final passcodeProvider = context.watch<PasscodeProvider>();
+    // Watch the biometric provider so the retry icon appears/updates once the
+    // async availability check resolves (and reflects the right modality).
+    final biometricProvider = context.watch<BiometricProvider>();
     final l10n = context.l10n!;
     final theme = context.theme;
     final isDark = context.isDarkMode;
@@ -36,10 +161,6 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     final subtitleColor = theme.colorScheme.onSurface.withValues(
       alpha: isDark ? 0.90 : 0.62,
     );
-    final keypadButtonColor = isDark
-        ? AppColors.iconBackground
-        : theme.colorScheme.onSurface.withValues(alpha: 0.14);
-    final keypadTextColor = isDark ? AppColors.white : AppColors.textBlack;
     final emptyDotBorderColor = theme.colorScheme.onSurface.withValues(
       alpha: isDark ? 0.92 : 0.32,
     );
@@ -48,42 +169,52 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     final indicatorInactiveColor = theme.colorScheme.onSurface.withValues(
       alpha: isDark ? 0.16 : 0.20,
     );
-    final isRegisterMode = mode == LoginProvider.modeRegister;
+    final isRegisterMode =
+        widget.mode == LoginProvider.modeRegister ||
+        widget.mode == LoginProvider.modeRegisterConfirm;
+    final isChangePasscodeFlow =
+        widget.mode == LoginProvider.modeChangePasscodeCurrent ||
+        widget.mode == LoginProvider.modeChangePasscodeNew ||
+        widget.mode == LoginProvider.modeChangePasscodeConfirm;
+    final isChangeEmailPasscodeStep =
+        widget.mode == LoginProvider.modeChangeEmailConfirmPasscode;
+    final isChangePhonePasscodeStep =
+        widget.mode == LoginProvider.modeChangePhoneConfirmPasscode;
+    final isAccountPasscodeStep =
+        isChangeEmailPasscodeStep || isChangePhonePasscodeStep;
 
-    return Scaffold(
+    final VoidCallback? onAccountStepBack = isChangeEmailPasscodeStep
+        ? () => popToChangeEmailIntro(context)
+        : isChangePhonePasscodeStep
+        ? () => popToChangePhoneIntro(context)
+        : null;
+
+    final scaffold = Scaffold(
       appBar: AppBar(
-        leading: isSoftLogin
+        automaticallyImplyLeading: !widget.isSoftLogin,
+        leading: context.canPop() == false
+            ? null
+            : widget.isSoftLogin
             ? null
             : (isRegisterMode
-                ? IconButton(
-                    onPressed: () {
-                      final provider = context.read<PasscodeProvider>();
-                      context.go(
-                        Routes.registerVerification,
-                        extra: {
-                          LoginProvider.extraCountryCodeKey:
-                              provider.countryCode,
-                          LoginProvider.extraPhoneNumberKey:
-                              provider.phoneNumber,
-                        },
-                      );
-                    },
-                    icon: SvgPicture.asset(
-                      context.textDirection == TextDirection.rtl
-                          ? 'assets/icons/arrow_forward.svg'
-                          : 'assets/icons/arrow_back.svg',
-                      colorFilter: ColorFilter.mode(
-                        context.isDarkMode
-                            ? AppColors.white
-                            : AppColors.darkSurface,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                  )
-                : (context.canPop() ? CommonBackButton() : null)),
+                  ? CommonBackButton()
+                  : _changePasscodeBackButton(context) ??
+                        _changeEmailPasscodeBackButton(context) ??
+                        _changePhonePasscodeBackButton(context) ??
+                        (context.canPop() ? CommonBackButton() : null)),
         elevation: 0,
         backgroundColor: Colors.transparent,
         scrolledUnderElevation: 0,
+        title: isChangePasscodeFlow
+            ? Text(
+                l10n.changePasscode,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: theme.colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+              )
+            : null,
+        centerTitle: isChangePasscodeFlow,
         bottom: isRegisterMode
             ? PreferredSize(
                 preferredSize: const Size.fromHeight(24),
@@ -92,13 +223,16 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                   child: Row(
                     children: [
                       ...List.generate(4, (index) {
-                        final isActive = index == 3;
+                        final isActive = isRegisterMode
+                            ? index == 3
+                            : index <= 3;
+                        final isCurrent = index == 3;
                         return Padding(
                           padding: EdgeInsetsDirectional.only(
                             end: index < 3 ? 4 : 0,
                           ),
                           child: Container(
-                            width: isActive ? 44 : 14,
+                            width: isCurrent ? 44 : 14,
                             height: 6,
                             decoration: BoxDecoration(
                               color: isActive
@@ -114,159 +248,234 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
                 ),
               )
             : null,
-        actions: isSoftLogin
+        actions: widget.isSoftLogin
             ? [
                 Padding(
-                  padding: const EdgeInsets.only(right: 16),
+                  padding: const EdgeInsetsDirectional.only(end: 16),
                   child: InkWell(
                     onTap: () => _showLogoutAlert(context),
                     child: Container(
-                      width: 71,
-                      height: 37,
+                      // width: 71,
+                      height: kMinInteractiveDimension - 5,
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: AppColors.logoutButtonBackground,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       alignment: Alignment.center,
-                      child: Text(
-                        l10n.logout,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                          height: 1.3,
-                          letterSpacing: 0,
-                          color: AppColors.primaryColor,
-                        ),
-                        textAlign: TextAlign.center,
+                      // child: Text(
+                      //   l10n.logout,
+                      //   style: theme.textTheme.titleMedium?.copyWith(
+                      //     fontWeight: FontWeight.w500,
+                      //     fontSize: 16,
+                      //     height: 1.3,
+                      //     letterSpacing: 0,
+                      //     color: AppColors.primaryColor,
+                      //   ),
+                      //   textAlign: TextAlign.center,
+                      // ),
+                      child: Icon(
+                        Icons.logout,
+                        color: AppColors.primaryColor,
+                        size: 26,
                       ),
                     ),
                   ),
                 ),
               ]
             : null,
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: context.isDarkMode
+              ? Brightness.light
+              : Brightness.dark,
+        ),
       ),
       body: SafeArea(
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: ClampingScrollPhysics(),
-          ),
-          slivers: [
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 20,
-                ).copyWith(
-                  top: isSoftLogin
-                      ? 20
-                      : (isRegisterMode ? 28 : 0),
-                ),
-                child: Column(
-                  children: [
-                    if (!isRegisterMode)
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _ensureKeyboardOpen,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: ClampingScrollPhysics(),
+            ),
+            slivers: [
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20).copyWith(
+                    top: widget.isSoftLogin ? 20 : (isRegisterMode ? 28 : 0),
+                  ),
+                  child: Column(
+                    children: [
+                      const Spacer(),
+                      if (!isRegisterMode &&
+                          !isChangePasscodeFlow &&
+                          !isAccountPasscodeStep)
+                        Text(
+                          l10n.welcomeToOmlaPay,
+                          style: GoogleFonts.poppinsTextTheme().titleMedium
+                              ?.copyWith(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                                color: subtitleColor,
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
+                      if (!isRegisterMode &&
+                          !isChangePasscodeFlow &&
+                          !isAccountPasscodeStep)
+                        const SizedBox(height: 24),
                       Text(
-                        l10n.welcomeToOmlaPay,
-                        style: GoogleFonts.poppinsTextTheme().titleMedium
+                        _titleForMode(l10n),
+                        style: GoogleFonts.poppinsTextTheme().displaySmall
                             ?.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                              color: subtitleColor,
+                              fontSize: 30,
+                              fontWeight: FontWeight.w700,
+                              height: 1.24,
+                              color: theme.colorScheme.onSurface,
                             ),
                         textAlign: TextAlign.center,
                       ),
-                    if (!isRegisterMode) const SizedBox(height: 24),
-                    Text(
-                      _titleForMode(l10n),
-                      style: GoogleFonts.poppinsTextTheme().displaySmall
-                          ?.copyWith(
-                            fontSize: 30,
-                            fontWeight: FontWeight.w700,
-                            height: 1.24,
-                            color: theme.colorScheme.onSurface,
+                      const SizedBox(height: 30),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        textDirection: TextDirection.ltr,
+                        children: [
+                          for (
+                            var index = 0;
+                            index < PasscodeProvider.passcodeLength;
+                            index++
+                          ) ...[
+                            _PasscodeDot(
+                              isFilled:
+                                  index < passcodeProvider.enteredDigitsCount,
+                              fillColor: passcodeProvider.hasError
+                                  ? errorColor
+                                  : activeDotColor,
+                              borderColor:
+                                  index < passcodeProvider.enteredDigitsCount
+                                  ? (passcodeProvider.hasError
+                                        ? errorColor
+                                        : activeDotColor)
+                                  : emptyDotBorderColor,
+                            ),
+                            if (index < PasscodeProvider.passcodeLength - 1)
+                              const SizedBox(width: 12),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        height: 22,
+                        child: passcodeProvider.hasError
+                            ? Text(
+                                widget.mode ==
+                                            LoginProvider.modeConfirmPasscode ||
+                                        widget.mode ==
+                                            LoginProvider
+                                                .modeChangePasscodeConfirm ||
+                                        widget.mode ==
+                                            LoginProvider.modeRegisterConfirm
+                                    ? l10n.passcodesMismatchTryAgain
+                                    : l10n.incorrectPasscodeTryAgain,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: errorColor,
+                                ),
+                                textAlign: TextAlign.center,
+                              )
+                            : null,
+                      ),
+                      const SizedBox(height: 4),
+                      if (_showForgotPasscodeLink())
+                        GestureDetector(
+                          onTap: () =>
+                              _onForgotPasscode(context, passcodeProvider),
+                          child: Text(
+                            l10n.forgotPasscode,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primaryColor,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 30),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(PasscodeProvider.passcodeLength, (
-                        index,
-                      ) {
-                        final isFilled =
-                            index < passcodeProvider.enteredDigitsCount;
-                        final dotColor = passcodeProvider.hasError
-                            ? errorColor
-                            : activeDotColor;
-                        return Padding(
-                          padding: EdgeInsetsDirectional.only(
-                            end: index == PasscodeProvider.passcodeLength - 1
-                                ? 0
-                                : 12,
-                          ),
-                          child: _PasscodeDot(
-                            isFilled: isFilled,
-                            fillColor: dotColor,
-                            borderColor: isFilled
-                                ? dotColor
-                                : emptyDotBorderColor,
-                          ),
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 14),
-                    SizedBox(
-                      height: 22,
-                      child: passcodeProvider.hasError
-                          ? Text(
-                              mode == LoginProvider.modeConfirmPasscode
-                                  ? l10n.passcodesMismatchTryAgain
-                                  : l10n.incorrectPasscodeTryAgain,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: errorColor,
-                              ),
-                              textAlign: TextAlign.center,
-                            )
-                          : null,
-                    ),
-                    const SizedBox(height: 4),
-                    if (_showForgotPasscodeLink())
-                      GestureDetector(
-                        onTap: () => _onForgotPasscode(
-                          context,
-                          isSoftLogin,
-                          passcodeProvider,
                         ),
-                        child: Text(
-                          l10n.forgotPasscode,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontSize: 18 / 1.35,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primaryColor,
+                      if (_shouldOfferBiometric())
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: IconButton(
+                            tooltip: l10n.biometricUnlockReason,
+                            onPressed: _biometricInFlight
+                                ? null
+                                : _tryBiometricUnlock,
+                            icon: biometricProvider.kind == BiometricKind.face
+                                ? CustomSvgPainterWidget(
+                                    assetPath: 'assets/icons/face_id.svg',
+                                    width: 36,
+                                    height: 36,
+                                    color: AppColors.primaryColor,
+                                  )
+                                : const Icon(
+                                    Icons.fingerprint,
+                                    size: 36,
+                                    color: AppColors.primaryColor,
+                                  ),
                           ),
-                          textAlign: TextAlign.center,
+                        ),
+                      const Spacer(),
+                      // Hidden capture field: drives the device numpad while
+                      // staying invisible. The dots row above is the visible
+                      // indicator; tapping anywhere in the body re-opens the
+                      // keyboard via [_ensureKeyboardOpen].
+                      SizedBox(
+                        width: 0,
+                        height: 0,
+                        child: TextField(
+                          controller: _controller,
+                          focusNode: _focusNode,
+                          autofocus: true,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: false,
+                            signed: false,
+                          ),
+                          textInputAction: TextInputAction.done,
+                          showCursor: false,
+                          obscureText: true,
+                          autocorrect: false,
+                          enableSuggestions: false,
+                          enableInteractiveSelection: false,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(
+                              PasscodeProvider.passcodeLength,
+                            ),
+                          ],
+                          onChanged: (value) =>
+                              _onHiddenInputChanged(value, passcodeProvider),
                         ),
                       ),
-                    const Spacer(),
-                    _KeypadGrid(
-                      onDigitPressed: (digit) =>
-                          _onDigitPressed(context, passcodeProvider, digit),
-                      onBackspacePressed: passcodeProvider.removeLastDigit,
-                      buttonColor: keypadButtonColor,
-                      buttonTextColor: keypadTextColor,
-                      isEnabled: passcodeProvider.canEnterDigits,
-                    ),
-                    const Spacer(),
-                    const SizedBox(height: 28),
-                  ],
+                      const SizedBox(height: 28),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
+    );
+
+    if (onAccountStepBack == null) return scaffold;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        onAccountStepBack();
+      },
+      child: scaffold,
     );
   }
 
@@ -281,57 +490,230 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
     }
   }
 
+  /// Leading control for the change-passcode flow. Step transitions use
+  /// [context.pushReplacement] so the `[home, settings]` stack prefix is
+  /// preserved, letting the default pop-based back button work all the way out.
+  /// Returns null when the current mode isn't a change-passcode step so the
+  /// caller's `??` chain can fall through to the other flow-specific handlers.
+  Widget? _changePasscodeBackButton(BuildContext context) {
+    final mode = widget.mode;
+    final isChangePasscodeMode =
+        mode == LoginProvider.modeChangePasscodeCurrent ||
+        mode == LoginProvider.modeChangePasscodeNew ||
+        mode == LoginProvider.modeChangePasscodeConfirm;
+    if (!isChangePasscodeMode) return null;
+    return CommonBackButton();
+  }
+
+  /// Back navigation for change-email passcode confirmation (step 2 of the
+  /// listed flow). Pops the stack until the change-email intro is on top so
+  /// the user always returns to step 1.
+  Widget? _changeEmailPasscodeBackButton(BuildContext context) {
+    if (widget.mode != LoginProvider.modeChangeEmailConfirmPasscode) {
+      return null;
+    }
+    return CommonBackButton(onPressed: () => popToChangeEmailIntro(context));
+  }
+
+  /// Back navigation for change-phone passcode confirmation. Same behavior as
+  /// the change-email variant — back returns to the change-phone intro.
+  Widget? _changePhonePasscodeBackButton(BuildContext context) {
+    if (widget.mode != LoginProvider.modeChangePhoneConfirmPasscode) {
+      return null;
+    }
+    return CommonBackButton(onPressed: () => popToChangePhoneIntro(context));
+  }
+
   bool _showForgotPasscodeLink() {
-    if (mode == LoginProvider.modeResetPasscode ||
-        mode == LoginProvider.modeConfirmPasscode ||
-        mode == LoginProvider.modeRegister) {
+    if (widget.mode == LoginProvider.modeResetPasscode ||
+        widget.mode == LoginProvider.modeConfirmPasscode ||
+        widget.mode == LoginProvider.modeRegister ||
+        widget.mode == LoginProvider.modeRegisterConfirm ||
+        widget.mode == LoginProvider.modeChangePasscodeCurrent ||
+        widget.mode == LoginProvider.modeChangePasscodeNew ||
+        widget.mode == LoginProvider.modeChangePasscodeConfirm ||
+        widget.mode == LoginProvider.modeChangeEmailConfirmPasscode ||
+        widget.mode == LoginProvider.modeChangePhoneConfirmPasscode) {
       return false;
     }
     return true;
   }
 
+  /// Biometric is offered only on the soft-login / app-lock screens, when the
+  /// user has enabled it, the device supports it, and a passcode is stored.
+  bool _shouldOfferBiometric() {
+    if (widget.mode != LoginProvider.modeSoftLogin &&
+        widget.mode != LoginProvider.modeAppLock) {
+      return false;
+    }
+    final bio = context.read<BiometricProvider>();
+    if (!bio.isEnabled || !bio.isAvailable) return false;
+    final stored = context.read<AuthProvider>().state.user?.password ?? '';
+    return stored.isNotEmpty;
+  }
+
+  Future<void> _maybeAutoPromptBiometric() async {
+    if (_biometricAutoPromptDone) return;
+    if (widget.mode != LoginProvider.modeSoftLogin &&
+        widget.mode != LoginProvider.modeAppLock) {
+      return;
+    }
+    final bio = context.read<BiometricProvider>();
+    if (!bio.isEnabled) return;
+    // Device capability is resolved asynchronously; on a fresh launch it may
+    // not be ready when this screen first appears (which previously skipped the
+    // auto-prompt). Wait for it before deciding.
+    await bio.refreshAvailability();
+    if (!mounted) return;
+    if (!_shouldOfferBiometric()) return;
+    _biometricAutoPromptDone = true;
+    await _tryBiometricUnlock();
+  }
+
+  /// Prompts biometrics and, on success, unlocks via the existing softLogin
+  /// using the stored passcode. Failure/cancel leaves the passcode pad active.
+  Future<void> _tryBiometricUnlock() async {
+    if (_biometricInFlight) return;
+    final authProvider = context.read<AuthProvider>();
+    final bio = context.read<BiometricProvider>();
+    final storedPasscode = authProvider.state.user?.password ?? '';
+    if (storedPasscode.isEmpty) return;
+
+    // setState so the retry button reflects the in-flight state and, crucially,
+    // re-enables after the scan finishes (the toggle below in `finally` would
+    // otherwise not trigger a rebuild, leaving the button stuck disabled).
+    setState(() => _biometricInFlight = true);
+    try {
+      final scanned = await bio.authenticate(
+        context.l10n!.biometricUnlockReason,
+      );
+      if (!scanned || !mounted) return;
+
+      final unlocked = await authProvider.softLogin(storedPasscode);
+      if (!unlocked || !mounted) return;
+
+      // modeAppLock: AuthProvider.onUnlockCallback removes the overlay route,
+      // so we must NOT navigate here. modeSoftLogin: navigate home like the
+      // manual soft-login path does.
+      if (widget.mode == LoginProvider.modeSoftLogin) {
+        context.go(Routes.home);
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarHelper.showError(context, e.toString());
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _biometricInFlight = false);
+      } else {
+        _biometricInFlight = false;
+      }
+    }
+  }
+
   String _titleForMode(dynamic l10n) {
-    if (mode == LoginProvider.modeRegister) {
-      return l10n.createAPasscode;
-    }
-    if (mode == LoginProvider.modeResetPasscode) {
-      return l10n.setYourNewPasscode;
-    }
-    if (mode == LoginProvider.modeConfirmPasscode) {
-      return l10n.confirmYourPasscode;
-    }
-    return l10n.enterPasscode;
+    return switch (widget.mode) {
+      LoginProvider.modeRegister => l10n.createAPasscode,
+      LoginProvider.modeRegisterConfirm => l10n.confirmYourPasscode,
+      LoginProvider.modeChangePasscodeCurrent => l10n.enterYourCurrentPasscode,
+      LoginProvider.modeChangePasscodeNew => l10n.enterYourNewPasscode,
+      LoginProvider.modeChangePasscodeConfirm => l10n.confirmYourNewPasscode,
+      LoginProvider.modeChangeEmailConfirmPasscode => l10n.enterPasscode,
+      LoginProvider.modeChangePhoneConfirmPasscode => l10n.enterPasscode,
+      LoginProvider.modeResetPasscode => l10n.setYourNewPasscode,
+      LoginProvider.modeConfirmPasscode => l10n.confirmYourPasscode,
+      _ => l10n.enterPasscode,
+    };
   }
 
   static Future<void> _onForgotPasscode(
     BuildContext context,
-    bool isSoftLogin,
     PasscodeProvider passcodeProvider,
   ) async {
-    if (!passcodeProvider.hasPhoneContext) return;
-    passcodeProvider.clearPasscode();
+    if (!passcodeProvider.hasPhoneContext) {
+      if (context.mounted) {
+        SnackbarHelper.showError(
+          context,
+          context.l10n!.forgotPasscodePhoneMissing,
+        );
+      }
+      return;
+    }
+    if (EnterOrSetPasscodeScreen._forgotPasscodeOtpInFlight) {
+      return;
+    }
+    EnterOrSetPasscodeScreen._forgotPasscodeOtpInFlight = true;
     try {
-      await ForgotPasscodeService.requestOtp(
-        passcodeProvider.phoneNumber,
-        passcodeProvider.countryCode,
+      passcodeProvider.clearPasscode();
+
+      final navigator = Navigator.of(context, rootNavigator: true);
+      final barrierColor = Theme.of(
+        context,
+      ).colorScheme.scrim.withValues(alpha: 0.45);
+
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: barrierColor,
+        useRootNavigator: true,
+        builder: (dialogContext) {
+          return PopScope(
+            canPop: false,
+            child: Center(
+              child: Material(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: SizedBox.square(
+                  dimension: 60,
+                  child: const CommonLoadingIndicator(),
+                ),
+              ),
+            ),
+          );
+        },
       );
-      if (context.mounted) {
-        context.push(
-          Routes.forgotPasscode,
-          extra: {
-            LoginProvider.extraCountryCodeKey: passcodeProvider.countryCode,
-            LoginProvider.extraPhoneNumberKey: passcodeProvider.phoneNumber,
-          },
-        );
+      // Let the dialog route mount before the async API gap so [Navigator.pop]
+      // reliably dismisses the loading overlay.
+      await Future<void>.delayed(Duration.zero);
+      if (!context.mounted) {
+        if (navigator.mounted) {
+          navigator.pop();
+        }
+        return;
       }
-    } catch (_) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n?.networkError ?? 'Network error'),
-          ),
+
+      try {
+        final response = await ForgotPasscodeService.requestOtp(
+          passcodeProvider.phoneNumber,
+          passcodeProvider.countryCode,
         );
+        if (navigator.mounted) {
+          navigator.pop();
+        }
+        if (context.mounted) {
+          context.push(
+            Routes.forgotPasscode,
+            extra: {
+              LoginProvider.extraCountryCodeKey: passcodeProvider.countryCode,
+              LoginProvider.extraPhoneNumberKey: passcodeProvider.phoneNumber,
+              'otpExpirySeconds': response.otpExpirySeconds,
+              'maskedMobile': response.maskedMobile,
+              'maskedEmail': response.maskedEmail,
+              'verificationType': response.verificationType,
+            },
+          );
+        }
+      } catch (e) {
+        if (navigator.mounted) {
+          navigator.pop();
+        }
+        if (context.mounted) {
+          SnackbarHelper.showError(context, e.toString());
+        }
       }
+    } finally {
+      EnterOrSetPasscodeScreen._forgotPasscodeOtpInFlight = false;
     }
   }
 
@@ -345,70 +727,367 @@ class EnterOrSetPasscodeScreen extends StatelessWidget {
       return;
     }
 
-    if (mode == LoginProvider.modeResetPasscode) {
-      context.go(
-        Routes.enterOrSetPasscode,
-        extra: {
-          LoginProvider.extraModeKey: LoginProvider.modeConfirmPasscode,
-          LoginProvider.extraCountryCodeKey: provider.countryCode,
-          LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
-          LoginProvider.extraPendingPasscodeKey: provider.passcode,
-        },
-      );
-      return;
-    }
+    try {
+      if (widget.mode == LoginProvider.modeResetPasscode) {
+        if (widget.resetToken == null || widget.resetToken!.isEmpty) {
+          SnackbarHelper.showError(context, context.l10n!.unknownError);
+          return;
+        }
+        context.push(
+          Routes.enterOrSetPasscode,
+          extra: {
+            LoginProvider.extraModeKey: LoginProvider.modeConfirmPasscode,
+            LoginProvider.extraCountryCodeKey: provider.countryCode,
+            LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+            LoginProvider.extraPendingPasscodeKey: provider.passcode,
+            LoginProvider.extraResetTokenKey: widget.resetToken,
+          },
+        );
+        return;
+      }
 
-    if (mode == LoginProvider.modeRegister) {
       final authProvider = context.read<AuthProvider>();
+
+      if (widget.mode == LoginProvider.modeChangePasscodeCurrent) {
+        final isValid = await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) => authProvider.verifyStoredPasscodeForCurrentUser(passcode),
+        );
+        if (!context.mounted || !isValid) {
+          return;
+        }
+        context.push(
+          Routes.enterOrSetPasscode,
+          extra: {
+            LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeNew,
+            LoginProvider.extraCountryCodeKey: provider.countryCode,
+            LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+            LoginProvider.extraCurrentPasscodeKey: provider.passcode,
+          },
+        );
+        return;
+      }
+
+      if (widget.mode == LoginProvider.modeChangePasscodeNew) {
+        context.push(
+          Routes.enterOrSetPasscode,
+          extra: {
+            LoginProvider.extraModeKey: LoginProvider.modeChangePasscodeConfirm,
+            LoginProvider.extraCountryCodeKey: provider.countryCode,
+            LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+            LoginProvider.extraCurrentPasscodeKey: widget.currentPasscode,
+            LoginProvider.extraPendingPasscodeKey: provider.passcode,
+          },
+        );
+        return;
+      }
+
+      if (widget.mode == LoginProvider.modeRegister) {
+        // Step 1: passcode chosen. Carry it (and the registration token)
+        // forward to the confirm step instead of registering immediately.
+        context.push(
+          Routes.enterOrSetPasscode,
+          extra: {
+            LoginProvider.extraModeKey: LoginProvider.modeRegisterConfirm,
+            LoginProvider.extraCountryCodeKey: provider.countryCode,
+            LoginProvider.extraPhoneNumberKey: provider.phoneNumber,
+            LoginProvider.extraPendingPasscodeKey: provider.passcode,
+            if (widget.registrationToken != null)
+              LoginProvider.extraRegistrationTokenKey: widget.registrationToken,
+          },
+        );
+        return;
+      }
+
+      if (widget.mode == LoginProvider.modeRegisterConfirm) {
+        final isValid = await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) async {
+                // Re-entry must match the passcode set in step 1.
+                if (passcode != (widget.pendingPasscode ?? '')) return false;
+                if (widget.registrationToken != null &&
+                    widget.registrationToken!.isNotEmpty) {
+                  final isRegSuccess = await authProvider
+                      .setRegistrationPasscode(
+                        registrationToken: widget.registrationToken!,
+                        passcode: passcode,
+                        confirmPasscode: passcode,
+                      );
+                  if (!isRegSuccess) return false;
+                  // Server has accepted the new passcode but did not return
+                  // session tokens. Acquire a session via the OTP-less
+                  // `/v1/auth/login/passcode` endpoint so the user lands on
+                  // Home with a valid auth state.
+                  return await authProvider.loginWithPasscode(
+                    mobileNumber: phoneNumber,
+                    countryCode: countryCode,
+                    passcode: passcode,
+                  );
+                }
+                return await authProvider.setPasscode(
+                  phoneNumber,
+                  countryCode,
+                  passcode,
+                );
+              },
+        );
+        if (!context.mounted || !isValid) return;
+        context.go(Routes.home);
+        return;
+      }
+
+      if (widget.mode == LoginProvider.modeChangePasscodeConfirm) {
+        final isValid = await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) async => passcode == (widget.pendingPasscode ?? ''),
+        );
+        if (!context.mounted || !isValid) {
+          return;
+        }
+        final newPasscode = widget.pendingPasscode;
+        final oldPasscode = widget.currentPasscode;
+        if (newPasscode == null ||
+            newPasscode.length != PasscodeProvider.passcodeLength ||
+            oldPasscode == null ||
+            oldPasscode.length != PasscodeProvider.passcodeLength) {
+          if (context.mounted) {
+            SnackbarHelper.showError(context, context.l10n!.unknownError);
+          }
+          return;
+        }
+
+        if (EnterOrSetPasscodeScreen._changePasscodeSubmitInFlight) {
+          return;
+        }
+        EnterOrSetPasscodeScreen._changePasscodeSubmitInFlight = true;
+        provider.clearPasscode();
+
+        final navigator = Navigator.of(context, rootNavigator: true);
+        final barrierColor = Theme.of(
+          context,
+        ).colorScheme.scrim.withValues(alpha: 0.45);
+
+        showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          barrierColor: barrierColor,
+          useRootNavigator: true,
+          builder: (dialogContext) {
+            return PopScope(
+              canPop: false,
+              child: Center(
+                child: Material(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: SizedBox.square(
+                    dimension: 60,
+                    child: const CommonLoadingIndicator(),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+        await Future<void>.delayed(Duration.zero);
+        if (!context.mounted) {
+          EnterOrSetPasscodeScreen._changePasscodeSubmitInFlight = false;
+          if (navigator.mounted) {
+            navigator.pop();
+          }
+          return;
+        }
+
+        try {
+          await authProvider.changePasscodeAndRefreshSession(
+            currentPasscode: oldPasscode,
+            newPasscode: newPasscode,
+            confirmPasscode: newPasscode,
+          );
+          if (navigator.mounted) {
+            navigator.pop();
+          }
+          if (!context.mounted) {
+            return;
+          }
+          context.go(Routes.changePasscodeSuccess);
+        } catch (e) {
+          if (navigator.mounted) {
+            navigator.pop();
+          }
+          if (context.mounted) {
+            SnackbarHelper.showError(context, e.toString());
+          }
+        } finally {
+          EnterOrSetPasscodeScreen._changePasscodeSubmitInFlight = false;
+        }
+        return;
+      }
+
+      if (widget.mode == LoginProvider.modeConfirmPasscode) {
+        final isForgotResetFlow =
+            widget.resetToken != null && widget.resetToken!.isNotEmpty;
+        final isValid = await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) async {
+                if (passcode != (widget.pendingPasscode ?? '')) return false;
+                if (isForgotResetFlow) {
+                  return await authProvider.resetForgotPasscodeAndLogin(
+                    phoneNumber: phoneNumber,
+                    countryCode: countryCode,
+                    resetToken: widget.resetToken!,
+                    newPasscode: passcode,
+                    confirmPasscode: passcode,
+                  );
+                }
+                return await authProvider.setPasscode(
+                  phoneNumber,
+                  countryCode,
+                  passcode,
+                );
+              },
+        );
+        if (!context.mounted || !isValid) return;
+        context.go(Routes.home);
+        return;
+      }
+
+      if (widget.mode == LoginProvider.modeChangeEmailConfirmPasscode) {
+        final token = widget.changeEmailToken?.trim() ?? '';
+        if (token.isEmpty) {
+          return;
+        }
+        String? refreshedToken;
+        final isValid = await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) async {
+                final result = await ChangeEmailService.step3VerifyPasscode(
+                  changeEmailToken: token,
+                  passcode: passcode,
+                );
+                refreshedToken = result.changeEmailToken;
+                return true;
+              },
+        );
+        if (!context.mounted || !isValid) return;
+        final nextToken = (refreshedToken != null && refreshedToken!.isNotEmpty)
+            ? refreshedToken!
+            : token;
+        context.push(
+          Routes.changeEmailEnterNew,
+          extra: {LoginProvider.extraChangeEmailTokenKey: nextToken},
+        );
+        return;
+      }
+
+      if (widget.mode == LoginProvider.modeChangePhoneConfirmPasscode) {
+        final token = widget.changePhoneToken?.trim() ?? '';
+        if (token.isEmpty) {
+          return;
+        }
+        String? refreshedToken;
+        final isValid = await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) async {
+                final result = await ChangePhoneService.step3VerifyPasscode(
+                  changePhoneToken: token,
+                  passcode: passcode,
+                );
+                refreshedToken = result.changePhoneToken;
+                return true;
+              },
+        );
+        if (!context.mounted || !isValid) return;
+        final nextToken = (refreshedToken != null && refreshedToken!.isNotEmpty)
+            ? refreshedToken!
+            : token;
+        context.push(
+          Routes.changePhoneEnterNew,
+          extra: {LoginProvider.extraChangePhoneTokenKey: nextToken},
+        );
+        return;
+      }
+
+      if (widget.mode == LoginProvider.modeAppLock) {
+        // Verify only — do NOT pop the overlay route here. On success,
+        // [AuthProvider.softLogin] fires `onUnlockCallback`, which calls
+        // [AppLockProvider.markUnlocked], which removes the overlay route
+        // via the show/dismiss callbacks wired in main.dart. Popping here
+        // too would race with the route removal.
+        await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) => authProvider.softLogin(passcode),
+        );
+        return;
+      }
+
+      if (widget.mode == LoginProvider.modeSoftLogin) {
+        final isValid = await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) => authProvider.softLogin(passcode),
+        );
+        if (!context.mounted || !isValid) return;
+        context.go(Routes.home);
+        return;
+      }
+
+      final token = widget.otpVerificationToken;
+      if (token == null || token.isEmpty) {
+        SnackbarHelper.showError(context, context.l10n!.unknownError);
+        return;
+      }
       final isValid = await provider.verify(
         verifyPasscode:
             ({
               required String phoneNumber,
               required String countryCode,
               required String passcode,
-            }) =>
-                authProvider.setPasscode(phoneNumber, countryCode, passcode),
+            }) => authProvider.login(
+              passcode: passcode,
+              otpVerificationToken: token,
+            ),
       );
-      if (!context.mounted || !isValid) return;
+      if (!context.mounted || !isValid) {
+        return;
+      }
       context.go(Routes.home);
-      return;
+    } catch (e) {
+      if (context.mounted) {
+        SnackbarHelper.showError(context, e.toString());
+      }
     }
-
-    final authProvider = context.read<AuthProvider>();
-
-    if (mode == LoginProvider.modeConfirmPasscode) {
-      final isValid = await provider.verify(
-        verifyPasscode:
-            ({
-              required String phoneNumber,
-              required String countryCode,
-              required String passcode,
-            }) async {
-              if (passcode != (pendingPasscode ?? '')) return false;
-              return await authProvider.setPasscode(
-                phoneNumber,
-                countryCode,
-                passcode,
-              );
-            },
-      );
-      if (!context.mounted || !isValid) return;
-      context.go(Routes.home);
-      return;
-    }
-
-    final isValid = await provider.verify(
-      verifyPasscode:
-          ({
-            required String phoneNumber,
-            required String countryCode,
-            required String passcode,
-          }) => authProvider.login(phoneNumber, countryCode, passcode),
-    );
-    if (!context.mounted || !isValid) {
-      return;
-    }
-    context.go(Routes.home);
   }
 }
 
@@ -432,128 +1111,6 @@ class _PasscodeDot extends StatelessWidget {
         shape: BoxShape.circle,
         color: isFilled ? fillColor : Colors.transparent,
         border: Border.all(color: borderColor, width: 1.2),
-      ),
-    );
-  }
-}
-
-class _KeypadGrid extends StatelessWidget {
-  const _KeypadGrid({
-    required this.onDigitPressed,
-    required this.onBackspacePressed,
-    required this.buttonColor,
-    required this.buttonTextColor,
-    required this.isEnabled,
-  });
-
-  final ValueChanged<String> onDigitPressed;
-  final VoidCallback onBackspacePressed;
-  final Color buttonColor;
-  final Color buttonTextColor;
-  final bool isEnabled;
-
-  @override
-  Widget build(BuildContext context) {
-    const keypadRows = <List<String>>[
-      ['1', '2', '3'],
-      ['4', '5', '6'],
-      ['7', '8', '9'],
-    ];
-
-    return Column(
-      children: [
-        for (final row in keypadRows)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                for (var index = 0; index < row.length; index++)
-                  Padding(
-                    padding: EdgeInsetsDirectional.only(
-                      end: index == row.length - 1 ? 0 : 18,
-                    ),
-                    child: _KeypadButton(
-                      label: row[index],
-                      onPressed: isEnabled
-                          ? () => onDigitPressed(row[index])
-                          : null,
-                      buttonColor: buttonColor,
-                      textColor: buttonTextColor,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(width: 64, height: 64),
-            const SizedBox(width: 18),
-            _KeypadButton(
-              label: '0',
-              onPressed: isEnabled ? () => onDigitPressed('0') : null,
-              buttonColor: buttonColor,
-              textColor: buttonTextColor,
-            ),
-            const SizedBox(width: 18),
-            SizedBox(
-              width: 64,
-              height: 64,
-              child: Center(
-                child: GestureDetector(
-                  onTap: isEnabled ? onBackspacePressed : null,
-                  child: SvgPicture.asset(
-                    context.isDarkMode
-                        ? 'assets/icons/clear-number-icon-dark.svg'
-                        : 'assets/icons/clear-number-icon-light.svg',
-                    width: 28,
-                    height: 24,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _KeypadButton extends StatelessWidget {
-  const _KeypadButton({
-    required this.label,
-    required this.onPressed,
-    required this.buttonColor,
-    required this.textColor,
-  });
-
-  final String label;
-  final VoidCallback? onPressed;
-  final Color buttonColor;
-  final Color textColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Opacity(
-        opacity: onPressed == null ? 0.5 : 1,
-        child: Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(shape: BoxShape.circle, color: buttonColor),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: context.textTheme.titleLarge?.copyWith(
-              fontSize: 44 / 1.35,
-              fontWeight: FontWeight.w500,
-              color: textColor,
-              height: 1.0,
-            ),
-          ),
-        ),
       ),
     );
   }

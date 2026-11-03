@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'OmlaPay'**
+  /// **'Omlapay'**
   String get appTitle;
 
   /// No description provided for @login.
@@ -143,7 +143,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcomeToOmlaPay.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to OmlaPay'**
+  /// **'Welcome to Omlapay'**
   String get welcomeToOmlaPay;
 
   /// No description provided for @email.
@@ -266,17 +266,257 @@ abstract class AppLocalizations {
   /// **'Change Phone Number'**
   String get changePhoneNumber;
 
+  /// No description provided for @stepsForChangingPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps for changing your Phone Number'**
+  String get stepsForChangingPhoneNumber;
+
+  /// No description provided for @changePhoneStepsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'To change your registered phone number, follow these steps:'**
+  String get changePhoneStepsDescription;
+
+  /// No description provided for @changePhoneStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your account with a verification code sent to your registered email address.'**
+  String get changePhoneStep1;
+
+  /// No description provided for @changePhoneStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your account passcode to authorize the change.'**
+  String get changePhoneStep2;
+
+  /// No description provided for @changePhoneStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your new phone number (the one you want to use for your account).'**
+  String get changePhoneStep3;
+
+  /// No description provided for @changePhoneStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your new phone number with a verification code.'**
+  String get changePhoneStep4;
+
+  /// No description provided for @changePhoneAfterStepsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'After you verify the code, your account will use the new phone number.'**
+  String get changePhoneAfterStepsNote;
+
+  /// No description provided for @changePhoneEnterNewSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'After you continue, we will send a verification code to this number.'**
+  String get changePhoneEnterNewSubtitle;
+
+  /// No description provided for @enterNewPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter new phone number'**
+  String get enterNewPhoneNumber;
+
+  /// No description provided for @verifyNewPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify new phone number'**
+  String get verifyNewPhoneNumber;
+
+  /// No description provided for @changePhoneCurrentOtpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'An 6 digit verification code has been sent via WhatsApp to {phone}.'**
+  String changePhoneCurrentOtpSent(String phone);
+
+  /// No description provided for @changePhoneNewOtpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'A 6-digit verification code was sent to {phone}.'**
+  String changePhoneNewOtpSent(String phone);
+
+  /// No description provided for @verifyYourEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your email'**
+  String get verifyYourEmail;
+
+  /// No description provided for @twoFactorEmailOtpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'A 6-digit verification code has been sent to {email}.'**
+  String twoFactorEmailOtpSent(String email);
+
+  /// No description provided for @enterValidPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid phone number'**
+  String get enterValidPhoneNumber;
+
+  /// No description provided for @phoneNumberChangedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone number has been changed successfully'**
+  String get phoneNumberChangedSuccessfully;
+
   /// No description provided for @changeEmail.
   ///
   /// In en, this message translates to:
   /// **'Change Email'**
   String get changeEmail;
 
+  /// No description provided for @stepsForChangingEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps for changing your Email'**
+  String get stepsForChangingEmail;
+
+  /// No description provided for @changeEmailStepsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'To change your registered email address we will follow these steps :'**
+  String get changeEmailStepsDescription;
+
+  /// No description provided for @step1Label.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 1'**
+  String get step1Label;
+
+  /// No description provided for @step2Label.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 2'**
+  String get step2Label;
+
+  /// No description provided for @step3Label.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 3'**
+  String get step3Label;
+
+  /// No description provided for @step4Label.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 4'**
+  String get step4Label;
+
+  /// No description provided for @changeEmailStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your account with a verification code sent to your registered phone number.'**
+  String get changeEmailStep1;
+
+  /// No description provided for @changeEmailStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your account passcode to authorize the change.'**
+  String get changeEmailStep2;
+
+  /// No description provided for @changeEmailStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the new email address you want to use for your account.'**
+  String get changeEmailStep3;
+
+  /// No description provided for @changeEmailStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify the new email address with a verification code.'**
+  String get changeEmailStep4;
+
+  /// No description provided for @changeEmailAfterStepsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'After following these steps, your current email address will be changed to the new one.'**
+  String get changeEmailAfterStepsNote;
+
+  /// No description provided for @verifyCurrentPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify current phone number'**
+  String get verifyCurrentPhoneNumber;
+
+  /// No description provided for @enterNewEmailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter new email address'**
+  String get enterNewEmailAddress;
+
+  /// No description provided for @verifyNewEmailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify new email address'**
+  String get verifyNewEmailAddress;
+
+  /// No description provided for @changeEmailPhoneOtpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'An 6 digit verification code has been sent via WhatsApp to {phone}.'**
+  String changeEmailPhoneOtpSent(String phone);
+
+  /// No description provided for @changeEmailEmailOtpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'An 6 digit verification code has been sent to {email}.'**
+  String changeEmailEmailOtpSent(String email);
+
+  /// No description provided for @enterYourNewEmailAddressToReceiveOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your new email address to receive OTP'**
+  String get enterYourNewEmailAddressToReceiveOtp;
+
+  /// No description provided for @enterEmailAddressHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter new email address'**
+  String get enterEmailAddressHint;
+
+  /// No description provided for @enterValidEmailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email address'**
+  String get enterValidEmailAddress;
+
+  /// No description provided for @continueButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueButton;
+
+  /// No description provided for @invalidOtpTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid OTP. Try again.'**
+  String get invalidOtpTryAgain;
+
+  /// No description provided for @emailChangedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Your email address has been changed successfully'**
+  String get emailChangedSuccessfully;
+
   /// No description provided for @changePasscode.
   ///
   /// In en, this message translates to:
   /// **'Change Passcode'**
   String get changePasscode;
+
+  /// No description provided for @passcodeChangedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Your passcode has been changed successfully'**
+  String get passcodeChangedSuccessfully;
+
+  /// No description provided for @backHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Back Home'**
+  String get backHome;
 
   /// No description provided for @walletsAddress.
   ///
@@ -290,23 +530,11 @@ abstract class AppLocalizations {
   /// **'EVM'**
   String get evm;
 
-  /// No description provided for @bitcoin.
-  ///
-  /// In en, this message translates to:
-  /// **'Bitcoin'**
-  String get bitcoin;
-
   /// No description provided for @tron.
   ///
   /// In en, this message translates to:
   /// **'Tron'**
   String get tron;
-
-  /// No description provided for @solana.
-  ///
-  /// In en, this message translates to:
-  /// **'Solana'**
-  String get solana;
 
   /// No description provided for @copy.
   ///
@@ -337,6 +565,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Notification'**
   String get notification;
+
+  /// No description provided for @biometric.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric'**
+  String get biometric;
+
+  /// No description provided for @biometricUnlockReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticate to unlock the app'**
+  String get biometricUnlockReason;
+
+  /// No description provided for @biometricEnableReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticate to enable biometric login'**
+  String get biometricEnableReason;
+
+  /// No description provided for @biometricEnableFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t enable biometric authentication'**
+  String get biometricEnableFailed;
 
   /// No description provided for @dark.
   ///
@@ -428,6 +680,30 @@ abstract class AppLocalizations {
   /// **'Request failed'**
   String get requestFailed;
 
+  /// No description provided for @invalidServerResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid response from server'**
+  String get invalidServerResponse;
+
+  /// No description provided for @softLoginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Soft login failed'**
+  String get softLoginFailed;
+
+  /// No description provided for @registrationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration failed'**
+  String get registrationFailed;
+
+  /// No description provided for @unableToChangePasscode.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to change passcode'**
+  String get unableToChangePasscode;
+
   /// No description provided for @unknownError.
   ///
   /// In en, this message translates to:
@@ -482,6 +758,12 @@ abstract class AppLocalizations {
   /// **'Hello!'**
   String get hello;
 
+  /// No description provided for @helloComma.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello,'**
+  String get helloComma;
+
   /// No description provided for @welcomeBackToOmlapay.
   ///
   /// In en, this message translates to:
@@ -518,6 +800,12 @@ abstract class AppLocalizations {
   /// **'Forgot passcode'**
   String get forgotPasscode;
 
+  /// No description provided for @forgotPasscodePhoneMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load your phone number. Log out and sign in again, or contact support.'**
+  String get forgotPasscodePhoneMissing;
+
   /// No description provided for @dontHaveAccountSignUp.
   ///
   /// In en, this message translates to:
@@ -551,7 +839,7 @@ abstract class AppLocalizations {
   /// No description provided for @byCreatingAnAccountIAgreeToMushafars.
   ///
   /// In en, this message translates to:
-  /// **'By creating an account I agree to Mushafar\'s'**
+  /// **'By creating an account I agree to'**
   String get byCreatingAnAccountIAgreeToMushafars;
 
   /// No description provided for @termsOfService.
@@ -611,8 +899,20 @@ abstract class AppLocalizations {
   /// No description provided for @aboutOmlapayDescription.
   ///
   /// In en, this message translates to:
-  /// **'is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.'**
+  /// **'A secure and user-friendly digital wallet that enables seamless sending, receiving, and storing of cryptocurrencies. We manage your private keys on your behalf, simplifying transactions while maintaining the highest security standards. No need to worry about losing recovery phrases—access your funds effortlessly using your mobile number and password. Enjoy instant transfers, built-in exchange features, and 24/7 customer support, making crypto management as smooth as traditional banking. Our wallet ensures fast, secure, and hassle-free transactions while keeping your assets protected.'**
   String get aboutOmlapayDescription;
+
+  /// No description provided for @readMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Read more'**
+  String get readMore;
+
+  /// No description provided for @readLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Read less'**
+  String get readLess;
 
   /// No description provided for @faqs.
   ///
@@ -707,8 +1007,8 @@ abstract class AppLocalizations {
   /// No description provided for @attachFileDescription.
   ///
   /// In en, this message translates to:
-  /// **'Attach any related PNG, JPG, PDF'**
-  String get attachFileDescription;
+  /// **'Attach any related {extensions}'**
+  String attachFileDescription(String extensions);
 
   /// No description provided for @send.
   ///
@@ -800,6 +1100,12 @@ abstract class AppLocalizations {
   /// **'All'**
   String get all;
 
+  /// No description provided for @open.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get open;
+
   /// No description provided for @solved.
   ///
   /// In en, this message translates to:
@@ -860,6 +1166,12 @@ abstract class AppLocalizations {
   /// **'Transactions'**
   String get transactions;
 
+  /// No description provided for @viewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View all'**
+  String get viewAll;
+
   /// No description provided for @noTransactionsFound.
   ///
   /// In en, this message translates to:
@@ -884,6 +1196,12 @@ abstract class AppLocalizations {
   /// **'Ethereum'**
   String get ethereum;
 
+  /// No description provided for @bitcoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Bitcoin'**
+  String get bitcoin;
+
   /// No description provided for @currency.
   ///
   /// In en, this message translates to:
@@ -896,6 +1214,12 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
   /// No description provided for @readyToLogOut.
   ///
   /// In en, this message translates to:
@@ -907,6 +1231,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your funds are safe. To get back in, we\'ll send a code to your registered mobile number.'**
   String get logoutDialogMessage;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account?'**
+  String get deleteAccountConfirmTitle;
+
+  /// No description provided for @deleteAccountConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account will be scheduled for deletion. You have 7 days to cancel by logging in again.'**
+  String get deleteAccountConfirmMessage;
+
+  /// No description provided for @deleteAccountScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deletion scheduled. You have 7 days to cancel by logging in again.'**
+  String get deleteAccountScheduled;
+
+  /// No description provided for @deleteAccountHasBalanceError.
+  ///
+  /// In en, this message translates to:
+  /// **'You still have funds in your wallets. Please withdraw or transfer your entire balance before deleting your account.'**
+  String get deleteAccountHasBalanceError;
 
   /// No description provided for @save.
   ///
@@ -935,7 +1289,7 @@ abstract class AppLocalizations {
   /// No description provided for @currencySymbol.
   ///
   /// In en, this message translates to:
-  /// **'{choice, select, usd {\$} sar {﷼} other {{choice}}}'**
+  /// **'{choice, select, usd {\$} sar {⃁} other {{choice}}}'**
   String currencySymbol(String choice);
 
   /// No description provided for @coinHistory.
@@ -955,6 +1309,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Current price'**
   String get currentPrice;
+
+  /// No description provided for @coinDetailsPriceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'—'**
+  String get coinDetailsPriceUnavailable;
 
   /// No description provided for @today.
   ///
@@ -979,6 +1339,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sender'**
   String get sender;
+
+  /// No description provided for @receiver.
+  ///
+  /// In en, this message translates to:
+  /// **'Receiver'**
+  String get receiver;
 
   /// No description provided for @address.
   ///
@@ -1058,11 +1424,35 @@ abstract class AppLocalizations {
   /// **'Fee'**
   String get fee;
 
+  /// No description provided for @exchangeRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Exchange Rate'**
+  String get exchangeRate;
+
+  /// No description provided for @pair.
+  ///
+  /// In en, this message translates to:
+  /// **'Pair'**
+  String get pair;
+
   /// No description provided for @transactionHash.
   ///
   /// In en, this message translates to:
   /// **'Transaction Hash'**
   String get transactionHash;
+
+  /// No description provided for @couldNotOpenLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the link'**
+  String get couldNotOpenLink;
+
+  /// No description provided for @supportEmailSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'OmlaPay Support'**
+  String get supportEmailSubject;
 
   /// No description provided for @fromAddress.
   ///
@@ -1112,6 +1502,12 @@ abstract class AppLocalizations {
   /// **'Sol'**
   String get sol;
 
+  /// No description provided for @solana.
+  ///
+  /// In en, this message translates to:
+  /// **'Solana'**
+  String get solana;
+
   /// No description provided for @sendTo.
   ///
   /// In en, this message translates to:
@@ -1147,6 +1543,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Image saved successfully'**
   String get imageSavedSuccessfully;
+
+  /// No description provided for @transactionReceiptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Receipt'**
+  String get transactionReceiptTitle;
+
+  /// No description provided for @transactionIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction ID'**
+  String get transactionIdLabel;
+
+  /// No description provided for @recipient.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient'**
+  String get recipient;
+
+  /// No description provided for @amountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get amountLabel;
+
+  /// No description provided for @statusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get statusLabel;
+
+  /// No description provided for @typeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get typeLabel;
+
+  /// No description provided for @transactionSaveFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save transaction'**
+  String get transactionSaveFailedMessage;
+
+  /// No description provided for @photoLibraryPermissionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo library access is required to save the transaction'**
+  String get photoLibraryPermissionRequired;
 
   /// No description provided for @transactionSavedSuccessfully.
   ///
@@ -1184,6 +1628,18 @@ abstract class AppLocalizations {
   /// **'Forgot passcode'**
   String get forgotPasscodeTitle;
 
+  /// No description provided for @forgotPasscodePhoneOtpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'An 6 digit verification code has been sent via WhatsApp to {phone}.'**
+  String forgotPasscodePhoneOtpSent(String phone);
+
+  /// No description provided for @forgotPasscodeEmailOtpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'A 6-digit verification code has been sent to {email}.'**
+  String forgotPasscodeEmailOtpSent(String email);
+
   /// No description provided for @verifyYourPhoneNumber.
   ///
   /// In en, this message translates to:
@@ -1202,11 +1658,17 @@ abstract class AppLocalizations {
   /// **'An 6 digit verification code has been sent via SMS to {phone}.'**
   String verificationCodeSentViaSmsTo(String phone);
 
-  /// No description provided for @verificationCodesInSeconds.
+  /// No description provided for @verificationCodesIn.
   ///
   /// In en, this message translates to:
-  /// **'You should receive the verification codes in {seconds} Seconds'**
-  String verificationCodesInSeconds(int seconds);
+  /// **'You should receive the verification codes in'**
+  String get verificationCodesIn;
+
+  /// No description provided for @secondsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds} Seconds'**
+  String secondsCount(int seconds);
 
   /// No description provided for @didntReceiveCodesResendOtp.
   ///
@@ -1237,6 +1699,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create a passcode'**
   String get createAPasscode;
+
+  /// No description provided for @enterYourCurrentPasscode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current passcode'**
+  String get enterYourCurrentPasscode;
+
+  /// No description provided for @enterYourNewPasscode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your new passcode'**
+  String get enterYourNewPasscode;
+
+  /// No description provided for @confirmYourNewPasscode.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your new passcode'**
+  String get confirmYourNewPasscode;
 
   /// No description provided for @confirmYourPasscode.
   ///
@@ -1334,6 +1814,24 @@ abstract class AppLocalizations {
   /// **'Invalid QR code'**
   String get invalidQrCode;
 
+  /// No description provided for @qrInvalidWalletAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid wallet address'**
+  String get qrInvalidWalletAddress;
+
+  /// No description provided for @qrAddressVerificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t verify the address. Check your connection and try again.'**
+  String get qrAddressVerificationFailed;
+
+  /// No description provided for @qrAddressNotValidated.
+  ///
+  /// In en, this message translates to:
+  /// **'This address could not be validated'**
+  String get qrAddressNotValidated;
+
   /// No description provided for @tryAgain.
   ///
   /// In en, this message translates to:
@@ -1345,6 +1843,1032 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Two Factor Authentication'**
   String get twoFactorAuthentication;
+
+  /// No description provided for @sendFlowReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmation'**
+  String get sendFlowReviewTitle;
+
+  /// No description provided for @sendFlowSendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending'**
+  String get sendFlowSendingTitle;
+
+  /// No description provided for @feeFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get feeFree;
+
+  /// No description provided for @accountNoUserDataAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No user data available'**
+  String get accountNoUserDataAvailable;
+
+  /// No description provided for @copyLabelValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}: {value}'**
+  String copyLabelValue(String label, String value);
+
+  /// No description provided for @shareComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Share functionality coming soon'**
+  String get shareComingSoon;
+
+  /// No description provided for @errorPickingFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Error picking file: {error}'**
+  String errorPickingFile(String error);
+
+  /// No description provided for @helpRequestSentSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent successfully'**
+  String get helpRequestSentSuccess;
+
+  /// No description provided for @verificationCodeResentSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code resent successfully.'**
+  String get verificationCodeResentSuccess;
+
+  /// No description provided for @pasteHintLongPress.
+  ///
+  /// In en, this message translates to:
+  /// **'Press and hold to paste'**
+  String get pasteHintLongPress;
+
+  /// No description provided for @minAmountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Min {amount}'**
+  String minAmountHint(String amount);
+
+  /// No description provided for @sendAmountMaxShortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Max'**
+  String get sendAmountMaxShortLabel;
+
+  /// No description provided for @swapAmountMaxShortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Max'**
+  String get swapAmountMaxShortLabel;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get searchHint;
+
+  /// No description provided for @searchContactsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search name or number'**
+  String get searchContactsHint;
+
+  /// No description provided for @sendFlowVerifyAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Account'**
+  String get sendFlowVerifyAccountTitle;
+
+  /// No description provided for @sendOtpInstructionsMasked.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the code sent to {phoneMask}'**
+  String sendOtpInstructionsMasked(String phoneMask);
+
+  /// No description provided for @verifyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get verifyAction;
+
+  /// No description provided for @swapSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully swapped'**
+  String get swapSuccessMessage;
+
+  /// No description provided for @sendSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully sent'**
+  String get sendSuccessMessage;
+
+  /// No description provided for @successScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Success'**
+  String get successScreenTitle;
+
+  /// No description provided for @confirmSecurely.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Securely'**
+  String get confirmSecurely;
+
+  /// No description provided for @youAreSending.
+  ///
+  /// In en, this message translates to:
+  /// **'You are sending'**
+  String get youAreSending;
+
+  /// No description provided for @youWillSend.
+  ///
+  /// In en, this message translates to:
+  /// **'You will send'**
+  String get youWillSend;
+
+  /// No description provided for @walletAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet Address'**
+  String get walletAddress;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @confirmationWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Make sure that the address and network are correct, the transaction cannot be canceled after you confirm it.'**
+  String get confirmationWarning;
+
+  /// No description provided for @sendInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Send in progress'**
+  String get sendInProgress;
+
+  /// No description provided for @estimatedTimeOfExecution.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated time of execution'**
+  String get estimatedTimeOfExecution;
+
+  /// No description provided for @sendCompletionNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Upon completion, you will receive a confirmation Notification'**
+  String get sendCompletionNotification;
+
+  /// No description provided for @verifyAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Account'**
+  String get verifyAccount;
+
+  /// No description provided for @reviewOrderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review Order'**
+  String get reviewOrderTitle;
+
+  /// No description provided for @swapDirectionFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get swapDirectionFrom;
+
+  /// No description provided for @swapDirectionTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get swapDirectionTo;
+
+  /// No description provided for @swapMaxAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Max'**
+  String get swapMaxAction;
+
+  /// No description provided for @selectCoinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Coin'**
+  String get selectCoinTitle;
+
+  /// No description provided for @selectCoinPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get selectCoinPlaceholder;
+
+  /// No description provided for @swapFeesColon.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap fees:'**
+  String get swapFeesColon;
+
+  /// No description provided for @confirmSwapButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm swap'**
+  String get confirmSwapButton;
+
+  /// No description provided for @verifyNowButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Now'**
+  String get verifyNowButton;
+
+  /// No description provided for @swapNowButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap Now'**
+  String get swapNowButton;
+
+  /// No description provided for @sendFormCoinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Coin'**
+  String get sendFormCoinLabel;
+
+  /// No description provided for @sendFormPhoneOrAddressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number Or Wallet Address'**
+  String get sendFormPhoneOrAddressLabel;
+
+  /// No description provided for @sendFormAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount to be sent'**
+  String get sendFormAmountLabel;
+
+  /// No description provided for @sendValidationInvalidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid amount'**
+  String get sendValidationInvalidAmount;
+
+  /// No description provided for @sendValidationCannotSendToSelf.
+  ///
+  /// In en, this message translates to:
+  /// **'You can\'t send to your own account'**
+  String get sendValidationCannotSendToSelf;
+
+  /// No description provided for @sendValidationInsufficientBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient balance'**
+  String get sendValidationInsufficientBalance;
+
+  /// No description provided for @sendValidationBelowMinimum.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount must be at least {amount}'**
+  String sendValidationBelowMinimum(String amount);
+
+  /// No description provided for @sendDefaultNetworkCode.
+  ///
+  /// In en, this message translates to:
+  /// **'TRC20'**
+  String get sendDefaultNetworkCode;
+
+  /// No description provided for @availableBalanceFormatted.
+  ///
+  /// In en, this message translates to:
+  /// **'Available {amount} {symbol}'**
+  String availableBalanceFormatted(String amount, String symbol);
+
+  /// No description provided for @sendTransactionFeesColon.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction fees:'**
+  String get sendTransactionFeesColon;
+
+  /// No description provided for @sendSentAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent amount'**
+  String get sendSentAmountLabel;
+
+  /// No description provided for @walletsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallets'**
+  String get walletsTitle;
+
+  /// No description provided for @yourWalletsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your wallets'**
+  String get yourWalletsTitle;
+
+  /// No description provided for @networkFeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Network Fee'**
+  String get networkFeeLabel;
+
+  /// No description provided for @valueNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'N/A'**
+  String get valueNotAvailable;
+
+  /// No description provided for @amountInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'0.00'**
+  String get amountInputHint;
+
+  /// No description provided for @qrCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'QR Code'**
+  String get qrCodeLabel;
+
+  /// No description provided for @saveImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Save image'**
+  String get saveImage;
+
+  /// No description provided for @shareAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get shareAction;
+
+  /// No description provided for @hideZeroBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide zero balance'**
+  String get hideZeroBalance;
+
+  /// No description provided for @noCoinsToShow.
+  ///
+  /// In en, this message translates to:
+  /// **'No coins to show.'**
+  String get noCoinsToShow;
+
+  /// No description provided for @uncheckToSeeAllCoins.
+  ///
+  /// In en, this message translates to:
+  /// **'Uncheck \'Hide zero balance\' to view all coins.'**
+  String get uncheckToSeeAllCoins;
+
+  /// No description provided for @contactsSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Contacts'**
+  String get contactsSheetTitle;
+
+  /// No description provided for @sendSuccessRecipientLine.
+  ///
+  /// In en, this message translates to:
+  /// **'To: {recipient}'**
+  String sendSuccessRecipientLine(String recipient);
+
+  /// No description provided for @sendKycVerificationRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verification is required to send coins. Please complete your KYC profile to enable transfers. '**
+  String get sendKycVerificationRequiredBody;
+
+  /// No description provided for @swapKycVerificationRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verification is required to swap coins. Please complete your KYC profile to enable transfers. '**
+  String get swapKycVerificationRequiredBody;
+
+  /// No description provided for @receiveKycVerificationRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verification is required to receive coins. Please complete your KYC profile to enable transfers. '**
+  String get receiveKycVerificationRequiredBody;
+
+  /// No description provided for @kyc_submitted_under_review.
+  ///
+  /// In en, this message translates to:
+  /// **'Your KYC has been submitted and is under review.'**
+  String get kyc_submitted_under_review;
+
+  /// No description provided for @kyc_pending_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We are reviewing your documents. This usually takes a few minutes. You will be notified once the review is complete.'**
+  String get kyc_pending_subtitle;
+
+  /// No description provided for @kyc_rejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Your KYC verification has been rejected.'**
+  String get kyc_rejected;
+
+  /// No description provided for @kyc_rejected_with_reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Your KYC verification has been rejected: {reason}'**
+  String kyc_rejected_with_reason(String reason);
+
+  /// No description provided for @kyc_retry_button.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry Verification'**
+  String get kyc_retry_button;
+
+  /// No description provided for @kycVerificationRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Required'**
+  String get kycVerificationRequiredTitle;
+
+  /// No description provided for @kycVerificationPendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Under Review'**
+  String get kycVerificationPendingTitle;
+
+  /// No description provided for @kycVerificationGoBackButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Go Back'**
+  String get kycVerificationGoBackButton;
+
+  /// No description provided for @swapFeesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap Fees'**
+  String get swapFeesTitle;
+
+  /// No description provided for @swapExchangeRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Exchange Rate'**
+  String get swapExchangeRate;
+
+  /// No description provided for @swapFeeOmlapay.
+  ///
+  /// In en, this message translates to:
+  /// **'Omlapay fee'**
+  String get swapFeeOmlapay;
+
+  /// No description provided for @swapFeeBinance.
+  ///
+  /// In en, this message translates to:
+  /// **'Binance fee'**
+  String get swapFeeBinance;
+
+  /// No description provided for @transferToLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get transferToLabel;
+
+  /// No description provided for @addressCopiedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get addressCopiedToast;
+
+  /// No description provided for @availableShortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get availableShortLabel;
+
+  /// No description provided for @noNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get noNotifications;
+
+  /// No description provided for @notificationsLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load notifications'**
+  String get notificationsLoadError;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Back'**
+  String get welcomeBack;
+
+  /// No description provided for @kycFirstNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'First Name'**
+  String get kycFirstNameLabel;
+
+  /// No description provided for @kycLastNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Name'**
+  String get kycLastNameLabel;
+
+  /// No description provided for @kycDateOfBirthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of Birth'**
+  String get kycDateOfBirthLabel;
+
+  /// No description provided for @kycResidentialCountryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Residential Country'**
+  String get kycResidentialCountryLabel;
+
+  /// No description provided for @kycDocumentCountryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Document Country'**
+  String get kycDocumentCountryLabel;
+
+  /// No description provided for @kycCityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get kycCityLabel;
+
+  /// No description provided for @kycAddressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get kycAddressLabel;
+
+  /// No description provided for @kycCountryCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., GBR, USA, IND'**
+  String get kycCountryCodeHint;
+
+  /// No description provided for @kycSelectDateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'MM/DD/YYYY'**
+  String get kycSelectDateHint;
+
+  /// No description provided for @kycRequiredFieldError.
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required'**
+  String get kycRequiredFieldError;
+
+  /// No description provided for @kycSubmitButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get kycSubmitButton;
+
+  /// No description provided for @kycInvalidDateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a valid date'**
+  String get kycInvalidDateError;
+
+  /// No description provided for @kycStartedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'KYC process started successfully.'**
+  String get kycStartedSuccess;
+
+  /// No description provided for @kycDocumentsReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents — tap to view or replace'**
+  String get kycDocumentsReviewTitle;
+
+  /// No description provided for @kycDocumentActionView.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get kycDocumentActionView;
+
+  /// No description provided for @kycDocumentActionPickGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick from gallery'**
+  String get kycDocumentActionPickGallery;
+
+  /// No description provided for @kycDocumentActionTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get kycDocumentActionTakePhoto;
+
+  /// No description provided for @kycDocumentChangedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Changed'**
+  String get kycDocumentChangedBadge;
+
+  /// No description provided for @kycDocumentAddPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get kycDocumentAddPhoto;
+
+  /// No description provided for @kycDocumentPickFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the selected image. Please try again.'**
+  String get kycDocumentPickFailed;
+
+  /// No description provided for @kycPermissionDeniedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission needed'**
+  String get kycPermissionDeniedTitle;
+
+  /// No description provided for @kycPermissionDeniedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable camera and photo access in Settings to continue.'**
+  String get kycPermissionDeniedBody;
+
+  /// No description provided for @kycOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get kycOpenSettings;
+
+  /// No description provided for @kycDocumentFrontLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Front of Document'**
+  String get kycDocumentFrontLabel;
+
+  /// No description provided for @kycDocumentBackLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Back of Document'**
+  String get kycDocumentBackLabel;
+
+  /// No description provided for @kycDocumentSelfieLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Selfie'**
+  String get kycDocumentSelfieLabel;
+
+  /// No description provided for @kycDocumentLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load document'**
+  String get kycDocumentLoadFailed;
+
+  /// No description provided for @youAreOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'You are offline'**
+  String get youAreOffline;
+
+  /// No description provided for @contactsPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Contacts permission is required to select a contact. Please enable it in your device settings.'**
+  String get contactsPermissionDenied;
+
+  /// No description provided for @contactsLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading contacts...'**
+  String get contactsLoading;
+
+  /// No description provided for @noContactsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No contacts found'**
+  String get noContactsFound;
+
+  /// No description provided for @contactsPermissionDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} wants to access your contacts'**
+  String contactsPermissionDialogTitle(String appName);
+
+  /// No description provided for @contactsPermissionDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'We need your permission to access your contacts to send payments to people in your address book'**
+  String get contactsPermissionDialogMessage;
+
+  /// No description provided for @allowContacts.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Contacts'**
+  String get allowContacts;
+
+  /// No description provided for @sendInvitationDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send invitation'**
+  String get sendInvitationDialogTitle;
+
+  /// No description provided for @sendInvitationDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This number does not have an account on Omlapay. For a better experience, send him an invitation.'**
+  String get sendInvitationDialogMessage;
+
+  /// No description provided for @sendInvitationDialogNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note: you can complete the transaction though'**
+  String get sendInvitationDialogNote;
+
+  /// No description provided for @sendInvitationInviteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite'**
+  String get sendInvitationInviteButton;
+
+  /// No description provided for @checkingUserStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking user...'**
+  String get checkingUserStatus;
+
+  /// No description provided for @kycEnterEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Email'**
+  String get kycEnterEmail;
+
+  /// No description provided for @kycWhatsYourEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s your email?'**
+  String get kycWhatsYourEmail;
+
+  /// No description provided for @kycEmailSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll send a verification code to confirm your email'**
+  String get kycEmailSubtitle;
+
+  /// No description provided for @kycEmailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email address'**
+  String get kycEmailHint;
+
+  /// No description provided for @kycEmailRequiredError.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address is required'**
+  String get kycEmailRequiredError;
+
+  /// No description provided for @kycEmailInvalidError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email address'**
+  String get kycEmailInvalidError;
+
+  /// No description provided for @kycVerifyEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Email'**
+  String get kycVerifyEmail;
+
+  /// No description provided for @kycVerifyEmailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter verification code'**
+  String get kycVerifyEmailTitle;
+
+  /// No description provided for @kycVerifyEmailSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a 6-digit code to {email}'**
+  String kycVerifyEmailSubtitle(String email);
+
+  /// No description provided for @kycEmailVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verified successfully'**
+  String get kycEmailVerified;
+
+  /// No description provided for @pleaseEnterATitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a title'**
+  String get pleaseEnterATitle;
+
+  /// No description provided for @titleMustNotExceedCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Title must not exceed {maxLength} characters'**
+  String titleMustNotExceedCharacters(int maxLength);
+
+  /// No description provided for @pleaseEnterADescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a description'**
+  String get pleaseEnterADescription;
+
+  /// No description provided for @descriptionMustNotExceedCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Description must not exceed {maxLength} characters'**
+  String descriptionMustNotExceedCharacters(int maxLength);
+
+  /// No description provided for @somethingWentWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get somethingWentWrong;
+
+  /// No description provided for @failedToLoadNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load notifications'**
+  String get failedToLoadNotifications;
+
+  /// No description provided for @failedToLoadMoreNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load more notifications'**
+  String get failedToLoadMoreNotifications;
+
+  /// No description provided for @failedToMarkNotificationAsRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to mark notification as read'**
+  String get failedToMarkNotificationAsRead;
+
+  /// No description provided for @failedToMarkAllNotificationsAsRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to mark all notifications as read'**
+  String get failedToMarkAllNotificationsAsRead;
+
+  /// No description provided for @failedToLoadSupportRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load support requests'**
+  String get failedToLoadSupportRequests;
+
+  /// No description provided for @failedToLoadMoreRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load more requests'**
+  String get failedToLoadMoreRequests;
+
+  /// No description provided for @walletAddressMasked.
+  ///
+  /// In en, this message translates to:
+  /// **'XXXX XXXX XXXX XXXX'**
+  String get walletAddressMasked;
+
+  /// No description provided for @walletAddressNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Address not available yet'**
+  String get walletAddressNotAvailable;
+
+  /// No description provided for @noAddressFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No Address Found'**
+  String get noAddressFound;
+
+  /// No description provided for @issueNotResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue not resolved?'**
+  String get issueNotResolved;
+
+  /// No description provided for @reopenTicket.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-open Ticket'**
+  String get reopenTicket;
+
+  /// No description provided for @createdOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Created on {date}'**
+  String createdOn(String date);
+
+  /// No description provided for @requestReopened.
+  ///
+  /// In en, this message translates to:
+  /// **'Ticket reopened successfully'**
+  String get requestReopened;
+
+  /// No description provided for @failedToReopenRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to reopen ticket'**
+  String get failedToReopenRequest;
+
+  /// No description provided for @failedToLoadRequestDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load request details'**
+  String get failedToLoadRequestDetail;
+
+  /// No description provided for @supportTeamReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Support team reply'**
+  String get supportTeamReply;
+
+  /// No description provided for @yourReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reply'**
+  String get yourReply;
+
+  /// No description provided for @inReview.
+  ///
+  /// In en, this message translates to:
+  /// **'In review'**
+  String get inReview;
+
+  /// No description provided for @resolvesBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolves by {date}'**
+  String resolvesBy(String date);
+
+  /// No description provided for @resolvedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get resolvedStatus;
+
+  /// No description provided for @rejectedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get rejectedStatus;
+
+  /// No description provided for @solutionSentOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Solution sent on {date}'**
+  String solutionSentOn(String date);
+
+  /// No description provided for @rejectionSentOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejection sent on {date}'**
+  String rejectionSentOn(String date);
+
+  /// No description provided for @failureReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get failureReason;
+
+  /// No description provided for @approximateAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'≈{amount} {currency}'**
+  String approximateAmount(String amount, String currency);
+
+  /// No description provided for @appVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version: {version}'**
+  String appVersion(String version);
+
+  /// No description provided for @appPatchVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Patch: {number}'**
+  String appPatchVersion(String number);
+
+  /// No description provided for @updateReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update ready'**
+  String get updateReadyTitle;
+
+  /// No description provided for @updateReadyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'A new update is ready. The app will close so the update can be applied. Please reopen it to continue.'**
+  String get updateReadyMessage;
+
+  /// No description provided for @updateReadyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get updateReadyAction;
 }
 
 class _AppLocalizationsDelegate
