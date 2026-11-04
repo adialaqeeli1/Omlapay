@@ -1,0 +1,3 @@
+# Dependency install scripts stay off (safer). The app is tested to work without them.
+allowBuilds:
+  esbuild: false
