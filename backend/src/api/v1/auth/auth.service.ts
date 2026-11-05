@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   ConflictException,
   InternalServerErrorException,
+  HttpException,
   Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -30,6 +31,8 @@ import {
   validatePasscodeMatch,
 } from '@common/utils';
 import { LoginDto } from './dto/login.dto';
+import { ResendOtpDto } from './dto/resend-otp.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { CheckUserDto } from './dto/check-user.dto';
 import { SoftLoginDto } from './dto/soft-login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -39,6 +42,19 @@ import { ForgotPasscodeResendOtpDto } from './dto/forgot-passcode-resend-otp.dto
 import { ResetPasscodeDto } from '../user/dto/reset-passcode.dto';
 import { OtpService } from '@common/services/otp/otp.service';
 import { MailService } from '@common/services/mail/mail.service';
+
+// Login with an SMS code (POST /auth/login/send-otp, resend-otp, verify-otp, then /auth/login)
+const LOGIN_OTP_EXPIRY_SECONDS = 60;
+const LOGIN_OTP_RESEND_COOLDOWN_SECONDS = 60;
+const LOGIN_OTP_MAX_RESENDS = 3;
+const LOGIN_OTP_MAX_ATTEMPTS = 3;
+const LOGIN_TOKEN_EXPIRY_SECONDS = 300;
+const LOGIN_TOKEN_INVALID = {
+  status: 'error',
+  code: 'LOGIN_TOKEN_INVALID',
+  message: 'Your verification has expired. Please request a new code.',
+  message_ar: 'انتهت صلاحية التحقق. يرجى طلب رمز جديد.',
+};
 
 @Injectable()
 export class AuthService {
@@ -97,19 +113,31 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     try {
-      // Validate input using utility functions
-      normalizePhoneDto(dto);
       validateRequired(dto.passcode, 'Passcode');
 
-      const fullMobileNumber = buildFullMobileNumber(
-        dto.country_code,
-        dto.mobile_number,
-      );
-
-      // Find user by mobile number
-      const user = await this.userRepository.findOne({
-        where: { fullMobileNumber },
-      });
+      // The app sends the token from POST /auth/login/verify-otp; older clients and
+      // POST /auth/login/passcode send the phone number instead.
+      let user: UserEntity | null;
+      let loginOtpId: string | null = null;
+      if (dto.otpVerificationToken) {
+        ({ user, otpId: loginOtpId } = await this.resolveLoginOtpToken(
+          dto.otpVerificationToken,
+        ));
+      } else {
+        const phone = {
+          country_code: dto.country_code ?? '',
+          mobile_number: dto.mobile_number ?? '',
+        };
+        normalizePhoneDto(phone);
+        user = await this.userRepository.findOne({
+          where: {
+            fullMobileNumber: buildFullMobileNumber(
+              phone.country_code,
+              phone.mobile_number,
+            ),
+          },
+        });
+      }
 
       if (!user) {
         throw new BadRequestException({
@@ -117,6 +145,7 @@ export class AuthService {
           message: 'User not found with this mobile number.',
         });
       }
+      const fullMobileNumber = user.fullMobileNumber;
 
       // Check if user account is active
       validateAccountActive(user.isActive);
@@ -175,6 +204,17 @@ export class AuthService {
           status: 'error',
           message: `Incorrect passcode. ${remainingAttempts > 0 ? `You have ${remainingAttempts} attempt(s) remaining.` : 'Account will be locked.'}`,
         });
+      }
+
+      // A login code token works for one login only
+      if (loginOtpId) {
+        const used = await this.otpRepository.delete({
+          id: loginOtpId,
+          purpose: OtpPurpose.LOGIN,
+        });
+        if (!used.affected) {
+          throw new UnauthorizedException(LOGIN_TOKEN_INVALID);
+        }
       }
 
     // Reset failed attempts on successful login
@@ -257,6 +297,230 @@ export class AuthService {
         message: 'Failed to process login request. Please try again later.',
       });
     }
+  }
+
+  /**
+   * Login step 1 (and resend): send a 6-digit code by SMS to an existing, active user.
+   * Resend has a 60-second cooldown and at most 3 resends per code.
+   */
+  async sendLoginOtp(dto: ResendOtpDto, isResend = false) {
+    try {
+      normalizePhoneDto(dto);
+      const fullMobileNumber = buildFullMobileNumber(
+        dto.country_code,
+        dto.mobile_number,
+      );
+
+      const user = await this.userRepository.findOne({
+        where: { fullMobileNumber },
+      });
+      if (!user) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'User not found with this mobile number.',
+        });
+      }
+      validateAccountActive(user.isActive);
+
+      let resendAttempts = 0;
+      if (isResend) {
+        const existing = await this.otpRepository.findOne({
+          where: { fullMobileNumber, purpose: OtpPurpose.LOGIN },
+          order: { createdAt: 'DESC' },
+        });
+        if (existing?.lastResendAt) {
+          const elapsed = (Date.now() - existing.lastResendAt.getTime()) / 1000;
+          if (elapsed < LOGIN_OTP_RESEND_COOLDOWN_SECONDS) {
+            const wait = Math.ceil(LOGIN_OTP_RESEND_COOLDOWN_SECONDS - elapsed);
+            throw new BadRequestException({
+              status: 'error',
+              message: `Please wait ${wait} seconds before requesting a new OTP.`,
+            });
+          }
+        }
+        if (existing && existing.resendAttempts >= LOGIN_OTP_MAX_RESENDS) {
+          throw new BadRequestException({
+            status: 'error',
+            message: 'Maximum resend attempts reached. Please try again later.',
+          });
+        }
+        resendAttempts = (existing?.resendAttempts ?? 0) + 1;
+      }
+
+      const otp = generateOTP();
+      const expiresAt = new Date(Date.now() + LOGIN_OTP_EXPIRY_SECONDS * 1000);
+
+      // Only the newest code (and the token made from it) is valid
+      await this.otpRepository.delete({
+        fullMobileNumber,
+        purpose: OtpPurpose.LOGIN,
+      });
+      await this.otpRepository.save({
+        fullMobileNumber,
+        email: null,
+        otpHash: generateHash(otp),
+        purpose: OtpPurpose.LOGIN,
+        expiresAt,
+        attempts: 0,
+        maxAttempts: LOGIN_OTP_MAX_ATTEMPTS,
+        resendAttempts,
+        lastResendAt: new Date(),
+      });
+
+      await this.otpService.sendOTP(fullMobileNumber, otp);
+
+      return {
+        status: 'success',
+        message: isResend
+          ? 'Verification code resent to your mobile number.'
+          : 'Verification code sent to your mobile number.',
+        data: {
+          masked_mobile: maskPhoneNumber(fullMobileNumber),
+          otp_expiry_seconds: LOGIN_OTP_EXPIRY_SECONDS,
+          ...(process.env.NODE_ENV === 'development' && { mobile_otp: otp }),
+        },
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      this.logger.error(
+        `Error in sendLoginOtp: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException({
+        status: 'error',
+        message: 'Failed to send verification code. Please try again later.',
+      });
+    }
+  }
+
+  /**
+   * Login step 2: check the SMS code. Returns otpVerificationToken (5 minutes, one login),
+   * which POST /auth/login takes with the passcode. 3 wrong codes cancel the code.
+   */
+  async verifyLoginOtp(dto: VerifyOtpDto) {
+    try {
+      normalizePhoneDto(dto);
+      const fullMobileNumber = buildFullMobileNumber(
+        dto.country_code,
+        dto.mobile_number,
+      );
+
+      const user = await this.userRepository.findOne({
+        where: { fullMobileNumber },
+      });
+      if (!user) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'User not found with this mobile number.',
+        });
+      }
+      validateAccountActive(user.isActive);
+
+      const otpRequest = await this.otpRepository.findOne({
+        where: { fullMobileNumber, purpose: OtpPurpose.LOGIN },
+        order: { createdAt: 'DESC' },
+      });
+      if (!otpRequest) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'OTP not found. Please request a new OTP.',
+        });
+      }
+      if (otpRequest.isConsumed) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'OTP has already been used. Please request a new OTP.',
+        });
+      }
+      if (otpRequest.expiresAt < new Date()) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'OTP has expired. Please request a new OTP.',
+        });
+      }
+
+      if (generateHash(dto.otp) !== otpRequest.otpHash) {
+        otpRequest.attempts += 1;
+        const remainingAttempts = otpRequest.maxAttempts - otpRequest.attempts;
+        if (remainingAttempts <= 0) {
+          await this.otpRepository.delete({ id: otpRequest.id });
+          throw new BadRequestException({
+            status: 'error',
+            code: 'OTP_ATTEMPTS_EXCEEDED',
+            message: 'Too many incorrect codes. Please request a new OTP.',
+          });
+        }
+        await this.otpRepository.save(otpRequest);
+        throw new BadRequestException({
+          status: 'error',
+          message: 'Invalid verification code. Please try again.',
+          code: 'MOBILE_OTP_INVALID',
+          data: { remaining_attempts: remainingAttempts },
+        });
+      }
+
+      otpRequest.isConsumed = true;
+      await this.otpRepository.save(otpRequest);
+
+      const otpVerificationToken = this.jwtService.sign(
+        { userId: user.id, otpId: otpRequest.id, type: 'login_otp' },
+        { expiresIn: LOGIN_TOKEN_EXPIRY_SECONDS },
+      );
+
+      return {
+        status: 'success',
+        message: 'OTP verification successful.',
+        data: {
+          otpVerificationToken,
+          token_expiry_seconds: LOGIN_TOKEN_EXPIRY_SECONDS,
+        },
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      this.logger.error(
+        `Error in verifyLoginOtp: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException({
+        status: 'error',
+        message: 'Failed to verify OTP. Please try again later.',
+      });
+    }
+  }
+
+  /** The user and code behind an otpVerificationToken; 401 if it is expired, used or replaced. */
+  private async resolveLoginOtpToken(
+    token: string,
+  ): Promise<{ user: UserEntity; otpId: string }> {
+    let payload: { userId?: string; otpId?: string; type?: string };
+    try {
+      payload = this.jwtService.verify(token);
+    } catch {
+      throw new UnauthorizedException(LOGIN_TOKEN_INVALID);
+    }
+    if (payload?.type !== 'login_otp' || !payload.userId || !payload.otpId) {
+      throw new UnauthorizedException(LOGIN_TOKEN_INVALID);
+    }
+
+    const otpRequest = await this.otpRepository.findOne({
+      where: { id: payload.otpId, purpose: OtpPurpose.LOGIN, isConsumed: true },
+    });
+    const user = otpRequest
+      ? await this.userRepository.findOne({ where: { id: payload.userId } })
+      : null;
+    if (
+      !otpRequest ||
+      !user ||
+      user.fullMobileNumber !== otpRequest.fullMobileNumber
+    ) {
+      throw new UnauthorizedException(LOGIN_TOKEN_INVALID);
+    }
+    validateAccountActive(user.isActive);
+    return { user, otpId: otpRequest.id };
   }
 
   async forgotPasscode(dto: ForgotPasscodeDto) {
