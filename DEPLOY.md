@@ -149,6 +149,11 @@ install -m 600 /home/deploy/app/deploy/proxy/.env.example  /home/deploy/app/depl
 install -m 600 /home/deploy/app/deploy/backup.env.example  /home/deploy/backup.env
 ```
 
+Fill in the settings with the guided script: for every value still empty or `CHANGE_ME` it says
+what it is and where to find it, asks for it with hidden input (Enter skips), generates the random
+secrets, and writes values safely (any characters; the Binance private key can be pasted as is):
+`bash /home/deploy/app/deploy/scripts/fill-env.sh`. It never prints a value and can be run again.
+
 In `app-dev/deploy/.env` change the lines marked `[dev]`: `COMPOSE_PROJECT_NAME=omlapay-dev`,
 `STACK=dev`, `COMPOSE_PROFILES=` (empty), `NODE_ENV=staging`,
 `API_BASE_URL=https://api-dev.omlapay.org`, `CORS_ORIGINS=` (empty), `S3_BUCKET_NAME` and
