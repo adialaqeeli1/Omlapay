@@ -22,7 +22,7 @@ import { generateOTP, generateHash } from '@common/filters';
 import {
   maskEmail,
   maskPhoneNumber,
-  validateCountryCodeAndMobileNumber,
+  normalizePhoneDto,
   validateRequired,
   buildFullMobileNumber,
   validateAccountActive,
@@ -65,7 +65,7 @@ export class AuthService {
    * Returns userExists so client can show passcode screen or registration screen.
    */
   async checkUser(dto: CheckUserDto) {
-    validateCountryCodeAndMobileNumber(dto.country_code, dto.mobile_number);
+    normalizePhoneDto(dto);
 
     const fullMobileNumber = buildFullMobileNumber(
       dto.country_code,
@@ -98,7 +98,7 @@ export class AuthService {
   async login(dto: LoginDto) {
     try {
       // Validate input using utility functions
-      validateCountryCodeAndMobileNumber(dto.country_code, dto.mobile_number);
+      normalizePhoneDto(dto);
       validateRequired(dto.passcode, 'Passcode');
 
       const fullMobileNumber = buildFullMobileNumber(
@@ -262,7 +262,7 @@ export class AuthService {
   async forgotPasscode(dto: ForgotPasscodeDto) {
     try {
       // Validate input using utility functions
-      validateCountryCodeAndMobileNumber(dto.country_code, dto.mobile_number);
+      normalizePhoneDto(dto);
 
       const fullMobileNumber = buildFullMobileNumber(
         dto.country_code,
@@ -423,7 +423,7 @@ export class AuthService {
   async verifyForgotPasscodeOtps(dto: ForgotPasscodeVerifyOtpDto) {
     try {
       // Validate input using utility functions
-      validateCountryCodeAndMobileNumber(dto.country_code, dto.mobile_number);
+      normalizePhoneDto(dto);
 
       const fullMobileNumber = buildFullMobileNumber(
         dto.country_code,
@@ -766,23 +766,8 @@ export class AuthService {
         });
       }
 
-      // Validate country code format
-      if (!/^\+(966|91)$/.test(dto.country_code)) {
-        throw new BadRequestException({
-          status: 'error',
-          message: 'Invalid country code. Allowed: +966, +91',
-        });
-      }
-
-      // Validate mobile number format
-      const mobileNumberRegex = dto.country_code === '+966' ? /^\d{9}$/ : /^\d{10}$/;
-      if (!mobileNumberRegex.test(dto.mobile_number)) {
-        const expectedLength = dto.country_code === '+966' ? '9' : '10';
-        throw new BadRequestException({
-          status: 'error',
-          message: `Mobile number must be ${expectedLength} digits long.`,
-        });
-      }
+      // Saudi mobile numbers only (ALLOWED_PHONE_COUNTRY_CODES); normalizes dto in place
+      normalizePhoneDto(dto);
 
       const fullMobileNumber = `${dto.country_code}${dto.mobile_number}`;
 

@@ -1,7 +1,7 @@
 # Production image for the NestJS API.
 # Dependency install scripts stay off (see pnpm-workspace.yaml); the app is tested without them.
 FROM node:22-alpine AS base
-RUN corepack enable && corepack prepare pnpm@10.28.0 --activate
+RUN corepack enable && corepack prepare pnpm@10.34.7 --activate
 WORKDIR /app
 
 FROM base AS build

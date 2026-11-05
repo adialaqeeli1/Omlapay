@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { VersioningType } from '@nestjs/common';
@@ -11,9 +12,14 @@ import { LoggingInterceptor } from './common/interceptors';
 async function bootstrap() {
   // rawBody: true enables req.rawBody (Buffer) for webhook signature verification.
   // Do NOT use bodyParser: false - it causes "stream encoding should not be set" errors.
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     rawBody: true,
   });
+
+  // Behind a reverse proxy (Caddy), trust its X-Forwarded-For so req.ip is the real client IP
+  // (used by rate limiting and audit logs). TRUST_PROXY_HOPS = number of proxies in front.
+  const trustProxyHops = Number(process.env.TRUST_PROXY_HOPS || 0);
+  if (trustProxyHops > 0) app.set('trust proxy', trustProxyHops);
 
   // Enable API versioning
   app.enableVersioning({

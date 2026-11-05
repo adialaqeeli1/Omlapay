@@ -13,12 +13,12 @@
 	}
 }
 
-# Blocked until fixed in the code: unauthenticated Super Admin creation, and dev tools
-# (one wipes the database). Case-insensitive because the backend's routes are.
-# Webhooks (/v1/user/webhooks/*) stay open. /docs is protected by the app's own
-# SWAGGER_USER / SWAGGER_PASSWORD.
+# Blocked from the internet: unauthenticated Super Admin creation, dev tools (one wipes the
+# database) and coin sync (resets coin fees and limits; now also admin-only in the code).
+# Case-insensitive because the backend's routes are. Webhooks (/v1/user/webhooks/*) stay open.
+# /docs is protected by the app's own SWAGGER_USER / SWAGGER_PASSWORD.
 (api_blocklist) {
-	@blocked path_regexp blocked (?i)^/+v1/+(admin/+auth/+create-super-admin|dev-tools)(/|$)
+	@blocked path_regexp blocked (?i)^/+v1/+(admin/+auth/+create-super-admin|dev-tools|coins/+sync)(/|$)
 	respond @blocked 404
 }
 

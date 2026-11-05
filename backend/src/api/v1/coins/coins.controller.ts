@@ -6,8 +6,17 @@ import {
   HttpStatus,
   Query,
   Param,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+  ApiParam,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { AdminJwtAuthGuard } from '@common/guards';
 import { CoinsService } from './coins.service';
 import { Currency } from '@common/services/binance/price.service';
 
@@ -43,6 +52,8 @@ export class CoinsController {
   }
 
   @Post('sync')
+  @UseGuards(AdminJwtAuthGuard)
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Sync supported coins to database',

@@ -1,5 +1,24 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Get, UseGuards, Req } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ThrottleCodeSend,
+  ThrottleCredentialCheck,
+  ThrottleLookup,
+} from '@common/decorators';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  Get,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { CheckUserDto } from './dto/check-user.dto';
@@ -17,6 +36,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('check-user')
+  @ThrottleLookup()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Check if user exists (two-step login flow)',
@@ -34,6 +54,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @ThrottleCredentialCheck()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login with mobile number and passcode' })
   @ApiResponse({ status: 200, description: 'Login successful' })
@@ -44,6 +65,7 @@ export class AuthController {
   }
 
   @Post('forgot-passcode')
+  @ThrottleCodeSend()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary:
@@ -63,6 +85,7 @@ export class AuthController {
   }
 
   @Post('forgot-passcode/verify-otp')
+  @ThrottleCredentialCheck()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary:
@@ -75,6 +98,7 @@ export class AuthController {
   }
 
   @Post('forgot-passcode/resend-otp')
+  @ThrottleCodeSend()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary:
@@ -87,6 +111,7 @@ export class AuthController {
   }
 
   @Post('forgot-passcode/reset')
+  @ThrottleCredentialCheck()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reset passcode after forgot passcode flow' })
   @ApiResponse({ status: 200, description: 'Passcode reset successfully' })
@@ -100,6 +125,7 @@ export class AuthController {
   }
 
   @Post('soft-login')
+  @ThrottleCredentialCheck()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)

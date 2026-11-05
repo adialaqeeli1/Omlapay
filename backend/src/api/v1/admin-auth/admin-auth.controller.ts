@@ -1,3 +1,4 @@
+import { ThrottleCodeSend, ThrottleCredentialCheck } from '@common/decorators';
 import {
   Controller,
   Post,
@@ -27,6 +28,7 @@ export class AdminAuthController {
   constructor(private readonly adminAuthService: AdminAuthService) {}
 
   @Post('send-otp')
+  @ThrottleCredentialCheck()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Send OTP for admin login (Step 1)' })
   @ApiResponse({ status: 200, description: 'OTP sent successfully' })
@@ -39,6 +41,7 @@ export class AdminAuthController {
   }
 
   @Post('login')
+  @ThrottleCredentialCheck()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Admin login with password + OTP + terms (Step 2)' })
   @ApiResponse({ status: 200, description: 'Login successful' })
@@ -72,6 +75,7 @@ export class AdminAuthController {
   }
 
   @Post('forgot-password')
+  @ThrottleCodeSend()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Initiate password recovery' })
   @ApiResponse({
@@ -83,6 +87,7 @@ export class AdminAuthController {
   }
 
   @Post('verify-otp')
+  @ThrottleCredentialCheck()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify OTP for password reset' })
   @ApiResponse({ status: 200, description: 'OTP verified successfully' })
@@ -92,6 +97,7 @@ export class AdminAuthController {
   }
 
   @Post('resend-otp')
+  @ThrottleCodeSend()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Resend OTP with cooldown enforcement' })
   @ApiResponse({ status: 200, description: 'OTP resent successfully' })
@@ -101,6 +107,7 @@ export class AdminAuthController {
   }
 
   @Post('reset-password')
+  @ThrottleCredentialCheck()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reset password after OTP verification' })
   @ApiResponse({ status: 200, description: 'Password reset successful' })

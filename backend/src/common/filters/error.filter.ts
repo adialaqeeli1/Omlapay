@@ -36,9 +36,21 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     }
 
+    const details = message as {
+      message?: unknown;
+      message_ar?: unknown;
+      code?: unknown;
+    };
     const body =
       typeof message === 'object' && message !== null && 'message' in message
-        ? { message: (message as { message?: unknown }).message, statusCode: status }
+        ? {
+            message: details.message,
+            ...(typeof details.message_ar === 'string' && {
+              message_ar: details.message_ar,
+            }),
+            ...(typeof details.code === 'string' && { code: details.code }),
+            statusCode: status,
+          }
         : { message, statusCode: status };
 
     response.status(status).json(body);

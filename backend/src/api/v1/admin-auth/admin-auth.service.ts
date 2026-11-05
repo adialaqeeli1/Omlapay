@@ -31,6 +31,7 @@ import {
   validatePasswordMatch,
   validateOTP,
   validateToken,
+  assertAllowedPhone,
 } from '@common/utils';
 import { AdminRole } from '@common/database/model/admin.entity';
 import { ConfigService } from '@nestjs/config';
@@ -81,20 +82,9 @@ export class AdminAuthService {
       return normalized.toLowerCase();
     }
 
-    // Check if it's a Saudi phone number starting with 05 (without country code)
-    if (/^05\d{8}$/.test(normalized)) {
-      // Auto-format: 05XXXXXXXX → +9665XXXXXXXX
-      return '+966' + normalized.substring(1);
-    }
-
-    // Check if it's an Indian phone number (10 digits starting with 6-9)
-    if (/^[6-9]\d{9}$/.test(normalized)) {
-      // Auto-format: 9XXXXXXXXX → +919XXXXXXXXX
-      return '+91' + normalized;
-    }
-
-    // Return as-is if already formatted (+966 or +91) or other format
-    return normalized;
+    // Otherwise it must be an allowed (Saudi) mobile number: 05XXXXXXXX, 5XXXXXXXX,
+    // 9665XXXXXXXX or +9665XXXXXXXX all become +9665XXXXXXXX; anything else is rejected.
+    return assertAllowedPhone(normalized);
   }
 
   /**
@@ -1108,6 +1098,7 @@ export class AdminAuthService {
 
     // Check if phone number already exists (if provided)
     if (dto.phoneNumber) {
+      dto.phoneNumber = assertAllowedPhone(dto.phoneNumber);
       const existingPhone = await this.adminRepository.findOne({
         where: { phoneNumber: dto.phoneNumber },
       });

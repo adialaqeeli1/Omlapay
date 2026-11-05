@@ -13,13 +13,15 @@ export class CreateSuperAdminDto {
 
   @ApiProperty({
     example: '+966501234567',
-    description: 'Super Admin phone number (optional, supports +91 or +966 formats)',
+    description:
+      'Super Admin phone number (optional, Saudi mobile: +9665XXXXXXXX or 05XXXXXXXX)',
     required: false,
   })
   @IsOptional()
   @IsString()
-  @Matches(/^(\+91\d{10}|\+966\d{9})$/, {
-    message: 'Invalid phone number format. Must be India format (+91XXXXXXXXXX) or KSA format (+966XXXXXXXXX)',
+  @Matches(/^\+?\d{6,15}$/, {
+    message:
+      'Invalid phone number format. Use a Saudi mobile number: +9665XXXXXXXX or 05XXXXXXXX',
   })
   phoneNumber?: string;
 

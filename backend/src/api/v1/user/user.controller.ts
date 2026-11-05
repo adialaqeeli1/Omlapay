@@ -1,3 +1,5 @@
+import { ThrottleCodeSend, ThrottleCredentialCheck } from '@common/decorators';
+import { SkipThrottle } from '@nestjs/throttler';
 import {
   Controller,
   Post,
@@ -43,6 +45,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('register/request')
+  @ThrottleCodeSend()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Submit mobile number for registration' })
   @ApiResponse({ status: 200, description: 'OTP sent successfully' })
@@ -52,6 +55,7 @@ export class UserController {
   }
 
   @Post('register/verify-otp')
+  @ThrottleCredentialCheck()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify registration OTP' })
   @ApiResponse({ status: 200, description: 'Mobile number verified, registration token issued' })
@@ -61,6 +65,7 @@ export class UserController {
   }
 
   @Post('register/resend-otp')
+  @ThrottleCodeSend()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Resend registration OTP' })
   @ApiResponse({ status: 200, description: 'OTP resent successfully' })
@@ -71,6 +76,7 @@ export class UserController {
   }
 
   @Post('register/set-passcode')
+  @ThrottleCredentialCheck()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Create passcode to complete registration' })
   @ApiResponse({
@@ -195,6 +201,7 @@ export class UserController {
   }
 
   @Post('invite')
+  @ThrottleCodeSend()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
@@ -268,6 +275,7 @@ export class UserController {
   }
 
   @Post('settings/2fa/enable')
+  @ThrottleCodeSend()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
@@ -289,6 +297,7 @@ export class UserController {
   }
 
   @Post('settings/2fa/verify')
+  @ThrottleCredentialCheck()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
@@ -304,6 +313,7 @@ export class UserController {
   }
 
   @Post('settings/2fa/disable')
+  @ThrottleCredentialCheck()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
@@ -412,6 +422,7 @@ export class UserController {
   }
 
   @Post('webhooks/sumsub')
+  @SkipThrottle() // providers retry in bursts
   @HttpCode(HttpStatus.OK)
   @ApiExcludeEndpoint()
   async handleSumsubWebhook(
@@ -429,6 +440,7 @@ export class UserController {
   }
 
   @Post('webhooks/binance-kyc')
+  @SkipThrottle() // providers retry in bursts
   @HttpCode(HttpStatus.OK)
   @ApiExcludeEndpoint()
   async handleBinanceKycWebhook(

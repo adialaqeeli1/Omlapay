@@ -8,12 +8,9 @@ export class AdminSendOtpDto {
   })
   @IsString()
   @IsNotEmpty()
-  @Matches(
-    /^([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|(\+966[5][0-9]{8})|05[0-9]{8}|(\+91[6-9]\d{9})|[6-9]\d{9})$/,
-    {
-      message:
-        'Must be a valid email, or Saudi mobile number (+966 or 05). Landlines are not supported.',
-    },
-  )
+  @Matches(/^([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|\+?\d{6,15})$/, {
+    message:
+      'Must be a valid email or Saudi mobile number (05XXXXXXXX or +9665XXXXXXXX).',
+  })
   identifier: string;
 }

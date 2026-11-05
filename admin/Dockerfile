@@ -1,6 +1,6 @@
 # Production image for the admin panel: a static Vite build served by nginx.
 FROM node:22-alpine AS build
-RUN corepack enable && corepack prepare pnpm@10.28.0 --activate
+RUN corepack enable && corepack prepare pnpm@10.34.7 --activate
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { assertAllowedPhone } from '@common/utils/phone.util';
 
 @Injectable()
 export class OtpService {
@@ -28,6 +29,7 @@ export class OtpService {
   }
 
   async sendOTP(phoneNumber: string, otp: string): Promise<void> {
+    assertAllowedPhone(phoneNumber);
     // Outside production, log the code instead of sending an SMS
     if (process.env.NODE_ENV !== 'production') {
       console.log(`[DEV] OTP for ${phoneNumber}: ${otp}`);
@@ -79,6 +81,7 @@ export class OtpService {
   }
 
   async sendPasscodeResetOTP(phoneNumber: string, otp: string): Promise<void> {
+    assertAllowedPhone(phoneNumber);
     // Outside production, log the code instead of sending an SMS
     if (process.env.NODE_ENV !== 'production') {
       console.log(`[DEV] Passcode Reset OTP for ${phoneNumber}: ${otp}`);

@@ -36,6 +36,7 @@ import {
   maskPhoneNumber,
   maskEmail,
   validateCountryCodeAndMobileNumber,
+  normalizePhoneDto,
   validatePasscodeMatch,
   buildFullMobileNumber,
   validateBooleanTrue,
@@ -418,7 +419,7 @@ export class UserService {
   async verifyRegistrationOtp(dto: VerifyOtpDto) {
     try {
       // Validate input using utility functions
-      validateCountryCodeAndMobileNumber(dto.country_code, dto.mobile_number);
+      normalizePhoneDto(dto);
       validateOTP(dto.otp);
 
       const fullMobileNumber = buildFullMobileNumber(
@@ -563,7 +564,7 @@ export class UserService {
   async resendRegistrationOtp(dto: ResendOtpDto) {
     try {
       // Validate input using utility functions
-      validateCountryCodeAndMobileNumber(dto.country_code, dto.mobile_number);
+      normalizePhoneDto(dto);
 
       const fullMobileNumber = buildFullMobileNumber(
         dto.country_code,
@@ -686,7 +687,7 @@ export class UserService {
   async registerRequest(dto: RegisterRequestDto) {
     try {
       // Validate input using utility functions
-      validateCountryCodeAndMobileNumber(dto.country_code, dto.mobile_number);
+      normalizePhoneDto(dto);
       validateBooleanTrue(
         dto.terms_accepted,
         'Terms & Conditions and Privacy Policy',
@@ -1080,23 +1081,8 @@ export class UserService {
         });
       }
 
-      // Validate country code format
-      if (!/^\+(966|91)$/.test(dto.country_code)) {
-        throw new BadRequestException({
-          status: 'error',
-          message: 'Invalid country code. Allowed: +966, +91',
-        });
-      }
-
-      // Validate mobile number format
-      const mobileNumberRegex = dto.country_code === '+966' ? /^\d{9}$/ : /^\d{10}$/;
-      if (!mobileNumberRegex.test(dto.mobile_number)) {
-        const expectedLength = dto.country_code === '+966' ? '9' : '10';
-        throw new BadRequestException({
-          status: 'error',
-          message: `Mobile number must be ${expectedLength} digits long.`,
-        });
-      }
+      // Saudi mobile numbers only (ALLOWED_PHONE_COUNTRY_CODES); normalizes dto in place
+      normalizePhoneDto(dto);
 
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -1511,7 +1497,7 @@ export class UserService {
       algorithm: algorithm || 'sha256 (default)',
     });
 
-    // 1. Verify webhook signature (production security requirement)
+    // 1. Verify webhook signature. Unsigned webhooks are accepted only when NODE_ENV=development.
     if (digest && rawBody) {
       const hashAlgorithm = (algorithm || 'sha256').toLowerCase();
       const isValid = this.sumsubService.verifyWebhookSignature(rawBody, digest, hashAlgorithm);
@@ -1521,11 +1507,17 @@ export class UserService {
         );
         throw new UnauthorizedException('Invalid webhook signature');
       }
-      this.logger.debug(`[Sumsub Webhook] Signature verified for webhook ${webhookId}`);
-    } else if (process.env.NODE_ENV === 'production') {
-      // In production, always require signature verification
+      this.logger.debug(
+        `[Sumsub Webhook] Signature verified for webhook ${webhookId}`,
+      );
+    } else if (process.env.NODE_ENV !== 'development') {
       this.logger.warn(
-        `[Sumsub Webhook] Missing signature or rawBody for webhook ${webhookId} in production`,
+        `[Sumsub Webhook] Rejected unsigned webhook ${webhookId}`,
+      );
+      throw new UnauthorizedException('Missing webhook signature');
+    } else {
+      this.logger.warn(
+        `[Sumsub Webhook] Accepting unsigned webhook ${webhookId} (development only)`,
       );
     }
 
@@ -1919,15 +1911,28 @@ export class UserService {
    * Handle Binance KYC status webhook (notifyUrl callback).
    * Verifies HMAC signature, persists raw payload for audit, then processes the status update.
    */
-  async handleBinanceKycWebhook(payload: any, rawBody?: string, signatureHeader?: string) {
-    // 1. Verify webhook signature if secret is configured
+  async handleBinanceKycWebhook(
+    payload: any,
+    rawBody?: string,
+    signatureHeader?: string,
+  ) {
+    // 1. Verify webhook signature. Unsigned webhooks are accepted only when NODE_ENV=development.
     const secret = process.env.BINANCE_KYC_SECRET;
     if (secret && rawBody && signatureHeader) {
       const isValid = CryptoUtil.verifyHmacSignature(rawBody, signatureHeader, secret);
       if (!isValid) {
         this.logger.warn('[KYC] Binance webhook signature verification failed');
-        return { received: false, reason: 'Invalid signature' };
+        throw new UnauthorizedException('Invalid webhook signature');
       }
+    } else if (process.env.NODE_ENV !== 'development') {
+      this.logger.warn(
+        `[KYC] Rejected Binance webhook: ${secret ? 'missing signature' : 'BINANCE_KYC_SECRET not set'}`,
+      );
+      throw new UnauthorizedException('Missing webhook signature');
+    } else {
+      this.logger.warn(
+        '[KYC] Accepting unsigned Binance webhook (development only)',
+      );
     }
 
     const entityCustomerId = payload?.entityCustomerId ?? payload?.userId;

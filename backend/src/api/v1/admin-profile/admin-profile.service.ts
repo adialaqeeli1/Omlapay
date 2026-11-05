@@ -33,6 +33,7 @@ import {
   validatePasswordMatch,
   validateAccountActive,
   maskPhoneNumber,
+  assertAllowedPhone,
 } from '@common/utils';
 
 @Injectable()
@@ -433,6 +434,9 @@ export class AdminProfileService {
     if (!admin) {
       throw new NotFoundException('Admin not found');
     }
+
+    // Saudi mobile numbers only (ALLOWED_PHONE_COUNTRY_CODES), stored as +9665XXXXXXXX
+    dto.newPhoneNumber = assertAllowedPhone(dto.newPhoneNumber);
 
     // Check if new phone is same as current
     if (dto.newPhoneNumber === admin.phoneNumber) {
