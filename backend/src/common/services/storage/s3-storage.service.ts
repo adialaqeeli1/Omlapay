@@ -35,7 +35,8 @@ const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
  * AWS S3 storage implementation.
  * Stores files in an S3 bucket and returns public URLs.
  * Requires: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, S3_BUCKET_NAME.
- * Optional: AWS_REGION, S3_PUBLIC_URL (for CloudFront/custom domain).
+ * Optional: AWS_REGION, S3_PUBLIC_URL (for CloudFront/custom domain),
+ * S3_ENDPOINT (for S3-compatible storage such as Cloudflare R2 or MinIO).
  */
 @Injectable()
 export class S3StorageService implements IStorageService {
@@ -59,12 +60,15 @@ export class S3StorageService implements IStorageService {
       );
     }
 
+    const endpoint = this.configService.get<string>('S3_ENDPOINT');
+
     this.s3Client = new S3Client({
       region: this.region,
       credentials: {
         accessKeyId,
         secretAccessKey,
       },
+      ...(endpoint && { endpoint, forcePathStyle: true }),
     });
 
     const customBase = this.configService.get<string>('S3_PUBLIC_URL');
@@ -73,7 +77,7 @@ export class S3StorageService implements IStorageService {
       `https://${this.bucket}.s3.${this.region}.amazonaws.com`;
 
     this.logger.log(
-      `S3 storage initialized: bucket=${this.bucket}, region=${this.region}`,
+      `S3 storage initialized: bucket=${this.bucket}, region=${this.region}${endpoint ? `, endpoint=${endpoint}` : ''}`,
     );
   }
 

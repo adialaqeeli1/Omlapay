@@ -1,0 +1,64 @@
+# One app stack: Postgres + backend (+ admin panel when COMPOSE_PROFILES=admin).
+# Production and dev each run this file from their own checkout with their own deploy/.env:
+#   /home/deploy/app      (main)    -> COMPOSE_PROJECT_NAME=omlapay-prod
+#   /home/deploy/app-dev  (develop) -> COMPOSE_PROJECT_NAME=omlapay-dev
+# Separate project names give separate containers, networks and database volumes.
+# Run from the checkout root: docker compose -f deploy/docker-compose.yml up -d --build
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in deploy/.env}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in deploy/.env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - internal
+
+  backend:
+    build: ../backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PORT: "3000"
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      internal: {}
+      web:
+        aliases:
+          - omlapay-${STACK:?set STACK (prod or dev) in deploy/.env}-backend
+
+  admin:
+    profiles: ["admin"]
+    build:
+      context: ../admin
+      args:
+        VITE_API_URL: ${ADMIN_VITE_API_URL:-}
+        VITE_API_BASE_URL: ${ADMIN_VITE_API_BASE_URL:-}
+    restart: unless-stopped
+    networks:
+      web:
+        aliases:
+          - omlapay-${STACK}-admin
+
+networks:
+  internal: {}
+  # Shared with the Caddy proxy stack (deploy/proxy), which creates it.
+  web:
+    external: true
+    name: omlapay-web
+
+volumes:
+  db: {}

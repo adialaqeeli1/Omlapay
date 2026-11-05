@@ -63,7 +63,12 @@ async function bootstrap() {
   SwaggerModule.setup(SwaggerConfig.DOCS_ENDPOINT, app, document);
 
   app.useGlobalFilters(new AllExceptionsFilter());
+  // CORS_ORIGINS: comma-separated list of allowed browser origins. Unset keeps the default (any origin).
+  const corsOrigins = process.env.CORS_ORIGINS?.split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
   app.enableCors({
+    ...(corsOrigins?.length && { origin: corsOrigins }),
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
   });

@@ -212,8 +212,9 @@ export class AdminAuthService {
 
       return {
         status: 'success',
-        message: 'OTP sent successfully. || OTP : ' + otp + ' ||',
+        message: 'OTP sent successfully.',
         termsRequired: !admin.termsAcceptedAt, // Return whether terms need to be accepted
+        ...(process.env.NODE_ENV === 'development' && { otp }),
       };
     } catch (error) {
       // Re-throw BadRequestException and UnauthorizedException as-is

@@ -205,7 +205,7 @@ export class SendService {
       {
         sendToken: pending.id,
         otpExpirySeconds: 60,
-        ...(process.env.NODE_ENV !== 'production' && { otp }),
+        ...(process.env.NODE_ENV === 'development' && { otp }),
       },
       'Verification code sent to your phone number.',
     );
@@ -270,7 +270,7 @@ export class SendService {
       {
         sendToken: pending.id,
         otpExpirySeconds: 60,
-        ...(process.env.NODE_ENV !== 'production' && { otp }),
+        ...(process.env.NODE_ENV === 'development' && { otp }),
       },
       'Verification code resent to your phone number.',
     );

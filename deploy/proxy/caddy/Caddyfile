@@ -1,0 +1,44 @@
+{
+	email {$ACME_EMAIL}
+}
+
+(common) {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+		-X-Powered-By
+	}
+}
+
+# Blocked until fixed in the code: unauthenticated Super Admin creation, and dev tools
+# (one wipes the database). Case-insensitive because the backend's routes are.
+# Webhooks (/v1/user/webhooks/*) stay open. /docs is protected by the app's own
+# SWAGGER_USER / SWAGGER_PASSWORD.
+(api_blocklist) {
+	@blocked path_regexp blocked (?i)^/+v1/+(admin/+auth/+create-super-admin|dev-tools)(/|$)
+	respond @blocked 404
+}
+
+# Production API (NODE_ENV=production)
+api.omlapay.org {
+	import common
+	import api_blocklist
+	reverse_proxy omlapay-prod-backend:3000
+}
+
+# Development API (NODE_ENV=staging: no OTP codes in responses, dev tools disabled)
+api-dev.omlapay.org {
+	import common
+	import api_blocklist
+	reverse_proxy omlapay-dev-backend:3000
+}
+
+# Admin panel (uses the production API)
+admin.omlapay.org {
+	import common
+	header X-Frame-Options "DENY"
+	reverse_proxy omlapay-prod-admin:80
+}
