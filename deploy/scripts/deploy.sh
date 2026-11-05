@@ -30,6 +30,7 @@ bash scripts/security/scan-malware.sh HEAD
 echo "==> Building and starting"
 "${COMPOSE[@]}" build --pull
 "${COMPOSE[@]}" up -d --remove-orphans
+bash deploy/scripts/garage-init.sh
 
 # Migrations run when the backend starts; wait until it reports healthy.
 echo "==> Waiting for the backend"

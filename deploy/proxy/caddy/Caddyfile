@@ -42,3 +42,25 @@ admin.omlapay.org {
 	header X-Frame-Options "DENY"
 	reverse_proxy omlapay-prod-admin:80
 }
+
+# Uploaded files: read-only, straight from each stack's Garage website endpoint. The Host header
+# picks the bucket: it must match S3_BUCKET_NAME in that stack's deploy/.env.
+(files_common) {
+	import common
+	@not_read not method GET HEAD
+	respond @not_read 405
+}
+
+files.omlapay.org {
+	import files_common
+	reverse_proxy omlapay-prod-garage:3902 {
+		header_up Host omlapay-prod-uploads.web.garage
+	}
+}
+
+files-dev.omlapay.org {
+	import files_common
+	reverse_proxy omlapay-dev-garage:3902 {
+		header_up Host omlapay-dev-uploads.web.garage
+	}
+}

@@ -1,0 +1,23 @@
+# Garage: single-node, S3-compatible file storage for one stack (prod or dev).
+# Secrets come from the environment (GARAGE_RPC_SECRET in deploy/.env), not from this file.
+# Buckets, the app's access key and public website access are set up by deploy/scripts/garage-init.sh.
+
+metadata_dir = "/var/lib/garage/meta"
+data_dir = "/var/lib/garage/data"
+db_engine = "sqlite"
+replication_factor = 1
+
+# 0.0.0.0, not [::]: containers often have no IPv6.
+rpc_bind_addr = "0.0.0.0:3901"
+rpc_public_addr = "127.0.0.1:3901"
+
+# S3 API, used by the backend (and the files backup) inside the stack's internal network.
+[s3_api]
+s3_region = "garage"
+api_bind_addr = "0.0.0.0:3900"
+
+# Read-only public website endpoint, served by Caddy at files.omlapay.org / files-dev.omlapay.org.
+# Caddy sets Host to "<bucket>.web.garage" to pick the bucket.
+[s3_web]
+bind_addr = "0.0.0.0:3902"
+root_domain = ".web.garage"
