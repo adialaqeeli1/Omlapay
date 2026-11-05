@@ -30,7 +30,11 @@ import { UserKycGuardService } from '@common/services/user-kyc-guard/user-kyc-gu
 import { SendQuoteUseCase } from './use-cases/send-quote.use-case';
 import { SendHistoryUseCase } from './use-cases/send-history.use-case';
 import { OtpService } from '@common/services/otp/otp.service';
-import { successResponse, maskAddress } from '@common/utils';
+import {
+  successResponse,
+  maskAddress,
+  assertAllowedPhone,
+} from '@common/utils';
 import { generateOTP, generateHash } from '@common/filters';
 import { COIN_TO_NETWORK_MAP } from '@common/constants';
 import { SEND_ESTIMATED_COMPLETION_MS } from './send.constants';
@@ -163,7 +167,9 @@ export class SendService {
     const amountStr = String(dto.amount);
     const fee = isInternal ? '0' : quote.data.fee;
 
-    const otp = user.fullMobileNumber?.startsWith('+91') ? '666666' : generateOTP();
+    // OTP codes go to allowed (Saudi) mobile numbers only
+    assertAllowedPhone(user.fullMobileNumber);
+    const otp = generateOTP();
     const otpHash = generateHash(otp);
     const expiresAt = new Date();
     expiresAt.setSeconds(expiresAt.getSeconds() + 60);
@@ -205,7 +211,7 @@ export class SendService {
       {
         sendToken: pending.id,
         otpExpirySeconds: 60,
-        ...(process.env.NODE_ENV !== 'production' && { otp }),
+        ...(process.env.NODE_ENV === 'development' && { otp }),
       },
       'Verification code sent to your phone number.',
     );
@@ -240,7 +246,9 @@ export class SendService {
       where: { id: userId },
     });
 
-    const otp = user.fullMobileNumber?.startsWith('+91') ? '666666' : generateOTP();
+    // OTP codes go to allowed (Saudi) mobile numbers only
+    assertAllowedPhone(user.fullMobileNumber);
+    const otp = generateOTP();
     const otpHash = generateHash(otp);
     const expiresAt = new Date();
     expiresAt.setSeconds(expiresAt.getSeconds() + 60);
@@ -270,7 +278,7 @@ export class SendService {
       {
         sendToken: pending.id,
         otpExpirySeconds: 60,
-        ...(process.env.NODE_ENV !== 'production' && { otp }),
+        ...(process.env.NODE_ENV === 'development' && { otp }),
       },
       'Verification code resent to your phone number.',
     );

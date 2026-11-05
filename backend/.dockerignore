@@ -6,3 +6,5 @@ dist
 .vscode
 coverage
 .env
+.env.*
+!.env.example

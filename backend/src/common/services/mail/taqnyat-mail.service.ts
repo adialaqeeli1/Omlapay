@@ -247,7 +247,10 @@ export class TaqnyatMailService {
         `Failed to send verification email to ${email}:`,
         error,
       );
-      console.log(`[EMAIL FAILED] Verification code for ${email}: ${code}`);
+      // The code itself is logged only in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[EMAIL FAILED] Verification code for ${email}: ${code}`);
+      }
       throw error;
     }
   }
@@ -290,7 +293,10 @@ export class TaqnyatMailService {
         `Failed to send passcode reset OTP to ${email}:`,
         error,
       );
-      console.log(`[EMAIL FAILED] Passcode reset OTP for ${email}: ${otp}`);
+      // The code itself is logged only in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[EMAIL FAILED] Passcode reset OTP for ${email}: ${otp}`);
+      }
       throw error;
     }
   }
@@ -329,7 +335,10 @@ export class TaqnyatMailService {
       this.logger.log(`OTP email sent successfully to ${email}`);
     } catch (error) {
       this.logger.error(`Failed to send OTP to ${email}:`, error);
-      console.log(`[EMAIL FAILED] OTP for ${email}: ${otp}`);
+      // The code itself is logged only in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[EMAIL FAILED] OTP for ${email}: ${otp}`);
+      }
       throw error;
     }
   }

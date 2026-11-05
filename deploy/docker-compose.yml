@@ -1,0 +1,106 @@
+# One app stack: Postgres + Garage file storage + backend (+ admin panel when COMPOSE_PROFILES=admin).
+# Production and dev each run this file from their own checkout with their own deploy/.env:
+#   /home/deploy/app      (main)    -> COMPOSE_PROJECT_NAME=omlapay-prod
+#   /home/deploy/app-dev  (develop) -> COMPOSE_PROJECT_NAME=omlapay-dev
+# Separate project names give separate containers, networks, database and file-storage volumes.
+# Run from the checkout root: docker compose -f deploy/docker-compose.yml up -d --build
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in deploy/.env}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in deploy/.env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - internal
+
+  backend:
+    build: ../backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PORT: "3000"
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      # File uploads go to this stack's Garage over the internal network
+      S3_ENDPOINT: http://garage:3900
+      AWS_REGION: garage
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      internal: {}
+      web:
+        aliases:
+          - omlapay-${STACK:?set STACK (prod or dev) in deploy/.env}-backend
+
+  # S3-compatible file storage (uploads). Setup: deploy/scripts/garage-init.sh (run by deploy.sh).
+  garage:
+    image: dxflrs/garage:v2.4.1
+    restart: unless-stopped
+    command: ["/garage", "server"]
+    environment:
+      GARAGE_CONFIG_FILE: /etc/garage/garage.toml
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:?set GARAGE_RPC_SECRET in deploy/.env}
+    volumes:
+      - ./garage:/etc/garage:ro
+      - garage_meta:/var/lib/garage/meta
+      - garage_data:/var/lib/garage/data
+    networks:
+      internal: {}
+      web:
+        aliases:
+          - omlapay-${STACK}-garage
+
+  # Copies the uploads bucket to ${BACKUP_DIR}/<project>/files (deploy/scripts/backup-files.sh).
+  files-backup:
+    profiles: ["tools"]
+    image: rclone/rclone:1.75.2
+    # Keys come from the file, never from the shell environment of whoever runs the backup
+    env_file: .env
+    environment:
+      RCLONE_S3_PROVIDER: Other
+      RCLONE_S3_ENDPOINT: http://garage:3900
+      RCLONE_S3_REGION: garage
+      RCLONE_S3_ENV_AUTH: "true"
+      RCLONE_CONFIG: /tmp/rclone.conf
+      XDG_CACHE_HOME: /tmp
+    command: ["sync", ":s3:${S3_BUCKET_NAME}", "/backup/files"]
+    volumes:
+      - ${BACKUP_DIR:-/home/deploy/backups}/${COMPOSE_PROJECT_NAME}/files:/backup/files
+    networks:
+      - internal
+
+  admin:
+    profiles: ["admin"]
+    build:
+      context: ../admin
+      args:
+        VITE_API_URL: ${ADMIN_VITE_API_URL:-}
+        VITE_API_BASE_URL: ${ADMIN_VITE_API_BASE_URL:-}
+    restart: unless-stopped
+    networks:
+      web:
+        aliases:
+          - omlapay-${STACK}-admin
+
+networks:
+  internal: {}
+  # Shared with the Caddy proxy stack (deploy/proxy), which creates it.
+  web:
+    external: true
+    name: omlapay-web
+
+volumes:
+  db: {}
+  garage_meta: {}
+  garage_data: {}

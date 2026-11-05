@@ -1,0 +1,66 @@
+{
+	email {$ACME_EMAIL}
+}
+
+(common) {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+		-X-Powered-By
+	}
+}
+
+# Blocked from the internet: unauthenticated Super Admin creation, dev tools (one wipes the
+# database) and coin sync (resets coin fees and limits; now also admin-only in the code).
+# Case-insensitive because the backend's routes are. Webhooks (/v1/user/webhooks/*) stay open.
+# /docs is protected by the app's own SWAGGER_USER / SWAGGER_PASSWORD.
+(api_blocklist) {
+	@blocked path_regexp blocked (?i)^/+v1/+(admin/+auth/+create-super-admin|dev-tools|coins/+sync)(/|$)
+	respond @blocked 404
+}
+
+# Production API (NODE_ENV=production)
+api.omlapay.org {
+	import common
+	import api_blocklist
+	reverse_proxy omlapay-prod-backend:3000
+}
+
+# Development API (NODE_ENV=staging: no OTP codes in responses, dev tools disabled)
+api-dev.omlapay.org {
+	import common
+	import api_blocklist
+	reverse_proxy omlapay-dev-backend:3000
+}
+
+# Admin panel (uses the production API)
+admin.omlapay.org {
+	import common
+	header X-Frame-Options "DENY"
+	reverse_proxy omlapay-prod-admin:80
+}
+
+# Uploaded files: read-only, straight from each stack's Garage website endpoint. The Host header
+# picks the bucket: it must match S3_BUCKET_NAME in that stack's deploy/.env.
+(files_common) {
+	import common
+	@not_read not method GET HEAD
+	respond @not_read 405
+}
+
+files.omlapay.org {
+	import files_common
+	reverse_proxy omlapay-prod-garage:3902 {
+		header_up Host omlapay-prod-uploads.web.garage
+	}
+}
+
+files-dev.omlapay.org {
+	import files_common
+	reverse_proxy omlapay-dev-garage:3902 {
+		header_up Host omlapay-dev-uploads.web.garage
+	}
+}

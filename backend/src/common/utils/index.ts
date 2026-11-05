@@ -5,3 +5,4 @@ export * from './masking.util';
 export * from './cursor.util';
 export * from './ticket.util';
 export * from './validation.util';
+export * from './phone.util';

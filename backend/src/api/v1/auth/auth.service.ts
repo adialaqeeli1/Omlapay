@@ -22,7 +22,7 @@ import { generateOTP, generateHash } from '@common/filters';
 import {
   maskEmail,
   maskPhoneNumber,
-  validateCountryCodeAndMobileNumber,
+  normalizePhoneDto,
   validateRequired,
   buildFullMobileNumber,
   validateAccountActive,
@@ -65,7 +65,7 @@ export class AuthService {
    * Returns userExists so client can show passcode screen or registration screen.
    */
   async checkUser(dto: CheckUserDto) {
-    validateCountryCodeAndMobileNumber(dto.country_code, dto.mobile_number);
+    normalizePhoneDto(dto);
 
     const fullMobileNumber = buildFullMobileNumber(
       dto.country_code,
@@ -98,7 +98,7 @@ export class AuthService {
   async login(dto: LoginDto) {
     try {
       // Validate input using utility functions
-      validateCountryCodeAndMobileNumber(dto.country_code, dto.mobile_number);
+      normalizePhoneDto(dto);
       validateRequired(dto.passcode, 'Passcode');
 
       const fullMobileNumber = buildFullMobileNumber(
@@ -262,7 +262,7 @@ export class AuthService {
   async forgotPasscode(dto: ForgotPasscodeDto) {
     try {
       // Validate input using utility functions
-      validateCountryCodeAndMobileNumber(dto.country_code, dto.mobile_number);
+      normalizePhoneDto(dto);
 
       const fullMobileNumber = buildFullMobileNumber(
         dto.country_code,
@@ -305,8 +305,7 @@ export class AuthService {
 
     if (is2FAEnabled) {
       // 2FA enabled: Send OTP to both mobile and email
-      const isIndian = fullMobileNumber.startsWith('+91');
-      const mobileOtp = isIndian ? '666666' : generateOTP();
+      const mobileOtp = generateOTP();
       const emailOtp = generateOTP();
       const mobileOtpHash = generateHash(mobileOtp);
       const emailOtpHash = generateHash(emailOtp);
@@ -348,10 +347,10 @@ export class AuthService {
       });
 
       // Send OTPs via SMS and Email services
-      // await Promise.all([
-      //   this.otpService.sendPasscodeResetOTP(fullMobileNumber, mobileOtp),
-      //   this.mailService.sendPasscodeResetOTP(user.email!, emailOtp),
-      // ]);
+      await Promise.all([
+        this.otpService.sendPasscodeResetOTP(fullMobileNumber, mobileOtp),
+        this.mailService.sendPasscodeResetOTP(user.email!, emailOtp),
+      ]);
 
       return {
         status: 'success',
@@ -366,8 +365,7 @@ export class AuthService {
       };
     } else {
       // 2FA disabled: Only send mobile OTP
-      const isIndian = fullMobileNumber.startsWith('+91');
-      const mobileOtp = isIndian ? '666666' : generateOTP();
+      const mobileOtp = generateOTP();
       const mobileOtpHash = generateHash(mobileOtp);
 
       // Invalidate previous mobile OTP
@@ -390,7 +388,7 @@ export class AuthService {
       });
 
       // Send OTP via SMS service
-      // await this.otpService.sendPasscodeResetOTP(fullMobileNumber, mobileOtp);
+      await this.otpService.sendPasscodeResetOTP(fullMobileNumber, mobileOtp);
 
       return {
         status: 'success',
@@ -425,7 +423,7 @@ export class AuthService {
   async verifyForgotPasscodeOtps(dto: ForgotPasscodeVerifyOtpDto) {
     try {
       // Validate input using utility functions
-      validateCountryCodeAndMobileNumber(dto.country_code, dto.mobile_number);
+      normalizePhoneDto(dto);
 
       const fullMobileNumber = buildFullMobileNumber(
         dto.country_code,
@@ -768,23 +766,8 @@ export class AuthService {
         });
       }
 
-      // Validate country code format
-      if (!/^\+(966|91)$/.test(dto.country_code)) {
-        throw new BadRequestException({
-          status: 'error',
-          message: 'Invalid country code. Allowed: +966, +91',
-        });
-      }
-
-      // Validate mobile number format
-      const mobileNumberRegex = dto.country_code === '+966' ? /^\d{9}$/ : /^\d{10}$/;
-      if (!mobileNumberRegex.test(dto.mobile_number)) {
-        const expectedLength = dto.country_code === '+966' ? '9' : '10';
-        throw new BadRequestException({
-          status: 'error',
-          message: `Mobile number must be ${expectedLength} digits long.`,
-        });
-      }
+      // Saudi mobile numbers only (ALLOWED_PHONE_COUNTRY_CODES); normalizes dto in place
+      normalizePhoneDto(dto);
 
       const fullMobileNumber = `${dto.country_code}${dto.mobile_number}`;
 
@@ -866,8 +849,7 @@ export class AuthService {
         : 1;
 
       // Generate new OTPs
-      const isIndian = fullMobileNumber.startsWith('+91');
-      const mobileOtp = isIndian ? '666666' : generateOTP();
+      const mobileOtp = generateOTP();
       const emailOtp = generateOTP();
       const mobileOtpHash = generateHash(mobileOtp);
       const emailOtpHash = generateHash(emailOtp);
@@ -909,10 +891,10 @@ export class AuthService {
       });
 
       // Send OTPs via SMS and Email services
-      // await Promise.all([
-      //   this.otpService.sendPasscodeResetOTP(fullMobileNumber, mobileOtp),
-      //   this.mailService.sendPasscodeResetOTP(user.email!, emailOtp),
-      // ]);
+      await Promise.all([
+        this.otpService.sendPasscodeResetOTP(fullMobileNumber, mobileOtp),
+        this.mailService.sendPasscodeResetOTP(user.email!, emailOtp),
+      ]);
 
       return {
         status: 'success',
@@ -964,8 +946,7 @@ export class AuthService {
         : 1;
 
       // Generate new mobile OTP
-      const isIndian = fullMobileNumber.startsWith('+91');
-      const mobileOtp = isIndian ? '666666' : generateOTP();
+      const mobileOtp = generateOTP();
       const mobileOtpHash = generateHash(mobileOtp);
 
       // Delete old mobile OTP
@@ -988,7 +969,7 @@ export class AuthService {
       });
 
       // Send OTP via SMS service
-      // await this.otpService.sendPasscodeResetOTP(fullMobileNumber, mobileOtp);
+      await this.otpService.sendPasscodeResetOTP(fullMobileNumber, mobileOtp);
 
       return {
         status: 'success',

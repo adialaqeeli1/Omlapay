@@ -1,4 +1,10 @@
-import { createHmac, randomBytes, createCipheriv, createDecipheriv } from 'crypto';
+import {
+  createHmac,
+  randomBytes,
+  createCipheriv,
+  createDecipheriv,
+  timingSafeEqual,
+} from 'crypto';
 
 /**
  * Shared crypto utilities for HMAC signatures and token generation.
@@ -25,7 +31,14 @@ export class CryptoUtil {
     algorithm: 'sha256' | 'sha1' = 'sha256',
   ): boolean {
     const computed = CryptoUtil.createHmacSignature(data, secret, algorithm);
-    return receivedSignature === computed;
+    return CryptoUtil.safeEqual(receivedSignature, computed);
+  }
+
+  /** Constant-time string comparison (no early exit that leaks how many characters matched). */
+  static safeEqual(a: string, b: string): boolean {
+    const bufA = Buffer.from(a);
+    const bufB = Buffer.from(b);
+    return bufA.length === bufB.length && timingSafeEqual(bufA, bufB);
   }
 
   /**
@@ -53,8 +66,9 @@ export class CryptoUtil {
     if (!data || !sig) throw new Error('Invalid token format');
     
     const expected = CryptoUtil.createHmacSignature(data, secret);
-    if (expected !== sig) throw new Error('Invalid token signature');
-    
+    if (!CryptoUtil.safeEqual(expected, sig))
+      throw new Error('Invalid token signature');
+
     const payload = JSON.parse(Buffer.from(data, 'base64url').toString('utf8'));
     if (payload.exp < Date.now()) throw new Error('Token expired');
     
