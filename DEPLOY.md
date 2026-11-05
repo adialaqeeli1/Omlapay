@@ -170,6 +170,12 @@ cd /home/deploy/app-dev && deploy/scripts/deploy.sh
 `deploy.sh` pulls the branch, runs the malware scan, builds, starts, sets up Garage and waits
 until the backend is healthy. Database migrations run automatically when the backend starts.
 
+For the first start, `deploy/scripts/step6-start.sh` does all of the above in one go: it first
+checks the settings files and that every domain points only to this server (no AAAA records),
+then starts Caddy and both stacks, and ends with HTTPS, certificate and blocked-route checks
+(log in `~/step6.log`). Run it inside `tmux`:
+`tmux new -s deploy`, then `bash /home/deploy/app/deploy/scripts/step6-start.sh`.
+
 ## First admin
 
 `create-super-admin` is blocked on the internet. Create the first admin on the server instead
