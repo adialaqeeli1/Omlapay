@@ -28,7 +28,10 @@ case "${1:-backup}" in
     ;;
   backup)
     restic backup /backups --host "$HOST_TAG" --tag nightly --exclude '*.partial' --quiet
-    restic forget --host "$HOST_TAG" --keep-daily 14 --keep-weekly 8 --keep-monthly 12 --prune --quiet
+    # --max-unused unlimited: never repack partly-used data, so prune only deletes data no snapshot
+    # uses (all older than 14 days) and never touches files still under the 10-day R2 bucket lock.
+    restic forget --host "$HOST_TAG" --keep-daily 14 --keep-weekly 8 --keep-monthly 12 \
+      --prune --max-unused unlimited --quiet
     # Sundays: verify the repository and re-read 5% of the stored data
     if [ "$(date -u +%u)" = 7 ]; then restic check --read-data-subset=5% --quiet; fi
     echo "$(date -u +%FT%TZ) offsite ok: $(restic snapshots --host "$HOST_TAG" --json --latest 1 | grep -o '"short_id":"[^"]*"' | head -1)"
