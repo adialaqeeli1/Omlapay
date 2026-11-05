@@ -332,8 +332,7 @@ export class AdminProfileService {
     );
 
     // Generate OTP
-    const isIndian = admin?.phoneNumber?.startsWith('+91'); // Temporary fix for Indian numbers
-    const otp = isIndian ? '666666' : generateOTP();
+    const otp = generateOTP();
     const otpHash = generateHash(otp);
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 10);
@@ -456,8 +455,7 @@ export class AdminProfileService {
     );
 
     // Generate OTP for new phone
-    const isIndian = admin?.phoneNumber?.startsWith('+91'); // Temporary fix for Indian numbers
-    const otp = isIndian ? '666666' : generateOTP();
+    const otp = generateOTP();
     const otpHash = generateHash(otp);
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 10);
@@ -690,8 +688,7 @@ export class AdminProfileService {
     );
 
     // Generate new OTP
-    const isIndian = admin?.phoneNumber?.startsWith('+91'); // Temporary fix for Indian numbers
-    const otp = isIndian ? '666666' : generateOTP();
+    const otp = generateOTP();
     const otpHash = generateHash(otp);
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 10);

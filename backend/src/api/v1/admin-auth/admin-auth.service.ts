@@ -157,8 +157,7 @@ export class AdminAuthService {
       );
 
       // Generate OTP
-      const isIndian = admin?.phoneNumber?.startsWith('+91'); // Temporary fix for Indian numbers
-      const otp = isIndian ? '666666' : generateOTP();
+      const otp = generateOTP();
       const otpHash = generateHash(otp);
       const expiresAt = new Date();
       expiresAt.setMinutes(expiresAt.getMinutes() + 1); // 1 minute validity
@@ -619,8 +618,7 @@ export class AdminAuthService {
       }
 
       // Generate OTP
-      const isIndian = admin?.phoneNumber?.startsWith('+91'); // Temporary fix for Indian numbers
-      const otp = isIndian ? '666666' : generateOTP();
+      const otp = generateOTP();
       const otpHash = generateHash(otp);
       const expiresAt = new Date();
       expiresAt.setMinutes(expiresAt.getMinutes() + 10); // 10 minutes validity
@@ -904,8 +902,7 @@ export class AdminAuthService {
       );
 
       // Generate new OTP
-      const isIndian = admin?.phoneNumber?.startsWith('+91'); // Temporary fix for Indian numbers
-      const otp = isIndian ? '666666' : generateOTP();
+      const otp = generateOTP();
       const otpHash = generateHash(otp);
       const expiresAt = new Date();
       expiresAt.setMinutes(expiresAt.getMinutes() + 1); // 1 minute validity

@@ -28,11 +28,8 @@ export class OtpService {
   }
 
   async sendOTP(phoneNumber: string, otp: string): Promise<void> {
-    // Check if it's an Indian number
-    const isIndianNumber = phoneNumber.startsWith('+91');
-
-    // In development & Indian numbers, use default OTP - don't send actual SMS
-    if (process.env.NODE_ENV !== 'production' || isIndianNumber) {
+    // Outside production, log the code instead of sending an SMS
+    if (process.env.NODE_ENV !== 'production') {
       console.log(`[DEV] OTP for ${phoneNumber}: ${otp}`);
       return;
     }
@@ -82,11 +79,8 @@ export class OtpService {
   }
 
   async sendPasscodeResetOTP(phoneNumber: string, otp: string): Promise<void> {
-    // Check if it's an Indian number
-    const isIndianNumber = phoneNumber.startsWith('+91');
-
-    // In development & Indian numbers, use default OTP - don't send actual SMS
-    if (process.env.NODE_ENV !== 'production' || isIndianNumber) {
+    // Outside production, log the code instead of sending an SMS
+    if (process.env.NODE_ENV !== 'production') {
       console.log(`[DEV] Passcode Reset OTP for ${phoneNumber}: ${otp}`);
       return;
     }
@@ -140,12 +134,10 @@ export class OtpService {
 
   /**
    * Send a generic SMS message (e.g. invite, notification).
-   * In development or for Indian numbers, logs instead of sending.
+   * Outside production, logs instead of sending.
    */
   async sendSms(phoneNumber: string, message: string): Promise<void> {
-    const isIndianNumber = phoneNumber.startsWith('+91');
-
-    if (process.env.NODE_ENV !== 'production' || isIndianNumber) {
+    if (process.env.NODE_ENV !== 'production') {
       this.logger.log(`[DEV] SMS to ${phoneNumber}: ${message}`);
       return;
     }

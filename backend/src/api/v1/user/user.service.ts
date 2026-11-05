@@ -625,8 +625,7 @@ export class UserService {
       const resendAttempts = existingOtp.resendAttempts + 1;
 
       // Generate new OTP
-      const isIndian = fullMobileNumber?.startsWith('+91'); // Temporary fix for Indian numbers
-      const otp = isIndian ? '666666' : generateOTP();
+      const otp = generateOTP();
       const otpHash = generateHash(otp);
       const expiresAt = new Date();
       expiresAt.setSeconds(expiresAt.getSeconds() + 60);
@@ -712,8 +711,7 @@ export class UserService {
       }
 
       // Generate and send OTP
-      const isIndian = fullMobileNumber?.startsWith('+91'); // Temporary fix for Indian numbers
-      const otp = isIndian ? '666666' : generateOTP();
+      const otp = generateOTP();
       const otpHash = generateHash(otp);
       const expiresAt = new Date();
       expiresAt.setMinutes(expiresAt.getMinutes() + 1); // 1 minute validity
@@ -1147,8 +1145,7 @@ export class UserService {
       }
 
       // Generate OTPs for both mobile and email
-      const isIndian = fullMobileNumber.startsWith('+91');
-      const mobileOtp = isIndian ? '666666' : generateOTP();
+      const mobileOtp = generateOTP();
       const emailOtp = generateOTP();
       const mobileOtpHash = generateHash(mobileOtp);
       const emailOtpHash = generateHash(emailOtp);

@@ -163,7 +163,7 @@ export class SendService {
     const amountStr = String(dto.amount);
     const fee = isInternal ? '0' : quote.data.fee;
 
-    const otp = user.fullMobileNumber?.startsWith('+91') ? '666666' : generateOTP();
+    const otp = generateOTP();
     const otpHash = generateHash(otp);
     const expiresAt = new Date();
     expiresAt.setSeconds(expiresAt.getSeconds() + 60);
@@ -240,7 +240,7 @@ export class SendService {
       where: { id: userId },
     });
 
-    const otp = user.fullMobileNumber?.startsWith('+91') ? '666666' : generateOTP();
+    const otp = generateOTP();
     const otpHash = generateHash(otp);
     const expiresAt = new Date();
     expiresAt.setSeconds(expiresAt.getSeconds() + 60);

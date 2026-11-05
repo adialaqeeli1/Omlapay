@@ -305,8 +305,7 @@ export class AuthService {
 
     if (is2FAEnabled) {
       // 2FA enabled: Send OTP to both mobile and email
-      const isIndian = fullMobileNumber.startsWith('+91');
-      const mobileOtp = isIndian ? '666666' : generateOTP();
+      const mobileOtp = generateOTP();
       const emailOtp = generateOTP();
       const mobileOtpHash = generateHash(mobileOtp);
       const emailOtpHash = generateHash(emailOtp);
@@ -348,10 +347,10 @@ export class AuthService {
       });
 
       // Send OTPs via SMS and Email services
-      // await Promise.all([
-      //   this.otpService.sendPasscodeResetOTP(fullMobileNumber, mobileOtp),
-      //   this.mailService.sendPasscodeResetOTP(user.email!, emailOtp),
-      // ]);
+      await Promise.all([
+        this.otpService.sendPasscodeResetOTP(fullMobileNumber, mobileOtp),
+        this.mailService.sendPasscodeResetOTP(user.email!, emailOtp),
+      ]);
 
       return {
         status: 'success',
@@ -366,8 +365,7 @@ export class AuthService {
       };
     } else {
       // 2FA disabled: Only send mobile OTP
-      const isIndian = fullMobileNumber.startsWith('+91');
-      const mobileOtp = isIndian ? '666666' : generateOTP();
+      const mobileOtp = generateOTP();
       const mobileOtpHash = generateHash(mobileOtp);
 
       // Invalidate previous mobile OTP
@@ -390,7 +388,7 @@ export class AuthService {
       });
 
       // Send OTP via SMS service
-      // await this.otpService.sendPasscodeResetOTP(fullMobileNumber, mobileOtp);
+      await this.otpService.sendPasscodeResetOTP(fullMobileNumber, mobileOtp);
 
       return {
         status: 'success',
@@ -866,8 +864,7 @@ export class AuthService {
         : 1;
 
       // Generate new OTPs
-      const isIndian = fullMobileNumber.startsWith('+91');
-      const mobileOtp = isIndian ? '666666' : generateOTP();
+      const mobileOtp = generateOTP();
       const emailOtp = generateOTP();
       const mobileOtpHash = generateHash(mobileOtp);
       const emailOtpHash = generateHash(emailOtp);
@@ -909,10 +906,10 @@ export class AuthService {
       });
 
       // Send OTPs via SMS and Email services
-      // await Promise.all([
-      //   this.otpService.sendPasscodeResetOTP(fullMobileNumber, mobileOtp),
-      //   this.mailService.sendPasscodeResetOTP(user.email!, emailOtp),
-      // ]);
+      await Promise.all([
+        this.otpService.sendPasscodeResetOTP(fullMobileNumber, mobileOtp),
+        this.mailService.sendPasscodeResetOTP(user.email!, emailOtp),
+      ]);
 
       return {
         status: 'success',
@@ -964,8 +961,7 @@ export class AuthService {
         : 1;
 
       // Generate new mobile OTP
-      const isIndian = fullMobileNumber.startsWith('+91');
-      const mobileOtp = isIndian ? '666666' : generateOTP();
+      const mobileOtp = generateOTP();
       const mobileOtpHash = generateHash(mobileOtp);
 
       // Delete old mobile OTP
@@ -988,7 +984,7 @@ export class AuthService {
       });
 
       // Send OTP via SMS service
-      // await this.otpService.sendPasscodeResetOTP(fullMobileNumber, mobileOtp);
+      await this.otpService.sendPasscodeResetOTP(fullMobileNumber, mobileOtp);
 
       return {
         status: 'success',
