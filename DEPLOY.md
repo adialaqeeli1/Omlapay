@@ -242,7 +242,45 @@ Check `/home/deploy/backups/backup.log`: every step writes one `ok` line; failur
 `FAILED`. List stored snapshots: `deploy/scripts/offsite-backup.sh snapshots`.
 
 The server holds a token that can also delete from `omlapay-backups`. If the server were taken
-over, an attacker could remove the backups; see Known issues.
+over, an attacker could remove the backups; see "Protecting backups from deletion" below.
+
+### Protecting backups from deletion (proposed, not enabled yet)
+
+Recommended: an **R2 bucket lock** on `omlapay-backups` that keeps every backup file for
+**10 days**, plus one restic setting so the nightly cleanup never tries to delete anything that
+young. It stays fully automatic: no second machine, no manual steps.
+
+Trade-off: even someone with full control of the server (or of the R2 token) cannot delete the
+last 10 days of backups; older history (weekly/monthly) is still deletable, and nobody, including
+you, can remove a backup file before it is 10 days old. The repository also grows slightly,
+because partly-used data is no longer repacked.
+
+How it works with restic:
+- restic never changes a stored file; it only adds and deletes. The lock covers the folders that
+  hold the backup itself: `data/` (file contents), `snapshots/` (the list of backups), `keys/`
+  and `config` (encryption setup).
+- `locks/` (restic's run-time lock files, created and deleted on every run) and `index/` (a
+  lookup table restic rewrites when it cleans up; rebuildable with `restic repair index`) are
+  not locked.
+- restic keeps every nightly snapshot for 14 days, so anything it deletes is older than 14 days,
+  which is past the 10-day lock.
+- `--max-unused unlimited` on the prune stops restic from rewriting partly-used data files, so it
+  only ever deletes data files that no remaining backup uses (all older than 14 days).
+- If a nightly run is ever interrupted, the half-written data it left behind cannot be deleted
+  for 10 days; the log shows `FAILED` on the cleanup step until then. The backups themselves are
+  not affected.
+
+To enable (after approval):
+1. Cloudflare dashboard → R2 → `omlapay-backups` → **Settings** → **Bucket lock rules** →
+   **Add rule**, four times, each with **Retention: 10 days** and these prefixes:
+   `data/`, `snapshots/`, `keys/`, `config`
+   (or with Wrangler: `npx wrangler r2 bucket lock add omlapay-backups --name restic-data
+   --prefix data/ --retention-days 10`, and the same for the other three prefixes).
+2. In `deploy/scripts/offsite-backup.sh`, add `--max-unused unlimited` to the `restic forget …
+   --prune` line.
+3. Run `deploy/scripts/nightly-backup.sh` once and check the log ends with `offsite ok`.
+
+Note: a bucket with lock rules cannot be emptied or deleted until the rules are removed.
 
 ### Restore test (monthly)
 
@@ -330,6 +368,5 @@ Backend:
   nor the account's own number).
 
 Backups:
-- The backup token can delete from `omlapay-backups`. To protect backups from someone who takes
-  over the server, prune from a separate machine with its own token and give the server a token
-  without delete rights, or add an R2 bucket lock rule.
+- The backup token can delete from `omlapay-backups`. Proposed fix (not enabled yet): R2 bucket
+  lock, see "Protecting backups from deletion" under Backups.
