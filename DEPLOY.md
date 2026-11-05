@@ -385,25 +385,26 @@ cd /home/deploy/app && docker compose -f deploy/proxy/docker-compose.yml logs --
 
 ## Known issues (to fix before or soon after launch)
 
-Mobile app (Flutter), to match the Saudi-only phone rule:
-- `mobile-app/lib/modules/auth/providers/login_provider.dart:75-81`: default country comes from the
-  phone's region; should always be Saudi Arabia (+966).
-- `mobile-app/lib/modules/auth/providers/login_provider.dart:99`: accepts any 7-15 digits; should
-  accept only Saudi mobile numbers (`5XXXXXXXX` / `05XXXXXXXX`).
-- `mobile-app/lib/modules/auth/views/login_or_register_screen.dart:151`: country picker lists all
-  countries; limit to Saudi Arabia or remove.
-- `mobile-app/lib/modules/settings/providers/change_phone_form_provider.dart:119-122` and
-  `mobile-app/lib/modules/settings/view/change_phone_number/change_phone_enter_new_view.dart:52`:
-  same country default and picker on the change-phone screen.
-- Error messages: providers show only `response['message']` (e.g.
-  `mobile-app/lib/modules/auth/providers/verification_provider.dart:149`,
-  `mobile-app/lib/modules/auth/providers/login_verification_provider.dart:106`); show
-  `message_ar` when the app language is Arabic.
+Mobile app (Flutter): the API address (`--env=dev|prod`, see `mobile-app/README.md`), the
+Saudi-only phone field, Arabic server messages and the "too many attempts" message are done.
 
 Backend:
-- The app's change-phone and change-email screens call `/v1/user/settings/change-phone/step1…5`
-  and `/v1/user/settings/change-email/…`, which do not exist in the backend. Those screens cannot
-  work until the endpoints are built; they must use the same phone rule (`normalizeAllowedPhone`).
+- **The app calls 25 API routes that this backend does not have**, so these app features fail
+  against `api.omlapay.org` / `api-dev.omlapay.org` until the routes exist:
+  - Login of an existing user: `/v1/auth/login/send-otp`, `/login/resend-otp`,
+    `/login/verify-otp`, `/login/passcode` (new users can register; returning users cannot log in).
+  - Account deletion: `/v1/user/settings/request-deletion` (required by Apple for apps that let
+    users create accounts).
+  - Change passcode: `/v1/user/settings/change-passcode`.
+  - Change phone / change email: `/v1/user/settings/change-phone/step1…5` and
+    `/v1/user/settings/change-email/step1…5` (must use the same phone rule,
+    `normalizeAllowedPhone`).
+  - Email on the profile: `/v1/user/email/request`, `/v1/user/email/verify`.
+  - Push notifications: `/v1/notifications/devices`.
+  - KYC: `/v1/user/kyc/rejection-details`, `/v1/user/kyc/resubmit`.
+  - Send / swap: `/v1/send/validate-address`, `/v1/swap/quote/stream`.
+  - Support without an account: `/v1/guest/support-requests` (+ `/:id`).
+  The app was most likely built against a newer backend than the one in this repository.
 - `create-super-admin`, `dev-tools` and `coins/sync` are blocked in Caddy; remove or protect them
   in the code too.
 - Invite SMS (`POST /v1/user/invite`) still accepts +966 and +91 numbers (it is neither a code

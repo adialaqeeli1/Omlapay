@@ -1525,4 +1525,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get updateReadyAction => 'حسنًا';
+
+  @override
+  String get saudiMobileOnly =>
+      'أدخل رقم جوال سعودي يبدأ بالرقم 5 (5XXXXXXXX).';
+
+  @override
+  String get tooManyAttempts =>
+      'محاولات كثيرة جدًا. يرجى الانتظار دقيقة ثم المحاولة مرة أخرى.';
 }

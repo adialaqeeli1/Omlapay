@@ -241,6 +241,18 @@ This project ships in two ways:
 
 > **Flutter version is pinned** in [`.flutter-version`](.flutter-version) (currently **3.44.1**) as the single source of truth. The deploy script reads it for both codegen and the Shorebird release build.
 
+### Which API server a build uses
+
+| Build | Server |
+|---|---|
+| Debug (`flutter run`) | `https://api-dev.omlapay.org` |
+| Release / profile (store builds, Shorebird) | `https://api.omlapay.org` |
+
+Override with `--dart-define=OMLAPAY_ENV=dev` or `=prod` (the helper scripts take `--env=dev` /
+`--env=prod`), or point a build at any server with `--dart-define=API_BASE_URL=https://…`.
+Example, a release-mode test build against the dev server:
+`flutter build apk --release --dart-define=OMLAPAY_ENV=dev`.
+
 ### A. Run locally (development)
 
 ```bash
