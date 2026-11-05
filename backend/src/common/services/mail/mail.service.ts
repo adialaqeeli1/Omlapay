@@ -9,23 +9,110 @@ export class MailService {
   private readonly mailgunApiKey: string;
   private readonly mailgunDomain: string;
   private readonly mailgunBaseUrl: string;
+  private readonly postmarkToken: string;
+  private readonly postmarkApiUrl: string;
+  private readonly postmarkMessageStream: string;
+  /** Postmark when POSTMARK_SERVER_TOKEN is set, else Mailgun when configured, else no email. */
+  private readonly provider: 'postmark' | 'mailgun' | null;
 
   constructor(private configService: ConfigService) {
-    this.mailgunApiKey = this.configService.get<string>('MAILGUN_API_KEY') || '';
-    this.mailgunDomain = this.configService.get<string>('MAILGUN_SANDBOX_DOMAIN') || '';
-    this.mailgunBaseUrl = this.configService.get<string>('MAILGUN_BASE_URL') || '';
-    this.fromEmail = `noreply@${this.mailgunDomain}`;
-    this.fromName = 'Omlapay';
+    this.mailgunApiKey =
+      this.configService.get<string>('MAILGUN_API_KEY') || '';
+    this.mailgunDomain =
+      this.configService.get<string>('MAILGUN_SANDBOX_DOMAIN') || '';
+    this.mailgunBaseUrl =
+      this.configService.get<string>('MAILGUN_BASE_URL') || '';
+    this.postmarkToken =
+      this.configService.get<string>('POSTMARK_SERVER_TOKEN') || '';
+    this.postmarkApiUrl = (
+      this.configService.get<string>('POSTMARK_API_URL') ||
+      'https://api.postmarkapp.com'
+    ).replace(/\/$/, '');
+    this.postmarkMessageStream =
+      this.configService.get<string>('POSTMARK_MESSAGE_STREAM') || 'outbound';
+    this.fromEmail =
+      this.configService.get<string>('MAIL_FROM_EMAIL') ||
+      `noreply@${this.mailgunDomain}`;
+    this.fromName =
+      this.configService.get<string>('MAIL_FROM_NAME') || 'Omlapay';
 
-    if (!this.mailgunApiKey || !this.mailgunDomain || !this.mailgunBaseUrl) {
-      this.logger.warn(
-        'Mailgun not configured. Email functionality will be disabled. Missing: ' +
-        (!this.mailgunApiKey ? 'MAILGUN_API_KEY ' : '') +
-        (!this.mailgunDomain ? 'MAILGUN_SANDBOX_DOMAIN ' : '') +
-        (!this.mailgunBaseUrl ? 'MAILGUN_BASE_URL' : '')
-      );
-    } else {
+    if (this.postmarkToken) {
+      if (!this.configService.get<string>('MAIL_FROM_EMAIL')) {
+        this.provider = null;
+        this.logger.error(
+          'POSTMARK_SERVER_TOKEN is set but MAIL_FROM_EMAIL is not. Email functionality will be disabled.',
+        );
+      } else {
+        this.provider = 'postmark';
+        this.logger.log(`Postmark configured (from ${this.fromEmail})`);
+      }
+    } else if (
+      this.mailgunApiKey &&
+      this.mailgunDomain &&
+      this.mailgunBaseUrl
+    ) {
+      this.provider = 'mailgun';
       this.logger.log('Mailgun configured successfully');
+    } else {
+      this.provider = null;
+      this.logger.warn(
+        'No email provider configured (set POSTMARK_SERVER_TOKEN + MAIL_FROM_EMAIL, or the MAILGUN_* settings). Email functionality will be disabled.',
+      );
+    }
+  }
+
+  /** Sends through the configured provider; without one, logs and returns (email switched off). */
+  private async sendEmail(
+    to: string,
+    subject: string,
+    text: string,
+    html: string,
+  ): Promise<void> {
+    if (this.provider === 'postmark')
+      return this.sendPostmarkEmail(to, subject, text, html);
+    return this.sendMailgunEmail(to, subject, text, html);
+  }
+
+  private async sendPostmarkEmail(
+    to: string,
+    subject: string,
+    text: string,
+    html: string,
+  ): Promise<void> {
+    try {
+      const response = await fetch(`${this.postmarkApiUrl}/email`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'X-Postmark-Server-Token': this.postmarkToken,
+        },
+        body: JSON.stringify({
+          From: `${this.fromName} <${this.fromEmail}>`,
+          To: to,
+          Subject: subject,
+          TextBody: text,
+          HtmlBody: html,
+          MessageStream: this.postmarkMessageStream,
+        }),
+      });
+
+      const result = (await response.json().catch(() => ({}))) as {
+        ErrorCode?: number;
+        Message?: string;
+        MessageID?: string;
+      };
+      if (!response.ok || (result.ErrorCode ?? 0) !== 0) {
+        throw new Error(
+          `Postmark API error: ${response.status} (ErrorCode ${result.ErrorCode ?? 'n/a'}) ${result.Message ?? response.statusText}`,
+        );
+      }
+      this.logger.log(
+        `Email sent successfully to ${to} via Postmark. Message ID: ${result.MessageID}`,
+      );
+    } catch (error) {
+      this.logger.error(`Failed to send email to ${to}:`, error);
+      throw error;
     }
   }
 
@@ -35,9 +122,9 @@ export class MailService {
     text: string,
     html: string,
   ): Promise<void> {
-    if (!this.mailgunApiKey || !this.mailgunDomain) {
+    if (this.provider !== 'mailgun') {
       this.logger.warn(
-        `Mailgun not configured. Would send email to ${to} with subject: ${subject}`,
+        `Email not configured. Would send email to ${to} with subject: ${subject}`,
       );
       console.log(`[EMAIL] To: ${to}, Subject: ${subject}`);
       if (process.env.NODE_ENV === 'development') {
@@ -101,7 +188,7 @@ export class MailService {
     `;
 
     try {
-      await this.sendMailgunEmail(email, subject, text, html);
+      await this.sendEmail(email, subject, text, html);
       this.logger.log(`Verification email sent successfully to ${email}`);
     } catch (error) {
       this.logger.error(
@@ -135,7 +222,7 @@ export class MailService {
     `;
 
     try {
-      await this.sendMailgunEmail(email, subject, text, html);
+      await this.sendEmail(email, subject, text, html);
       this.logger.log(`Passcode reset OTP email sent successfully to ${email}`);
     } catch (error) {
       this.logger.error(
@@ -168,7 +255,7 @@ export class MailService {
     `;
 
     try {
-      await this.sendMailgunEmail(email, subject, text, html);
+      await this.sendEmail(email, subject, text, html);
       this.logger.log(`OTP email sent successfully to ${email}`);
     } catch (error) {
       this.logger.error(`Failed to send OTP to ${email}:`, error);
@@ -203,7 +290,7 @@ export class MailService {
     `;
 
     try {
-      await this.sendMailgunEmail(email, subject, text, html);
+      await this.sendEmail(email, subject, text, html);
       this.logger.log(`Block notification email sent successfully to ${email}`);
     } catch (error) {
       this.logger.error(
@@ -237,7 +324,7 @@ export class MailService {
     `;
 
     try {
-      await this.sendMailgunEmail(internalEmail, subject, text, html);
+      await this.sendEmail(internalEmail, subject, text, html);
       this.logger.log(
         `Internal block notification email sent successfully to ${internalEmail}`,
       );
@@ -274,7 +361,7 @@ export class MailService {
     `;
 
     try {
-      await this.sendMailgunEmail(email, subject, text, html);
+      await this.sendEmail(email, subject, text, html);
       this.logger.log(`Ticket response email sent successfully to ${email}`);
     } catch (error) {
       this.logger.error(`Failed to send ticket response to ${email}:`, error);

@@ -93,6 +93,34 @@ Moving to Cloudflare R2 later needs no code change: copy the files with
 `AWS_REGION=auto` and R2 keys in `deploy/.env` and remove the two `S3_ENDPOINT`/`AWS_REGION`
 lines under `backend:` in `deploy/docker-compose.yml`.
 
+## Email (Postmark)
+
+The backend sends email through Postmark's API when `POSTMARK_SERVER_TOKEN` is set (Mailgun is
+still supported and used only when the Postmark token is empty). Values in each `deploy/.env`:
+
+| Variable | Where to find it in Postmark |
+|---|---|
+| `POSTMARK_SERVER_TOKEN` | **Servers** → your server → **API Tokens** → Server API token (use a separate Postmark server for dev if you want dev mail kept apart) |
+| `MAIL_FROM_EMAIL` | An address on a domain verified under **Sender Signatures** → **Domains** (DKIM and Return-Path DNS records added in Cloudflare), e.g. `noreply@omlapay.org` |
+| `MAIL_FROM_NAME` | Display name, e.g. `OmlaPay` |
+| `POSTMARK_MESSAGE_STREAM` | **Servers** → your server → **Message Streams**: the transactional stream's ID (`outbound` by default) |
+
+A new Postmark account starts in test mode and can only send to addresses on its own verified
+domain until Postmark approves it; request approval under **Account**.
+
+### Email switched off
+
+Leave `POSTMARK_SERVER_TOKEN` and the three `MAILGUN_*` values empty. The backend then starts
+normally and only logs "Email not configured" instead of sending. Until email is on, in
+production:
+- Admins cannot get a login code by email. Give the admin a Saudi mobile number (see "First
+  admin") and log in with that number: the code goes by SMS (Taqnyat must be configured).
+- Changing fees in the admin panel and the admin's own email/phone changes need an emailed code,
+  so they are not possible.
+- Users with 2FA turned on cannot reset their passcode (it needs an email code); users without 2FA
+  are not affected.
+- Ticket replies and account-block notifications are not emailed.
+
 ## First-time setup
 
 Server preparation (user `deploy`, Docker, firewall 22/80/443, fail2ban, automatic updates,
@@ -140,16 +168,19 @@ until the backend is healthy. Database migrations run automatically when the bac
 ## First admin
 
 `create-super-admin` is blocked on the internet. Create the first admin on the server instead
-(type the password at the prompt; it never appears in shell history):
+(type the password at the prompt; it never appears in shell history). The mobile number is
+optional, but needed to log in by SMS code while email is switched off; write it as
+`+9665XXXXXXXX`:
 
 ```bash
 cd /home/deploy/app
-read -rp 'Admin email: ' EMAIL; read -rsp 'Password: ' PASS; echo
+read -rp 'Admin email: ' EMAIL; read -rp 'Admin mobile (+9665XXXXXXXX, or empty): ' PHONE
+read -rsp 'Password: ' PASS; echo
 HASH=$(docker compose -f deploy/docker-compose.yml exec -T -e P="$PASS" backend \
   node -e "process.stdout.write(require('bcryptjs').hashSync(process.env.P, 10))")
-echo "INSERT INTO admins (email, password_hash, role, is_active) VALUES (:'e', :'h', 'SUPER_ADMIN', true);" |
+echo "INSERT INTO admins (email, phone_number, password_hash, role, is_active) VALUES (:'e', NULLIF(:'p', ''), :'h', 'SUPER_ADMIN', true);" |
   docker compose -f deploy/docker-compose.yml exec -T db sh -c \
-  'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v e="$1" -v h="$2"' _ "$EMAIL" "$HASH"
+  'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v e="$1" -v p="$2" -v h="$3"' _ "$EMAIL" "$PHONE" "$HASH"
 unset PASS HASH
 ```
 
