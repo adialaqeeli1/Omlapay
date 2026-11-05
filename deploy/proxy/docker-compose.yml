@@ -1,0 +1,31 @@
+# Caddy: the only container that listens on the internet (80/443). Automatic HTTPS for all
+# three subdomains, routing to the prod and dev stacks over the shared omlapay-web network.
+# Run from the production checkout: docker compose -f deploy/proxy/docker-compose.yml up -d
+
+name: omlapay-proxy
+
+services:
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in deploy/proxy/.env}
+    volumes:
+      # A folder, not single files, so edits on the server are always seen after a reload.
+      - ./caddy:/etc/caddy:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - web
+
+networks:
+  web:
+    name: omlapay-web
+
+volumes:
+  caddy_data: {}
+  caddy_config: {}

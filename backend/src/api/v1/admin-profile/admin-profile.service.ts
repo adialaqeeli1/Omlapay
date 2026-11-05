@@ -33,6 +33,7 @@ import {
   validatePasswordMatch,
   validateAccountActive,
   maskPhoneNumber,
+  assertAllowedPhone,
 } from '@common/utils';
 
 @Injectable()
@@ -332,8 +333,7 @@ export class AdminProfileService {
     );
 
     // Generate OTP
-    const isIndian = admin?.phoneNumber?.startsWith('+91'); // Temporary fix for Indian numbers
-    const otp = isIndian ? '666666' : generateOTP();
+    const otp = generateOTP();
     const otpHash = generateHash(otp);
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 10);
@@ -435,6 +435,9 @@ export class AdminProfileService {
       throw new NotFoundException('Admin not found');
     }
 
+    // Saudi mobile numbers only (ALLOWED_PHONE_COUNTRY_CODES), stored as +9665XXXXXXXX
+    dto.newPhoneNumber = assertAllowedPhone(dto.newPhoneNumber);
+
     // Check if new phone is same as current
     if (dto.newPhoneNumber === admin.phoneNumber) {
       throw new BadRequestException('New phone number must be different from current phone number');
@@ -456,8 +459,7 @@ export class AdminProfileService {
     );
 
     // Generate OTP for new phone
-    const isIndian = admin?.phoneNumber?.startsWith('+91'); // Temporary fix for Indian numbers
-    const otp = isIndian ? '666666' : generateOTP();
+    const otp = generateOTP();
     const otpHash = generateHash(otp);
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 10);
@@ -690,8 +692,7 @@ export class AdminProfileService {
     );
 
     // Generate new OTP
-    const isIndian = admin?.phoneNumber?.startsWith('+91'); // Temporary fix for Indian numbers
-    const otp = isIndian ? '666666' : generateOTP();
+    const otp = generateOTP();
     const otpHash = generateHash(otp);
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 10);

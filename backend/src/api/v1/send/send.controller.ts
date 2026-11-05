@@ -1,3 +1,4 @@
+import { ThrottleCodeSend, ThrottleCredentialCheck } from '@common/decorators';
 import {
   Controller,
   Get,
@@ -53,6 +54,7 @@ export class SendController {
   }
 
   @Post('initiate')
+  @ThrottleCodeSend()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Initiate send (sends OTP)',
@@ -75,6 +77,7 @@ export class SendController {
   }
 
   @Post('resend-otp')
+  @ThrottleCodeSend()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Resend OTP for send verification',
@@ -93,6 +96,7 @@ export class SendController {
   }
 
   @Post('confirm')
+  @ThrottleCredentialCheck()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Confirm send (verify OTP and execute)',

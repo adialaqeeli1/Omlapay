@@ -1,3 +1,4 @@
+import { ThrottleCodeSend, ThrottleCredentialCheck } from '@common/decorators';
 import {
   Controller,
   Post,
@@ -33,6 +34,7 @@ export class AdminProfileController {
 
   // Change Email Flow
   @Post('change-email/initiate')
+  @ThrottleCodeSend()
   @UseGuards(SuperAdminGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Step 1: Initiate change email - sends OTP to current email (Super Admin only)' })
@@ -46,6 +48,7 @@ export class AdminProfileController {
   }
 
   @Post('change-email/verify-current')
+  @ThrottleCredentialCheck()
   @UseGuards(SuperAdminGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Step 2: Verify current email with OTP (Super Admin only)' })
@@ -61,6 +64,7 @@ export class AdminProfileController {
   }
 
   @Post('change-email/enter-new')
+  @ThrottleCodeSend()
   @UseGuards(SuperAdminGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Step 3: Enter new email address (Super Admin only)' })
@@ -76,6 +80,7 @@ export class AdminProfileController {
   }
 
   @Post('change-email/verify-new')
+  @ThrottleCredentialCheck()
   @UseGuards(SuperAdminGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Step 4: Verify new email with OTP and complete update (Super Admin only)' })
@@ -92,6 +97,7 @@ export class AdminProfileController {
 
   // Change Phone Flow
   @Post('change-phone/initiate')
+  @ThrottleCodeSend()
   @UseGuards(SuperAdminGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Step 1: Initiate change phone - sends OTP to current phone (Super Admin only)' })
@@ -105,6 +111,7 @@ export class AdminProfileController {
   }
 
   @Post('change-phone/verify-current')
+  @ThrottleCredentialCheck()
   @UseGuards(SuperAdminGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Step 2: Verify current phone with OTP (Super Admin only)' })
@@ -120,6 +127,7 @@ export class AdminProfileController {
   }
 
   @Post('change-phone/enter-new')
+  @ThrottleCodeSend()
   @UseGuards(SuperAdminGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Step 3: Enter new phone number (Super Admin only)' })
@@ -135,6 +143,7 @@ export class AdminProfileController {
   }
 
   @Post('change-phone/verify-new')
+  @ThrottleCredentialCheck()
   @UseGuards(SuperAdminGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Step 4: Verify new phone with OTP and complete update (Super Admin only)' })
@@ -151,6 +160,7 @@ export class AdminProfileController {
 
   // Change Password
   @Post('change-password')
+  @ThrottleCredentialCheck()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Change admin password' })
   @ApiResponse({ status: 200, description: 'Password changed successfully' })
@@ -165,6 +175,7 @@ export class AdminProfileController {
 
   // Resend OTP
   @Post('resend-otp/:type')
+  @ThrottleCodeSend()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Resend OTP for email or phone change (cooldown: 60 seconds)' })
   @ApiResponse({ status: 200, description: 'OTP resent successfully' })

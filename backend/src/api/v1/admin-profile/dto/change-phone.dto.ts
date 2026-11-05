@@ -16,8 +16,9 @@ export class EnterNewPhoneDto {
   })
   @IsString()
   @IsNotEmpty()
-  @Matches(/^\+966\d{9}$/, {
-    message: 'Invalid phone number format. Must be KSA format: +966XXXXXXXXX',
+  @Matches(/^\+?\d{6,15}$/, {
+    message:
+      'Invalid phone number format. Use a Saudi mobile number: +9665XXXXXXXX or 05XXXXXXXX',
   })
   newPhoneNumber: string;
 }
