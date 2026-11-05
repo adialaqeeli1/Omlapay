@@ -1,6 +1,7 @@
 # Deploying Omlapay to a VPS
 
-One Ubuntu 24.04 server runs two separate stacks plus one Caddy proxy:
+One Ubuntu 24.04 server (Hostinger `srv2131878`, `2.24.57.218`, used only for OmlaPay) runs two
+separate stacks plus one Caddy proxy:
 
 ```
 Internet ──443──> Caddy (automatic HTTPS)
@@ -27,7 +28,7 @@ and Garage's S3 API are never exposed to the internet. Caddy runs from the produ
 
 ## DNS (Cloudflare, DNS only / grey cloud)
 
-A records pointing at the server: `api`, `api-dev`, `admin`, `files`, `files-dev`
+A records pointing at `2.24.57.218`: `api`, `api-dev`, `admin`, `files`, `files-dev`
 (all `.omlapay.org`). Caddy gets the certificates itself once the records resolve.
 
 ## What Caddy blocks
@@ -184,9 +185,9 @@ GitHub → repo → Settings → Secrets and variables → Actions:
 
 | Secret | Value |
 |---|---|
-| `DEPLOY_HOST` | `31.97.32.246` |
+| `DEPLOY_HOST` | `2.24.57.218` |
 | `DEPLOY_SSH_KEY` | the private CI key (whole file) |
-| `DEPLOY_KNOWN_HOSTS` | `ssh-keyscan -t ed25519 31.97.32.246` output |
+| `DEPLOY_KNOWN_HOSTS` | `ssh-keyscan -t ed25519 2.24.57.218` output |
 
 Jobs run in the GitHub environments `production` (main) and `development` (develop). To require
 a manual approval before production deploys, add a required reviewer to the `production`
