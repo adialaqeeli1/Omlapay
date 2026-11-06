@@ -38,6 +38,7 @@ import {
   validateCountryCodeAndMobileNumber,
   normalizePhoneDto,
   validatePasscodeMatch,
+  assertStrongPasscode,
   buildFullMobileNumber,
   validateBooleanTrue,
   validateOTP,
@@ -779,6 +780,7 @@ export class UserService {
       // Validate input using utility functions
       validateToken(dto.registration_token, 'Registration token');
       validatePasscodeMatch(dto.passcode, dto.confirm_passcode);
+      assertStrongPasscode(dto.passcode);
 
       // Decode and validate registration token
       let payload: { userId: string; type: string };

@@ -415,10 +415,11 @@ Backend:
 - Done: login of an existing user (`/v1/auth/login/send-otp`, `/login/resend-otp`,
   `/login/verify-otp`, `/login/passcode` for remembered devices only) and account deletion
   (`/v1/user/settings/request-deletion`: passcode, no funds or activity in progress, 7-day grace
-  period, then personal data is erased and records are kept).
+  period, then personal data is erased and records are kept), and change passcode
+  (`/v1/user/settings/change-passcode`: current passcode, obvious passcodes refused, other phones
+  logged out, SMS alert).
 - **The app still calls API routes that this backend does not have**, so these app features fail
   against `api.omlapay.org` / `api-dev.omlapay.org` until the routes exist:
-  - Change passcode: `/v1/user/settings/change-passcode`.
   - Change phone / change email: `/v1/user/settings/change-phone/step1…5` and
     `/v1/user/settings/change-email/step1…5` (must use the same phone rule,
     `normalizeAllowedPhone`).

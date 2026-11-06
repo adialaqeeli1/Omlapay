@@ -5,6 +5,7 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { UserAccountService } from './user-account.service';
 import { AccountDeletionService } from './account-deletion.service';
+import { ChangePasscodeService } from './change-passcode.service';
 import { UserEntity } from '@common/database/model';
 import { UserSecurityEntity } from '@common/database/model';
 import { AuthSessionEntity } from '@common/database/model';
@@ -57,6 +58,7 @@ import { AuthModule } from '../auth/auth.module';
     UserService,
     UserAccountService,
     AccountDeletionService,
+    ChangePasscodeService,
     JwtAuthGuard,
   ],
   exports: [UserService],
