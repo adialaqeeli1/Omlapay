@@ -540,7 +540,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
   }
 
   /// Biometric is offered only on the soft-login / app-lock screens, when the
-  /// user has enabled it, the device supports it, and a passcode is stored.
+  /// user has enabled it, the device supports it, and the user is signed in.
   bool _shouldOfferBiometric() {
     if (widget.mode != LoginProvider.modeSoftLogin &&
         widget.mode != LoginProvider.modeAppLock) {
@@ -548,8 +548,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
     }
     final bio = context.read<BiometricProvider>();
     if (!bio.isEnabled || !bio.isAvailable) return false;
-    final stored = context.read<AuthProvider>().state.user?.password ?? '';
-    return stored.isNotEmpty;
+    return context.read<AuthProvider>().state.isAuthenticated;
   }
 
   Future<void> _maybeAutoPromptBiometric() async {
@@ -570,14 +569,14 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
     await _tryBiometricUnlock();
   }
 
-  /// Prompts biometrics and, on success, unlocks via the existing softLogin
-  /// using the stored passcode. Failure/cancel leaves the passcode pad active.
+  /// Prompts biometrics and, on success, unlocks if the saved session is still
+  /// valid on the server (no passcode is stored). Failure/cancel leaves the
+  /// passcode pad active.
   Future<void> _tryBiometricUnlock() async {
     if (_biometricInFlight) return;
     final authProvider = context.read<AuthProvider>();
     final bio = context.read<BiometricProvider>();
-    final storedPasscode = authProvider.state.user?.password ?? '';
-    if (storedPasscode.isEmpty) return;
+    if (!authProvider.state.isAuthenticated) return;
 
     // setState so the retry button reflects the in-flight state and, crucially,
     // re-enables after the scan finishes (the toggle below in `finally` would
@@ -589,7 +588,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
       );
       if (!scanned || !mounted) return;
 
-      final unlocked = await authProvider.softLogin(storedPasscode);
+      final unlocked = await authProvider.unlockWithBiometrics();
       if (!unlocked || !mounted) return;
 
       // modeAppLock: AuthProvider.onUnlockCallback removes the overlay route,
@@ -755,7 +754,7 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
                 required String phoneNumber,
                 required String countryCode,
                 required String passcode,
-              }) => authProvider.verifyStoredPasscodeForCurrentUser(passcode),
+              }) => authProvider.verifyPasscodeWithServer(passcode),
         );
         if (!context.mounted || !isValid) {
           return;

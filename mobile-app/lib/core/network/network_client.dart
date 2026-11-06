@@ -26,6 +26,10 @@ class NetworkClient {
   final Duration defaultReceiveTimeout;
   final Map<String, dynamic>? globalHeaders;
 
+  /// Tests only: answers every request instead of the network.
+  @visibleForTesting
+  static HttpClientAdapter? testAdapter;
+
   NetworkClient copyWith({
     String? baseUrl,
     NetworkToken? token,
@@ -62,6 +66,7 @@ class NetworkClient {
             globalHeaders: globalHeaders,
           ),
         ]);
+      if (testAdapter != null) dio.httpClientAdapter = testAdapter!;
     }
     return dio;
   }

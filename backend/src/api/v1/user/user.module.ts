@@ -21,6 +21,7 @@ import { SumsubModule } from '@common/services/sumsub/sumsub.module';
 import { BinanceModule } from '@common/services/binance/binance.module';
 import { jwtConfig } from '@common/config/jwt.config';
 import { TrustedDeviceModule } from '@common/services/trusted-device/trusted-device.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { TrustedDeviceModule } from '@common/services/trusted-device/trusted-dev
     SumsubModule,
     BinanceModule,
     TrustedDeviceModule,
+    AuthModule,
   ],
   controllers: [UserController],
   providers: [UserService, UserAccountService, JwtAuthGuard],
