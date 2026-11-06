@@ -627,6 +627,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'تمت جدولة حذف الحساب. لديك 7 أيام للإلغاء عن طريق تسجيل الدخول مرة أخرى.';
 
   @override
+  String get deleteAccountCancelled =>
+      'تم إلغاء حذف الحساب. سيبقى حسابك نشطًا.';
+
+  @override
   String get deleteAccountHasBalanceError =>
       'لا يزال لديك رصيد في محافظك. يرجى سحب أو تحويل كامل رصيدك قبل حذف حسابك.';
 

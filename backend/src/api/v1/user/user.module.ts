@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { UserAccountService } from './user-account.service';
+import { AccountDeletionService } from './account-deletion.service';
 import { UserEntity } from '@common/database/model';
 import { UserSecurityEntity } from '@common/database/model';
 import { AuthSessionEntity } from '@common/database/model';
@@ -13,6 +14,10 @@ import {
   UserKycEntity,
   BinanceWebhookEntity,
   CoinEntity,
+  WalletEntity,
+  TransactionEntity,
+  SwapEntity,
+  SendPendingRequestEntity,
 } from '@common/database/model';
 import { JwtAuthGuard } from '@common/guards';
 import { OtpModule } from '@common/services/otp/otp.module';
@@ -34,6 +39,10 @@ import { AuthModule } from '../auth/auth.module';
       UserKycEntity,
       BinanceWebhookEntity,
       CoinEntity,
+      WalletEntity,
+      TransactionEntity,
+      SwapEntity,
+      SendPendingRequestEntity,
     ]),
     JwtModule.registerAsync(jwtConfig('24h')),
     OtpModule,
@@ -44,7 +53,12 @@ import { AuthModule } from '../auth/auth.module';
     AuthModule,
   ],
   controllers: [UserController],
-  providers: [UserService, UserAccountService, JwtAuthGuard],
+  providers: [
+    UserService,
+    UserAccountService,
+    AccountDeletionService,
+    JwtAuthGuard,
+  ],
   exports: [UserService],
 })
 export class UserModule {}

@@ -90,6 +90,18 @@ export class UserEntity {
   @Column({ type: 'timestamp', nullable: true, name: 'binance_api_key_created_at' })
   binanceApiKeyCreatedAt: Date | null;
 
+  /** Account deletion (POST /user/settings/request-deletion): when the user asked */
+  @Column({ type: 'timestamp', nullable: true })
+  deletionRequestedAt: Date | null;
+
+  /** When the account will be anonymized, unless the user logs in again before then */
+  @Column({ type: 'timestamp', nullable: true })
+  deletionScheduledFor: Date | null;
+
+  /** When personal data was erased (the account is closed for good) */
+  @Column({ type: 'timestamp', nullable: true })
+  anonymizedAt: Date | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -36,13 +36,18 @@ import { Enable2FARequestDto } from './dto/enable-2fa-request.dto';
 import { Verify2FADto } from './dto/verify-2fa.dto';
 import { StartKycDto } from './dto/start-kyc.dto';
 import { UpdateOnboardingDto } from './dto/update-onboarding.dto';
+import { RequestDeletionDto } from './dto/request-deletion.dto';
+import { AccountDeletionService } from './account-deletion.service';
 import { JwtAuthGuard } from '@common/guards';
 import { CurrentUser } from '@common/decorators';
 
 @ApiTags('User')
 @Controller({ path: 'user', version: '1' })
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly accountDeletion: AccountDeletionService,
+  ) {}
 
   @Post('register/request')
   @ThrottleCodeSend()
@@ -89,6 +94,32 @@ export class UserController {
   })
   async setPasscode(@Body() dto: SetPasscodeDto) {
     return this.userService.setPasscode(dto);
+  }
+
+  @Post('settings/request-deletion')
+  @ThrottleCredentialCheck()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Schedule account deletion (7-day grace period; logging in again cancels it)',
+    description:
+      'Needs the passcode. Refused while any wallet has a balance (ACCOUNT_HAS_BALANCE) or a transfer/swap is in progress ' +
+      '(ACCOUNT_HAS_PENDING_ACTIVITY). Logs out every session and device. After 7 days personal data is erased; ' +
+      'transactions and KYC records are kept for the legal retention period.',
+  })
+  @ApiResponse({ status: 200, description: 'Deletion scheduled (data.deletion_scheduled_for)' })
+  @ApiResponse({ status: 400, description: 'Balance or activity in progress' })
+  @ApiResponse({ status: 401, description: 'Wrong passcode or not logged in' })
+  async requestDeletion(
+    @CurrentUser() user: { userId: string; sessionId: string },
+    @Body() dto: RequestDeletionDto,
+  ) {
+    return this.accountDeletion.requestDeletion(
+      user.userId,
+      user.sessionId,
+      dto.passcode,
+    );
   }
 
   @Put('settings/appearance')

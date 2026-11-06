@@ -637,6 +637,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Account deletion scheduled. You have 7 days to cancel by logging in again.';
 
   @override
+  String get deleteAccountCancelled =>
+      'Account deletion cancelled. Your account stays active.';
+
+  @override
   String get deleteAccountHasBalanceError =>
       'You still have funds in your wallets. Please withdraw or transfer your entire balance before deleting your account.';
 

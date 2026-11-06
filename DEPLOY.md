@@ -386,15 +386,19 @@ cd /home/deploy/app && docker compose -f deploy/proxy/docker-compose.yml logs --
 ## Known issues (to fix before or soon after launch)
 
 Mobile app (Flutter): the API address (`--env=dev|prod`, see `mobile-app/README.md`), the
-Saudi-only phone field, Arabic server messages and the "too many attempts" message are done.
+Saudi-only phone field, Arabic server messages and the "too many attempts" message are done. The
+app no longer stores the passcode.
+- **Must do before launch:** move the session tokens and the remembered-device token from
+  SharedPreferences to the phone's secure storage (Keychain / Android Keystore,
+  `flutter_secure_storage`, "this device only", left out of backups). Planned right after stage 2.
 
 Backend:
-- **The app calls 25 API routes that this backend does not have**, so these app features fail
+- Done: login of an existing user (`/v1/auth/login/send-otp`, `/login/resend-otp`,
+  `/login/verify-otp`, `/login/passcode` for remembered devices only) and account deletion
+  (`/v1/user/settings/request-deletion`: passcode, no funds or activity in progress, 7-day grace
+  period, then personal data is erased and records are kept).
+- **The app still calls API routes that this backend does not have**, so these app features fail
   against `api.omlapay.org` / `api-dev.omlapay.org` until the routes exist:
-  - Login of an existing user: `/v1/auth/login/send-otp`, `/login/resend-otp`,
-    `/login/verify-otp`, `/login/passcode` (new users can register; returning users cannot log in).
-  - Account deletion: `/v1/user/settings/request-deletion` (required by Apple for apps that let
-    users create accounts).
   - Change passcode: `/v1/user/settings/change-passcode`.
   - Change phone / change email: `/v1/user/settings/change-phone/step1…5` and
     `/v1/user/settings/change-email/step1…5` (must use the same phone rule,
