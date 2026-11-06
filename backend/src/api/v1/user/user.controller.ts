@@ -39,6 +39,8 @@ import { UpdateOnboardingDto } from './dto/update-onboarding.dto';
 import { RequestDeletionDto } from './dto/request-deletion.dto';
 import { ChangePasscodeDto } from './dto/change-passcode.dto';
 import { ChangePasscodeService } from './change-passcode.service';
+import { EmailRequestDto, EmailVerifyDto } from './dto/email-verification.dto';
+import { EmailVerificationService } from './email-verification.service';
 import { AccountDeletionService } from './account-deletion.service';
 import { JwtAuthGuard } from '@common/guards';
 import { CurrentUser } from '@common/decorators';
@@ -50,6 +52,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly accountDeletion: AccountDeletionService,
     private readonly changePasscodeService: ChangePasscodeService,
+    private readonly emailVerification: EmailVerificationService,
   ) {}
 
   @Post('register/request')
@@ -97,6 +100,51 @@ export class UserController {
   })
   async setPasscode(@Body() dto: SetPasscodeDto) {
     return this.userService.setPasscode(dto);
+  }
+
+  @Post('email/request')
+  @ThrottleCodeSend()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Add an email: send a 6-digit code to it (valid 5 minutes)',
+    description:
+      'Only for accounts without a verified email (replacing one is Change email). Refused when the ' +
+      'email is verified on another account (409 EMAIL_IN_USE). A new code after 30 seconds.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Code sent (masked_email, otp_expiry_seconds)',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid email, already verified, or too soon',
+  })
+  @ApiResponse({ status: 409, description: 'EMAIL_IN_USE' })
+  async requestEmailVerification(
+    @CurrentUser() user: { userId: string },
+    @Body() dto: EmailRequestDto,
+  ) {
+    return this.emailVerification.request(user.userId, dto.email);
+  }
+
+  @Post('email/verify')
+  @ThrottleCredentialCheck()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Add an email: confirm the code; the email becomes verified',
+  })
+  @ApiResponse({ status: 200, description: 'Email verified' })
+  @ApiResponse({ status: 400, description: 'Wrong, expired or used code' })
+  @ApiResponse({ status: 409, description: 'EMAIL_IN_USE' })
+  async verifyEmail(
+    @CurrentUser() user: { userId: string },
+    @Body() dto: EmailVerifyDto,
+  ) {
+    return this.emailVerification.verify(user.userId, dto.otp);
   }
 
   @Post('settings/change-passcode')

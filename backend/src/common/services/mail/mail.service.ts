@@ -61,6 +61,11 @@ export class MailService {
     }
   }
 
+  /** Whether an email provider (Postmark or Mailgun) is configured. */
+  get isEnabled(): boolean {
+    return this.provider !== null;
+  }
+
   /** Sends through the configured provider; without one, logs and returns (email switched off). */
   private async sendEmail(
     to: string,
@@ -127,7 +132,8 @@ export class MailService {
         `Email not configured. Would send email to ${to} with subject: ${subject}`,
       );
       console.log(`[EMAIL] To: ${to}, Subject: ${subject}`);
-      if (process.env.NODE_ENV === 'development') {
+      // Outside production the text (with any code) goes to the log, like SMS codes
+      if (process.env.NODE_ENV !== 'production') {
         console.log(`[EMAIL CONTENT]\n${text}`);
       }
       return;

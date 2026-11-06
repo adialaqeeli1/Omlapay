@@ -57,7 +57,8 @@ To create the first admin while that route is blocked, see "First admin" below.
 ## Dev (staging) behaviour
 
 `api-dev` runs with `NODE_ENV=staging`: OTP codes are not returned in API responses, and the app
-does not send SMS outside production. Codes are written to the backend log instead:
+does not send SMS outside production. Codes are written to the backend log instead. Without an
+email provider (Postmark), emails are written to the same log, with their codes:
 
 ```bash
 cd /home/deploy/app-dev && docker compose -f deploy/docker-compose.yml logs -f backend | grep -i otp
@@ -418,7 +419,11 @@ Backend:
   period, then personal data is erased and records are kept), and change passcode
   (`/v1/user/settings/change-passcode`: current passcode, obvious passcodes refused, other phones
   logged out, SMS alert), and push-notification devices (`/v1/notifications/devices`: the app's
-  FCM token per phone and session; removed on logout).
+  FCM token per phone and session; removed on logout), and adding an email to the account
+  (`/v1/user/email/request` + `/verify`: 6-digit code by email, valid 5 minutes; an email verified
+  on another account is refused). **Needs Postmark** (see "Email (Postmark)"): without it,
+  production answers "email verification is not available right now", and the dev server writes
+  the email (with the code) to the backend log, like SMS codes.
 - **The backend does not send push notifications yet:** it stores the phones' tokens, but nothing
   calls Firebase. Sending needs a Firebase service-account key (a secret, added to `deploy/.env`)
   and a sender that skips phones whose session has ended.
@@ -427,7 +432,6 @@ Backend:
   - Change phone / change email: `/v1/user/settings/change-phone/step1…5` and
     `/v1/user/settings/change-email/step1…5` (must use the same phone rule,
     `normalizeAllowedPhone`).
-  - Email on the profile: `/v1/user/email/request`, `/v1/user/email/verify`.
   - KYC: `/v1/user/kyc/rejection-details`, `/v1/user/kyc/resubmit`.
   - Send / swap: `/v1/send/validate-address`, `/v1/swap/quote/stream`.
   - Support without an account: `/v1/guest/support-requests` (+ `/:id`).
