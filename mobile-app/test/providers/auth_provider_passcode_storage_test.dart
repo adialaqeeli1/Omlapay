@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:omlapay_mobile_app/core/constants/constants.dart';
 import 'package:omlapay_mobile_app/core/models/user_model/user_model.dart';
@@ -21,6 +22,7 @@ void main() {
   late SharedPreferences prefs;
 
   Future<AuthProvider> start([Map<String, Object> saved = const {}]) async {
+    FlutterSecureStorage.setMockInitialValues({});
     SharedPreferences.setMockInitialValues(saved);
     await StorageService.init();
     prefs = await SharedPreferences.getInstance();
@@ -133,8 +135,11 @@ void main() {
           'data': {'access_token': 'access-2', 'refresh_token': 'refresh-2'},
         };
         await auth.toggleTwoFactor(false);
-        expect(prefs.getString(AppConstants.tokenKey), 'access-2');
-        expect(prefs.getString('refresh_token'), 'refresh-2');
+        expect(StorageService.getString(AppConstants.tokenKey), 'access-2');
+        expect(
+          StorageService.getString(AppConstants.refreshTokenKey),
+          'refresh-2',
+        );
         expect(auth.state.user?.twoFactorEnabled, isFalse);
         expect(
           api.requests.map((r) => r.path),
