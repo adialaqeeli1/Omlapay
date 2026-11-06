@@ -110,8 +110,9 @@ export class AdminTicketsService {
       createdDate: ticket.createdAt,
       status: ticket.status,
       statusColor: TicketUtil.getStatusColor(ticket.status), // Color mapping for UI
-      userEmail: ticket.user.email || '—',
-      userPhone: ticket.user.fullMobileNumber || '—',
+      // A guest request (sent without an account) has no user
+      userEmail: ticket.user ? ticket.user.email || '—' : 'Guest',
+      userPhone: ticket.user?.fullMobileNumber || '—',
     }));
 
     return {
@@ -159,11 +160,11 @@ export class AdminTicketsService {
     // Get user info
     const user = ticket.user;
 
-    // Derive full name from KYC provider payload if available
-    const kyc = await this.userKycRepository.findOne({
-      where: { userId: user.id },
-    });
-    const fullName = getFullNameFromKyc(kyc);
+    // Derive full name from KYC provider payload if available (guests have no account)
+    const kyc = user
+      ? await this.userKycRepository.findOne({ where: { userId: user.id } })
+      : null;
+    const fullName = user ? getFullNameFromKyc(kyc) : 'Guest (no account)';
 
     return {
       ticket: {
@@ -177,8 +178,8 @@ export class AdminTicketsService {
         updatedAt: ticket.updatedAt,
       },
       user: {
-        email: user.email || '—',
-        phoneNumber: user.fullMobileNumber || '—',
+        email: user?.email || '—',
+        phoneNumber: user?.fullMobileNumber || '—',
         fullName,
       },
       attachments: ticket.attachmentUrl
@@ -222,7 +223,8 @@ export class AdminTicketsService {
     });
 
     // Send email to user if email exists
-    if (ticket.user.email) {
+    // (guests have no email; they read replies in the app)
+    if (ticket.user?.email) {
       try {
         await this.mailService.sendTicketResponse(
           ticket.user.email,

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SupportRequestsController } from './support-requests.controller';
 import { SupportRequestsService } from './support-requests.service';
+import { GuestSupportRequestsController } from './guest-support-requests.controller';
 import {
   SupportRequestEntity,
   TicketResponseEntity,
@@ -19,7 +20,7 @@ import { AdminNotificationsModule } from '../admin-notifications/admin-notificat
     ]),
     AdminNotificationsModule,
   ],
-  controllers: [SupportRequestsController],
+  controllers: [SupportRequestsController, GuestSupportRequestsController],
   providers: [SupportRequestsService, JwtAuthGuard],
   exports: [SupportRequestsService],
 })

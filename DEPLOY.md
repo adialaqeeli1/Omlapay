@@ -419,11 +419,14 @@ Backend:
   period, then personal data is erased and records are kept), and change passcode
   (`/v1/user/settings/change-passcode`: current passcode, obvious passcodes refused, other phones
   logged out, SMS alert), and push-notification devices (`/v1/notifications/devices`: the app's
-  FCM token per phone and session; removed on logout), and adding an email to the account
+  FCM token per phone and session; removed on logout), adding an email to the account
   (`/v1/user/email/request` + `/verify`: 6-digit code by email, valid 5 minutes; an email verified
-  on another account is refused). **Needs Postmark** (see "Email (Postmark)"): without it,
-  production answers "email verification is not available right now", and the dev server writes
-  the email (with the code) to the backend log, like SMS codes.
+  on another account is refused), and support without an account (`/v1/guest/support-requests` +
+  `/:id`: the first request returns a secret guest token that the app keeps in secure storage and
+  sends as `X-Guest-Token`; guest tickets show as "Guest" in the admin panel). Email verification
+  **needs Postmark** (see "Email (Postmark)"): without it, production answers "email verification
+  is not available right now", and the dev server writes the email (with the code) to the backend
+  log, like SMS codes.
 - **The backend does not send push notifications yet:** it stores the phones' tokens, but nothing
   calls Firebase. Sending needs a Firebase service-account key (a secret, added to `deploy/.env`)
   and a sender that skips phones whose session has ended.
@@ -434,7 +437,6 @@ Backend:
     `normalizeAllowedPhone`).
   - KYC: `/v1/user/kyc/rejection-details`, `/v1/user/kyc/resubmit`.
   - Send / swap: `/v1/send/validate-address`, `/v1/swap/quote/stream`.
-  - Support without an account: `/v1/guest/support-requests` (+ `/:id`).
   The app was most likely built against a newer backend than the one in this repository.
 - `create-super-admin`, `dev-tools` and `coins/sync` are blocked in Caddy; remove or protect them
   in the code too.
