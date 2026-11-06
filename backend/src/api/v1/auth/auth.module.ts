@@ -11,6 +11,7 @@ import { OtpRequestEntity } from '@common/database/model';
 import { OtpModule } from '@common/services/otp/otp.module';
 import { MailModule } from '@common/services/mail/mail.module';
 import { TrustedDeviceModule } from '@common/services/trusted-device/trusted-device.module';
+import { PushDeviceModule } from '@common/services/push-device/push-device.module';
 import { jwtConfig } from '@common/config/jwt.config';
 
 @Module({
@@ -26,6 +27,7 @@ import { jwtConfig } from '@common/config/jwt.config';
     OtpModule,
     MailModule,
     TrustedDeviceModule,
+    PushDeviceModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

@@ -13,6 +13,7 @@ export * from './legal-content.entity';
 export * from './send-pending-request.entity';
 export * from './notification.entity';
 export * from './otp-request.entity';
+export * from './push-device.entity';
 export * from './support-request.entity';
 export * from './swap.entity';
 export * from './system-settings.entity';

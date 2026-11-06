@@ -5,11 +5,13 @@ import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
 import { NotificationEntity } from '@common/database/model';
 import { jwtConfig } from '@common/config/jwt.config';
+import { PushDeviceModule } from '@common/services/push-device/push-device.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([NotificationEntity]),
     JwtModule.registerAsync(jwtConfig('7d')),
+    PushDeviceModule,
   ],
   controllers: [NotificationsController],
   providers: [NotificationsService],
