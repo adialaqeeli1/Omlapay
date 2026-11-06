@@ -1,3 +1,4 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:omlapay_mobile_app/core/services/remembered_device.dart';
 import 'package:omlapay_mobile_app/core/services/storage_helper.dart';
@@ -7,6 +8,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() async {
+    FlutterSecureStorage.setMockInitialValues({});
     SharedPreferences.setMockInitialValues({});
     await StorageService.init();
   });

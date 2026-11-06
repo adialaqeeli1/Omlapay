@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:omlapay_mobile_app/core/constants/constants.dart';
 import 'package:omlapay_mobile_app/core/l10n/app_localizations_ar.dart';
@@ -16,6 +17,7 @@ void main() {
   late FakeApi api;
 
   Future<AuthProvider> signedIn() async {
+    FlutterSecureStorage.setMockInitialValues({});
     SharedPreferences.setMockInitialValues({
       AppConstants.userKey: jsonEncode({
         'id': 'u1',
