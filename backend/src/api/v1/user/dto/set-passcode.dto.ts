@@ -1,7 +1,8 @@
 import { IsString, Length, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { DeviceIdField } from '../../auth/dto/device-id';
 
-export class SetPasscodeDto {
+export class SetPasscodeDto extends DeviceIdField {
   @ApiProperty({
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
     description: 'Registration token from mobile verification',

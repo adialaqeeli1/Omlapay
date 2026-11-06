@@ -11,6 +11,7 @@ import '../core/models/wallet_model/wallet_model.dart';
 import '../core/mock_data/mock_data.dart';
 import '../core/services/push_notification_service.dart';
 import '../core/services/storage_helper.dart';
+import '../core/services/remembered_device.dart';
 import '../core/utils/api_message_helper.dart';
 import '../core/utils/app_exception.dart';
 import '../core/utils/user_auth_phone.dart';
@@ -376,6 +377,8 @@ class AuthProvider extends ChangeNotifier {
     await StorageService.remove(AppConstants.userKey);
     await StorageService.remove(AppConstants.tokenKey);
     await StorageService.remove('refresh_token');
+    // The server forgets this phone on logout; the next login needs an SMS code
+    await RememberedDevice.forget();
     // Drop the device-global biometric preference so it can't leak to the next
     // account signing in on this device. BiometricProvider.onAuthChanged
     // re-syncs its in-memory flag off the back of the notify below.

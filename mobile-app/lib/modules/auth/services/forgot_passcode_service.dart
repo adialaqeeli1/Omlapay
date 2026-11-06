@@ -1,5 +1,6 @@
 import '../../../core/constants/endpoints.dart';
 import '../../../core/services/api_helper.dart';
+import '../../../core/services/remembered_device.dart';
 import '../../../core/utils/api_message_helper.dart';
 
 class ForgotPasscodeOtpResponse {
@@ -144,11 +145,14 @@ class ForgotPasscodeService {
     required String newPasscode,
     required String confirmPasscode,
   }) async {
-    await ApiHelper.post(Endpoints.forgotPasscodeReset, {
+    final response = await ApiHelper.post(Endpoints.forgotPasscodeReset, {
       "reset_token": resetToken,
       "new_passcode": newPasscode,
       "confirm_passcode": confirmPasscode,
+      ...await RememberedDevice.deviceIdField(),
     });
+    // The backend forgets every other phone and remembers this one
+    await RememberedDevice.saveFromResponse(response);
   }
 
   static Map<String, dynamic> _buildVerifyBody({

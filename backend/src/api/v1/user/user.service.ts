@@ -78,6 +78,7 @@ import {
 } from '@common/services/admin-notifier/admin-notifier.interface';
 import { APP_INVITE_URL } from '@common/constants';
 import { AdminNotificationType } from '@common/database/model';
+import { TrustedDeviceService } from '@common/services/trusted-device/trusted-device.service';
 
 @Injectable()
 export class UserService {
@@ -107,6 +108,7 @@ export class UserService {
     private sumsubService: SumsubService,
     @Inject(IAdminNotifier) private adminNotifier: IAdminNotifier,
     private userAccountService: UserAccountService,
+    private trustedDevices: TrustedDeviceService,
   ) {}
 
   /** Get user by ID or throw BadRequestException. */
@@ -874,9 +876,17 @@ export class UserService {
         );
       }
 
+      // The phone just passed the registration SMS check: remember it, so the app can log in
+      // with POST /auth/login/passcode (device_token) right after registration
+      const { token: device } = await this.trustedDevices.issue(
+        user.id,
+        dto.device_id,
+      );
+
       return {
         status: 'success',
         message: 'Registration completed successfully.',
+        data: device,
       };
     } catch (error) {
       // Re-throw BadRequestException, UnauthorizedException, and ConflictException as-is
