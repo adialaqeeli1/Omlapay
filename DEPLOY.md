@@ -383,6 +383,24 @@ cd /home/deploy/app && docker compose -f deploy/proxy/docker-compose.yml logs --
 - Uploads failing: run `deploy/scripts/garage-init.sh` and check `AWS_ACCESS_KEY_ID` is `GK` +
   24 hex characters and the secret 64 hex characters.
 
+## Before store release (mobile app)
+
+Check these on real phones (one iPhone, one Android) with the release build before each store
+submission. Builds made from this repo can't be tested on a phone in CI.
+
+- [ ] **Login tokens in secure storage** (Keychain / Android Keystore, PR #19), on both phones:
+  1. Log in (SMS code + passcode).
+  2. Close the app completely (swipe it away), open it again: still logged in.
+  3. Log out: back on the login screen.
+  4. Log in again, then delete the app and reinstall it: it starts logged out.
+- [ ] **iOS:** after the first build on a Mac, commit the updated `mobile-app/ios/Podfile.lock`
+  (`pod install` adds the secure-storage plugin).
+- [ ] **HTTPS only:** the app talks to `https://api.omlapay.org` normally (login, wallets, prices).
+  Plain HTTP is turned off on Android (`usesCleartextTraffic="false"`) and iOS (no
+  `NSAllowsArbitraryLoads`), so a build pointed at an `http://` server won't connect.
+- [ ] A new native plugin or permission means a store build; a Shorebird patch can only change
+  Dart code.
+
 ## Known issues (to fix before or soon after launch)
 
 Mobile app (Flutter): the API address (`--env=dev|prod`, see `mobile-app/README.md`), the
