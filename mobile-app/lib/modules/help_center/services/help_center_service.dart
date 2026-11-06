@@ -1,12 +1,23 @@
 import 'package:dio/dio.dart';
 
+import '../../../core/constants/constants.dart';
 import '../../../core/constants/endpoints.dart';
 import '../../../core/services/api_helper.dart';
+import '../../../core/services/storage_helper.dart';
 import '../../../core/utils/app_exception.dart';
 import '../models/support_request_model.dart';
 import '../models/support_request_detail_model.dart';
 
 class HelpCenterService {
+  /// Guest requests are identified by the secret token the server issued with
+  /// the first guest request (not by the device identifier, which phones of
+  /// the same model share).
+  static Map<String, String>? _guestHeaders({required bool isGuest}) {
+    if (!isGuest) return null;
+    final token = StorageService.getString(AppConstants.guestSupportTokenKey);
+    return token == null || token.isEmpty ? null : {'X-Guest-Token': token};
+  }
+
   /// Fetches the support request list.
   ///
   /// When [macAddress] is provided, hits the guest endpoint
@@ -34,6 +45,9 @@ class HelpCenterService {
     final response = await ApiHelper.get(
       endpoint,
       queryParameters: queryParams,
+      headers: _guestHeaders(
+        isGuest: endpoint == Endpoints.guestSupportRequests,
+      ),
     );
 
     final dynamic data = response['data'];
@@ -88,7 +102,21 @@ class HelpCenterService {
     }
     if (macAddress != null && macAddress.isNotEmpty) {
       body['macAddress'] = macAddress;
-      await ApiHelper.post(Endpoints.guestSupportRequests, body);
+      final response = await ApiHelper.post(
+        Endpoints.guestSupportRequests,
+        body,
+        headers: _guestHeaders(isGuest: true),
+      );
+      // The first guest request returns the secret guest token: keep it
+      // (secure storage) to see this guest's requests later.
+      final data = response['data'];
+      final token = data is Map ? data['guest_token']?.toString() : null;
+      if (token != null && token.isNotEmpty) {
+        await StorageService.setString(
+          AppConstants.guestSupportTokenKey,
+          token,
+        );
+      }
     } else {
       await ApiHelper.post(Endpoints.supportRequests, body);
     }
@@ -108,6 +136,7 @@ class HelpCenterService {
           ? Endpoints.guestSupportRequestDetail(requestId)
           : Endpoints.supportRequestDetail(requestId),
       queryParameters: isGuest ? {'macAddress': macAddress} : null,
+      headers: _guestHeaders(isGuest: isGuest),
     );
 
     final dynamic data = response['data'];

@@ -13,7 +13,12 @@ import {
   UserEntity,
   AdminNotificationType,
 } from '@common/database/model';
-import { CreateSupportRequestDto } from './dto/create-support-request.dto';
+import {
+  CreateGuestSupportRequestDto,
+  CreateSupportRequestDto,
+} from './dto/create-support-request.dto';
+import { randomBytes } from 'crypto';
+import { generateHash } from '@common/filters';
 import { SupportRequestListDto } from './dto/support-request-list.dto';
 import { TicketUtil } from '@common/utils/ticket.util';
 import {
@@ -121,6 +126,16 @@ export class SupportRequestsService {
     userId: string,
     dto: SupportRequestListDto,
   ): Promise<any> {
+    return this.listRequests({ userId }, dto);
+  }
+
+  /**
+   * Requests of an account ({userId}) or of a guest ({guestTokenHash}): never both, never none.
+   */
+  private async listRequests(
+    owner: { userId: string } | { guestTokenHash: string },
+    dto: SupportRequestListDto,
+  ): Promise<any> {
     try {
       const { status, page = 1, limit = 10 } = dto;
       const skip = (page - 1) * limit;
@@ -128,7 +143,12 @@ export class SupportRequestsService {
       // Build query
       const queryBuilder = this.supportRequestRepository
         .createQueryBuilder('request')
-        .where('request.userId = :userId', { userId });
+        .where(
+          'userId' in owner
+            ? 'request.userId = :userId'
+            : 'request.guestTokenHash = :guestTokenHash',
+          owner,
+        );
 
       // Apply status filter
       if (status) {
@@ -182,14 +202,20 @@ export class SupportRequestsService {
     userId: string,
     requestId: string,
   ): Promise<any> {
+    validateUUID(userId, 'User ID');
+    return this.requestDetails({ userId }, requestId);
+  }
+
+  private async requestDetails(
+    owner: { userId: string } | { guestTokenHash: string },
+    requestId: string,
+  ): Promise<any> {
     try {
-      // Validate input using utility functions
-      validateUUID(userId, 'User ID');
       validateUUID(requestId, 'Request ID');
 
-      // Find support request belonging to the user
+      // Find support request belonging to this account or guest
       const request = await this.supportRequestRepository.findOne({
-        where: { id: requestId, userId },
+        where: { id: requestId, ...owner },
       });
 
       if (!request) {
@@ -241,6 +267,103 @@ export class SupportRequestsService {
         errorResponse('Failed to fetch request details. Please try again later.'),
       );
     }
+  }
+
+  /**
+   * Support without an account (POST /v1/guest/support-requests). The first request gets a new
+   * random guest token (returned once as data.guest_token, stored only as a SHA-256). The app
+   * keeps it in secure storage and sends it (X-Guest-Token) to add requests and to list and read
+   * them. Only tokens this server issued are accepted; an unknown one gets a new token.
+   * Guests cannot attach files.
+   */
+  async createGuestSupportRequest(
+    dto: CreateGuestSupportRequestDto,
+    guestToken?: string,
+  ): Promise<any> {
+    const known = await this.findGuestTokenHash(guestToken);
+    const token = known ? guestToken! : randomBytes(32).toString('base64url');
+    const saved = await this.supportRequestRepository.save(
+      this.supportRequestRepository.create({
+        userId: null,
+        guestTokenHash: generateHash(token),
+        title: dto.title,
+        description: dto.description,
+        attachmentUrl: null,
+        status: SupportRequestStatus.OPEN,
+      }),
+    );
+
+    try {
+      await this.adminNotificationsService.notifyAllAdmins(
+        AdminNotificationType.TICKET,
+        'New Support Ticket',
+        `A new support ticket has been created by a guest (no account). Title: ${saved.title} (ID: ${saved.id.substring(0, 8).toUpperCase()})`,
+      );
+    } catch (notificationError) {
+      this.logger.error(
+        'Failed to notify admins about new guest support request',
+        notificationError,
+      );
+    }
+
+    return successResponse({
+      message: 'Support request submitted successfully',
+      request: {
+        id: saved.id,
+        title: saved.title,
+        description: saved.description,
+        status: this.mapStatusForUser(saved.status),
+        statusColor: TicketUtil.getStatusColor(saved.status),
+        attachmentUrl: null,
+        createdAt: saved.createdAt,
+      },
+      // Only when a new token was made: the app must save it
+      ...(!known && { guest_token: token }),
+    });
+  }
+
+  /** A guest's requests; without a known token, an empty list. */
+  async getGuestSupportRequests(
+    guestToken: string | undefined,
+    dto: SupportRequestListDto,
+  ): Promise<any> {
+    const guestTokenHash = await this.findGuestTokenHash(guestToken);
+    if (!guestTokenHash) {
+      const { page = 1, limit = 10 } = dto;
+      return successResponse({
+        requests: [],
+        pagination: { page, limit, total: 0, totalPages: 0 },
+      });
+    }
+    return this.listRequests({ guestTokenHash }, dto);
+  }
+
+  /** One of a guest's requests; 404 for any other request or without a known token. */
+  async getGuestSupportRequestDetails(
+    guestToken: string | undefined,
+    requestId: string,
+  ): Promise<any> {
+    const guestTokenHash = await this.findGuestTokenHash(guestToken);
+    if (!guestTokenHash) {
+      throw new NotFoundException({
+        status: 'error',
+        message: 'Support request not found.',
+      });
+    }
+    return this.requestDetails({ guestTokenHash }, requestId);
+  }
+
+  /** The stored hash of a guest token this server issued, or null. */
+  private async findGuestTokenHash(
+    guestToken: string | undefined,
+  ): Promise<string | null> {
+    if (!guestToken || !/^[A-Za-z0-9_-]{43}$/.test(guestToken)) return null;
+    const hash = generateHash(guestToken);
+    const exists = await this.supportRequestRepository.findOne({
+      where: { guestTokenHash: hash },
+      select: ['id'],
+    });
+    return exists ? hash : null;
   }
 
   /**

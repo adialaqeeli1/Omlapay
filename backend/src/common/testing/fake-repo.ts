@@ -56,6 +56,9 @@ export class FakeRepo<T extends { id?: string; createdAt?: Date }> {
       this.rows.filter((r) => this.matches(r, opts.where)).length,
     );
   }
+  create(entity: Partial<T>): Partial<T> {
+    return { ...entity };
+  }
   save(entity: Partial<T>) {
     if (entity.id) {
       // like TypeORM: saving with an existing id updates that row

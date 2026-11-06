@@ -25,12 +25,14 @@ class ApiHelper {
   static Future<Map<String, dynamic>> get(
     String endpoint, {
     Map<String, dynamic>? queryParameters,
+    Map<String, String>? headers,
   }) async {
     try {
       final client = _getClient();
       final response = await client.get(
         url: endpoint,
         queryParameters: queryParameters,
+        options: headers == null ? null : Options(headers: headers),
       );
       return _handleNetworkResponse(response);
     } on DioException catch (e) {
@@ -45,11 +47,16 @@ class ApiHelper {
 
   static Future<Map<String, dynamic>> post(
     String endpoint,
-    Map<String, dynamic> body,
-  ) async {
+    Map<String, dynamic> body, {
+    Map<String, String>? headers,
+  }) async {
     try {
       final client = _getClient();
-      final response = await client.post(url: endpoint, data: body);
+      final response = await client.post(
+        url: endpoint,
+        data: body,
+        options: headers == null ? null : Options(headers: headers),
+      );
       return _handleNetworkResponse(response);
     } on DioException catch (e) {
       throw _handleDioException(e);
