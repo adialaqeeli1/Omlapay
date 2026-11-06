@@ -15,7 +15,6 @@ import '../core/services/remembered_device.dart';
 import '../core/utils/api_message_helper.dart';
 import '../core/utils/app_exception.dart';
 import '../core/utils/user_auth_phone.dart';
-import '../modules/auth/providers/passcode_provider.dart';
 import '../modules/auth/services/auth_service.dart';
 import '../modules/auth/services/forgot_passcode_service.dart';
 import '../modules/settings/services/wallet_address_service.dart';
@@ -63,7 +62,16 @@ class AuthProvider extends ChangeNotifier {
     final userJson = StorageService.getString(AppConstants.userKey);
     if (userJson != null) {
       try {
-        final user = UserModel.fromJson(jsonDecode(userJson));
+        final decoded = jsonDecode(userJson) as Map<String, dynamic>;
+        final user = UserModel.fromJson(decoded);
+        // Older app versions saved the passcode in plain text with the user
+        // data. Rewrite the saved user without it.
+        if (decoded.containsKey('password')) {
+          await StorageService.setString(
+            AppConstants.userKey,
+            jsonEncode(user.toJson()),
+          );
+        }
         _state = state.copyWith(authStatus: AuthStatus.authorized, user: user);
       } catch (e) {
         _state = state.copyWith(authStatus: AuthStatus.unauthorized);
@@ -118,7 +126,6 @@ class AuthProvider extends ChangeNotifier {
             ? splitFullMobileNumber(user.fullMobileNumber)
             : (countryCode: user.countryCode, mobileNumber: user.mobileNumber);
         final userToPersist = user.copyWith(
-          password: passcode,
           countryCode: user.countryCode.isEmpty ? parts.countryCode : user.countryCode,
           mobileNumber: user.mobileNumber.isEmpty ? parts.mobileNumber : user.mobileNumber,
         );
@@ -206,10 +213,9 @@ class AuthProvider extends ChangeNotifier {
           user != null &&
           accessToken != null &&
           accessToken.isNotEmpty) {
-        // Persist the entered passcode + the entered phone/country so flows
-        // like change-phone or disable-2FA can hard-login again later (the
-        // API user payload may omit these fields). If even those aren't
-        // available, derive from the full mobile number as a last resort.
+        // Persist the entered phone/country (the API user payload may omit
+        // them); if even those aren't available, derive them from the full
+        // mobile number. The passcode is never saved.
         final fallbackParts =
             splitFullMobileNumber(user.fullMobileNumber);
         final resolvedCountry = normalizedCountry.isNotEmpty
@@ -223,7 +229,6 @@ class AuthProvider extends ChangeNotifier {
                 ? user.mobileNumber
                 : fallbackParts.mobileNumber);
         final userToPersist = user.copyWith(
-          password: passcode,
           countryCode: resolvedCountry,
           mobileNumber: resolvedPhone,
         );
@@ -273,30 +278,17 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
 
       final rawResponse = await AuthService.softLogin(passcode: passcode);
-      final int? statusCode = rawResponse['statusCode'] as int?;
       final dynamic data = rawResponse['data'];
       final String? userId = data is Map<String, dynamic>
           ? data['user_id']?.toString()
           : null;
+      // The backend answers {status: 'success', data: {user_id}} without a
+      // statusCode field, so accept either form.
       final bool isSuccess =
-          statusCode == 200 && userId != null && userId.isNotEmpty;
+          _isApiSuccess(rawResponse) && userId != null && userId.isNotEmpty;
 
       if (isSuccess) {
-        final currentUser = _state.user;
-        if (currentUser != null) {
-          final updated = currentUser.copyWith(password: passcode);
-          _state = state.copyWith(
-            user: updated,
-            isLoading: false,
-            errorMessage: null,
-          );
-          await StorageService.setString(
-            AppConstants.userKey,
-            jsonEncode(updated.toJson()),
-          );
-        } else {
-          _state = state.copyWith(isLoading: false, errorMessage: null);
-        }
+        _state = state.copyWith(isLoading: false, errorMessage: null);
         notifyListeners();
         onUnlockCallback?.call();
         // Refresh account details in background to sync latest profile data
@@ -395,23 +387,44 @@ class AuthProvider extends ChangeNotifier {
     await StorageService.remove('refresh_token');
   }
 
-  /// Returns whether [passcode] matches the stored passcode for the signed-in user
-  /// (including mock override map), without mutating auth state.
-  Future<bool> verifyStoredPasscodeForCurrentUser(String passcode) async {
+  /// Returns whether [passcode] is the signed-in user's passcode, checked by
+  /// the server (POST /v1/auth/soft-login, which also counts wrong tries
+  /// toward the lockout). The app does not keep a copy of the passcode.
+  /// Does not change auth state.
+  Future<bool> verifyPasscodeWithServer(String passcode) async {
+    if (state.user == null || !state.isAuthenticated) return false;
     try {
-      final user = state.user;
-      if (user == null || !state.isAuthenticated) {
-        return false;
-      }
-      final normalizedPhone = user.mobileNumber.replaceAll(
-        RegExp(r'[^0-9]'),
-        '',
-      );
-      final normalizedCountry = user.countryCode.trim();
-      final overrideKey = '$normalizedCountry$normalizedPhone';
-      final effectivePasscode =
-          MockData.passcodeOverrides[overrideKey] ?? user.password;
-      return passcode == effectivePasscode;
+      final response = await AuthService.softLogin(passcode: passcode);
+      final data = response['data'];
+      return _isApiSuccess(response) &&
+          data is Map<String, dynamic> &&
+          (data['user_id']?.toString().isNotEmpty ?? false);
+    } on AppException catch (e) {
+      _state = state.copyWith(errorMessage: e.message);
+      notifyListeners();
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Biometric unlock (app lock / soft-login screens) after a successful
+  /// Face ID / fingerprint scan: the saved session must still be valid on the
+  /// server. No passcode is stored or sent. Offline or unknown errors do not
+  /// unlock; the user can type the passcode instead.
+  Future<bool> unlockWithBiometrics() async {
+    if (state.user == null || !state.isAuthenticated) return false;
+    try {
+      final response = await AuthService.sessionStatus();
+      final data = response['data'];
+      final valid =
+          _isApiSuccess(response) &&
+          !(data is Map<String, dynamic> &&
+              (data['is_valid'] == false || data['is_revoked'] == true));
+      if (!valid) return false;
+      onUnlockCallback?.call();
+      fetchAccountDetails();
+      return true;
     } catch (_) {
       return false;
     }
@@ -441,15 +454,10 @@ class AuthProvider extends ChangeNotifier {
             u.mobileNumber == normalizedPhone &&
             u.countryCode == normalizedCountry,
       );
-      final updatedUser = user.copyWith(password: newPasscode);
-
-      _state = state.copyWith(
-        authStatus: AuthStatus.authorized,
-        user: updatedUser,
-      );
+      _state = state.copyWith(authStatus: AuthStatus.authorized, user: user);
       await StorageService.setString(
         AppConstants.userKey,
-        jsonEncode(updatedUser.toJson()),
+        jsonEncode(user.toJson()),
       );
       notifyListeners();
       return true;
@@ -604,8 +612,8 @@ class AuthProvider extends ChangeNotifier {
 
   /// Toggles two-factor authentication.
   /// Returns the localized success message from the API.
-  /// When disabling, the backend revokes the session, so we re-login
-  /// automatically using the stored phone + passcode (same as change-passcode).
+  /// When disabling, the backend logs out every session and returns a new one
+  /// for this phone, which replaces the saved tokens.
   /// Throws on failure so the caller can show an error snackbar.
   Future<String> toggleTwoFactor(bool enabled) async {
     try {
@@ -641,29 +649,27 @@ class AuthProvider extends ChangeNotifier {
       );
 
       if (!enabled) {
-        // Session revoked on disable — clear only tokens, keep user data
-        // so loginWithPasscode can use the stored credentials.
-        final phone = currentUser.mobileNumber.replaceAll(
-          RegExp(r'[^0-9]'),
-          '',
-        );
-        final country = currentUser.countryCode.trim();
-        final passcode = currentUser.password;
-
-        await _clearSessionTokens();
-        final loggedIn = await loginWithPasscode(
-          mobileNumber: phone,
-          countryCode: country,
-          passcode: passcode,
-        );
-
-        if (!loggedIn) {
-          final err = _state.errorMessage ?? l10n.loginFailed;
-          _state = _state.copyWith(isLoading: false);
+        // The backend logs out every session and returns a new one for this
+        // phone (data.access_token / refresh_token): no passcode needed.
+        final adopted = await _adoptSessionFromResponse(response);
+        if (!adopted) {
+          final err = l10n.loginFailed;
+          _state = _state.copyWith(isLoading: false, errorMessage: err);
           notifyListeners();
           throw Exception(err);
         }
-
+        final updatedUser = currentUser.copyWith(twoFactorEnabled: false);
+        _state = _state.copyWith(
+          user: updatedUser,
+          isLoading: false,
+          errorMessage: null,
+        );
+        await StorageService.setString(
+          AppConstants.userKey,
+          jsonEncode(updatedUser.toJson()),
+        );
+        notifyListeners();
+        unawaited(fetchAccountDetails());
         return successMessage;
       }
 
@@ -755,35 +761,41 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> completePhoneChangeAndRefreshSession({
     required String countryCode,
     required String phoneNumber,
+    Map<String, dynamic>? response,
   }) async {
     final user = _state.user;
     if (user == null || !_state.isAuthenticated) {
       return false;
     }
 
-    final normalizedPhone = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
-    final normalizedCountry = countryCode.trim();
-    final passcode = user.password;
-
-    if (passcode.length != PasscodeProvider.passcodeLength) {
-      // No stored passcode — can't silent re-login. Fall back to local-only
-      // phone/country update.
-      return updatePhoneForCurrentUser(
-        countryCode: normalizedCountry,
-        phoneNumber: normalizedPhone,
-      );
-    }
-
-    try {
-      await _clearSessionTokens();
-      return await loginWithPasscode(
-        mobileNumber: normalizedPhone,
-        countryCode: normalizedCountry,
-        passcode: passcode,
-      );
-    } catch (_) {
+    // The change-phone verification keeps this phone's session (the app no
+    // longer stores the passcode, so it cannot log in again by itself). If the
+    // backend returned new tokens, use them; then the session must be valid.
+    if (response != null && !await _adoptSessionFromResponse(response)) {
       return false;
     }
+    final updated = await updatePhoneForCurrentUser(
+      countryCode: countryCode.trim(),
+      phoneNumber: phoneNumber.replaceAll(RegExp(r'[^0-9]'), ''),
+    );
+    return updated && await validateSession();
+  }
+
+  /// Saves `data.access_token` / `data.refresh_token` from [response] as the
+  /// current session. Returns false if the response has no access token.
+  Future<bool> _adoptSessionFromResponse(Map<String, dynamic> response) async {
+    final data = response['data'];
+    final accessToken = data is Map<String, dynamic>
+        ? data['access_token']?.toString()
+        : null;
+    if (accessToken == null || accessToken.isEmpty) return false;
+    await StorageService.setString(AppConstants.tokenKey, accessToken);
+    final refreshToken = (data as Map<String, dynamic>)['refresh_token']
+        ?.toString();
+    if (refreshToken != null && refreshToken.isNotEmpty) {
+      await StorageService.setString('refresh_token', refreshToken);
+    }
+    return true;
   }
 
   Future<bool> validateSession() async {

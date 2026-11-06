@@ -273,53 +273,13 @@ export class AuthService {
         await this.userSecurityRepository.save(userSecurity);
       }
 
-      // Create auth session first (1 day expiry)
-      const accessExpiresSeconds = 86400; // 1 day
-      const expiresAt = new Date();
-      expiresAt.setSeconds(expiresAt.getSeconds() + accessExpiresSeconds);
-
-      const session = await this.authSessionRepository.save({
-        userId: user.id,
-        accessTokenHash: '', // Temporary, will update after signing
-        refreshTokenHash: '', // Temporary, will update after signing
-        expiresAt,
-        isRevoked: false,
-        trustedDeviceId,
-      });
-
-      // Generate access and refresh tokens with session ID
-      const accessTokenPayload = {
-        userId: user.id,
-        sessionId: session.id,
-        type: 'access',
-      };
-
-      const refreshTokenPayload = {
-        userId: user.id,
-        sessionId: session.id,
-        type: 'refresh',
-      };
-
-      const accessToken = this.jwtService.sign(accessTokenPayload, {
-        expiresIn: accessExpiresSeconds, // 1 day
-      });
-
-      const refreshToken = this.jwtService.sign(refreshTokenPayload, {
-        expiresIn: '7d', // 7 days
-      });
-
-      // Update session with token hashes
-      session.accessTokenHash = generateHash(accessToken);
-      session.refreshTokenHash = generateHash(refreshToken);
-      await this.authSessionRepository.save(session);
+      const session = await this.createSession(user.id, trustedDeviceId);
 
       return {
         status: 'success',
         message: 'Login successful',
         data: {
-          access_token: accessToken,
-          refresh_token: refreshToken,
-          expires_in: accessExpiresSeconds,
+          ...session,
           ...issuedDevice,
           user: {
             id: user.id,
@@ -348,6 +308,49 @@ export class AuthService {
         message: 'Failed to process login request. Please try again later.',
       });
     }
+  }
+
+  /**
+   * Opens a session (access token 1 day, refresh token 7 days). Also used to hand a fresh session
+   * to the caller when an account change revokes all sessions (e.g. turning off 2FA), so the app
+   * does not need the passcode to log in again.
+   */
+  async createSession(
+    userId: string,
+    trustedDeviceId: string | null = null,
+  ): Promise<{
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+  }> {
+    const accessExpiresSeconds = 86400; // 1 day
+    const session = await this.authSessionRepository.save({
+      userId,
+      accessTokenHash: '', // set below, after signing
+      refreshTokenHash: '',
+      expiresAt: new Date(Date.now() + accessExpiresSeconds * 1000),
+      isRevoked: false,
+      trustedDeviceId,
+    });
+
+    const accessToken = this.jwtService.sign(
+      { userId, sessionId: session.id, type: 'access' },
+      { expiresIn: accessExpiresSeconds },
+    );
+    const refreshToken = this.jwtService.sign(
+      { userId, sessionId: session.id, type: 'refresh' },
+      { expiresIn: '7d' },
+    );
+
+    session.accessTokenHash = generateHash(accessToken);
+    session.refreshTokenHash = generateHash(refreshToken);
+    await this.authSessionRepository.save(session);
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      expires_in: accessExpiresSeconds,
+    };
   }
 
   /**

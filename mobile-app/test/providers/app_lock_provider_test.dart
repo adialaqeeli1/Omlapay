@@ -33,7 +33,6 @@ void main() {
           fullMobileNumber: '+966500000000',
           countryCode: '+966',
           mobileNumber: '500000000',
-          password: '123456',
           firstName: 'Test',
           lastName: 'User',
           isVerified: true,

@@ -25,7 +25,6 @@ abstract class UserModel with _$UserModel {
 
     @Default('') String mobileNumber,
     @Default('') @JsonKey(readValue: _readCountryCode) String countryCode,
-    @Default('') String password, // 6 digit numeric
     @Default('') String firstName,
     @Default('') String lastName,
     @Default(false) bool isVerified,
