@@ -5,6 +5,7 @@ import 'package:country_picker/country_picker.dart';
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/utils/api_message_helper.dart';
 import '../../../core/utils/app_exception.dart';
+import '../../../core/utils/saudi_phone.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../routes/app_router.dart';
 import '../services/auth_service.dart';
@@ -70,33 +71,28 @@ class LoginProvider extends ChangeNotifier {
     _initDefaultCountry();
   }
 
+  /// Saudi mobile numbers only (same rule as the backend), so the country is fixed.
   void _initDefaultCountry() {
-    try {
-      final localeCountryCode =
-          WidgetsBinding.instance.platformDispatcher.locale.countryCode;
-      if (localeCountryCode != null && localeCountryCode.isNotEmpty) {
-        _selectedCountry = CountryService().findByCode(localeCountryCode);
-      }
-    } catch (_) {}
-    _selectedCountry ??= CountryService().findByCode('SA');
+    _selectedCountry = CountryService().findByCode(SaudiPhone.isoCode);
   }
 
   Country get selectedCountry => _selectedCountry!;
-  String get currentPhoneCode => '+${selectedCountry.phoneCode}';
+  String get currentPhoneCode => SaudiPhone.dialCode;
   String get currentFlagEmoji => selectedCountry.flagEmoji;
-
-  void updateCountry(Country country) {
-    _selectedCountry = country;
-    notifyListeners();
-  }
 
   String get rawPhone => _rawPhone;
   bool get isSubmitting => _isSubmitting;
 
-  String get digitsOnlyPhone => _rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
+  /// National number sent to the API (5XXXXXXXX), whichever form was typed
+  /// (05…, 9665…, +9665…).
+  String get digitsOnlyPhone =>
+      SaudiPhone.toNational(_rawPhone) ??
+      _rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
 
-  bool get canContinue =>
-      !_isSubmitting && RegExp(r'^\d{7,15}$').hasMatch(digitsOnlyPhone);
+  /// Show "Saudi mobile numbers only" once a full-length number is not one.
+  bool get showSaudiPhoneError => SaudiPhone.shouldShowError(_rawPhone);
+
+  bool get canContinue => !_isSubmitting && SaudiPhone.isValid(_rawPhone);
 
   static bool _isApiSuccess(Map<String, dynamic> response) {
     final statusCode = response['statusCode'];

@@ -7,6 +7,9 @@ cd ..
 
 # Defaults
 MODE="debug"
+# API server: --env=dev (api-dev.omlapay.org) or --env=prod (api.omlapay.org).
+# Without it, debug runs use dev and release runs use production.
+API_ENV=""
 BUILD_ONLY=false
 GEN_ICONS=false
 
@@ -20,6 +23,10 @@ do
         ;;
         --debug)
         MODE="debug"
+        shift
+        ;;
+        --env=dev|--env=prod)
+        API_ENV="${arg#--env=}"
         shift
         ;;
         --build-only)
@@ -93,5 +100,5 @@ if [ "$BUILD_ONLY" = true ]; then
     exit 0
 fi
 
-echo "📱 Running app in $MODE mode..."
-flutter run --$MODE
+echo "📱 Running app in $MODE mode (API: ${API_ENV:-default for $MODE})..."
+flutter run --$MODE ${API_ENV:+--dart-define=OMLAPAY_ENV=$API_ENV}

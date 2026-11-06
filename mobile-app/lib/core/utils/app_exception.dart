@@ -56,6 +56,7 @@ class AppException implements Exception {
       'requestFailed' => l10n.requestFailed,
       'unknownError' => l10n.unknownError,
       'invalidOtpTryAgain' => l10n.invalidOtpTryAgain,
+      'tooManyAttempts' => l10n.tooManyAttempts,
       'invalidServerResponse' => l10n.invalidServerResponse,
       'softLoginFailed' => l10n.softLoginFailed,
       'registrationFailed' => l10n.registrationFailed,

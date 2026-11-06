@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:country_picker/country_picker.dart';
 
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/theme/theme.dart';
+import '../../../core/utils/saudi_phone.dart';
 import '../providers/login_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/common_auth_agreement_text.dart';
@@ -140,52 +140,34 @@ class LoginOrRegisterScreen extends StatelessWidget {
                       // number field) even under an RTL/Arabic layout.
                       textDirection: TextDirection.ltr,
                       children: [
-                        GestureDetector(
-                          onTap: () {
-                            showCountryPicker(
-                              context: context,
-                              showPhoneCode: true,
-                              onSelect: (Country country) {
-                                loginProvider.updateCountry(country);
-                              },
-                              countryListTheme: CountryListThemeData(
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(20),
-                                  topRight: Radius.circular(20),
-                                ),
-                                backgroundColor: theme.scaffoldBackgroundColor,
-                                textStyle: theme.textTheme.titleMedium,
-                                searchTextStyle: theme.textTheme.bodyLarge,
+                        // Saudi mobile numbers only (same rule as the backend): the
+                        // country is fixed to +966, so there is no country picker.
+                        Container(
+                          height: 56,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: phoneGroupBackground,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            textDirection: TextDirection.ltr,
+                            children: [
+                              Text(
+                                loginProvider.currentFlagEmoji,
+                                style: const TextStyle(fontSize: 24),
                               ),
-                            );
-                          },
-                          child: Container(
-                            height: 56,
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              color: phoneGroupBackground,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              textDirection: TextDirection.ltr,
-                              children: [
-                                Text(
-                                  loginProvider.currentFlagEmoji,
-                                  style: const TextStyle(fontSize: 24),
+                              const SizedBox(width: 8),
+                              Text(
+                                loginProvider.currentPhoneCode,
+                                textDirection: TextDirection.ltr,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.colorScheme.onSurface,
                                 ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  loginProvider.currentPhoneCode,
-                                  textDirection: TextDirection.ltr,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.colorScheme.onSurface,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -210,11 +192,13 @@ class LoginOrRegisterScreen extends StatelessWidget {
                                   FocusScope.of(context).unfocus(),
                               keyboardType: TextInputType.phone,
                               textInputAction: TextInputAction.done,
-                              maxLength: 15,
+                              maxLength: SaudiPhone.maxInputDigits,
                               onChanged: loginProvider.onPhoneChanged,
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(15),
+                                LengthLimitingTextInputFormatter(
+                                  SaudiPhone.maxInputDigits,
+                                ),
                               ],
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontSize: 25 / 1.35,
@@ -224,7 +208,7 @@ class LoginOrRegisterScreen extends StatelessWidget {
                               decoration: InputDecoration(
                                 counterText: '',
                                 border: InputBorder.none,
-                                hintText: l10n.phoneNumber,
+                                hintText: '5XXXXXXXX',
                                 hintStyle: theme.textTheme.titleMedium
                                     ?.copyWith(
                                       fontSize: 25 / 1.35,
@@ -240,6 +224,15 @@ class LoginOrRegisterScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+                    if (loginProvider.showSaudiPhoneError) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.saudiMobileOnly,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.error,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,

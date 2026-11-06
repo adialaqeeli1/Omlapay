@@ -196,7 +196,7 @@ run_stack() {  # run_stack <with_backend 0|1> <with_admin 0|1> <with_db 0|1>
 run_mobile() {
   malware_scan
   has flutter || die "Flutter is missing. Install Flutter $(cat "$ROOT/mobile-app/.flutter-version" 2>/dev/null) from https://docs.flutter.dev/get-started/install"
-  say "The app talks to the API set in mobile-app/lib/core/constants/endpoints.dart ($(grep -oE "domain => '[^']+'" "$ROOT/mobile-app/lib/core/constants/endpoints.dart" | cut -d"'" -f2))"
+  say "The app uses https://api-dev.omlapay.org in debug runs and https://api.omlapay.org in release builds (choose with --env=dev or --env=prod)"
   bash "$ROOT/mobile-app/scripts/run.sh" "$@"
 }
 

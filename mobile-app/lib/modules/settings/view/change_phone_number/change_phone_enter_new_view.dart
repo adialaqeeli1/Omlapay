@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:country_picker/country_picker.dart';
 
 import '../../../../core/extentions/context_extensions.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/utils/app_exception.dart';
+import '../../../../core/utils/saudi_phone.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../../modules/auth/providers/login_provider.dart';
 import '../../../../routes/app_router.dart';
@@ -43,49 +43,32 @@ class ChangePhoneEnterNewView extends StatelessWidget {
         // even under an RTL/Arabic layout.
         textDirection: TextDirection.ltr,
         children: [
-          GestureDetector(
-            onTap: () {
-              showCountryPicker(
-                context: context,
-                showPhoneCode: true,
-                onSelect: provider.updateCountry,
-                countryListTheme: CountryListThemeData(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                  backgroundColor: theme.scaffoldBackgroundColor,
-                  textStyle: theme.textTheme.titleMedium,
-                  searchTextStyle: theme.textTheme.bodyLarge,
+          // Saudi mobile numbers only: the country is fixed to +966 (no picker).
+          Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: phoneGroupBackground,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              textDirection: TextDirection.ltr,
+              children: [
+                Text(
+                  provider.currentFlagEmoji,
+                  style: const TextStyle(fontSize: 24),
                 ),
-              );
-            },
-            child: Container(
-              height: 56,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: phoneGroupBackground,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                textDirection: TextDirection.ltr,
-                children: [
-                  Text(
-                    provider.currentFlagEmoji,
-                    style: const TextStyle(fontSize: 24),
+                const SizedBox(width: 8),
+                Text(
+                  provider.currentPhoneCode,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface,
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    provider.currentPhoneCode,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 8),
@@ -98,12 +81,12 @@ class ChangePhoneEnterNewView extends StatelessWidget {
               textInputAction: TextInputAction.done,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(15),
+                LengthLimitingTextInputFormatter(SaudiPhone.maxInputDigits),
               ],
               textDirection: TextDirection.ltr,
               textAlign: TextAlign.left,
-              maxLength: 15,
-              hintText: l10n.phoneNumber,
+              maxLength: SaudiPhone.maxInputDigits,
+              hintText: '5XXXXXXXX',
               onChanged: provider.onPhoneChanged,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -156,7 +139,7 @@ class ChangePhoneEnterNewView extends StatelessWidget {
       case ChangePhoneValidationError.empty:
         return l10n.enterValidPhoneNumber;
       case ChangePhoneValidationError.invalidLength:
-        return l10n.enterValidPhoneNumber;
+        return l10n.saudiMobileOnly;
       // case ChangePhoneValidationError.sameAsCurrent:
       //   return l10n.enterValidPhoneNumber;
       case null:
