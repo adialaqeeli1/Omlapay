@@ -153,7 +153,7 @@ class AuthProvider extends ChangeNotifier {
 
         await StorageService.setString(AppConstants.tokenKey, accessToken);
         if (refreshToken != null && refreshToken.isNotEmpty) {
-          await StorageService.setString('refresh_token', refreshToken);
+          await StorageService.setString(AppConstants.refreshTokenKey, refreshToken);
         }
         await StorageService.setString(
           AppConstants.userKey,
@@ -257,7 +257,7 @@ class AuthProvider extends ChangeNotifier {
 
         await StorageService.setString(AppConstants.tokenKey, accessToken);
         if (refreshToken != null && refreshToken.isNotEmpty) {
-          await StorageService.setString('refresh_token', refreshToken);
+          await StorageService.setString(AppConstants.refreshTokenKey, refreshToken);
         }
         await StorageService.setString(
           AppConstants.userKey,
@@ -388,7 +388,7 @@ class AuthProvider extends ChangeNotifier {
 
     await StorageService.remove(AppConstants.userKey);
     await StorageService.remove(AppConstants.tokenKey);
-    await StorageService.remove('refresh_token');
+    await StorageService.remove(AppConstants.refreshTokenKey);
     // The server forgets this phone on logout; the next login needs an SMS code
     await RememberedDevice.forget();
     // Drop the device-global biometric preference so it can't leak to the next
@@ -404,7 +404,7 @@ class AuthProvider extends ChangeNotifier {
   /// disable-2FA and change-passcode where the backend revokes the session.
   Future<void> _clearSessionTokens() async {
     await StorageService.remove(AppConstants.tokenKey);
-    await StorageService.remove('refresh_token');
+    await StorageService.remove(AppConstants.refreshTokenKey);
   }
 
   /// Returns whether [passcode] is the signed-in user's passcode, checked by
@@ -813,7 +813,7 @@ class AuthProvider extends ChangeNotifier {
     final refreshToken = (data as Map<String, dynamic>)['refresh_token']
         ?.toString();
     if (refreshToken != null && refreshToken.isNotEmpty) {
-      await StorageService.setString('refresh_token', refreshToken);
+      await StorageService.setString(AppConstants.refreshTokenKey, refreshToken);
     }
     return true;
   }

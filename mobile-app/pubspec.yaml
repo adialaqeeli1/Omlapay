@@ -89,6 +89,7 @@ dependencies:
   package_info_plus: ^10.1.0
   shorebird_code_push: ^2.0.6
   local_auth: ^3.0.1
+  flutter_secure_storage: ^11.2.0
 
 dev_dependencies:
   flutter_test:

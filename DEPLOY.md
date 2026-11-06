@@ -388,9 +388,10 @@ cd /home/deploy/app && docker compose -f deploy/proxy/docker-compose.yml logs --
 Mobile app (Flutter): the API address (`--env=dev|prod`, see `mobile-app/README.md`), the
 Saudi-only phone field, Arabic server messages and the "too many attempts" message are done. The
 app no longer stores the passcode.
-- **Must do before launch:** move the session tokens and the remembered-device token from
-  SharedPreferences to the phone's secure storage (Keychain / Android Keystore,
-  `flutter_secure_storage`, "this device only", left out of backups). Planned right after stage 2.
+- The session tokens and the remembered-device token are kept in the phone's secure storage
+  (iOS Keychain "this device only", Android Keystore) and no longer in SharedPreferences. This
+  adds a native plugin (`flutter_secure_storage`), so it needs a new store build: a Shorebird patch
+  cannot deliver it.
 
 Backend:
 - Done: login of an existing user (`/v1/auth/login/send-otp`, `/login/resend-otp`,
