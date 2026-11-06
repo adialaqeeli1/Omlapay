@@ -313,9 +313,10 @@ class AuthProvider extends ChangeNotifier {
 
   /// Schedules deletion of the signed-in user's account. The backend grants a
   /// 7-day grace period during which the user can cancel by logging in again.
-  /// Returns the localized success message from the API. The caller is
-  /// responsible for signing the user out and navigating away.
-  Future<String> requestAccountDeletion() async {
+  /// Needs the user's [passcode]. Returns the localized success message from
+  /// the API. The caller is responsible for signing the user out and
+  /// navigating away.
+  Future<String> requestAccountDeletion(String passcode) async {
     try {
       final currentUser = _state.user;
       if (currentUser == null || !_state.isAuthenticated) {
@@ -325,7 +326,9 @@ class AuthProvider extends ChangeNotifier {
       _state = _state.copyWith(isLoading: true, errorMessage: null);
       notifyListeners();
 
-      final response = await AuthService.requestAccountDeletion();
+      final response = await AuthService.requestAccountDeletion(
+        passcode: passcode,
+      );
       final l10n = appLocalizationsFromStoredLocale();
 
       if (!_isApiSuccess(response)) {

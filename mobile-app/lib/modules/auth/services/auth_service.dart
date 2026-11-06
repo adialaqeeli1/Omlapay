@@ -248,7 +248,13 @@ class AuthService {
     return ApiHelper.post(Endpoints.twoFactorDisable, {});
   }
 
-  static Future<Map<String, dynamic>> requestAccountDeletion() async {
-    return ApiHelper.post(Endpoints.requestAccountDeletion, {});
+  /// Backend checks [passcode] (wrong tries count toward the lockout) and
+  /// refuses while any wallet has a balance or a transfer/swap is in progress.
+  static Future<Map<String, dynamic>> requestAccountDeletion({
+    required String passcode,
+  }) async {
+    return ApiHelper.post(Endpoints.requestAccountDeletion, {
+      'passcode': passcode,
+    });
   }
 }

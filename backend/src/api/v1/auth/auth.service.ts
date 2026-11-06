@@ -256,6 +256,16 @@ export class AuthService {
         }
       }
 
+      // Logging in during the deletion grace period cancels the deletion
+      let deletionCancelled = false;
+      if (user.deletionScheduledFor && !user.anonymizedAt) {
+        await this.userRepository.update(
+          { id: user.id },
+          { deletionRequestedAt: null, deletionScheduledFor: null },
+        );
+        deletionCancelled = true;
+      }
+
       // The SMS check makes this phone a remembered device; a device login refreshes lastUsedAt
       let issuedDevice: IssuedDeviceToken | null = null;
       if (mode === 'sms') {
@@ -281,6 +291,7 @@ export class AuthService {
         data: {
           ...session,
           ...issuedDevice,
+          ...(deletionCancelled && { deletion_cancelled: true }),
           user: {
             id: user.id,
             mobile_number: fullMobileNumber,

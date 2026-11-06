@@ -399,61 +399,18 @@ class _SettingsViewState extends State<SettingsView> {
       return;
     }
 
+    // After the confirm dialog, the passcode screen sends the request
+    // (EnterOrSetPasscodeScreen, modeDeleteAccountConfirmPasscode).
     DeleteAccountAlertDialog.show(
       context,
-      onConfirm: () => _requestAccountDeletion(context),
-    );
-  }
-
-  Future<void> _requestAccountDeletion(BuildContext context) async {
-    final authProvider = context.read<AuthProvider>();
-    final router = GoRouter.of(context);
-    final navigator = Navigator.of(context, rootNavigator: true);
-    final barrierColor = Theme.of(
-      context,
-    ).colorScheme.scrim.withValues(alpha: 0.45);
-
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      barrierColor: barrierColor,
-      useRootNavigator: true,
-      builder: (_) => PopScope(
-        canPop: false,
-        child: Center(
-          child: Material(
-            color: Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const SizedBox.square(
-              dimension: 60,
-              child: CommonLoadingIndicator(),
-            ),
-          ),
-        ),
+      onConfirm: () => context.push(
+        Routes.enterOrSetPasscode,
+        extra: {
+          LoginProvider.extraModeKey:
+              LoginProvider.modeDeleteAccountConfirmPasscode,
+        },
       ),
     );
-
-    try {
-      final message = await authProvider.requestAccountDeletion();
-      if (navigator.mounted) navigator.pop();
-      if (context.mounted) {
-        SnackbarHelper.showSuccess(context, message);
-      }
-      // Account is scheduled for deletion — end the session and send the user
-      // to the auth screen (they can cancel within 7 days by logging in again).
-      await authProvider.logout();
-      router.go(Routes.loginOrRegister);
-    } catch (e) {
-      if (navigator.mounted) navigator.pop();
-      if (context.mounted) {
-        SnackbarHelper.showError(
-          context,
-          e.toString().replaceAll('Exception: ', ''),
-        );
-      }
-    }
   }
 
   Widget _buildSettingOption({
