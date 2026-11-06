@@ -6,6 +6,7 @@ import { UserService } from './user.service';
 import { UserAccountService } from './user-account.service';
 import { AccountDeletionService } from './account-deletion.service';
 import { ChangePasscodeService } from './change-passcode.service';
+import { EmailVerificationService } from './email-verification.service';
 import { UserEntity } from '@common/database/model';
 import { UserSecurityEntity } from '@common/database/model';
 import { AuthSessionEntity } from '@common/database/model';
@@ -61,6 +62,7 @@ import { AuthModule } from '../auth/auth.module';
     UserAccountService,
     AccountDeletionService,
     ChangePasscodeService,
+    EmailVerificationService,
     JwtAuthGuard,
   ],
   exports: [UserService],
