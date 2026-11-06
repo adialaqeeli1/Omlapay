@@ -317,15 +317,21 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Disable two-factor authentication' })
+  @ApiOperation({
+    summary:
+      'Disable two-factor authentication. Logs out every session and returns a new one for this device.',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Two-factor authentication disabled successfully',
+    description:
+      'Two-factor authentication disabled; data has access_token, refresh_token, expires_in',
   })
   @ApiResponse({ status: 400, description: '2FA not enabled' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async disable2FA(@CurrentUser() user: any) {
-    return this.userService.disable2FA(user.userId);
+  async disable2FA(
+    @CurrentUser() user: { userId: string; sessionId?: string },
+  ) {
+    return this.userService.disable2FA(user.userId, user.sessionId);
   }
 
   @Post('kyc/start')

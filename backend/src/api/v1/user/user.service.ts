@@ -79,6 +79,7 @@ import {
 import { APP_INVITE_URL } from '@common/constants';
 import { AdminNotificationType } from '@common/database/model';
 import { TrustedDeviceService } from '@common/services/trusted-device/trusted-device.service';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class UserService {
@@ -109,6 +110,7 @@ export class UserService {
     @Inject(IAdminNotifier) private adminNotifier: IAdminNotifier,
     private userAccountService: UserAccountService,
     private trustedDevices: TrustedDeviceService,
+    private authService: AuthService,
   ) {}
 
   /** Get user by ID or throw BadRequestException. */
@@ -1439,7 +1441,7 @@ export class UserService {
     };
   }
 
-  async disable2FA(userId: string) {
+  async disable2FA(userId: string, sessionId?: string) {
     const user = await this.getUserOrThrow(userId);
 
     // Get settings
@@ -1466,14 +1468,28 @@ export class UserService {
     await this.userSettingsRepository.save(settings);
 
     // Revoke all active sessions for security
+    const current = sessionId
+      ? await this.authSessionRepository.findOne({
+          where: { id: sessionId, userId: user.id },
+        })
+      : null;
     await this.authSessionRepository.update(
       { userId: user.id, isRevoked: false },
       { isRevoked: true },
     );
 
+    // The phone that asked keeps working: it gets a new session on the same remembered device,
+    // so the app does not need the passcode to log in again
+    const session = await this.authService.createSession(
+      user.id,
+      current?.trustedDeviceId ?? null,
+    );
+
     return {
       status: 'success',
-      message: 'Two-factor authentication has been disabled. Please login again.',
+      message:
+        'Two-factor authentication has been disabled. Other devices have been logged out.',
+      data: session,
     };
   }
 
