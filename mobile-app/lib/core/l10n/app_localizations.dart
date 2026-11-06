@@ -1262,6 +1262,12 @@ abstract class AppLocalizations {
   /// **'Account deletion cancelled. Your account stays active.'**
   String get deleteAccountCancelled;
 
+  /// No description provided for @weakPasscode.
+  ///
+  /// In en, this message translates to:
+  /// **'This passcode is too easy to guess. Avoid repeated digits (like 111111) and sequences (like 123456).'**
+  String get weakPasscode;
+
   /// No description provided for @deleteAccountHasBalanceError.
   ///
   /// In en, this message translates to:

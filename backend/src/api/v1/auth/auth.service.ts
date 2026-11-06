@@ -29,6 +29,7 @@ import {
   validateAccountActive,
   validateToken,
   validatePasscodeMatch,
+  assertStrongPasscode,
 } from '@common/utils';
 import { LoginDto } from './dto/login.dto';
 import { PasscodeLoginDto } from './dto/passcode-login.dto';
@@ -1788,6 +1789,7 @@ export class AuthService {
       // Validate input using utility functions
       validateToken(dto.reset_token, 'Reset token');
       validatePasscodeMatch(dto.new_passcode, dto.confirm_passcode);
+      assertStrongPasscode(dto.new_passcode);
 
       // Verify reset token
       let payload: { userId: string; type: string };

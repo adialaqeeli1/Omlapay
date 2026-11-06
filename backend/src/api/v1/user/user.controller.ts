@@ -37,6 +37,8 @@ import { Verify2FADto } from './dto/verify-2fa.dto';
 import { StartKycDto } from './dto/start-kyc.dto';
 import { UpdateOnboardingDto } from './dto/update-onboarding.dto';
 import { RequestDeletionDto } from './dto/request-deletion.dto';
+import { ChangePasscodeDto } from './dto/change-passcode.dto';
+import { ChangePasscodeService } from './change-passcode.service';
 import { AccountDeletionService } from './account-deletion.service';
 import { JwtAuthGuard } from '@common/guards';
 import { CurrentUser } from '@common/decorators';
@@ -47,6 +49,7 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly accountDeletion: AccountDeletionService,
+    private readonly changePasscodeService: ChangePasscodeService,
   ) {}
 
   @Post('register/request')
@@ -94,6 +97,38 @@ export class UserController {
   })
   async setPasscode(@Body() dto: SetPasscodeDto) {
     return this.userService.setPasscode(dto);
+  }
+
+  @Post('settings/change-passcode')
+  @ThrottleCredentialCheck()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Change passcode (current passcode required)',
+    description:
+      'Wrong current passcodes count toward the lockout. The new passcode must match confirm_passcode, differ from the ' +
+      'current one (SAME_PASSCODE) and not be obvious like 111111 or 123456 (WEAK_PASSCODE). Logs out every other ' +
+      'session and remembered phone; returns a new session for this phone. Sends an SMS alert.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Changed; data has access_token, refresh_token, expires_in',
+  })
+  @ApiResponse({ status: 400, description: 'Mismatch, same or weak passcode' })
+  @ApiResponse({
+    status: 401,
+    description: 'Wrong current passcode or not logged in',
+  })
+  async changePasscode(
+    @CurrentUser() user: { userId: string; sessionId: string },
+    @Body() dto: ChangePasscodeDto,
+  ) {
+    return this.changePasscodeService.changePasscode(
+      user.userId,
+      user.sessionId,
+      dto,
+    );
   }
 
   @Post('settings/request-deletion')

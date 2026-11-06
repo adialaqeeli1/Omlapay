@@ -15,7 +15,7 @@ const num = (v: unknown) =>
 
 /**
  * Tiny in-memory stand-in for a TypeORM repository: findOne / find / count / save / update /
- * delete on equal fields, IsNull(), In(), MoreThan() and LessThanOrEqual(), and where-arrays (OR).
+ * delete on equal fields, IsNull(), Not(), In(), MoreThan() and LessThanOrEqual(), and where-arrays (OR).
  */
 export class FakeRepo<T extends { id?: string; createdAt?: Date }> {
   rows: T[] = [];
@@ -29,6 +29,8 @@ export class FakeRepo<T extends { id?: string; createdAt?: Date }> {
         return (arg as unknown[]).includes(value);
       case 'moreThan':
         return value != null && num(value) > num(arg);
+      case 'not':
+        return !this.test(value, arg);
       case 'lessThanOrEqual':
         return value != null && num(value) <= num(arg);
       default:

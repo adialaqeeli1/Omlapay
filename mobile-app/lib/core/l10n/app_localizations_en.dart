@@ -641,6 +641,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Account deletion cancelled. Your account stays active.';
 
   @override
+  String get weakPasscode =>
+      'This passcode is too easy to guess. Avoid repeated digits (like 111111) and sequences (like 123456).';
+
+  @override
   String get deleteAccountHasBalanceError =>
       'You still have funds in your wallets. Please withdraw or transfer your entire balance before deleting your account.';
 

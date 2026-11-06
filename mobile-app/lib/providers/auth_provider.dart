@@ -858,9 +858,9 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Updates passcode on the server, then clears local auth state so the
-  /// caller can route the user back to the login screen. (The new OTP-based
-  /// login flow can no longer silently re-login here.)
+  /// Changes the passcode on the server (current passcode required). The user
+  /// stays logged in on this phone with the new session from the reply;
+  /// other phones are logged out by the server.
   Future<String> changePasscodeAndRefreshSession({
     required String currentPasscode,
     required String newPasscode,
@@ -892,32 +892,36 @@ class AuthProvider extends ChangeNotifier {
         fallback: l10n.passcodeChangedSuccessfully,
       );
 
-      // Server revokes the old session; restore silently with the new passcode.
-      final currentUser = _state.user;
-      if (currentUser == null) {
-        // Unexpected — state shouldn't lose user mid-flow. Bail out cleanly.
-        _state = state.copyWith(isLoading: false, errorMessage: null);
-        notifyListeners();
-        return successMessage;
-      }
-      final phone = currentUser.mobileNumber.replaceAll(
-        RegExp(r'[^0-9]'),
-        '',
-      );
-      final country = currentUser.countryCode.trim();
+      // The server logs out every other phone and returns a new session for
+      // this one (data.access_token / refresh_token). Older servers ended the
+      // session instead: then log in again with the new passcode and this
+      // phone's remembered-device token.
+      if (!await _adoptSessionFromResponse(response)) {
+        final currentUser = _state.user;
+        if (currentUser == null) {
+          _state = state.copyWith(isLoading: false, errorMessage: null);
+          notifyListeners();
+          return successMessage;
+        }
+        final phone = currentUser.mobileNumber.replaceAll(
+          RegExp(r'[^0-9]'),
+          '',
+        );
+        final country = currentUser.countryCode.trim();
 
-      await _clearSessionTokens();
-      final loggedIn = await loginWithPasscode(
-        mobileNumber: phone,
-        countryCode: country,
-        passcode: newPasscode,
-      );
+        await _clearSessionTokens();
+        final loggedIn = await loginWithPasscode(
+          mobileNumber: phone,
+          countryCode: country,
+          passcode: newPasscode,
+        );
 
-      if (!loggedIn) {
-        final err = _state.errorMessage ?? l10n.loginFailed;
-        _state = state.copyWith(isLoading: false);
-        notifyListeners();
-        throw Exception(err);
+        if (!loggedIn) {
+          final err = _state.errorMessage ?? l10n.loginFailed;
+          _state = state.copyWith(isLoading: false);
+          notifyListeners();
+          throw Exception(err);
+        }
       }
 
       _state = state.copyWith(isLoading: false, errorMessage: null);

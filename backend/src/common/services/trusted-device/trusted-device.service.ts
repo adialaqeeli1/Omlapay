@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { randomBytes } from 'crypto';
 import { TrustedDeviceEntity } from '@common/database/model';
 import { generateHash } from '@common/filters';
@@ -71,9 +71,15 @@ export class TrustedDeviceService {
     );
   }
 
-  async revokeAllForUser(userId: string): Promise<void> {
+  /** Revokes every remembered device of the user, except [keepId] when given. */
+  async revokeAllForUser(
+    userId: string,
+    keepId: string | null = null,
+  ): Promise<void> {
     await this.repo.update(
-      { userId, revokedAt: IsNull() },
+      keepId
+        ? { userId, revokedAt: IsNull(), id: Not(keepId) }
+        : { userId, revokedAt: IsNull() },
       { revokedAt: new Date() },
     );
   }
