@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:omlapay_mobile_app/core/constants/constants.dart';
+import 'package:omlapay_mobile_app/core/l10n/app_localizations_ar.dart';
+import 'package:omlapay_mobile_app/core/l10n/app_localizations_en.dart';
 import 'package:omlapay_mobile_app/core/network/network_client.dart';
 import 'package:omlapay_mobile_app/core/services/storage_helper.dart';
 import 'package:omlapay_mobile_app/providers/auth_provider.dart';
@@ -63,6 +65,47 @@ void main() {
           throwsA(anything),
         );
         expect(auth.state.isLoading, isFalse);
+      },
+    );
+
+    test('a login that cancelled the deletion is recognized', () {
+      expect(
+        AuthProvider.deletionWasCancelled({'deletion_cancelled': true}),
+        isTrue,
+      );
+      expect(AuthProvider.deletionWasCancelled({'access_token': 'a'}), isFalse);
+      expect(AuthProvider.deletionWasCancelled(null), isFalse);
+    });
+
+    test(
+      'the deletion texts mention the 7 days, cancelling by logging in, and the cancel notice (EN + AR)',
+      () {
+        final en = AppLocalizationsEn();
+        final ar = AppLocalizationsAr();
+        expect(
+          en.deleteAccountConfirmMessage,
+          contains('7 days to cancel by logging in again'),
+        );
+        expect(
+          en.deleteAccountScheduled,
+          contains('7 days to cancel by logging in again'),
+        );
+        expect(
+          en.deleteAccountCancelled,
+          'Account deletion cancelled. Your account stays active.',
+        );
+        expect(
+          ar.deleteAccountConfirmMessage,
+          contains('7 أيام للإلغاء عن طريق تسجيل الدخول'),
+        );
+        expect(
+          ar.deleteAccountScheduled,
+          contains('7 أيام للإلغاء عن طريق تسجيل الدخول'),
+        );
+        expect(
+          ar.deleteAccountCancelled,
+          'تم إلغاء حذف الحساب. سيبقى حسابك نشطًا.',
+        );
       },
     );
   });

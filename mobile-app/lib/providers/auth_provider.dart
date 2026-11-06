@@ -28,6 +28,21 @@ class AuthProvider extends ChangeNotifier {
   /// without [AuthProvider] taking a hard dependency on it.
   VoidCallback? onUnlockCallback;
 
+  /// Shows a short message to the user (wired to the app-wide snackbar in
+  /// main.dart). Used to say a login cancelled a scheduled account deletion.
+  ValueChanged<String>? onNotice;
+
+  /// Whether a login response says it cancelled a scheduled account deletion
+  /// (backend: `data.deletion_cancelled`, when the user logs in again within
+  /// the 7 days).
+  static bool deletionWasCancelled(Map<String, dynamic>? data) =>
+      data?['deletion_cancelled'] == true;
+
+  void _noticeIfDeletionCancelled(Map<String, dynamic>? data) {
+    if (!deletionWasCancelled(data)) return;
+    onNotice?.call(appLocalizationsFromStoredLocale().deleteAccountCancelled);
+  }
+
   bool _isApiSuccess(Map<String, dynamic> response) {
     final statusCode = response['statusCode'];
     if (statusCode is int && statusCode >= 200 && statusCode < 300) {
@@ -150,6 +165,7 @@ class AuthProvider extends ChangeNotifier {
         // Refresh account details in background to sync latest profile data
         fetchAccountDetails();
         // Register FCM push-notification device token with backend (fire-and-forget).
+        _noticeIfDeletionCancelled(data);
         unawaited(PushNotificationService.instance.registerCurrentDevice());
         return true;
       }
@@ -253,6 +269,7 @@ class AuthProvider extends ChangeNotifier {
         // Refresh account details in background to sync latest profile data.
         fetchAccountDetails();
         // Register FCM push-notification device token with backend (fire-and-forget).
+        _noticeIfDeletionCancelled(data);
         unawaited(PushNotificationService.instance.registerCurrentDevice());
         return true;
       }
