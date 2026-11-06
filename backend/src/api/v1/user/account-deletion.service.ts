@@ -23,6 +23,7 @@ import {
 } from '@common/database/model';
 import { IAdminNotifier } from '@common/services/admin-notifier/admin-notifier.interface';
 import { TrustedDeviceService } from '@common/services/trusted-device/trusted-device.service';
+import { PushDeviceService } from '@common/services/push-device/push-device.service';
 import { AuthService } from '../auth/auth.service';
 
 /** Grace period promised in the app: logging in again within it cancels the deletion */
@@ -85,6 +86,7 @@ export class AccountDeletionService implements OnModuleInit, OnModuleDestroy {
     private readonly pendingSends: Repository<SendPendingRequestEntity>,
     private readonly authService: AuthService,
     private readonly trustedDevices: TrustedDeviceService,
+    private readonly pushDevices: PushDeviceService,
     @Inject(IAdminNotifier) private readonly adminNotifier: IAdminNotifier,
   ) {}
 
@@ -229,6 +231,7 @@ export class AccountDeletionService implements OnModuleInit, OnModuleDestroy {
       { isRevoked: true },
     );
     await this.trustedDevices.revokeAllForUser(userId);
+    await this.pushDevices.removeAllForUser(userId);
   }
 
   private async notifyAdmins(title: string, detail: string) {

@@ -22,6 +22,7 @@ import {
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { PasscodeLoginDto } from './dto/passcode-login.dto';
+import { LogoutDto } from './dto/logout.dto';
 import { ResendOtpDto } from './dto/resend-otp.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { CheckUserDto } from './dto/check-user.dto';
@@ -244,8 +245,12 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: 'Logged out successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async logout(@Req() req) {
-    return this.authService.logout(req.user.userId, req.user.sessionId);
+  async logout(@Req() req, @Body() dto: LogoutDto) {
+    return this.authService.logout(
+      req.user.userId,
+      req.user.sessionId,
+      dto?.device_token,
+    );
   }
 
   @Post('logout-all')

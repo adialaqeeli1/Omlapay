@@ -417,14 +417,17 @@ Backend:
   (`/v1/user/settings/request-deletion`: passcode, no funds or activity in progress, 7-day grace
   period, then personal data is erased and records are kept), and change passcode
   (`/v1/user/settings/change-passcode`: current passcode, obvious passcodes refused, other phones
-  logged out, SMS alert).
+  logged out, SMS alert), and push-notification devices (`/v1/notifications/devices`: the app's
+  FCM token per phone and session; removed on logout).
+- **The backend does not send push notifications yet:** it stores the phones' tokens, but nothing
+  calls Firebase. Sending needs a Firebase service-account key (a secret, added to `deploy/.env`)
+  and a sender that skips phones whose session has ended.
 - **The app still calls API routes that this backend does not have**, so these app features fail
   against `api.omlapay.org` / `api-dev.omlapay.org` until the routes exist:
   - Change phone / change email: `/v1/user/settings/change-phone/step1…5` and
     `/v1/user/settings/change-email/step1…5` (must use the same phone rule,
     `normalizeAllowedPhone`).
   - Email on the profile: `/v1/user/email/request`, `/v1/user/email/verify`.
-  - Push notifications: `/v1/notifications/devices`.
   - KYC: `/v1/user/kyc/rejection-details`, `/v1/user/kyc/resubmit`.
   - Send / swap: `/v1/send/validate-address`, `/v1/swap/quote/stream`.
   - Support without an account: `/v1/guest/support-requests` (+ `/:id`).

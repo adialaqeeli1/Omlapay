@@ -57,11 +57,15 @@ export class FakeRepo<T extends { id?: string; createdAt?: Date }> {
     );
   }
   save(entity: Partial<T>) {
-    if (!entity.id) {
+    if (entity.id) {
+      // like TypeORM: saving with an existing id updates that row
+      const row = this.rows.find((r) => r.id === entity.id);
+      if (row) return Promise.resolve(Object.assign(row, entity));
+    } else {
       entity.id = randomUUID();
       entity.createdAt = new Date();
-      this.rows.push(entity as T);
     }
+    this.rows.push(entity as T);
     return Promise.resolve(entity as T);
   }
   update(where: Where<T>, patch: Partial<T>) {

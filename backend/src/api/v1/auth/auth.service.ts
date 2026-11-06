@@ -48,6 +48,7 @@ import {
   IssuedDeviceToken,
   TrustedDeviceService,
 } from '@common/services/trusted-device/trusted-device.service';
+import { PushDeviceService } from '@common/services/push-device/push-device.service';
 
 // Login with an SMS code (POST /auth/login/send-otp, resend-otp, verify-otp, then /auth/login)
 const LOGIN_OTP_EXPIRY_SECONDS = 60;
@@ -87,6 +88,7 @@ export class AuthService {
     private otpService: OtpService,
     private mailService: MailService,
     private trustedDevices: TrustedDeviceService,
+    private pushDevices: PushDeviceService,
   ) {}
 
   /**
@@ -1676,7 +1678,7 @@ export class AuthService {
   /**
    * Logout - Revoke current session
    */
-  async logout(userId: string, sessionId: string) {
+  async logout(userId: string, sessionId: string, pushDeviceToken?: string) {
     try {
       // Validate input
       if (!userId || !userId.trim()) {
@@ -1711,6 +1713,10 @@ export class AuthService {
       // Logging out forgets this phone: the next login needs an SMS code
       if (session.trustedDeviceId) {
         await this.trustedDevices.revoke(session.trustedDeviceId);
+      }
+      // ...and stops push notifications to it
+      if (pushDeviceToken) {
+        await this.pushDevices.remove(userId, pushDeviceToken);
       }
 
       return {
@@ -1757,6 +1763,7 @@ export class AuthService {
         { isRevoked: true },
       );
       await this.trustedDevices.revokeAllForUser(userId);
+      await this.pushDevices.removeAllForUser(userId);
 
       return {
         status: 'success',

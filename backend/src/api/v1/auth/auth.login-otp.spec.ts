@@ -7,6 +7,7 @@ import { validate } from 'class-validator';
 import * as bcrypt from 'bcryptjs';
 import { OtpPurpose } from '@common/database/model';
 import { TrustedDeviceService } from '@common/services/trusted-device/trusted-device.service';
+import { PushDeviceService } from '@common/services/push-device/push-device.service';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { FakeRepo } from '@common/testing/fake-repo';
@@ -24,6 +25,8 @@ function setup() {
   const sessions = new FakeRepo<any>();
   const otps = new FakeRepo<any>();
   const devices = new FakeRepo<any>();
+  const pushRepo = new FakeRepo<any>();
+  const push = new PushDeviceService(pushRepo as any);
   const jwt = new JwtService({ secret: 'test-secret' });
   const sms = { sendOTP: jest.fn().mockResolvedValue(undefined) };
   const service = new AuthService(
@@ -36,6 +39,7 @@ function setup() {
     sms as any,
     {} as any,
     new TrustedDeviceService(devices as any),
+    push,
   );
   const lastCode = () => sms.sendOTP.mock.calls.at(-1)[1] as string;
   return {
