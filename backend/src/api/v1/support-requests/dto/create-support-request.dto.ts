@@ -35,3 +35,27 @@ export class CreateSupportRequestDto {
   )
   attachmentUrl?: string;
 }
+
+/** Guest request (no account): title and description only, no attachments. */
+export class CreateGuestSupportRequestDto {
+  @ApiProperty({ description: 'Title of the support request', maxLength: 255 })
+  @IsString()
+  @IsNotEmpty({ message: 'Title is required.' })
+  @MaxLength(255, { message: 'Title must not exceed 255 characters.' })
+  title: string;
+
+  @ApiProperty({ description: 'Detailed description of the support request' })
+  @IsString()
+  @IsNotEmpty({ message: 'Description is required.' })
+  @MaxLength(5000, { message: 'Description must not exceed 5000 characters.' })
+  description: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Sent by older app versions; not used to identify the guest (the X-Guest-Token header is).',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  macAddress?: string;
+}

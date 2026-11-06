@@ -15,11 +15,13 @@ import '../constants/constants.dart';
 class SecureTokenStore {
   SecureTokenStore._();
 
-  /// Session access token, refresh token and remembered-device token.
+  /// Session access token, refresh token, remembered-device token and the
+  /// guest support token (support without an account).
   static const Set<String> keys = {
     AppConstants.tokenKey,
     AppConstants.refreshTokenKey,
     AppConstants.rememberedDeviceTokenKey,
+    AppConstants.guestSupportTokenKey,
   };
 
   /// Set in SharedPreferences once secure storage has been set up on this
