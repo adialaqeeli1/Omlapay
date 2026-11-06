@@ -631,6 +631,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'تم إلغاء حذف الحساب. سيبقى حسابك نشطًا.';
 
   @override
+  String get weakPasscode =>
+      'رمز المرور هذا سهل التخمين. تجنّب الأرقام المكررة (مثل 111111) والمتسلسلة (مثل 123456).';
+
+  @override
   String get deleteAccountHasBalanceError =>
       'لا يزال لديك رصيد في محافظك. يرجى سحب أو تحويل كامل رصيدك قبل حذف حسابك.';
 

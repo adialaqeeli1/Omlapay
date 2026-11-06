@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/theme/theme.dart';
+import '../../../core/utils/passcode_strength.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/biometric_provider.dart';
@@ -524,6 +525,12 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
     return CommonBackButton(onPressed: () => popToChangePhoneIntro(context));
   }
 
+  /// Steps where the user picks a new passcode.
+  bool get _isNewPasscodeStep =>
+      widget.mode == LoginProvider.modeRegister ||
+      widget.mode == LoginProvider.modeResetPasscode ||
+      widget.mode == LoginProvider.modeChangePasscodeNew;
+
   bool _showForgotPasscodeLink() {
     if (widget.mode == LoginProvider.modeResetPasscode ||
         widget.mode == LoginProvider.modeConfirmPasscode ||
@@ -728,6 +735,13 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
     }
 
     try {
+      // Obvious passcodes (111111, 123456, …) are refused, as on the server.
+      if (_isNewPasscodeStep && isWeakPasscode(provider.passcode)) {
+        SnackbarHelper.showError(context, context.l10n!.weakPasscode);
+        provider.clearPasscode();
+        return;
+      }
+
       if (widget.mode == LoginProvider.modeResetPasscode) {
         if (widget.resetToken == null || widget.resetToken!.isEmpty) {
           SnackbarHelper.showError(context, context.l10n!.unknownError);
