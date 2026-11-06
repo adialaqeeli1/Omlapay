@@ -6,6 +6,7 @@ import * as bcrypt from 'bcryptjs';
 import { SwapStatus, TransactionStatus } from '@common/database/model';
 import { FakeRepo } from '@common/testing/fake-repo';
 import { TrustedDeviceService } from '@common/services/trusted-device/trusted-device.service';
+import { PushDeviceService } from '@common/services/push-device/push-device.service';
 import { AuthService } from '../auth/auth.service';
 import { AccountDeletionService } from './account-deletion.service';
 
@@ -26,6 +27,8 @@ function setup() {
     swaps: new FakeRepo<any>(),
     pendingSends: new FakeRepo<any>(),
   };
+  const pushRepo = new FakeRepo<any>();
+  const push = new PushDeviceService(pushRepo as any);
   const jwt = new JwtService({ secret: 'test-secret' });
   const trusted = new TrustedDeviceService(repos.devices as any);
   const sms = { sendOTP: jest.fn().mockResolvedValue(undefined) };
@@ -39,6 +42,7 @@ function setup() {
     sms as any,
     {} as any,
     trusted,
+    push,
   );
   const admins = { notifyAllAdmins: jest.fn().mockResolvedValue(undefined) };
   const service = new AccountDeletionService(
@@ -52,9 +56,10 @@ function setup() {
     repos.pendingSends as any,
     auth,
     trusted,
+    push,
     admins as any,
   );
-  return { ...repos, jwt, auth, sms, admins, service };
+  return { ...repos, pushRepo, jwt, auth, sms, admins, service };
 }
 
 async function withUser(t: ReturnType<typeof setup>) {
@@ -77,6 +82,13 @@ async function withUser(t: ReturnType<typeof setup>) {
     lockedUntil: null,
   });
   const session = await t.sessions.save({ userId: user.id, isRevoked: false });
+  await t.pushRepo.save({
+    userId: user.id,
+    deviceToken: 'fcm-1',
+    deviceUuid: 'u',
+    deviceModel: 'm',
+    sessionId: session.id,
+  });
   await t.devices.save({
     userId: user.id,
     tokenHash: 'h',
@@ -111,6 +123,7 @@ describe('Account deletion (stage 2)', () => {
       expect(user.deletionRequestedAt).toBeInstanceOf(Date);
       expect(t.sessions.rows.every((s) => s.isRevoked)).toBe(true);
       expect(t.devices.rows.every((d) => d.revokedAt)).toBe(true);
+      expect(t.pushRepo.rows).toHaveLength(0); // no more push notifications
       expect(user.fullMobileNumber).toBe(PHONE); // nothing erased yet
       expect(t.admins.notifyAllAdmins).toHaveBeenCalled();
     });

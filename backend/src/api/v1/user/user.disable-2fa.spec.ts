@@ -3,6 +3,7 @@
 import { JwtService } from '@nestjs/jwt';
 import { FakeRepo } from '@common/testing/fake-repo';
 import { TrustedDeviceService } from '@common/services/trusted-device/trusted-device.service';
+import { PushDeviceService } from '@common/services/push-device/push-device.service';
 import { AuthService } from '../auth/auth.service';
 import { UserService } from './user.service';
 
@@ -11,6 +12,8 @@ function setup() {
   const sessions = new FakeRepo<any>();
   const settings = new FakeRepo<any>();
   const devices = new FakeRepo<any>();
+  const pushRepo = new FakeRepo<any>();
+  const push = new PushDeviceService(pushRepo as any);
   const jwt = new JwtService({ secret: 'test-secret' });
   const trusted = new TrustedDeviceService(devices as any);
   const auth = new AuthService(
@@ -23,6 +26,7 @@ function setup() {
     {} as any,
     {} as any,
     trusted,
+    push,
   );
   const deps: any[] = [
     users,
