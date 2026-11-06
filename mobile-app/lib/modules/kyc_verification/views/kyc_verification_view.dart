@@ -13,6 +13,7 @@ import 'package:reactive_forms/reactive_forms.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/constants.dart';
+import '../../../core/constants/endpoints.dart';
 import '../../../core/extentions/context_extensions.dart';
 import '../../../core/services/storage_helper.dart';
 import '../../../core/utils/app_exception.dart';
@@ -947,7 +948,7 @@ class _KycCountryField extends StatelessWidget {
 /// request with `400 InvalidArgument`, even when the object is public.
 Map<String, String> _authImageHeaders(String url) {
   final host = Uri.tryParse(url)?.host ?? '';
-  if (!host.endsWith('omlapay.xyz')) return const {};
+  if (host != Endpoints.apiHost) return const {};
   final token = StorageService.getString(AppConstants.tokenKey);
   return {
     if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',

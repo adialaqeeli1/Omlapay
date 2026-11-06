@@ -694,5 +694,10 @@
     },
     "updateReadyTitle": "Update ready",
     "updateReadyMessage": "A new update is ready. The app will close so the update can be applied. Please reopen it to continue.",
-    "updateReadyAction": "OK"
+    "updateReadyAction": "OK",
+    "saudiMobileOnly": "Enter a Saudi mobile number starting with 5 (5XXXXXXXX).",
+    "tooManyAttempts": "Too many attempts. Please wait a minute and try again.",
+    "@tooManyAttempts": {
+        "description": "Shown when the server answers 429 (rate limit reached)"
+    }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:country_picker/country_picker.dart';
 
 import '../../../core/models/change_phone/change_phone_models.dart';
+import '../../../core/utils/saudi_phone.dart';
 import '../services/change_phone_service.dart';
 
 class ChangePhoneFormProvider extends ChangeNotifier {
@@ -29,12 +30,16 @@ class ChangePhoneFormProvider extends ChangeNotifier {
   String get phone => _phone;
   bool get isSubmitted => _submitted;
   bool get isSubmitting => _isSubmitting;
-  String get digitsOnly => _sanitizeDigits(_phone);
+
+  /// National number sent to the API (5XXXXXXXX), whichever form was typed.
+  String get digitsOnly =>
+      SaudiPhone.toNational(_phone) ?? _sanitizeDigits(_phone);
   Country get selectedCountry => _selectedCountry!;
-  String get currentPhoneCode => '+${selectedCountry.phoneCode}';
+  String get currentPhoneCode => SaudiPhone.dialCode;
   String get currentFlagEmoji => selectedCountry.flagEmoji;
 
-  bool get isValidPhone => RegExp(r'^\d{7,15}$').hasMatch(digitsOnly);
+  /// Saudi mobile numbers only, the same rule as the backend.
+  bool get isValidPhone => SaudiPhone.isValid(_phone);
 
   bool get isSameAsCurrentPhone {
     if (_currentPhoneDigits.isEmpty || digitsOnly != _currentPhoneDigits) {
@@ -63,14 +68,11 @@ class ChangePhoneFormProvider extends ChangeNotifier {
 
   void onPhoneChanged(String value) {
     final sanitized = _sanitizeDigits(value);
-    final next = sanitized.length > 15 ? sanitized.substring(0, 15) : sanitized;
+    final next = sanitized.length > SaudiPhone.maxInputDigits
+        ? sanitized.substring(0, SaudiPhone.maxInputDigits)
+        : sanitized;
     if (_phone == next) return;
     _phone = next;
-    notifyListeners();
-  }
-
-  void updateCountry(Country country) {
-    _selectedCountry = country;
     notifyListeners();
   }
 
@@ -110,16 +112,9 @@ class ChangePhoneFormProvider extends ChangeNotifier {
   static String _sanitizeDigits(String input) =>
       input.replaceAll(RegExp(r'[^0-9]'), '');
 
-  /// Same default strategy as [LoginProvider]: device locale → Saudi Arabia.
+  /// Saudi mobile numbers only (same rule as the backend), so the country is fixed.
   void _initSelectedCountryFromDevice() {
-    try {
-      final localeCountryCode =
-          WidgetsBinding.instance.platformDispatcher.locale.countryCode;
-      if (localeCountryCode != null && localeCountryCode.isNotEmpty) {
-        _selectedCountry = CountryService().findByCode(localeCountryCode);
-      }
-    } catch (_) {}
-    _selectedCountry ??= CountryService().findByCode('SA');
+    _selectedCountry = CountryService().findByCode(SaudiPhone.isoCode);
   }
 
   static String? _normalizeDialCode(String? code) {

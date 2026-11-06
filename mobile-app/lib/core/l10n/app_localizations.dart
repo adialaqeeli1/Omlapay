@@ -2869,6 +2869,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'OK'**
   String get updateReadyAction;
+
+  /// No description provided for @saudiMobileOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a Saudi mobile number starting with 5 (5XXXXXXXX).'**
+  String get saudiMobileOnly;
+
+  /// Shown when the server answers 429 (rate limit reached)
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Please wait a minute and try again.'**
+  String get tooManyAttempts;
 }
 
 class _AppLocalizationsDelegate

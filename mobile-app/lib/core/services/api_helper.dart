@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/widgets.dart' show Locale;
 
 import '../constants/constants.dart';
 import '../constants/endpoints.dart';
+import '../l10n/app_localizations.dart';
 import '../network/network_client.dart';
 import '../utils/app_exception.dart';
 import 'storage_helper.dart';
@@ -125,6 +127,8 @@ class ApiHelper {
       }
       return {};
     } else {
+      final tooMany = tooManyAttemptsException(response.statusCode);
+      if (tooMany != null) throw tooMany;
       final error = response.error;
       String message = _extractApiMessage(error) ??
           'Request failed with status ${response.statusCode}';
@@ -132,7 +136,22 @@ class ApiHelper {
     }
   }
 
+  /// The server's rate limit (HTTP 429) answers in English only; show our own clear,
+  /// localized message instead. Returns null for any other status.
+  static AppException? tooManyAttemptsException(
+    int? statusCode, {
+    bool? arabic,
+  }) {
+    if (statusCode != 429) return null;
+    final l10n = lookupAppLocalizations(
+      Locale((arabic ?? _isArabicLocale) ? 'ar' : 'en'),
+    );
+    return AppException(l10n.tooManyAttempts, messageKey: 'tooManyAttempts');
+  }
+
   static AppException _handleDioException(DioException error) {
+    final tooMany = tooManyAttemptsException(error.response?.statusCode);
+    if (tooMany != null) return tooMany;
     String message = 'Network error: ${error.message}';
     String messageKey = 'unknownError';
 

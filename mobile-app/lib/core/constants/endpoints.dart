@@ -1,13 +1,36 @@
+import 'package:flutter/foundation.dart';
+
 /// API endpoint paths and base URL configuration for OmlaPay backend.
 class Endpoints {
-  /// Protocol for API requests.
-  static String get protocol => 'https';
+  /// Production API (release builds by default).
+  static const String productionBaseUrl = 'https://api.omlapay.org';
 
-  /// API host domain.
-  static String get domain => 'api.omlapay.xyz';
+  /// Development API (debug builds by default).
+  static const String developmentBaseUrl = 'https://api-dev.omlapay.org';
 
-  /// Full base URL for all API requests (e.g. https://api.omlapay.xyz).
-  static String get baseUrl => '$protocol://$domain';
+  /// Build-time choice of server, e.g. `--dart-define=OMLAPAY_ENV=dev` or `=prod`.
+  static const String _environment = String.fromEnvironment('OMLAPAY_ENV');
+
+  /// Build-time full override, e.g. `--dart-define=API_BASE_URL=https://staging.example.com`.
+  static const String _baseUrlOverride = String.fromEnvironment('API_BASE_URL');
+
+  /// Which server this build talks to: `dev` or `prod`. Without OMLAPAY_ENV, release and
+  /// profile builds use production and debug builds use development.
+  static String get environment {
+    if (_environment == 'dev' || _environment == 'prod') return _environment;
+    return kReleaseMode || kProfileMode ? 'prod' : 'dev';
+  }
+
+  /// Full base URL for all API requests (e.g. https://api.omlapay.org).
+  static String get baseUrl {
+    if (_baseUrlOverride.isNotEmpty) {
+      return _baseUrlOverride.replaceAll(RegExp(r'/+$'), '');
+    }
+    return environment == 'dev' ? developmentBaseUrl : productionBaseUrl;
+  }
+
+  /// Host of [baseUrl] (e.g. api.omlapay.org).
+  static String get apiHost => Uri.parse(baseUrl).host;
 
   /// API version prefix used in paths.
   static String get apiVersion => '/v1';

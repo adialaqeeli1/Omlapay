@@ -8,6 +8,9 @@ cd ..
 # Defaults
 MODE="release"
 VERSION_ARG=""
+# API server: --env=dev (api-dev.omlapay.org) or --env=prod (api.omlapay.org).
+# Without it, release builds use production and debug builds use dev.
+API_ENV=""
 
 # Parse arguments
 for arg in "$@"
@@ -19,6 +22,10 @@ do
         ;;
         --debug)
         MODE="debug"
+        shift
+        ;;
+        --env=dev|--env=prod)
+        API_ENV="${arg#--env=}"
         shift
         ;;
         --version=*)
@@ -98,8 +105,8 @@ if [ $? -ne 0 ]; then
 fi
 
 # 7. Build APK
-echo "Building APK in $MODE mode..."
-flutter build apk --$MODE
+echo "Building APK in $MODE mode (API: ${API_ENV:-default for $MODE})..."
+flutter build apk --$MODE ${API_ENV:+--dart-define=OMLAPAY_ENV=$API_ENV}
 if [ $? -ne 0 ]; then
     echo "Error: flutter build apk failed"
     exit 1

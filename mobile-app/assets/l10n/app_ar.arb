@@ -680,5 +680,7 @@
     },
     "updateReadyTitle": "التحديث جاهز",
     "updateReadyMessage": "يتوفر تحديث جديد. سيتم إغلاق التطبيق لتطبيق التحديث. الرجاء إعادة فتحه للمتابعة.",
-    "updateReadyAction": "حسنًا"
+    "updateReadyAction": "حسنًا",
+    "saudiMobileOnly": "أدخل رقم جوال سعودي يبدأ بالرقم 5 (5XXXXXXXX).",
+    "tooManyAttempts": "محاولات كثيرة جدًا. يرجى الانتظار دقيقة ثم المحاولة مرة أخرى."
 }

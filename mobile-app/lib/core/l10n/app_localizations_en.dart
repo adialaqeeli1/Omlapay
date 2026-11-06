@@ -1538,4 +1538,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateReadyAction => 'OK';
+
+  @override
+  String get saudiMobileOnly =>
+      'Enter a Saudi mobile number starting with 5 (5XXXXXXXX).';
+
+  @override
+  String get tooManyAttempts =>
+      'Too many attempts. Please wait a minute and try again.';
 }
