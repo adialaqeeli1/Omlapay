@@ -533,7 +533,8 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
         widget.mode == LoginProvider.modeChangePasscodeNew ||
         widget.mode == LoginProvider.modeChangePasscodeConfirm ||
         widget.mode == LoginProvider.modeChangeEmailConfirmPasscode ||
-        widget.mode == LoginProvider.modeChangePhoneConfirmPasscode) {
+        widget.mode == LoginProvider.modeChangePhoneConfirmPasscode ||
+        widget.mode == LoginProvider.modeDeleteAccountConfirmPasscode) {
       return false;
     }
     return true;
@@ -1059,6 +1060,29 @@ class _EnterOrSetPasscodeScreenState extends State<EnterOrSetPasscodeScreen> {
         );
         if (!context.mounted || !isValid) return;
         context.go(Routes.home);
+        return;
+      }
+
+      if (widget.mode == LoginProvider.modeDeleteAccountConfirmPasscode) {
+        // The server checks the passcode and the balances, then schedules the
+        // deletion (7 days; logging in again cancels it) and logs out every
+        // session. Errors (wrong passcode, funds left) show as a snackbar.
+        String? message;
+        final isValid = await provider.verify(
+          verifyPasscode:
+              ({
+                required String phoneNumber,
+                required String countryCode,
+                required String passcode,
+              }) async {
+                message = await authProvider.requestAccountDeletion(passcode);
+                return true;
+              },
+        );
+        if (!context.mounted || !isValid) return;
+        SnackbarHelper.showSuccess(context, message ?? '');
+        await authProvider.logout();
+        if (context.mounted) context.go(Routes.loginOrRegister);
         return;
       }
 

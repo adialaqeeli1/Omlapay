@@ -35,6 +35,10 @@ class LoginProvider extends ChangeNotifier {
       'change_email_confirm_passcode';
   static const String modeChangePhoneConfirmPasscode =
       'change_phone_confirm_passcode';
+
+  /// Settings → delete account: the passcode confirms the deletion request.
+  static const String modeDeleteAccountConfirmPasscode =
+      'delete_account_confirm_passcode';
   static const String extraPendingPasscodeKey = 'pendingPasscode';
   static const String extraCurrentPasscodeKey = 'currentPasscode';
   static const String extraResetTokenKey = 'resetToken';

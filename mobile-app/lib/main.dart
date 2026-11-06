@@ -31,6 +31,7 @@ import 'providers/biometric_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/wallets_provider.dart';
+import 'core/utils/snackbar_helper.dart';
 import 'routes/app_router.dart';
 import 'widgets/code_push_listener.dart';
 import 'widgets/offline_view.dart';
@@ -171,7 +172,15 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<CodePushProvider>(
           create: (_) => CodePushProvider(),
         ),
-        ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
+        ChangeNotifierProvider<AuthProvider>(
+          create: (_) => AuthProvider()
+            ..onNotice = (message) {
+              final messenger = appScaffoldMessengerKey.currentState;
+              if (messenger != null) {
+                SnackbarHelper.showInfo(messenger, message: message);
+              }
+            },
+        ),
         ChangeNotifierProxyProvider<AuthProvider, AppLockProvider>(
           lazy: false,
           create: (context) {

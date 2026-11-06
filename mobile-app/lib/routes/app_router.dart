@@ -151,7 +151,9 @@ class AppRouter {
               mode == LoginProvider.modeChangePasscodeNew ||
               mode == LoginProvider.modeChangePasscodeConfirm;
 
-          if (isSoftLogin || isChangePasscodeStep) {
+          if (isSoftLogin ||
+              isChangePasscodeStep ||
+              mode == LoginProvider.modeDeleteAccountConfirmPasscode) {
             final user = context.read<AuthProvider>().state.user!;
             final parts = authPhonePartsForUser(user);
             countryCode = parts.countryCode;

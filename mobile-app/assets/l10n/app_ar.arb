@@ -235,6 +235,7 @@
     "deleteAccountConfirmTitle": "حذف الحساب؟",
     "deleteAccountConfirmMessage": "ستتم جدولة حذف حسابك. لديك 7 أيام للإلغاء عن طريق تسجيل الدخول مرة أخرى.",
     "deleteAccountScheduled": "تمت جدولة حذف الحساب. لديك 7 أيام للإلغاء عن طريق تسجيل الدخول مرة أخرى.",
+    "deleteAccountCancelled": "تم إلغاء حذف الحساب. سيبقى حسابك نشطًا.",
     "deleteAccountHasBalanceError": "لا يزال لديك رصيد في محافظك. يرجى سحب أو تحويل كامل رصيدك قبل حذف حسابك.",
     "save": "حفظ",
     "currencyName": "{choice, select, usd {دولار أمريكي} sar {ريال سعودي} other {{choice}}}",

@@ -1256,6 +1256,12 @@ abstract class AppLocalizations {
   /// **'Account deletion scheduled. You have 7 days to cancel by logging in again.'**
   String get deleteAccountScheduled;
 
+  /// No description provided for @deleteAccountCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deletion cancelled. Your account stays active.'**
+  String get deleteAccountCancelled;
+
   /// No description provided for @deleteAccountHasBalanceError.
   ///
   /// In en, this message translates to:
