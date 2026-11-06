@@ -31,6 +31,7 @@ import {
   validatePasscodeMatch,
 } from '@common/utils';
 import { LoginDto } from './dto/login.dto';
+import { PasscodeLoginDto } from './dto/passcode-login.dto';
 import { ResendOtpDto } from './dto/resend-otp.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { CheckUserDto } from './dto/check-user.dto';
@@ -42,6 +43,10 @@ import { ForgotPasscodeResendOtpDto } from './dto/forgot-passcode-resend-otp.dto
 import { ResetPasscodeDto } from '../user/dto/reset-passcode.dto';
 import { OtpService } from '@common/services/otp/otp.service';
 import { MailService } from '@common/services/mail/mail.service';
+import {
+  IssuedDeviceToken,
+  TrustedDeviceService,
+} from '@common/services/trusted-device/trusted-device.service';
 
 // Login with an SMS code (POST /auth/login/send-otp, resend-otp, verify-otp, then /auth/login)
 const LOGIN_OTP_EXPIRY_SECONDS = 60;
@@ -49,6 +54,12 @@ const LOGIN_OTP_RESEND_COOLDOWN_SECONDS = 60;
 const LOGIN_OTP_MAX_RESENDS = 3;
 const LOGIN_OTP_MAX_ATTEMPTS = 3;
 const LOGIN_TOKEN_EXPIRY_SECONDS = 300;
+const DEVICE_NOT_TRUSTED = {
+  status: 'error',
+  code: 'DEVICE_NOT_TRUSTED',
+  message: 'Please log in with a verification code sent by SMS.',
+  message_ar: 'يرجى تسجيل الدخول برمز التحقق المرسل عبر رسالة نصية.',
+};
 const LOGIN_TOKEN_INVALID = {
   status: 'error',
   code: 'LOGIN_TOKEN_INVALID',
@@ -74,6 +85,7 @@ export class AuthService {
     private jwtService: JwtService,
     private otpService: OtpService,
     private mailService: MailService,
+    private trustedDevices: TrustedDeviceService,
   ) {}
 
   /**
@@ -111,23 +123,33 @@ export class AuthService {
     };
   }
 
+  /** POST /auth/login: passcode + otpVerificationToken (SMS code). Remembers this device. */
   async login(dto: LoginDto) {
+    return this.passcodeLogin(dto, 'sms');
+  }
+
+  /** POST /auth/login/passcode: phone + passcode + device_token of a remembered device. */
+  async loginWithDevice(dto: PasscodeLoginDto) {
+    return this.passcodeLogin(dto, 'device');
+  }
+
+  private async passcodeLogin(
+    dto: LoginDto | PasscodeLoginDto,
+    mode: 'sms' | 'device',
+  ) {
     try {
       validateRequired(dto.passcode, 'Passcode');
 
-      // The app sends the token from POST /auth/login/verify-otp; older clients and
-      // POST /auth/login/passcode send the phone number instead.
+      // 'sms': the user is the one the SMS code was sent to.
+      // 'device': the phone number, plus a device_token this phone got after an SMS check.
       let user: UserEntity | null;
       let loginOtpId: string | null = null;
-      if (dto.otpVerificationToken) {
+      if (mode === 'sms') {
         ({ user, otpId: loginOtpId } = await this.resolveLoginOtpToken(
-          dto.otpVerificationToken,
+          (dto as LoginDto).otpVerificationToken,
         ));
       } else {
-        const phone = {
-          country_code: dto.country_code ?? '',
-          mobile_number: dto.mobile_number ?? '',
-        };
+        const phone = dto as PasscodeLoginDto;
         normalizePhoneDto(phone);
         user = await this.userRepository.findOne({
           where: {
@@ -150,6 +172,21 @@ export class AuthService {
       // Check if user account is active
       validateAccountActive(user.isActive);
 
+      // Passcode only from a remembered device; anywhere else the user needs an SMS code.
+      // Checked before the passcode, so without a device token passcodes cannot be guessed here.
+      let trustedDeviceId: string | null = null;
+      if (mode === 'device') {
+        const device = await this.trustedDevices.find(
+          user.id,
+          (dto as PasscodeLoginDto).device_token,
+          dto.device_id,
+        );
+        if (!device) {
+          throw new UnauthorizedException(DEVICE_NOT_TRUSTED);
+        }
+        trustedDeviceId = device.id;
+      }
+
       // Get user security record
       const userSecurity = await this.userSecurityRepository.findOne({
         where: { userId: user.id },
@@ -165,7 +202,9 @@ export class AuthService {
       // Check if account is locked
       if (userSecurity.lockedUntil && userSecurity.lockedUntil > new Date()) {
         const lockTimeRemaining = Math.ceil(
-          (userSecurity.lockedUntil.getTime() - new Date().getTime()) / 1000 / 60,
+          (userSecurity.lockedUntil.getTime() - new Date().getTime()) /
+            1000 /
+            60,
         );
         throw new UnauthorizedException({
           status: 'error',
@@ -217,51 +256,62 @@ export class AuthService {
         }
       }
 
-    // Reset failed attempts on successful login
-    if (userSecurity.failedAttempts > 0) {
-      userSecurity.failedAttempts = 0;
-      userSecurity.lockedUntil = null;
-      await this.userSecurityRepository.save(userSecurity);
-    }
+      // The SMS check makes this phone a remembered device; a device login refreshes lastUsedAt
+      let issuedDevice: IssuedDeviceToken | null = null;
+      if (mode === 'sms') {
+        const issued = await this.trustedDevices.issue(user.id, dto.device_id);
+        trustedDeviceId = issued.id;
+        issuedDevice = issued.token;
+      } else if (trustedDeviceId) {
+        await this.trustedDevices.markUsed(trustedDeviceId);
+      }
 
-    // Create auth session first (1 day expiry)
-    const accessExpiresSeconds = 86400; // 1 day
-    const expiresAt = new Date();
-    expiresAt.setSeconds(expiresAt.getSeconds() + accessExpiresSeconds);
+      // Reset failed attempts on successful login
+      if (userSecurity.failedAttempts > 0) {
+        userSecurity.failedAttempts = 0;
+        userSecurity.lockedUntil = null;
+        await this.userSecurityRepository.save(userSecurity);
+      }
 
-    const session = await this.authSessionRepository.save({
-      userId: user.id,
-      accessTokenHash: '', // Temporary, will update after signing
-      refreshTokenHash: '', // Temporary, will update after signing
-      expiresAt,
-      isRevoked: false,
-    });
+      // Create auth session first (1 day expiry)
+      const accessExpiresSeconds = 86400; // 1 day
+      const expiresAt = new Date();
+      expiresAt.setSeconds(expiresAt.getSeconds() + accessExpiresSeconds);
 
-    // Generate access and refresh tokens with session ID
-    const accessTokenPayload = {
-      userId: user.id,
-      sessionId: session.id,
-      type: 'access',
-    };
+      const session = await this.authSessionRepository.save({
+        userId: user.id,
+        accessTokenHash: '', // Temporary, will update after signing
+        refreshTokenHash: '', // Temporary, will update after signing
+        expiresAt,
+        isRevoked: false,
+        trustedDeviceId,
+      });
 
-    const refreshTokenPayload = {
-      userId: user.id,
-      sessionId: session.id,
-      type: 'refresh',
-    };
+      // Generate access and refresh tokens with session ID
+      const accessTokenPayload = {
+        userId: user.id,
+        sessionId: session.id,
+        type: 'access',
+      };
 
-    const accessToken = this.jwtService.sign(accessTokenPayload, {
-      expiresIn: accessExpiresSeconds, // 1 day
-    });
+      const refreshTokenPayload = {
+        userId: user.id,
+        sessionId: session.id,
+        type: 'refresh',
+      };
 
-    const refreshToken = this.jwtService.sign(refreshTokenPayload, {
-      expiresIn: '7d', // 7 days
-    });
+      const accessToken = this.jwtService.sign(accessTokenPayload, {
+        expiresIn: accessExpiresSeconds, // 1 day
+      });
 
-    // Update session with token hashes
-    session.accessTokenHash = generateHash(accessToken);
-    session.refreshTokenHash = generateHash(refreshToken);
-    await this.authSessionRepository.save(session);
+      const refreshToken = this.jwtService.sign(refreshTokenPayload, {
+        expiresIn: '7d', // 7 days
+      });
+
+      // Update session with token hashes
+      session.accessTokenHash = generateHash(accessToken);
+      session.refreshTokenHash = generateHash(refreshToken);
+      await this.authSessionRepository.save(session);
 
       return {
         status: 'success',
@@ -270,6 +320,7 @@ export class AuthService {
           access_token: accessToken,
           refresh_token: refreshToken,
           expires_in: accessExpiresSeconds,
+          ...issuedDevice,
           user: {
             id: user.id,
             mobile_number: fullMobileNumber,
@@ -288,7 +339,7 @@ export class AuthService {
 
       // Log unexpected errors
       this.logger.error(
-        `Error in login: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Error in passcodeLogin: ${error instanceof Error ? error.message : 'Unknown error'}`,
         error instanceof Error ? error.stack : undefined,
       );
 
@@ -1642,6 +1693,11 @@ export class AuthService {
       session.isRevoked = true;
       await this.authSessionRepository.save(session);
 
+      // Logging out forgets this phone: the next login needs an SMS code
+      if (session.trustedDeviceId) {
+        await this.trustedDevices.revoke(session.trustedDeviceId);
+      }
+
       return {
         status: 'success',
         message: 'Logged out successfully',
@@ -1685,6 +1741,7 @@ export class AuthService {
         { userId, isRevoked: false },
         { isRevoked: true },
       );
+      await this.trustedDevices.revokeAllForUser(userId);
 
       return {
         status: 'success',
@@ -1718,66 +1775,74 @@ export class AuthService {
       validateToken(dto.reset_token, 'Reset token');
       validatePasscodeMatch(dto.new_passcode, dto.confirm_passcode);
 
-    // Verify reset token
-    let payload: { userId: string; type: string };
-    try {
-      payload = this.jwtService.verify(dto.reset_token);
-      if (payload.type !== 'reset') {
+      // Verify reset token
+      let payload: { userId: string; type: string };
+      try {
+        payload = this.jwtService.verify(dto.reset_token);
+        if (payload.type !== 'reset') {
+          throw new UnauthorizedException({
+            status: 'error',
+            message: 'Invalid reset token.',
+          });
+        }
+      } catch (error) {
         throw new UnauthorizedException({
           status: 'error',
-          message: 'Invalid reset token.',
+          message: 'Invalid or expired reset token.',
         });
       }
-    } catch (error) {
-      throw new UnauthorizedException({
-        status: 'error',
-        message: 'Invalid or expired reset token.',
+
+      // Get user
+      const user = await this.userRepository.findOne({
+        where: { id: payload.userId },
       });
-    }
 
-    // Get user
-    const user = await this.userRepository.findOne({
-      where: { id: payload.userId },
-    });
+      if (!user) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'User not found.',
+        });
+      }
 
-    if (!user) {
-      throw new BadRequestException({
-        status: 'error',
-        message: 'User not found.',
+      // Get user security record
+      const userSecurity = await this.userSecurityRepository.findOne({
+        where: { userId: user.id },
       });
-    }
 
-    // Get user security record
-    const userSecurity = await this.userSecurityRepository.findOne({
-      where: { userId: user.id },
-    });
+      if (!userSecurity) {
+        throw new BadRequestException({
+          status: 'error',
+          message: 'User security record not found.',
+        });
+      }
 
-    if (!userSecurity) {
-      throw new BadRequestException({
-        status: 'error',
-        message: 'User security record not found.',
-      });
-    }
+      // Hash new passcode
+      const passcodeHash = await bcrypt.hash(dto.new_passcode, 10);
 
-    // Hash new passcode
-    const passcodeHash = await bcrypt.hash(dto.new_passcode, 10);
+      // Update passcode
+      userSecurity.passcodeHash = passcodeHash;
+      userSecurity.lastPasscodeChangedAt = new Date();
+      userSecurity.failedAttempts = 0;
+      userSecurity.lockedUntil = null;
+      await this.userSecurityRepository.save(userSecurity);
 
-    // Update passcode
-    userSecurity.passcodeHash = passcodeHash;
-    userSecurity.lastPasscodeChangedAt = new Date();
-    userSecurity.failedAttempts = 0;
-    userSecurity.lockedUntil = null;
-    await this.userSecurityRepository.save(userSecurity);
+      // Revoke all active sessions for security
+      await this.authSessionRepository.update(
+        { userId: user.id, isRevoked: false },
+        { isRevoked: true },
+      );
 
-    // Revoke all active sessions for security
-    await this.authSessionRepository.update(
-      { userId: user.id, isRevoked: false },
-      { isRevoked: true },
-    );
+      // Forget every remembered phone; only this one (which just passed the SMS check) is remembered
+      await this.trustedDevices.revokeAllForUser(user.id);
+      const { token: device } = await this.trustedDevices.issue(
+        user.id,
+        dto.device_id,
+      );
 
       return {
         status: 'success',
         message: 'Passcode reset successfully. Please login again.',
+        data: device,
       };
     } catch (error) {
       // Re-throw BadRequestException and UnauthorizedException as-is

@@ -21,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { PasscodeLoginDto } from './dto/passcode-login.dto';
 import { ResendOtpDto } from './dto/resend-otp.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { CheckUserDto } from './dto/check-user.dto';
@@ -60,7 +61,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary:
-      'Login with passcode + otpVerificationToken (from login/verify-otp), or passcode + mobile number',
+      'Login with passcode + otpVerificationToken (from login/verify-otp). Returns device_token for login/passcode',
   })
   @ApiResponse({ status: 200, description: 'Login successful' })
   @ApiResponse({ status: 400, description: 'Invalid mobile number' })
@@ -120,16 +121,20 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary:
-      'Login with mobile number and passcode (same as POST /auth/login with a phone number)',
+      'Re-login on a remembered device: phone + passcode + device_token (no new SMS code)',
+    description:
+      'device_token comes from POST /auth/login, register/set-passcode or forgot-passcode/reset on this phone. ' +
+      'It expires after 30 days and is revoked by logout, logout-all and forgot-passcode reset. ' +
+      'Without a valid one the answer is 401 DEVICE_NOT_TRUSTED: log in with an SMS code.',
   })
   @ApiResponse({ status: 200, description: 'Login successful' })
   @ApiResponse({ status: 400, description: 'Invalid mobile number' })
-  @ApiResponse({ status: 401, description: 'Incorrect passcode' })
-  async loginPasscode(@Body() dto: LoginDto) {
-    if (dto.otpVerificationToken) {
-      dto.otpVerificationToken = undefined; // this route always checks the phone number
-    }
-    return this.authService.login(dto);
+  @ApiResponse({
+    status: 401,
+    description: 'DEVICE_NOT_TRUSTED, or incorrect passcode',
+  })
+  async loginPasscode(@Body() dto: PasscodeLoginDto) {
+    return this.authService.loginWithDevice(dto);
   }
 
   @Post('forgot-passcode')

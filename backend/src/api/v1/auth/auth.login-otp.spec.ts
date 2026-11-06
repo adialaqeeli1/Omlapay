@@ -5,17 +5,24 @@ import { JwtService } from '@nestjs/jwt';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import * as bcrypt from 'bcryptjs';
+import { FindOperator } from 'typeorm';
 import { OtpPurpose } from '@common/database/model';
+import { TrustedDeviceService } from '@common/services/trusted-device/trusted-device.service';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { LoginDto } from './dto/login.dto';
+import { PasscodeLoginDto } from './dto/passcode-login.dto';
 
-/** Tiny in-memory stand-in for a TypeORM repository (findOne / save / delete on equal fields). */
+/** Tiny in-memory stand-in for a TypeORM repository (findOne / save / update / delete on equal fields, IsNull()). */
 class FakeRepo<T extends { id?: string; createdAt?: Date }> {
   rows: T[] = [];
   private seq = 0;
   private matches(row: T, where: Partial<T>) {
-    return Object.entries(where).every(([k, v]) => (row as any)[k] === v);
+    return Object.entries(where).every(([k, v]) =>
+      v instanceof FindOperator && v.type === 'isNull'
+        ? (row as any)[k] == null
+        : (row as any)[k] === v,
+    );
   }
   findOne(opts: { where: Partial<T> }) {
     const found = this.rows.filter((r) => this.matches(r, opts.where));
@@ -28,6 +35,11 @@ class FakeRepo<T extends { id?: string; createdAt?: Date }> {
       this.rows.push(entity as T);
     }
     return Promise.resolve(entity as T);
+  }
+  update(where: Partial<T>, patch: Partial<T>) {
+    const hit = this.rows.filter((r) => this.matches(r, where));
+    hit.forEach((r) => Object.assign(r, patch));
+    return Promise.resolve({ affected: hit.length });
   }
   delete(where: Partial<T>) {
     const before = this.rows.length;
@@ -46,6 +58,7 @@ function setup() {
   const settings = new FakeRepo<any>();
   const sessions = new FakeRepo<any>();
   const otps = new FakeRepo<any>();
+  const devices = new FakeRepo<any>();
   const jwt = new JwtService({ secret: 'test-secret' });
   const sms = { sendOTP: jest.fn().mockResolvedValue(undefined) };
   const service = new AuthService(
@@ -57,9 +70,20 @@ function setup() {
     jwt,
     sms as any,
     {} as any,
+    new TrustedDeviceService(devices as any),
   );
   const lastCode = () => sms.sendOTP.mock.calls.at(-1)[1] as string;
-  return { users, security, sessions, otps, jwt, sms, service, lastCode };
+  return {
+    users,
+    security,
+    sessions,
+    otps,
+    devices,
+    jwt,
+    sms,
+    service,
+    lastCode,
+  };
 }
 
 async function withUser(t: ReturnType<typeof setup>, isActive = true) {
@@ -313,54 +337,249 @@ describe('Login with SMS code (stage 1)', () => {
     });
   });
 
-  describe('phone + passcode (POST /auth/login and /auth/login/passcode)', () => {
-    it('still works and still enforces Saudi-only numbers', async () => {
+  describe('POST /auth/login/passcode (remembered device only)', () => {
+    const DEVICE = 'AA:BB:CC:DD:EE:FF';
+    async function smsLogin(t: ReturnType<typeof setup>, device_id?: string) {
+      const otpVerificationToken = await codeToken(t);
+      const res = await t.service.login({
+        passcode: PASSCODE,
+        otpVerificationToken,
+        device_id,
+      });
+      return res.data as typeof res.data & {
+        device_token: string;
+        device_token_expires_in: number;
+      };
+    }
+    const passcodeLogin = (
+      t: ReturnType<typeof setup>,
+      extra: Partial<PasscodeLoginDto>,
+    ) =>
+      t.service.loginWithDevice({
+        ...PHONE,
+        passcode: PASSCODE,
+        device_token: '',
+        ...extra,
+      });
+
+    it('SMS login remembers the phone: device_token valid 30 days, stored hashed', async () => {
       const t = setup();
       await withUser(t);
-      const res = await t.service.login({ ...PHONE, passcode: PASSCODE });
+      const data = await smsLogin(t, DEVICE);
+      expect(data.device_token).toMatch(/^[\w-]{43}$/);
+      expect(data.device_token_expires_in).toBe(30 * 24 * 3600);
+      expect(t.devices.rows).toHaveLength(1);
+      expect(t.devices.rows[0]).toMatchObject({
+        deviceId: DEVICE,
+        revokedAt: null,
+      });
+      expect(t.devices.rows[0].tokenHash).not.toContain(data.device_token);
+      expect(t.sessions.rows[0].trustedDeviceId).toBe(t.devices.rows[0].id);
+    });
+
+    it('a remembered phone logs in with phone + passcode + device_token', async () => {
+      const t = setup();
+      await withUser(t);
+      const { device_token } = await smsLogin(t, DEVICE);
+      const res = await passcodeLogin(t, { device_token, device_id: DEVICE });
       expect(res.data.access_token).toBeTruthy();
+      expect(res.data).not.toHaveProperty('device_token'); // no new token without an SMS check
+      expect(t.devices.rows[0].lastUsedAt).toBeInstanceOf(Date);
+      expect(t.sessions.rows.at(-1).trustedDeviceId).toBe(t.devices.rows[0].id);
+    });
+
+    it('without a device token: 401 DEVICE_NOT_TRUSTED, and the passcode is not even checked', async () => {
+      const t = setup();
+      await withUser(t);
+      for (const device_token of ['', 'made-up-token']) {
+        await expect(passcodeLogin(t, { device_token })).rejects.toMatchObject({
+          response: {
+            code: 'DEVICE_NOT_TRUSTED',
+            message_ar: expect.any(String),
+          },
+        });
+        await expect(
+          passcodeLogin(t, { device_token, passcode: '000000' }),
+        ).rejects.toMatchObject({
+          response: { code: 'DEVICE_NOT_TRUSTED' },
+        });
+      }
+      expect(t.security.rows[0].failedAttempts).toBe(0);
+      expect(t.sessions.rows).toHaveLength(0);
+    });
+
+    it("another user's device token does not work", async () => {
+      const t = setup();
+      await withUser(t);
+      const { device_token } = await smsLogin(t);
+      const other = await t.users.save({
+        fullMobileNumber: '+966598765432',
+        isActive: true,
+      });
+      await t.security.save({
+        userId: other.id,
+        passcodeHash: await bcrypt.hash(PASSCODE, 4),
+        failedAttempts: 0,
+      });
       await expect(
-        t.service.login({
+        passcodeLogin(t, { device_token, mobile_number: '598765432' }),
+      ).rejects.toMatchObject({ response: { code: 'DEVICE_NOT_TRUSTED' } });
+    });
+
+    it('is bound to the device_id it was issued with', async () => {
+      const t = setup();
+      await withUser(t);
+      const { device_token } = await smsLogin(t, DEVICE);
+      for (const device_id of [undefined, '11:22:33:44:55:66']) {
+        await expect(
+          passcodeLogin(t, { device_token, device_id }),
+        ).rejects.toMatchObject({
+          response: { code: 'DEVICE_NOT_TRUSTED' },
+        });
+      }
+    });
+
+    it('expires', async () => {
+      const t = setup();
+      await withUser(t);
+      const { device_token } = await smsLogin(t);
+      t.devices.rows[0].expiresAt = new Date(Date.now() - 1000);
+      await expect(passcodeLogin(t, { device_token })).rejects.toMatchObject({
+        response: { code: 'DEVICE_NOT_TRUSTED' },
+      });
+    });
+
+    it('logout forgets this phone; logout-all forgets every phone', async () => {
+      const t = setup();
+      const user = await withUser(t);
+      const a = await smsLogin(t);
+      const b = await smsLogin(t);
+      const sessionA = t.sessions.rows[0];
+      await t.service.logout(user.id, sessionA.id);
+      await expect(
+        passcodeLogin(t, { device_token: a.device_token }),
+      ).rejects.toMatchObject({
+        response: { code: 'DEVICE_NOT_TRUSTED' },
+      });
+      expect(
+        (await passcodeLogin(t, { device_token: b.device_token })).status,
+      ).toBe('success');
+      await t.service.logoutAll(user.id);
+      await expect(
+        passcodeLogin(t, { device_token: b.device_token }),
+      ).rejects.toMatchObject({
+        response: { code: 'DEVICE_NOT_TRUSTED' },
+      });
+    });
+
+    it('forgot-passcode reset forgets every phone and remembers only the one that reset', async () => {
+      const t = setup();
+      const user = await withUser(t);
+      const old = await smsLogin(t);
+      const reset_token = t.jwt.sign({ userId: user.id, type: 'reset' });
+      const res = await t.service.resetPasscode({
+        reset_token,
+        new_passcode: '246802',
+        confirm_passcode: '246802',
+        device_id: DEVICE,
+      });
+      await expect(
+        passcodeLogin(t, {
+          device_token: old.device_token,
+          passcode: '246802',
+        }),
+      ).rejects.toMatchObject({ response: { code: 'DEVICE_NOT_TRUSTED' } });
+      const ok = await passcodeLogin(t, {
+        device_token: res.data.device_token,
+        device_id: DEVICE,
+        passcode: '246802',
+      });
+      expect(ok.status).toBe('success');
+    });
+
+    it('a wrong passcode on a remembered phone counts toward the 5-try lockout', async () => {
+      const t = setup();
+      await withUser(t);
+      const { device_token } = await smsLogin(t);
+      for (let i = 1; i <= 4; i++) {
+        await expect(
+          passcodeLogin(t, { device_token, passcode: '000000' }),
+        ).rejects.toThrow(/Incorrect passcode/);
+      }
+      await expect(
+        passcodeLogin(t, { device_token, passcode: '000000' }),
+      ).rejects.toThrow(/locked/);
+      await expect(passcodeLogin(t, { device_token })).rejects.toThrow(
+        /temporarily locked/,
+      );
+    });
+
+    it('still enforces Saudi-only numbers', async () => {
+      const t = setup();
+      await withUser(t);
+      const { device_token } = await smsLogin(t);
+      await expect(
+        passcodeLogin(t, {
+          device_token,
           country_code: '+1',
           mobile_number: '5551234567',
-          passcode: PASSCODE,
         }),
       ).rejects.toMatchObject({ response: { code: 'PHONE_NOT_ALLOWED' } });
     });
 
-    it('/login/passcode ignores a token and always checks the phone number', async () => {
+    it('the /login/passcode route uses the device check', async () => {
       const t = setup();
       await withUser(t);
-      const token = await codeToken(t);
       const controller = new AuthController(t.service);
       await expect(
         controller.loginPasscode({
+          ...PHONE,
           passcode: PASSCODE,
-          otpVerificationToken: token,
-        } as LoginDto),
-      ).rejects.toMatchObject({ response: { code: 'PHONE_NOT_ALLOWED' } });
+          device_token: 'x',
+        }),
+      ).rejects.toMatchObject({ response: { code: 'DEVICE_NOT_TRUSTED' } });
     });
   });
 
-  describe('LoginDto validation', () => {
-    const errors = async (body: object) =>
-      (await validate(plainToInstance(LoginDto, body))).map((e) => e.property);
+  describe('request validation', () => {
+    const errors = async (cls: new () => object, body: object) =>
+      (await validate(plainToInstance(cls, body))).map((e) => e.property);
 
-    it('token + passcode is enough', async () => {
+    it('/login: token + passcode is enough', async () => {
       expect(
-        await errors({ passcode: PASSCODE, otpVerificationToken: 'abc' }),
+        await errors(LoginDto, {
+          passcode: PASSCODE,
+          otpVerificationToken: 'abc',
+        }),
       ).toEqual([]);
     });
-    it('without a token the phone number is required', async () => {
-      expect(await errors({ passcode: PASSCODE })).toEqual([
-        'country_code',
-        'mobile_number',
+    it('/login: phone + passcode without a token is refused (no passcode-only login)', async () => {
+      expect(await errors(LoginDto, { ...PHONE, passcode: PASSCODE })).toEqual([
+        'otpVerificationToken',
       ]);
     });
-    it('the passcode is always required', async () => {
-      expect(await errors({ otpVerificationToken: 'abc' })).toEqual([
-        'passcode',
-      ]);
+    it('/login/passcode: a missing device_token is left to the device check (401 DEVICE_NOT_TRUSTED)', async () => {
+      expect(
+        await errors(PasscodeLoginDto, { ...PHONE, passcode: PASSCODE }),
+      ).toEqual([]);
+      expect(
+        await errors(PasscodeLoginDto, {
+          ...PHONE,
+          passcode: PASSCODE,
+          device_token: 't',
+          device_id: 'x'.repeat(129),
+        }),
+      ).toEqual(['device_id']);
+    });
+
+    it('/login/passcode without device_token: 401 DEVICE_NOT_TRUSTED', async () => {
+      const t = setup();
+      await withUser(t);
+      await expect(
+        t.service.loginWithDevice({ ...PHONE, passcode: PASSCODE }),
+      ).rejects.toMatchObject({
+        response: { code: 'DEVICE_NOT_TRUSTED' },
+      });
     });
   });
 });
