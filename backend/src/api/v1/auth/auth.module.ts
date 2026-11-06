@@ -10,6 +10,7 @@ import { AuthSessionEntity } from '@common/database/model';
 import { OtpRequestEntity } from '@common/database/model';
 import { OtpModule } from '@common/services/otp/otp.module';
 import { MailModule } from '@common/services/mail/mail.module';
+import { TrustedDeviceModule } from '@common/services/trusted-device/trusted-device.module';
 import { jwtConfig } from '@common/config/jwt.config';
 
 @Module({
@@ -24,6 +25,7 @@ import { jwtConfig } from '@common/config/jwt.config';
     JwtModule.registerAsync(jwtConfig('24h')),
     OtpModule,
     MailModule,
+    TrustedDeviceModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

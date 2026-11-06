@@ -1,5 +1,6 @@
 import '../../../core/services/api_helper.dart';
 import '../../../core/constants/endpoints.dart';
+import '../../../core/services/remembered_device.dart';
 
 class AuthService {
   static Future<Map<String, dynamic>> registerRequest({
@@ -56,11 +57,14 @@ class AuthService {
     final response = await ApiHelper.post(
       Endpoints.registerSetPasscode,
       {
+        ...await RememberedDevice.deviceIdField(),
         "registration_token": registrationToken,
         "passcode": passcode,
         "confirm_passcode": confirmPasscode,
       },
     );
+    // This phone just passed the registration SMS check: remember it
+    await RememberedDevice.saveFromResponse(response);
     return response;
   }
 
@@ -92,8 +96,11 @@ class AuthService {
       {
         "passcode": passcode,
         "otpVerificationToken": otpVerificationToken,
+        ...await RememberedDevice.deviceIdField(),
       },
     );
+    // SMS login: the backend remembers this phone for [loginPasscode]
+    await RememberedDevice.saveFromResponse(response);
     return response;
   }
 
@@ -149,8 +156,10 @@ class AuthService {
     return response;
   }
 
-  /// Silent re-login with phone + passcode (no OTP). Backend returns the same
-  /// shape as the OTP-based `login` (access_token, refresh_token, user).
+  /// Silent re-login with phone + passcode (no OTP) on a remembered device.
+  /// Needs the device token saved by an earlier SMS login, registration or
+  /// passcode reset on this phone; otherwise the backend answers 401
+  /// DEVICE_NOT_TRUSTED. Same response shape as `login`.
   /// Backend: POST /v1/auth/login/passcode.
   static Future<Map<String, dynamic>> loginPasscode({
     required String countryCode,
@@ -163,6 +172,9 @@ class AuthService {
         "country_code": countryCode,
         "mobile_number": mobileNumber,
         "passcode": passcode,
+        if (RememberedDevice.token != null)
+          "device_token": RememberedDevice.token,
+        ...await RememberedDevice.deviceIdField(),
       },
     );
     return response;

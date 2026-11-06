@@ -39,6 +39,10 @@ export class AuthSessionEntity {
   @Column({ type: 'text', nullable: true })
   userAgent: string | null;
 
+  /** The remembered device this session was opened from (revoked on logout) */
+  @Column({ type: 'uuid', nullable: true })
+  trustedDeviceId: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 }

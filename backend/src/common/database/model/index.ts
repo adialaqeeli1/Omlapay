@@ -18,6 +18,7 @@ export * from './swap.entity';
 export * from './system-settings.entity';
 export * from './ticket-response.entity';
 export * from './transaction.entity';
+export * from './trusted-device.entity';
 export * from './user.entity';
 export * from './user-kyc.entity';
 export * from './user-security.entity';

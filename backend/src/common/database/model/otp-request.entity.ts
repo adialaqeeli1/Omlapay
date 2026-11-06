@@ -15,6 +15,7 @@ export enum OtpPurpose {
   TWO_FACTOR_MOBILE = 'TWO_FACTOR_MOBILE',
   TWO_FACTOR_EMAIL = 'TWO_FACTOR_EMAIL',
   SEND_VERIFICATION = 'SEND_VERIFICATION',
+  LOGIN = 'LOGIN',
 }
 
 @Entity('otp_requests')

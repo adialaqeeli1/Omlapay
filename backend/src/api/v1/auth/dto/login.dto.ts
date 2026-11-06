@@ -1,29 +1,24 @@
 import { IsString, Matches, Length } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { DeviceIdField } from './device-id';
 
-export class LoginDto {
-  @ApiProperty({
-    example: '+966',
-    description:
-      'Country code with + prefix. Only +966 (Saudi Arabia) by default (ALLOWED_PHONE_COUNTRY_CODES)',
-  })
-  @IsString()
-  @Matches(/^\+?\d{1,4}$/, { message: 'Invalid country code.' })
-  country_code: string;
-
-  @ApiProperty({
-    example: '512345678',
-    description:
-      'Saudi mobile number: 5XXXXXXXX or 05XXXXXXXX (9665XXXXXXXX and +9665XXXXXXXX also accepted)',
-  })
-  @IsString()
-  // Format only; the Saudi-only rule and normalization (05…, 5…, 9665…, +9665…) are in the service
-  @Matches(/^\+?\d{6,15}$/, { message: 'Invalid mobile number.' })
-  mobile_number: string;
-
+/**
+ * POST /auth/login: passcode + the token from POST /auth/login/verify-otp (SMS code).
+ * Logging in with only a phone number and passcode is POST /auth/login/passcode, which also
+ * needs a remembered device_token.
+ */
+export class LoginDto extends DeviceIdField {
   @ApiProperty({ example: '123456', description: '6-digit passcode' })
   @IsString()
   @Length(6, 6)
   @Matches(/^\d{6}$/, { message: 'Passcode must be 6 digits' })
   passcode: string;
+
+  @ApiProperty({
+    description:
+      'Token from POST /auth/login/verify-otp (valid 5 minutes, one login).',
+  })
+  @IsString()
+  @Length(1, 2048)
+  otpVerificationToken: string;
 }

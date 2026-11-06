@@ -1,7 +1,8 @@
 import { IsString, Length, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { DeviceIdField } from '../../auth/dto/device-id';
 
-export class ResetPasscodeDto {
+export class ResetPasscodeDto extends DeviceIdField {
   @ApiProperty({
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
     description: 'Reset token from OTP verification',

@@ -8,6 +8,7 @@ class AppConstants {
   static const String onboardingCompletedKey = 'onboarding_completed';
   static const String dummyUsersKey = 'dummy_users_data';
   static const String biometricEnabledKey = 'biometric_enabled';
+  static const String rememberedDeviceTokenKey = 'remembered_device_token';
 
   // App Lock
   static const int appLockBackgroundThresholdSeconds = 60;

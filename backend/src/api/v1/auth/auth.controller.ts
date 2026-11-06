@@ -21,6 +21,9 @@ import {
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { PasscodeLoginDto } from './dto/passcode-login.dto';
+import { ResendOtpDto } from './dto/resend-otp.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { CheckUserDto } from './dto/check-user.dto';
 import { SoftLoginDto } from './dto/soft-login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -56,12 +59,82 @@ export class AuthController {
   @Post('login')
   @ThrottleCredentialCheck()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Login with mobile number and passcode' })
+  @ApiOperation({
+    summary:
+      'Login with passcode + otpVerificationToken (from login/verify-otp). Returns device_token for login/passcode',
+  })
   @ApiResponse({ status: 200, description: 'Login successful' })
   @ApiResponse({ status: 400, description: 'Invalid mobile number' })
-  @ApiResponse({ status: 401, description: 'Incorrect passcode' })
+  @ApiResponse({
+    status: 401,
+    description: 'Incorrect passcode, or token expired or used',
+  })
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Post('login/send-otp')
+  @ThrottleCodeSend()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Login step 1: send a 6-digit code by SMS to an existing user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Code sent (otp_expiry_seconds, masked_mobile)',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid or non-Saudi number, or user not found',
+  })
+  async loginSendOtp(@Body() dto: ResendOtpDto) {
+    return this.authService.sendLoginOtp(dto);
+  }
+
+  @Post('login/resend-otp')
+  @ThrottleCodeSend()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Login: send a new code (60-second cooldown, 3 resends)',
+  })
+  @ApiResponse({ status: 200, description: 'Code resent' })
+  @ApiResponse({ status: 400, description: 'Cooldown or resend limit' })
+  async loginResendOtp(@Body() dto: ResendOtpDto) {
+    return this.authService.sendLoginOtp(dto, true);
+  }
+
+  @Post('login/verify-otp')
+  @ThrottleCredentialCheck()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary:
+      'Login step 2: check the code. Returns otpVerificationToken for POST /auth/login (5 minutes, one login)',
+  })
+  @ApiResponse({ status: 200, description: 'data.otpVerificationToken' })
+  @ApiResponse({ status: 400, description: 'Wrong, expired or used code' })
+  async loginVerifyOtp(@Body() dto: VerifyOtpDto) {
+    return this.authService.verifyLoginOtp(dto);
+  }
+
+  @Post('login/passcode')
+  @ThrottleCredentialCheck()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary:
+      'Re-login on a remembered device: phone + passcode + device_token (no new SMS code)',
+    description:
+      'device_token comes from POST /auth/login, register/set-passcode or forgot-passcode/reset on this phone. ' +
+      'It expires after 30 days and is revoked by logout, logout-all and forgot-passcode reset. ' +
+      'Without a valid one the answer is 401 DEVICE_NOT_TRUSTED: log in with an SMS code.',
+  })
+  @ApiResponse({ status: 200, description: 'Login successful' })
+  @ApiResponse({ status: 400, description: 'Invalid mobile number' })
+  @ApiResponse({
+    status: 401,
+    description: 'DEVICE_NOT_TRUSTED, or incorrect passcode',
+  })
+  async loginPasscode(@Body() dto: PasscodeLoginDto) {
+    return this.authService.loginWithDevice(dto);
   }
 
   @Post('forgot-passcode')
